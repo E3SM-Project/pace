@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+    <head><title>Model Timing</title>
+    <style>
+    #dataInfo{
+        border:.01in solid;
+        position: absolute;
+        left:20.5%;
+        width:80%;
+    }
+    #dataList{
+        overflow: scroll;
+        width:20%;
+        height:100%;
+        position: absolute
+    }
+    ul{
+        list-style-type: none;
+        font-family: monospace;
+    }
+    </style>
+    </head>
+    <body>
+        <div>
+            <select id="valueName" onclick="triggerGraph(currentEntry)"><option value="nodes" selected>Nodes</option><option value="min/max">Min / Max</option></select>
+            <select id="mode" onclick="triggerGraph(currentEntry)">
+                <option value="sum" selected>Sum</option>
+                <option value="avg">Average</option>
+            </select>
+        </div>
+        <div id="dataInfo" style="background-image:url(/static/ornlLeaf.svg);background-position: center;background-repeat: no-repeat;"><canvas id="chartTag"></canvas></div>
+        <div id="dataList"><button onclick="let root={children:timeNodes};resultChart.options.title.text='Model Timing';triggerGraph(root);currentEntry=root">Summary</button></div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+        <script>
+        var jsonFile={{jsonOut|safe}};
+        var valueList = {{mtValueNames|safe}};
+
+        var resultChart = new Chart(chartTag, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label:"",
+                        data: [],
+                        backgroundColor: [],
+                        borderColor: [],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    title:{
+                        display: true,
+                        text:""
+                    },
+                    onClick:(event)=>{
+                        let activeElement = resultChart.getElementAtEvent(event);
+                        if(activeElement.length > 0){
+                            let timeNode = document.getElementById(activeElement[0]._model.label).getElementsByTagName('ul')[0]
+                            parentPath(nodeTable[activeElement[0]._model.label]).forEach((listName)=>{
+                                let listElement = document.getElementById(listName).getElementsByTagName('ul');
+                                if(listElement.length > 0)
+                                    listElement[0].style.display="";
+                            })
+                            if(timeNode!=undefined)
+                                timeNode.click();
+                        }
+                    },
+                    scales: {
+                        yAxes: [{
+                            stacked:true,
+                            ticks: {
+                                beginAtZero:true
+                            }
+                        }],
+                        xAxes:[{stacked:true}]
+                    }
+                }
+            });
+        </script>
+        <script src="/static/mt.js"></script>
+        <script>//Fire up the summary:
+                dataList.children[0].click();</script>
+    </body>

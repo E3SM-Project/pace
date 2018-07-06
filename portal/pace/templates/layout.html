@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+	<script type=text/javascript>
+	  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+	</script>
+	<link href="http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,300italic,700" rel="stylesheet" />
+    <!-- Bootstrap core CSS -->
+	<!-- <link rel="stylesheet" href="/static/css/bootstrap.min.css"> -->
+	<link rel="stylesheet" href="/static/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/static/css/bootstrap-theme.min.css">
+
+	<!-- <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"> -->
+	<!-- Optional theme -->
+	<!-- <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"> -->
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+
+<!-- Custom styles for this template -->
+<link rel="stylesheet" type="text/css" href="/static/css/pace.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/jquery.jqplot.min.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.min.css" />
+{% block topscripts %}
+{% endblock %}
+
+    <title> Performance Analytics for Climate Experiments (PACE)</title>
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="/static/js/html5shiv.js"></script>
+      <script src="/static/js/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- Static navbar -->
+      <div class="navbar navbar-default">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="{{ request.script_root }}"><img height="32" src="/static/E3SM_Logo_scaled.png"> PACE</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav nav-pills">
+            <li><a href="{{ request.script_root }}">Home</a></li>
+            <li><a href="{{ request.script_root }}/exps">Experiments</a></li>
+            <li><a href="{{ request.script_root }}/platforms">Platforms</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div> <!-- /container -->
+
+	<!-- Main component for primary content -->
+	<!-- <div class="jumbotron"> </div> -->
+
+    <div class="container-fluid pace-main-content">
+      <div class="row-fluid">
+		{% block content %}
+		{% endblock %}
+      </div>
+    </div> <!-- /container -->
+
+    <div class="container">
+	{% block bottomscripts %}
+	{% endblock %}
+	<!-- Bootstrap core JavaScript -->
+	<!-- <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script> -->
+	<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+	<div class="footer">
+	<br>
+	<hr>
+	<p class="text-muted" style="text-align:center;">
+	&copy; Copyright 2018 <a href="https://e3sm.org">E3SM Project</a> <br>
+	Content : All rights reserved | <a href="http://www.ornl.gov/ornlhome/disclaimers.shtml">ORNL Disclaimer</a> 
+	</p>
+	<br>
+	</div>
+
+<!-- Default Statcounter code for Pace.ornl.gov
+https://pace.ornl.gov -->
+<script type="text/javascript">
+var sc_project=11755034; 
+var sc_invisible=1; 
+var sc_security="e3d82dda"; 
+</script>
+<script type="text/javascript"
+src="https://www.statcounter.com/counter/counter.js"
+async></script>
+<noscript><div class="statcounter"><a title="Web Analytics"
+href="http://statcounter.com/" target="_blank"><img
+class="statcounter"
+src="//c.statcounter.com/11755034/0/e3d82dda/1/" alt="Web
+Analytics"></a></div></noscript>
+<!-- End of Statcounter Code -->
+
+	</div> <!-- /container -->
+  </body>
+</html>

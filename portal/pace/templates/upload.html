@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block content %}
+	<title> PACE - Welcome </title>
+			<!-- Content -->
+			<p class="lead">
+			Welcome to PACE portal.
+			</p>
+
+			<form action="http://pace.ornl.gov/upload" method="POST" enctype="multipart/form-data">
+				<div class="form-group">
+				<label>File</label>
+				<input type="file" name="myfilename">
+				</div>
+				<input type="submit" name="submit" value="Upload">
+				</form>
+
+			<hr>
+
+{% endblock %}
