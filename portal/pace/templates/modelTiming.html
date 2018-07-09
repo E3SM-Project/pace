@@ -18,6 +18,11 @@
         list-style-type: none;
         font-family: monospace;
     }
+    #backButton{
+        position: absolute;
+        left:20.5%;
+
+    }
     </style>
     </head>
     <body>
@@ -29,12 +34,36 @@
             </select>
         </div>
         <div id="dataInfo" style="background-image:url(/static/ornlLeaf.svg);background-position: center;background-repeat: no-repeat;"><canvas id="chartTag"></canvas></div>
-        <div id="dataList"><button onclick="let root={children:timeNodes};resultChart.options.title.text='Model Timing';triggerGraph(root);currentEntry=root">Summary</button></div>
+        <div id="dataList"><button id="summaryButton" onclick="let root={children:timeNodes};resultChart.options.title.text='Model Timing';triggerGraph(root);currentEntry=root">Summary</button>
+        </div>
+        <button id="backButton"><-Back</button>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
         <script>
-        var jsonFile={{jsonOut|safe}};
+        var jsonFile={{jsonOut|tojson|safe}};
         var valueList = {{mtValueNames|safe}};
-
+        
+        backButton.onclick = function(){
+            if(currentEntry.parent!=undefined){
+                if(currentEntry.name == currentEntry.parent.name)
+                    summaryButton.click();
+                else document.getElementById(currentEntry.parent.name).click();
+            }   
+        }
+        
+        window.onhashchange = function(){
+            let clickID = "";
+            let hash = window.location.hash.split("#");
+            switch(hash[hash.length-1]){
+                case "root":
+                case "summary":
+                clickID="summaryButton"
+                break;
+                default:
+                clickID = hash[hash.length-1];
+            }
+            if(document.getElementById(clickID)!=undefined)
+                document.getElementById(clickID).click();
+        };
         var resultChart = new Chart(chartTag, {
                 type: 'bar',
                 data: {
@@ -79,5 +108,6 @@
         </script>
         <script src="/static/mt.js"></script>
         <script>//Fire up the summary:
-                dataList.children[0].click();</script>
+                dataList.children[0].click();
+                window.onhashchange();</script>
     </body>

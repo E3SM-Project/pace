@@ -102,3 +102,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+#Offline flask test script:
+portal/pace/flaskEnv.py

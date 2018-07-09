@@ -81,11 +81,11 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
         if(node.children.length>0){
             listElement.appendChild(htmlList(node.children,scope,currScope+1));
             listElement.getElementsByTagName("span")[0].style.backgroundColor=percentToColor(percentList[percentIndex],true);
-            percentIndex++;
             if(currScope >= scope[0] && currScope<=scope[1])
                 listElement.getElementsByTagName("ul")[0].style.display="none";
         }
         newList.appendChild(listElement);
+        percentIndex++;
     });
     
     return newList;
@@ -181,21 +181,23 @@ function parentPath(nodeIn,currValues=[]){
 function percentToColor(percentage=50,transparency=false,colors=[[0,0,255],[0,255,0],[255,0,0]]){
     if(percentage > 100)
         percentage=100;
-    let resultColor=[];
-    //Split 100 up so the given percentage is distributed evenly:
-    let subtractValue = 100 / colors.length;
-    let difference = percentage;//This will represet a certain percentage of subtractValue.
-    let colorIndex=0; //The color we will be transitioning from
+    let subtractValue = 100 / (colors.length-1);
+    let difference = 0;//This will represet a certain percentage of subtractValue.
+    let colorIndex=0; //The color we will be transitioning from.
 
-    while(difference - subtractValue >= 0){
-        difference-=subtractValue;
-        if(difference - subtractValue > 0)
-        colorIndex++;
-    }
-    resultColor=colors[colorIndex];
-    if(difference!=0){
+    //Add up the subtract values until we have one that's greater than (or matches) the percentage:
+        for(let i=0;i<colors.length;i++){
+            if(percentage >= subtractValue * i){
+                colorIndex = i;
+                difference = (subtractValue * (i+1) ) - percentage;
+            }
+            else break;
+        }
+    let resultColor=colors[colorIndex];
+    let colorPercent = .01 * ( (100 / subtractValue) * (subtractValue-difference));
+    if(percentage!=100){
         for(let i=0;i<resultColor.length;i++){
-            resultColor[i]-= Math.floor((colors[colorIndex][i] - colors[colorIndex+1][i]) * (.01* (100 / subtractValue) * difference));
+            resultColor[i]-=Math.floor( (resultColor[i] - colors[colorIndex+1][i]) * colorPercent );
         }
     }
     return "rgba("+resultColor[0]+","+resultColor[1]+","+resultColor[2]+","+(transparency?0.2:1)+")";
