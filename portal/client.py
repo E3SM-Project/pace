@@ -5,10 +5,11 @@ t=1
 if (len(sys.argv)<2):
 	print('Usage: python client.py filename.ext')
 else:
-	fin = open(sys.argv[1], 'rb')	
-	files = {'file': fin}
-	try:
-		r = requests.post(url, files=files)
-		print(r.text)
-	finally:
-		fin.close()
+	for i in range(len(sys.argv)-1):	
+		fin = open(sys.argv[i+1], 'rb')	
+		files = {'file': fin}
+		try:
+			r = requests.post(url, files=files)
+			print(r.text)
+		finally:
+			fin.close()
