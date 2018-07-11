@@ -1,3 +1,6 @@
+<!--Author: Zachary Mitchell
+    Purpose: View your prevsiously parsed model_timing files in style!
+    Summarize any scope of timeNodes with sum or averages, and with any value you want! (Wallclock, min/max, etc)-->
 <!doctype html>
 <html>
     <head><title>Model Timing</title>
@@ -7,6 +10,9 @@
         position: absolute;
         left:20.5%;
         width:80%;
+        background-image:url(/static/ornlLeaf.svg);
+        background-position: center;
+        background-repeat: no-repeat;
     }
     #dataList{
         overflow: scroll;
@@ -18,7 +24,7 @@
         list-style-type: none;
         font-family: monospace;
     }
-    #backButton{
+    #backAndNodeId{
         position: absolute;
         left:20.5%;
 
@@ -27,87 +33,24 @@
     </head>
     <body>
         <div>
-            <select id="valueName" onclick="triggerGraph(currentEntry)"><option value="nodes" selected>Nodes</option><option value="min/max">Min / Max</option></select>
-            <select id="mode" onclick="triggerGraph(currentEntry)">
+            <select id="valueName" onclick="changeGraph(currentEntry)"><option value="nodes">Nodes</option><option value="min/max">Min / Max</option></select>
+            <select id="mode" onclick="changeGraph(currentEntry)">
                 <option value="sum" selected>Sum</option>
                 <option value="avg">Average</option>
             </select>
+            <input type="checkbox" onclick="stackedCharts = this.checked;changeGraph(currentEntry);" checked> <span style="font-family: monospace">Stacked bars</span></input>
         </div>
-        <div id="dataInfo" style="background-image:url(/static/ornlLeaf.svg);background-position: center;background-repeat: no-repeat;"><canvas id="chartTag"></canvas></div>
-        <div id="dataList"><button id="summaryButton" onclick="let root={children:timeNodes};resultChart.options.title.text='Model Timing';triggerGraph(root);currentEntry=root">Summary</button>
+        <div id="dataInfo"><canvas id="chartTag"></canvas></div>
+        <div id="dataList"><button id="summaryButton">Summary</button>
         </div>
-        <button id="backButton"><-Back</button>
+        <span id="backAndNodeId"><button id="backButton"><-Back</button><span id="nodeId" style="font-family: monospace"></span></span>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
         <script>
         var jsonFile={{jsonOut|tojson|safe}};
         var valueList = {{mtValueNames|safe}};
-        
-        backButton.onclick = function(){
-            if(currentEntry.parent!=undefined){
-                if(currentEntry.name == currentEntry.parent.name)
-                    summaryButton.click();
-                else document.getElementById(currentEntry.parent.name).click();
-            }   
-        }
-        
-        window.onhashchange = function(){
-            let clickID = "";
-            let hash = window.location.hash.split("#");
-            switch(hash[hash.length-1]){
-                case "root":
-                case "summary":
-                clickID="summaryButton"
-                break;
-                default:
-                clickID = hash[hash.length-1];
-            }
-            if(document.getElementById(clickID)!=undefined)
-                document.getElementById(clickID).click();
-        };
-        var resultChart = new Chart(chartTag, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label:"",
-                        data: [],
-                        backgroundColor: [],
-                        borderColor: [],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    title:{
-                        display: true,
-                        text:""
-                    },
-                    onClick:(event)=>{
-                        let activeElement = resultChart.getElementAtEvent(event);
-                        if(activeElement.length > 0){
-                            let timeNode = document.getElementById(activeElement[0]._model.label).getElementsByTagName('ul')[0]
-                            parentPath(nodeTable[activeElement[0]._model.label]).forEach((listName)=>{
-                                let listElement = document.getElementById(listName).getElementsByTagName('ul');
-                                if(listElement.length > 0)
-                                    listElement[0].style.display="";
-                            })
-                            if(timeNode!=undefined)
-                                timeNode.click();
-                        }
-                    },
-                    scales: {
-                        yAxes: [{
-                            stacked:true,
-                            ticks: {
-                                beginAtZero:true
-                            }
-                        }],
-                        xAxes:[{stacked:true}]
-                    }
-                }
-            });
         </script>
+        <script src="/static/domFunctions.js"></script>
         <script src="/static/mt.js"></script>
         <script>//Fire up the summary:
-                dataList.children[0].click();
-                window.onhashchange();</script>
+                dataList.children[0].click();</script>
     </body>
