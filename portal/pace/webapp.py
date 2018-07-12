@@ -55,7 +55,29 @@ def upload_file():
 			return ('Error Uploading file, Try again')
 	return render_template('upload.html')
  	
-
+@app.route("/uploadlogin", methods=['GET','POST'])
+def uploadlogin():
+	if request.method == 'POST':
+		admin = request.form['name']
+		admin_pass = request.form['pass']
+		a=admin+admin_pass
+		z=int(len(a))
+		b=''
+		for i in range(z):
+			b = b + chr(ord(a[i]) + 2)
+		c=b+a
+		y=int(len(c))
+		d=''
+		for i in range(y):
+			d = d + chr(ord(c[i])+1)			
+		f=open('/pace/dev1/portal/pace/pass.txt','r')
+		for line in f:
+			admin = line.split(None,1)[0]
+			print(admin)
+			if admin==d:
+				return("ok")				
+				
+		return("not")
 
 # Error handler
 @app.errorhandler(404)
