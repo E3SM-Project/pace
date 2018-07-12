@@ -70,7 +70,6 @@ var resultChart = new Chart(chartTag, {
                     stacked:true,
 					type:'logarithmic',
                     ticks: {
-						beginAtZero:False,
 						min: 1,
                     }
                 }],
