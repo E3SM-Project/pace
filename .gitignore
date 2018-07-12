@@ -103,7 +103,3 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-#Offline flask test script:
-portal/pace/flaskEnv.py
-portal/pace/static/Chart.bundle.min.js
-portal/pace/mtQl.py
