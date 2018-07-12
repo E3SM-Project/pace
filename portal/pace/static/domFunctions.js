@@ -54,7 +54,7 @@ var resultChart = new Chart(chartTag, {
             onClick:(event)=>{
                 let activeElement = resultChart.getElementAtEvent(event);
                 if(activeElement.length > 0){
-                    let timeNodeObject = (!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max"?nodeTable[activeElement[0]._model.label]:nodeTable[activeElement[0]._model.label].children[activeElement[0]._datasetIndex]);
+                    let timeNodeObject = (!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || (resultChart.data.datasets.length == 1 && nodeTable[activeElement[0]._model.label].children.length == 0)?nodeTable[activeElement[0]._model.label]:nodeTable[activeElement[0]._model.label].children[activeElement[0]._datasetIndex]);
                     let timeNode = document.getElementById(timeNodeObject.name).getElementsByTagName('ul')[0];
                     parentPath(timeNodeObject).forEach((listName)=>{
                         let listElement = document.getElementById(listName).getElementsByTagName('ul');
@@ -80,7 +80,7 @@ var resultChart = new Chart(chartTag, {
 chartTag.onmousemove = function(event){
     let results = resultChart.getElementAtEvent(event);
     if(results.length > 0)
-        nodeId.innerHTML=(!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max"?nodeTable[results[0]._model.label].name:nodeTable[results[0]._model.label].children[results[0]._datasetIndex].name);
+        nodeId.innerHTML=(!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || resultChart.data.datasets.length == 1?nodeTable[results[0]._model.label].name:nodeTable[results[0]._model.label].children[results[0]._datasetIndex].name);
     else if(nodeId.innerHTML!="")
         nodeId.innerHTML="";
 }

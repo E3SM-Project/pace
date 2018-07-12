@@ -113,17 +113,26 @@ function changeGraph(nodeIn,valIn=valueName.children[valueName.selectedIndex].va
             resultChart.data.datasets[1].label="Max";
         }
         else{
+            //First,lets check to see if everything has no children, that way, we can turn stackedBar off if needed:
+            let noChildCheck=0;
+            for(let i=0;i<nodeIn.children.length;i++){
+                if(nodeIn.children[i].children.length == 0)
+                    noChildCheck++;
+            }
+            if(noChildCheck == nodeIn.children.length)
+                stackedBar=false;
             for(let i=0;i<nodeIn.children.length;i++){
                 resultChart.data.labels.push(nodeIn.children[i].name);
                 makeGraphBar( (stackedBar?nodeIn.children[i]:{children:[nodeIn.children[i]]} ),valIn,i);
             }
-            colorChart(stackedCharts);
+            colorChart(stackedBar);
         }
     resultChart.update();
 }
 
 //Creates a row of information based on the selected index.
 function makeGraphBar(nodeIn,valIn="nodes",dataIndex=0,stackOffset=0){
+    // console.log(nodeIn.children);
     //Get all the children in this node:
     let mtData = [];//Data from mtSum
     nodeIn.children.forEach((child)=>{
@@ -160,6 +169,7 @@ function makeGraphBar(nodeIn,valIn="nodes",dataIndex=0,stackOffset=0){
 
 //Chart coloring is handled here so resultChart isn't colored more than once:
 function colorChart(vertical=true){
+    //console.log(resultChart.data.datasets);
     if(vertical){
         for(let i=0;i<resultChart.data.datasets[0].data.length;i++){
         let colorSumlist = [];

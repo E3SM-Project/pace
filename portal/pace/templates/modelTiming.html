@@ -22,12 +22,14 @@
     }
     ul{
         list-style-type: none;
-        font-family: monospace;
     }
     #backAndNodeId{
         position: absolute;
         left:20.5%;
 
+    }
+    body{
+        font-family: monospace;
     }
     </style>
     </head>
@@ -38,13 +40,14 @@
                 <option value="sum" selected>Sum</option>
                 <option value="avg">Average</option>
             </select>
-            <input type="checkbox" onclick="stackedCharts = this.checked;changeGraph(currentEntry);" checked> <span style="font-family: monospace">Stacked bars</span></input>
+            <input type="checkbox" onclick="stackedCharts = this.checked;changeGraph(currentEntry);" checked>Stacked bars</input>
         </div>
         <div id="dataInfo"><canvas id="chartTag"></canvas></div>
         <div id="dataList"><button id="summaryButton">Summary</button>
         </div>
         <span id="backAndNodeId"><button id="backButton"><-Back</button><span id="nodeId" style="font-family: monospace"></span></span>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+        <!-- <script src="/static/Chart.bundle.min.js"></script> -->
         <script>
         var jsonFile={{jsonOut|tojson|safe}};
         var valueList = {{mtValueNames|safe}};
