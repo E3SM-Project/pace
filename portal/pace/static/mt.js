@@ -85,7 +85,7 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
         //Make more lists:
         if(node.children.length>0){
             listElement.appendChild(htmlList(node.children,scope,currScope+1));
-            listElement.getElementsByTagName("span")[0].style.backgroundColor=percentToColor(percentList[percentIndex],true);
+            listElement.getElementsByTagName("span")[0].style.backgroundColor=percentToColor(percentList[percentIndex],.2);
             if(currScope >= scope[0] && currScope<=scope[1])
                 listElement.getElementsByTagName("ul")[0].style.display="none";
         }
@@ -178,9 +178,9 @@ function colorChart(vertical=true){
         }
         let colorPercentages = arrayToPercentages(colorSumlist);
         for(let j=0;j<resultChart.data.datasets.length;j++){
-                let colorData = percentToColor(colorPercentages[j],true,2);
+                let colorData = percentToColor(colorPercentages[j],.2,2);
                 resultChart.data.datasets[j].backgroundColor.push(colorData[0]);
-                resultChart.data.datasets[j].borderColor.push(percentToColor(50,true,0,[colorData[1],[0,0,0]]));
+                resultChart.data.datasets[j].borderColor.push(percentToColor(50,.2,0,[colorData[1],[0,0,0]]));
             }
         }
     }
@@ -192,9 +192,9 @@ function colorChart(vertical=true){
             }
             let colorPercentages = arrayToPercentages(colorSumlist);
             for(let j=0;j<resultChart.data.datasets[0].data.length;j++){
-                    let colorData = percentToColor(colorPercentages[j],true,2);
+                    let colorData = percentToColor(colorPercentages[j],.2,2);
                     resultChart.data.datasets[0].backgroundColor.push(colorData[0]);
-                    resultChart.data.datasets[0].borderColor.push(percentToColor(50,true,0,[colorData[1],[0,0,0]]));
+                    resultChart.data.datasets[0].borderColor.push(percentToColor(50,.2,0,[colorData[1],[0,0,0]]));
                 }
     }
 }
@@ -238,7 +238,7 @@ function percentToColor(percentage=50,transparency=false,returnType=0,colors=[[0
             }
             else break;
         }
-    let resultColor=colors[colorIndex];
+    let resultColor=colors[colorIndex].slice();
     let colorPercent = .01 * ( (100 / subtractValue) * (subtractValue-difference));
     if(percentage!=100){
         for(let i=0;i<resultColor.length;i++){
@@ -248,7 +248,7 @@ function percentToColor(percentage=50,transparency=false,returnType=0,colors=[[0
     //This value is optional; if returnType is > 0, you optionally get the raw values as well.
     let resultColorString;
     if(returnType!=1)
-        resultColorString = "rgba("+resultColor[0]+","+resultColor[1]+","+resultColor[2]+","+(transparency?0.2:1)+")";
+        resultColorString = "rgba("+resultColor[0]+","+resultColor[1]+","+resultColor[2]+","+(transparency?transparency:1)+")";
     return (returnType == 0?resultColorString:returnType==1?resultColor:[resultColorString,resultColor]);
 }
 
