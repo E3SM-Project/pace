@@ -68,10 +68,6 @@ var resultChart = new Chart(chartTag, {
             scales: {
                 yAxes: [{
                     stacked:true,
-					type:'logarithmic',
-                    ticks: {
-						min: 1,
-                    }
                 }],
                 xAxes:[{stacked:true}]
             }
