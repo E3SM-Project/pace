@@ -1,54 +1,53 @@
 <!--Author: Zachary Mitchell
     Purpose: View your prevsiously parsed model_timing files in style!
     Summarize any scope of timeNodes with sum or averages, and with any value you want! (Wallclock, min/max, etc)-->
-<!doctype html>
-<html>
-    <head><title>Model Timing</title>
-    <style>
-    #dataInfo{
-        border:.01in solid;
-        position: absolute;
-        left:20.5%;
-        width:80%;
-        background-image:url(/static/ornlLeaf.svg);
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: 50% 50%;
-    }
-    #dataList{
-        overflow: scroll;
-        width:20%;
-        height:100%;
-        position: absolute
-    }
-    ul{
-        list-style-type: none;
-    }
-    #backAndNodeId{
-        position: absolute;
-        left:20.5%;
-
-    }
-    body{
-        font-family: monospace;
-    }
-    </style>
-    </head>
-    <body>
-        <div>
-            <select id="valueName" onclick="changeGraph(currentEntry)"><option value="nodes">Nodes</option><option value="min/max">Min / Max</option></select>
-            <select id="mode" onclick="changeGraph(currentEntry)">
-                <option value="sum" selected>Sum</option>
-                <option value="avg">Average</option>
-            </select>
-            <input type="checkbox" onclick="stackedCharts = this.checked;changeGraph(currentEntry);" checked>Stacked bars</input>
+    {% extends "layout.html" %}
+    {% block content %}
+        <style>
+                #dataInfo{
+                    border:.01in solid;
+                    position: absolute;
+                    left:20.5%;
+                    width:80%;
+                    background-image:url(/static/ornlLeaf.svg);
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    background-size: 50% 50%;
+                }
+                #dataList{
+                    overflow: scroll;
+                    width:20%;
+                    height:100%;
+                    position: absolute
+                }
+                ul{
+                    list-style-type: none;
+                }
+                #backAndNodeId{
+                    position: absolute;
+                    left:20.5%;
+            
+                }
+                #mtMain{
+                    font-family: monospace;
+                    margin-bottom:70%
+                }
+            </style>
+        <!--Everything inside here is ciloed away from our nifty bootstrap-->
+        <div id="mtMain">
+            <div>
+                <select id="valueName" onclick="changeGraph(currentEntry)"><option value="nodes">Nodes</option><option value="min/max">Min / Max</option></select>
+                <select id="mode" onclick="changeGraph(currentEntry)">
+                    <option value="sum" selected>Sum</option>
+                    <option value="avg">Average</option>
+                </select>
+                <input type="checkbox" onclick="stackedCharts = this.checked;changeGraph(currentEntry);" checked>Stacked bars</input>
+            </div>
+            <div id="dataInfo"><canvas id="chartTag"></canvas></div>
+            <div id="dataList"><button id="summaryButton">Summary</button></div>
+            <span id="backAndNodeId"><button id="backButton"><-Back</button><span id="nodeId" style="font-family: monospace"></span></span>
         </div>
-        <div id="dataInfo"><canvas id="chartTag"></canvas></div>
-        <div id="dataList"><button id="summaryButton">Summary</button>
-        </div>
-        <span id="backAndNodeId"><button id="backButton"><-Back</button><span id="nodeId" style="font-family: monospace"></span></span>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
-        <!-- <script src="/static/Chart.bundle.min.js"></script> -->
         <script>
         var jsonFile={{jsonOut|tojson|safe}};
         var valueList = {{mtValueNames|safe}};
@@ -57,4 +56,4 @@
         <script src="/static/mt.js"></script>
         <script>//Fire up the summary:
                 dataList.children[0].click();</script>
-    </body>
+{% endblock %}

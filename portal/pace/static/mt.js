@@ -53,6 +53,7 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
         listElement.id=node.name;
         listElement.innerHTML+="<span>"+node.name+"</span>";
         listElement.onclick = function(){
+            window.scrollBy(0,-window.innerHeight)
             if(currentEntry!=undefined && currentEntry.name == this.id && nodeTable[this.id].children.length > 0){
                 let listTag = this.getElementsByTagName("ul")[0].style;
                 listTag.display=(listTag.display=="none"?"":"none");

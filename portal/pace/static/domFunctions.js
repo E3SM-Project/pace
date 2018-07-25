@@ -66,9 +66,7 @@ var resultChart = new Chart(chartTag, {
                 }
             },
             scales: {
-                yAxes: [{
-                    stacked:true,
-                }],
+                yAxes: [{stacked:true,}],
                 xAxes:[{stacked:true}]
             }
         }

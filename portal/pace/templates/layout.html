@@ -20,17 +20,15 @@
       <!-- Static navbar -->
       <div class="navbar navbar-default">
         <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
+          <button type="button" class="navbar-toggler" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="navbar-toggler-icon"></span>
           </button>
-          <a class="navbar-brand" href="{{ request.script_root }}"><img height="32" src="/static/E3SM_Logo_scaled.png"> PACE</a>
+          <a class="navbar-brand" href="{{ request.script_root }}"><img height="32" src="/static/E3SM_Logo_scaled.png"> <img src="/static/paceLogo.svg" style="width:10em"/></a>
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav nav-pills">
-            <li><a href="{{ request.script_root }}">Home</a></li>
-            <li><a href="{{ request.script_root }}/exps">Experiments</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ request.script_root }}">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ request.script_root }}/exps">Experiments</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
