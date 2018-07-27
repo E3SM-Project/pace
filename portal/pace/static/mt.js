@@ -6,6 +6,9 @@ var timeNodes = JSON.parse(jsonFile);
 var currentEntry=undefined;
 var okToClick=true;
 var stackedCharts = true;
+
+//Whichever node is selected, everything in the code will follow this index for appropriate addressing:
+var currThread = 0;
 //This will be where we look for a specific node. (Making the structured time-node into something linear at the same time)
 function addressTable(vals=undefined,jsonArray=false){
     this.length = function (){
@@ -54,7 +57,7 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
         listElement.innerHTML+="<span>"+node.name+"</span>";
         listElement.onclick = function(){
             window.scrollBy(0,-window.innerHeight)
-            if(currentEntry!=undefined && currentEntry.name == this.id && nodeTable[this.id].children.length > 0){
+            if(currentEntry!=undefined && currentEntry.name == this.id && nodeTableList[currThread][this.id].children.length > 0){
                 let listTag = this.getElementsByTagName("ul")[0].style;
                 listTag.display=(listTag.display=="none"?"":"none");
                 //Pretty much stops all other clicks from triggering.
@@ -68,17 +71,17 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
                     this.style.fontWeight="bold";
                     if(currentEntry !=undefined && currentEntry.name !=undefined)
                         document.getElementById(currentEntry.name).style.fontWeight="";
-                    currentEntry = nodeTable[this.id];
+                    currentEntry = nodeTableList[currThread][this.id];
                 }
                 okToClick = false;
                 window.location.hash=this.id;
                 setTimeout(()=>{okToClick = true;},10);
                 
                 //Display appropriate graph info:
-                if(nodeTable[this.id].children.length > 0){
+                if(nodeTableList[currThread][this.id].children.length > 0){
                     resultChart.options.title.text=this.id;
                     //Strange... there's a small chance that something asynchronous will take too long before chart.js can render the chart... LET'S FIX THAT!
-                    setTimeout(()=>{changeGraph(nodeTable[this.id]);},10);
+                    setTimeout(()=>{changeGraph(nodeTableList[currThread][this.id]);},10);
                 }
             }
         };
@@ -268,9 +271,17 @@ function arrayToPercentages(arrayIn){
     })
     return ratioVals;
 }
+//We have multiple threads to show off; let's cilo these so we can load then up on the fly:
+nodeTableList = [];
+nodeDomList = [];
+timeNodes.forEach((thread,i)=>{
+    nodeTableList.push(new addressTable(thread,true));
+    nodeDomList.push(htmlList(thread,[0,2]));
+    threadSelect.innerHTML+="<option "+ (!i?"selected":"")+" value="+i+" >Thread "+i+"</option>";
+});
 
-var nodeTable = new addressTable(timeNodes,true);
 valueList.forEach((name)=>{
     valueName.innerHTML+="<option "+(name=="wallClock"?"selected":"")+" value='"+name+"'>"+name+"</option>";
 });
-dataList.appendChild(htmlList(timeNodes,[0,2]));
+
+listContent.appendChild(nodeDomList[currThread]);

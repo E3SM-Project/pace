@@ -8,8 +8,9 @@ backButton.onclick = function(){
     }   
 }
 
-summaryButton.onclick=function(){
-    let root={children:timeNodes};
+summaryButton.onclick=function(event){
+    event.preventDefault();
+    let root={children:timeNodes[currThread]};
     resultChart.options.title.text='Model Timing';
     changeGraph(root);currentEntry=root;
     okToClick = false;
@@ -54,7 +55,7 @@ var resultChart = new Chart(chartTag, {
             onClick:(event)=>{
                 let activeElement = resultChart.getElementAtEvent(event);
                 if(activeElement.length > 0){
-                    let timeNodeObject = (!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || (resultChart.data.datasets.length == 1 && nodeTable[activeElement[0]._model.label].children.length == 0)?nodeTable[activeElement[0]._model.label]:nodeTable[activeElement[0]._model.label].children[activeElement[0]._datasetIndex]);
+                    let timeNodeObject = (!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || (resultChart.data.datasets.length == 1 && nodeTableList[currThread][activeElement[0]._model.label].children.length == 0)?nodeTableList[currThread][activeElement[0]._model.label]:nodeTableList[currThread][activeElement[0]._model.label].children[activeElement[0]._datasetIndex]);
                     let timeNode = document.getElementById(timeNodeObject.name).getElementsByTagName('ul')[0];
                     parentPath(timeNodeObject).forEach((listName)=>{
                         let listElement = document.getElementById(listName).getElementsByTagName('ul');
@@ -75,7 +76,14 @@ var resultChart = new Chart(chartTag, {
 chartTag.onmousemove = function(event){
     let results = resultChart.getElementAtEvent(event);
     if(results.length > 0)
-        nodeId.innerHTML=(!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || resultChart.data.datasets.length == 1?nodeTable[results[0]._model.label].name:nodeTable[results[0]._model.label].children[results[0]._datasetIndex].name);
+        nodeId.innerHTML=(!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || resultChart.data.datasets.length == 1?nodeTableList[currThread][results[0]._model.label].name:nodeTableList[currThread][results[0]._model.label].children[results[0]._datasetIndex].name);
     else if(nodeId.innerHTML!="")
         nodeId.innerHTML="";
+}
+
+threadSelect.onclick = function(){
+    currThread = threadSelect.children[threadSelect.selectedIndex].value;
+    listContent.innerHTML = "";
+    listContent.appendChild(nodeDomList[currThread]);
+    summaryButton.click();
 }
