@@ -1,5 +1,12 @@
 //Author: Zachary Mitchell
 //Purpose: This file holds all of DOM functions in modelTiming.html (It got rather large XP)
+var triggerResize;
+//adjust the size of the dataList to reflect the graph's height:
+window.onresize = function(){
+        dataList.style.height = chartTag.style.height;
+        clearTimeout(triggerResize);
+        triggerResize=setTimeout(()=>{dataList.style.height = chartTag.style.height;},10)
+}
 backButton.onclick = function(){
     if(currentEntry.parent!=undefined){
         if(currentEntry.name == currentEntry.parent.name)
@@ -8,8 +15,7 @@ backButton.onclick = function(){
     }   
 }
 
-summaryButton.onclick=function(event){
-    event.preventDefault();
+summaryButton.onclick=function(){
     let root={children:timeNodes[currThread]};
     resultChart.options.title.text='Model Timing';
     changeGraph(root);currentEntry=root;
@@ -18,7 +24,9 @@ summaryButton.onclick=function(event){
     window.location.hash="summary";
 }
 
-window.onhashchange = function(){
+window.onhashchange = function(event){
+    event.preventDefault();
+    window.scrollBy(0,-window.innerHeight)
     let clickID = "";
     let hash = window.location.hash.split("#");
     switch(hash[hash.length-1]){
@@ -87,3 +95,4 @@ threadSelect.onclick = function(){
     listContent.appendChild(nodeDomList[currThread]);
     summaryButton.click();
 }
+window.onresize();

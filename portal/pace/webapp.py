@@ -97,9 +97,6 @@ def page_not_found(error):
 #Model Timing web-interface.
 @app.route("/mt")
 def mthtml():
-    fileIn = mt.getData("/var/www/portal/pace/static/model_timing.0000")
-    resultNodes = []
-    for node in fileIn:
-        resultNodes.append(mt.parseNode(node))
+    resultNodes = mt.parse("/pace/assets/static/model_timing.0000.new",1)
     resultJson = mt.toJson(resultNodes)
-    return render_template("modelTiming.html",jsonOut=resultJson,mtValueNames=resultNodes[0].values.keys())
+    return render_template("modelTiming.html",jsonOut=resultJson,mtValueNames=resultNodes[0][0].values.keys())
