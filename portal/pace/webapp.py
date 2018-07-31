@@ -100,3 +100,7 @@ def mthtml():
     resultNodes = mt.parse("/pace/assets/static/model_timing.0000.new",1)
     resultJson = mt.toJson(resultNodes)
     return render_template("modelTiming.html",jsonOut=resultJson,mtValueNames=resultNodes[0][0].values.keys())
+@app.route("/mtQuery/",methods=["POST"])
+def mtQuery():
+    resultNodes = mt.parse("static/"+str(request.form['exp']),1)
+    return "["+mt.toJson(resultNodes)+","+json.dumps(resultNodes[0][0].values.keys())+"]"

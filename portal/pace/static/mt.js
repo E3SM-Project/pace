@@ -1,14 +1,15 @@
 //Author: Zachary Mitchell
 //Purpose: These are the core functions for displaying everything in modelTiming.html
-var timeNodes = JSON.parse(jsonFile);
 
-//Whichever node is currently selected, it will appear here.
-var currentEntry=undefined;
 var okToClick=true;
 var stackedCharts = true;
+var currExp;
+var expList = [];
 
-//Whichever node is selected, everything in the code will follow this index for appropriate addressing:
-var currThread = 0;
+//A backlog of things to do when all experiments are retrieved. It is cleared out afterwards.
+var expGetCount = 0;
+var expGetFunc = [];
+
 //This will be where we look for a specific node. (Making the structured time-node into something linear at the same time)
 function addressTable(vals=undefined,jsonArray=false){
     this.length = function (){
@@ -38,6 +39,58 @@ function addressTable(vals=undefined,jsonArray=false){
         this.addVals(vals,jsonArray)
 }
 
+//This holds a single experiment. The goal is to be able to compare multiples, so they are compartmentelized here.
+function experiment(timeNodes,valueNames){
+    this.timeNodes = timeNodes;
+    //Whichever node is selected, everything in the code will follow this index for appropriate addressing:
+    this.currThread = 0;
+    //Whichever node is currently selected, it will appear here.
+    this.currentEntry=undefined;
+    //We have multiple threads to show off; let's cilo these so we can load then up on the fly:
+    this.nodeTableList = [];
+    this.nodeDomList = [];
+    this.threadSelectInner = "";
+    this.valueSelectInner = "";
+    this.valueNames = valueNames;
+
+    //Construct:
+    this.timeNodes.forEach((thread,i)=>{
+        this.nodeTableList.push(new addressTable(thread,true));
+        this.nodeDomList.push(htmlList(thread,[0,2]));
+        this.threadSelectInner+="<option "+ (!i?"selected":"")+" value="+i+" >Thread "+i+"</option>";
+    });
+    this.valueNames.forEach((name)=>{
+        this.valueSelectInner+="<option "+(name=="wallClock"?"selected":"")+" value='"+name+"'>"+name+"</option>";
+    });
+
+    this.view = function(){
+        threadSelect.innerHTML = this.threadSelectInner;
+        valueName.innerHTML = this.valueSelectInner;
+        listContent.innerHTML = "";
+        listContent.appendChild(this.nodeDomList[this.currThread]);
+    }
+
+}
+
+function getExperiment(expSrc){
+    expGetCount++;
+    //jquery test
+    $.post("../mtQuery/",{exp:expSrc},function(data,status){
+        if(status == "success"){
+            results = JSON.parse(data);
+            expList.push(new experiment(results[0],results[1]));
+        }
+        else alert("Could not find this experiment");
+        expGetCount--;
+        if(expGetCount == 0){
+            expGetFunc.forEach((element)=>{
+                element();
+            });
+            expGetFunc = [];
+        }
+    });
+}
+
 //This creates an HTML list that directly associates with the address table (which in-turn addresses to the original json file). When a tag is clicked, the other lists witihin it are collapsed.
 //scope is the range you want the subprocesses to be closed by default. (e.g a range of 0-2 would have the rest of the nodes opened by default by the 3rd layer.)
 function htmlList(jsonList,scope=[0,0],currScope=0){
@@ -56,7 +109,7 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
         listElement.id=node.name;
         listElement.innerHTML+="<span>"+node.name+"</span>";
         listElement.onclick = function(){
-            if(currentEntry!=undefined && currentEntry.name == this.id && nodeTableList[currThread][this.id].children.length > 0){
+            if(currExp.currentEntry!=undefined && currExp.currentEntry.name == this.id && currExp.nodeTableList[currExp.currThread][this.id].children.length > 0){
                 let listTag = this.getElementsByTagName("ul")[0].style;
                 listTag.display=(listTag.display=="none"?"":"none");
                 //Pretty much stops all other clicks from triggering.
@@ -66,21 +119,21 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
                 setTimeout(()=>{okToClick = true;},10);
             }
             else if(okToClick){
-                if (currentEntry == undefined || currentEntry.name!= this.id){
+                if (currExp.currentEntry == undefined || currExp.currentEntry.name!= this.id){
                     this.style.fontWeight="bold";
-                    if(currentEntry !=undefined && currentEntry.name !=undefined)
-                        document.getElementById(currentEntry.name).style.fontWeight="";
-                    currentEntry = nodeTableList[currThread][this.id];
+                    if(currExp.currentEntry !=undefined && currExp.currentEntry.name !=undefined)
+                        document.getElementById(currExp.currentEntry.name).style.fontWeight="";
+                    currExp.currentEntry = currExp.nodeTableList[currExp.currThread][this.id];
                 }
                 okToClick = false;
                 window.location.hash=this.id;
                 setTimeout(()=>{okToClick = true;},10);
                 
                 //Display appropriate graph info:
-                if(nodeTableList[currThread][this.id].children.length > 0){
+                if(currExp.nodeTableList[currExp.currThread][this.id].children.length > 0){
                     resultChart.options.title.text=this.id;
                     //Strange... there's a small chance that something asynchronous will take too long before chart.js can render the chart... LET'S FIX THAT!
-                    setTimeout(()=>{changeGraph(nodeTableList[currThread][this.id]);},10);
+                    setTimeout(()=>{changeGraph(currExp.nodeTableList[currExp.currThread][this.id]);},10);
                 }
             }
         };
@@ -270,17 +323,3 @@ function arrayToPercentages(arrayIn){
     })
     return ratioVals;
 }
-//We have multiple threads to show off; let's cilo these so we can load then up on the fly:
-nodeTableList = [];
-nodeDomList = [];
-timeNodes.forEach((thread,i)=>{
-    nodeTableList.push(new addressTable(thread,true));
-    nodeDomList.push(htmlList(thread,[0,2]));
-    threadSelect.innerHTML+="<option "+ (!i?"selected":"")+" value="+i+" >Thread "+i+"</option>";
-});
-
-valueList.forEach((name)=>{
-    valueName.innerHTML+="<option "+(name=="wallClock"?"selected":"")+" value='"+name+"'>"+name+"</option>";
-});
-
-listContent.appendChild(nodeDomList[currThread]);
