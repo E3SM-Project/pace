@@ -1,88 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- <base href="https://pace.ornl.gov/dev3/" target="_self"> -->
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
 
-	<!-- Custom styles for this template -->
-	<link rel="stylesheet" type="text/css" href="static/css/pace.css" />
-{% block topscripts %}
-{% endblock %}
+  <!-- Custom styles for this template -->
+  <link rel="stylesheet" type="text/css" href="/static/css/pace.css" />
+  {% block topscripts %}
+  {% endblock %}
 
-    <title> Performance Analytics for Climate Experiments (PACE)</title>
-  </head>
+  <title> Performance Analytics for Climate Experiments (PACE)</title>
+</head>
 
-  <body>
-    <div class="container">
-      <!-- Static navbar -->
-      <div class="navbar navbar-default">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="{{ request.script_root }}"><img height="32" src="/static/E3SM_Logo_scaled.png"> PACE</a>
-        </div>
-        <div class="navbar-collapse collapse">
-          <ul class="nav nav-pills">
-            <li><a href="{{ request.script_root }}">Home</a></li>
-            <li><a href="{{ request.script_root }}/exps">Experiments</a></li>
-          </ul>
-        </div><!--/.nav-collapse -->
+<body>
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="#">PACE</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+      <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+      <a class="nav-link" href="/exps">Experiments</a>
+      </li>
+      <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="platforms" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Platforms</a>
+      <div class="dropdown-menu" aria-labelledby="dropdown01">
+        <a class="dropdown-item" href="/platforms/summit">Summit</a>
+        <a class="dropdown-item" href="/platforms/titan">Titan</a>
+        <a class="dropdown-item" href="/platforms/theta">Theta</a>
       </div>
-    </div> <!-- /container -->
+      </li>
+    </ul>
+    <form class="form-inline my-2 my-lg-0">
+      <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    </form>
+    </div>
+  </nav>
 
-	<!-- Main component for primary content -->
-	<!-- <div class="jumbotron"> </div> -->
+  <main role="main" class="container">
+    <div class="pace-main-content">
+    <h2> Performance Analytics for Climate Experiments (PACE)</h2>
+    <hr>
+      {% block content %}
+      {% endblock %}
+    <hr>
+    </div>
 
-    <div class="container-fluid pace-main-content">
-      <div class="row-fluid">
-		{% block content %}
-		{% endblock %}
+  </main><!-- /.container -->
+    {% block bottomscripts %}
+    {% endblock %}
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em" crossorigin="anonymous"></script>
+    <!-- Default Statcounter code for Pace.ornl.gov
+    https://pace.ornl.gov -->
+    <script type="text/javascript">
+        var sc_project=11755034;
+        var sc_invisible=1;
+        var sc_security="e3d82dda";
+    </script>
+    <script type="text/javascript"
+        src="https://www.statcounter.com/counter/counter.js"
+        async></script>
+    <noscript>
+      <div class="statcounter">
+        <a title="Web Analytics"
+           href="http://statcounter.com/" target="_blank">
+          <img class="statcounter"
+             src="//c.statcounter.com/11755034/0/e3d82dda/1/" alt="Web
+        Analytics">
+        </a>
       </div>
-	<hr>
-    </div> <!-- /container -->
+    </noscript>
+    <!-- End of Statcounter Code -->
 
+  <footer class="footer">
     <div class="container">
-	{% block bottomscripts %}
-	{% endblock %}
-
-		<!-- Optional JavaScript -->
-		<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
-
-		<!-- Default Statcounter code for Pace.ornl.gov
-		https://pace.ornl.gov -->
-		<script type="text/javascript">
-		var sc_project=11755034; 
-		var sc_invisible=1; 
-		var sc_security="e3d82dda"; 
-		</script>
-		<script type="text/javascript"
-		src="https://www.statcounter.com/counter/counter.js"
-		async></script>
-		<noscript><div class="statcounter"><a title="Web Analytics"
-		href="http://statcounter.com/" target="_blank"><img
-		class="statcounter"
-		src="//c.statcounter.com/11755034/0/e3d82dda/1/" alt="Web
-		Analytics"></a></div></noscript>
-		<!-- End of Statcounter Code -->
-
-
-	<div class="footer">
-	<br>
-	<p class="text-muted" style="text-align:center;">
-	&copy; Copyright 2018 <a href="https://e3sm.org">E3SM Project</a> <br>
-	Content : All rights reserved | <a href="http://www.ornl.gov/ornlhome/disclaimers.shtml">ORNL Disclaimer</a> 
-	</p>
-	<br>
-	</div>
-	</div> <!-- /container -->
-  </body>
+    <span class="text-muted">
+	  <p class="text-center">
+        &copy; Copyright 2018 <a href="https://e3sm.org">E3SM Project</a> | All rights reserved. </a>
+	  </p>
+    </span>
+    </div>
+  </footer>
+</body>
 </html>

@@ -3,8 +3,10 @@
 to create a programatic representation of the output.
 """
 import types,json
-valueList=["on","called","recurse","wallClock","max","min","utrOverhead"]
-
+valueList=[
+    ["on","called","recurse","wallClock","max","min","utrOverhead"],
+    ["processes","threads","count","walltotal","wallmax","wallmax_proc","wallmax_thrd","wallmin","wallmin_proc","wallmin_thrd"]
+]
 class timeNode(object):
     #Without this, a reeealy weird scoping problem happens; not sure why.
     def __init__(self):
@@ -17,6 +19,7 @@ class timeNode(object):
 def getData(src,startLine=24):
     #Check if src is a string, otherwise attempt to read from a file object:
     sourceFile=None
+    isStat=False #if this is a model_timing_*_stats file, this will be flicked on.
     if type(src) == types.StringType:
         sourceFile = open(src,"r")
     else:
@@ -28,13 +31,14 @@ def getData(src,startLine=24):
         lineCount+=1
         if lineCount >= startLine:
             currLine = sourceFile.readline()
-            if countSpaces(currLine) == 0: #This seems to work over comparing it to "" :/ [Oddly enough, the function does the exact same thing when handling "" ...weird]
+            if countSpaces(currLine) == 0 and currLine=="\n": #This is true when we run out of needed data.
                 break
-            elif countSpaces(currLine) == 2:
+            elif countSpaces(currLine) == 2 or isStat:
                 resultLines.append([])
             resultLines[len(resultLines)-1].append(currLine)
-        else:
-            sourceFile.readline()
+        elif "GLOBAL STATISTICS" in sourceFile.readline():
+            isStat=True #we found a statistics file instead of a regular file.
+            startLine=6
     sourceFile.close()
     return resultLines
 
@@ -45,9 +49,12 @@ def countSpaces(strInput):
         while strInput[count] in [" ","*"]:
             count+=1
     return count
-#Recursive function that looks at one line, and checks to see if that line has children. (which in turn re-runs the function)
 
+#Recursive function that looks at one line, and checks to see if that line has children. (which in turn re-runs the function)
 def parseNode(lineInput,currLine=0,parent=None):
+    vlIndex=0
+    if "(" in lineInput[currLine]:
+        vlIndex=1
     resultNode = timeNode()
     if parent:
         resultNode.parent = parent
@@ -55,36 +62,34 @@ def parseNode(lineInput,currLine=0,parent=None):
     #Look for the element that has quotation marks in it:
     nameSearch = lineInput[currLine].split('"',2)
     for word in nameSearch:
-        if word[0] not in [" ","","*"]:
-            resultNode.name=word
-            break
-        elif word[0] == "*":
-            resultNode.multiParent = True
+        if len(word) > 0:
+            if word[0] not in [" ","*"]:
+                resultNode.name=word
+                break
+            elif word[0] == "*":
+                resultNode.multiParent = True
 
     elements=nameSearch[len(nameSearch)-1].split(" ")
     valueCount=0
-    for word in elements:
+    for wordCheck in elements:
+        word = wordCheck.strip("()")
         if word not in ["","\n"]:
             if word not in ["-","y"]:
-                #print "\n'"+word+"'\n"
-                resultNode.values[valueList[valueCount]] = float(word)
+                resultNode.values[valueList[vlIndex][valueCount]] = float(word.strip(')\n')) #The logic gate above fails to catch parenthesis with newlines, so this is here XP
                 valueCount+=1
             else:
                 tf = False
                 if word == 'y':
                     tf=True
-                resultNode.values[valueList[valueCount]] = tf
+                resultNode.values[valueList[vlIndex][valueCount]] = tf
                 valueCount+=1
     #Try to find children until the indentation in the file no longer matches a child
     parentSpaceCount = countSpaces(lineInput[currLine])
     childrenIndex = currLine+1
-    #print(str(currLine < len(lineInput)-1)+" | currLine:"+str(currLine)+" | lineInput:"+str(len(lineInput)-1))
     if currLine < (len(lineInput)-1):
         while countSpaces(lineInput[childrenIndex]) > parentSpaceCount:
             if countSpaces(lineInput[childrenIndex]) == parentSpaceCount+2:
                 childNode = parseNode(lineInput,childrenIndex,resultNode)
-                #print ("Child: "+str(childNode))
-                #print(resultNode.name+"(after): "+str(resultNode.values['wallClock']))
                 resultNode.children.append(childNode)
             childrenIndex+=1
             if childrenIndex > len(lineInput)-1:
