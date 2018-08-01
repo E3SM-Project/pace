@@ -17,6 +17,9 @@ import urllib
 
 #Model Timing Library:
 import modelTiming as mt
+#modelTiming database information:
+import mtDB
+
 UPLOAD_FOLDER='/var/www/portal/pace/upload'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'zip', 'tgz', 'gz', 'tar', 'aspen'])
 # Uploading file
@@ -97,9 +100,8 @@ def page_not_found(error):
 #Model Timing web-interface.
 @app.route("/mt")
 def mthtml():
-    fileIn = mt.getData("/var/www/portal/pace/static/model_timing.0000")
-    resultNodes = []
-    for node in fileIn:
-        resultNodes.append(mt.parseNode(node))
-    resultJson = mt.toJson(resultNodes)
-    return render_template("modelTiming.html",jsonOut=resultJson,mtValueNames=resultNodes[0].values.keys())
+    return render_template("modelTiming.html")
+@app.route("/mtQuery/",methods=["POST"])
+def mtQuery():
+    resultNodes = mtDB.paceConn.execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and extension = '"+request.form['extension']+"'").fetchall()[0].jsonVal
+    return "["+resultNodes+","+json.dumps(mt.valueList[0])+"]"

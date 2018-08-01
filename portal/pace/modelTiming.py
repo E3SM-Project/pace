@@ -1,7 +1,5 @@
 #Author: Zachary Mitchell
-"""Purpose: parse files that come from GPTL (https://jmrosinski.github.io/GPTL/)
-to create a programatic representation of the output.
-"""
+#Purpose: parse files that come from GPTL (https://jmrosinski.github.io/GPTL/) to create a programatic representation of the output.
 import types,json
 valueList=[
     ["on","called","recurse","wallClock","max","min","utrOverhead"],
@@ -16,7 +14,7 @@ class timeNode(object):
         self.children=[]
         self.parent = self #Should this refer to itself... or have none?
 
-def getData(src,startLine=24):
+def getData(src):
     #Check if src is a string, otherwise attempt to read from a file object:
     sourceFile=None
     isStat=False #if this is a model_timing_*_stats file, this will be flicked on.
@@ -26,19 +24,39 @@ def getData(src,startLine=24):
         sourceFile = src
     lineCount = 0
     resultLines=[]
+    threadIndexes=[]
+    currLine = ""
+    #There appears to be multiple threads in some files, let's figure out where they are, then re-read the file:
     currLine = sourceFile.readline()
     while not currLine == "":
-        lineCount+=1
-        if lineCount >= startLine:
-            currLine = sourceFile.readline()
-            if countSpaces(currLine) == 0 and currLine=="\n": #This is true when we run out of needed data.
-                break
-            elif countSpaces(currLine) == 2 or isStat:
-                resultLines.append([])
-            resultLines[len(resultLines)-1].append(currLine)
-        elif "GLOBAL STATISTICS" in sourceFile.readline():
+        if "Stats for thread" in currLine:
+            threadIndexes.append(lineCount+3)
+        elif "GLOBAL STATISTICS" in currLine:
             isStat=True #we found a statistics file instead of a regular file.
-            startLine=6
+        lineCount+=1
+        currLine = sourceFile.readline()
+    #Reset the file & read from the new thread indexes
+    sourceFile.seek(0,0)
+    lineCount=0
+    if isStat:
+        threadIndexes.append(6)
+
+    for line in threadIndexes:
+        resultLines.append([])
+        firstItr = True
+        while True:
+            lineCount+=1
+            currLine = sourceFile.readline()
+            if lineCount >= line:
+                if countSpaces(currLine) == 0 and currLine=="\n": #This is true when we run out of needed data.
+                    break
+                #this became a little meta, so here's a reference in order to continue indexing:
+                thread = resultLines[len(resultLines)-1]
+                if countSpaces(currLine) == 2 or isStat or firstItr:
+                    thread.append([])
+                    firstItr = False
+                thread[len(thread)-1].append(str(currLine) )
+
     sourceFile.close()
     return resultLines
 
@@ -96,6 +114,20 @@ def parseNode(lineInput,currLine=0,parent=None):
                 break
     return resultNode
 
+#When reading threads from a file, the returned list goes down to three dimensions! This "meta function" is to help with those headaches.
+#This function assumes you're inserting thread(s) from getData()
+def parseThread(thread):
+    if type(thread[0][0]) == types.StringType:
+        resultNodes = []
+        for nodes in thread:
+            resultNodes.append(parseNode(nodes))
+        return resultNodes
+    elif type(thread[0][0]) == types.ListType:
+        resultThreads=[]
+        for element in thread:
+            resultThreads.append(parseThread(element))
+        return resultThreads
+
 #Return a node with the first instance of the requested name; this function only works with parsed nodes.
 def searchNode(nodeIn,name):
     #A little tweak to make things compatible with lists...
@@ -124,12 +156,30 @@ def searchNode(nodeIn,name):
 def toJson(nodeIn,useBrackets=True):
     resultString=''
     if type(nodeIn) == types.ListType:
-        for i in range(len(nodeIn)):
-            resultString+=toJson(nodeIn[i],False)
-            if i < len(nodeIn)-1:
-                resultString+=','
+        if len(nodeIn) > 0 and type(nodeIn[0]) == types.ListType:
+            #Aha! we have a multi-threaded collection:
+            for i in range(len(nodeIn)):
+                resultString+=toJson(nodeIn[i])
+                if i < len(nodeIn)-1:
+                    resultString+=','
+        else:
+            for i in range(len(nodeIn)):
+                resultString+=toJson(nodeIn[i],False)
+                if i < len(nodeIn)-1:
+                    resultString+=','
     else:
         resultString='{"name":"'+nodeIn.name+'","multiParent":'+json.dumps(nodeIn.multiParent)+',"values":'+json.dumps(nodeIn.values)+',"children":'+toJson(nodeIn.children)+'}'
     if useBrackets:
         resultString = "["+ resultString +"]"
     return resultString
+
+#The cherry on top: All functions above are called, and a complete JSON output is returned from all the layers of obscurity.
+#In case you want pre-json output, returnLayer lets you stop the compilation process at any moment and return the current output. Besides JSON, the end result will always be stored in a list
+def parse(fileIn,returnLayer=2):
+    nodeLines = getData(fileIn)
+    if returnLayer == 0:
+        return nodeLines
+    resultThreads = parseThread(nodeLines)
+    if returnLayer == 1:
+        return resultThreads
+    return toJson(resultThreads)
