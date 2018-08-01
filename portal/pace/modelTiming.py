@@ -55,7 +55,7 @@ def getData(src):
                 if countSpaces(currLine) == 2 or isStat or firstItr:
                     thread.append([])
                     firstItr = False
-                thread[len(thread)-1].append(currLine)
+                thread[len(thread)-1].append(str(currLine) )
 
     sourceFile.close()
     return resultLines

@@ -17,6 +17,9 @@ import urllib
 
 #Model Timing Library:
 import modelTiming as mt
+#modelTiming database information:
+import mtDB
+
 UPLOAD_FOLDER='/var/www/portal/pace/upload'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'zip', 'tgz', 'gz', 'tar', 'aspen'])
 # Uploading file
@@ -97,10 +100,8 @@ def page_not_found(error):
 #Model Timing web-interface.
 @app.route("/mt")
 def mthtml():
-    resultNodes = mt.parse("/pace/assets/static/model_timing.0000.new",1)
-    resultJson = mt.toJson(resultNodes)
-    return render_template("modelTiming.html",jsonOut=resultJson,mtValueNames=resultNodes[0][0].values.keys())
+    return render_template("modelTiming.html")
 @app.route("/mtQuery/",methods=["POST"])
 def mtQuery():
-    resultNodes = mt.parse("static/"+str(request.form['exp']),1)
+    resultNodes = mt.parse("/pace/assets/static/"+str(request.form['exp']),1)
     return "["+mt.toJson(resultNodes)+","+json.dumps(resultNodes[0][0].values.keys())+"]"

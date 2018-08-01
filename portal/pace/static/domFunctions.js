@@ -93,7 +93,7 @@ chartTag.onmousemove = function(event){
 threadSelect.onclick = function(){
     currExp.currThread = threadSelect.children[threadSelect.selectedIndex].value;
     listContent.innerHTML = "";
-    listContent.appendChild(nodeDomList[currExp.currThread]);
+    listContent.appendChild(currExp.nodeDomList[currExp.currThread]);
     summaryButton.click();
 }
 window.onresize();

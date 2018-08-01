@@ -75,7 +75,7 @@ function experiment(timeNodes,valueNames){
 function getExperiment(expSrc){
     expGetCount++;
     //jquery test
-    $.post("../mtQuery/",{exp:expSrc},function(data,status){
+    $.post("./mtQuery/",{exp:expSrc},function(data,status){
         if(status == "success"){
             results = JSON.parse(data);
             expList.push(new experiment(results[0],results[1]));
