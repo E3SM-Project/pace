@@ -212,11 +212,6 @@ def createdatabase(filename):
 	DBSession = sessionmaker(bind=conn)
 	session = DBSession()
 	 
-	# Insert a timingprofile
-	#new_user = Lid(lid=tags[1])
-	#session.add(new_user)
-	#session.commit()
-	 
 	# Insert an experiment in the experiment table
 	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],curr_date=onetags[6],grid=onetags[7],compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5])
 	session.add(new_experiment)
@@ -264,10 +259,10 @@ for i in range(len(dic)):
 # store path of all directories
 dic1=[]
 for i in os.listdir('/pace/dev1/portal/upload'):
-	if i !='parse.py' and i!='upload' and i!='experiments':	
+	if i !='parse.py' and i!='upload' and i!='experiments' and i!='uploadzip.zip':	
 		dic1.append(i)
 
-print dic1
+
 # go through all directories and store timing profile file only
 allfile=[]
 timingfile=[]
@@ -280,17 +275,13 @@ for i in range(len(dic1)):
 			if name.startswith("e3sm_timing."):		
 				allfile.append(os.path.join(path, name))
 
-print allfile
+
 # parse and store timing profile file in a database
 exptag=[]
-#print timingfile[0]
 for i in range(len(allfile)):
 	a,b=createdatabase(allfile[i])
 	print a,b	
 	exptag.append(a)
-	
-		
-#print exptag
 
 # zip successfull experiments into folder experiments
 for i in range(len(exptag)):
@@ -303,6 +294,7 @@ for i in range(len(exptag)):
 # remove data
 try:
 	shutil.rmtree('/pace/dev1/portal/upload/uploadzip')
+	os.remove('/pace/dev1/portal/upload/uploadzip.zip')
 except OSError as e:
 	print("Error: %s - %s." % (e.filename, e.strerror))
 

@@ -41,29 +41,22 @@ def zipSubdir(zfname, path):
 	zf.close()
 	return
 
-# main
+# main start
 result=parseArguments()
-
 zfname='uploadzip'
-# file upload case		
-
-FileList=[]
-flag=1	
-namefile=''
-
+	
 # directory upload case
 flag=1
 while flag==1:
-	path = result.source	
-	#path= raw_input('Enter full path: ')
-	# error handling directory				
+	path = result.source				
 	if(path!=''):
-		if (os.path.isdir(path)):
+		#if (os.path.isdir(path)):
 			# zip it
-			zipSubdir(zfname,path)
-			flag=0
-		else:
-			print("No such directory: "+ path)
+		zipSubdir(zfname,path)
+		flag=0
+		#else:
+		#	createOutputZip(zfname,path)
+		#	flag=0
 	else:
 		flag=0
 
