@@ -7,8 +7,8 @@ import zipfile
 import getpass
 
 # server connection
-url = "https://pace.ornl.gov/dev1/upload"
-login_url="https://pace.ornl.gov/dev1/uploadlogin"
+url = "https://pace.ornl.gov/upload"
+login_url="https://pace.ornl.gov/uploadlogin"
 
 def parseArguments(): 
 	parser = argparse.ArgumentParser(description="PACE upload tool.")
@@ -43,7 +43,7 @@ def zipSubdir(zfname, path):
 
 # main start
 result=parseArguments()
-zfname='uploadzip'
+zfname='experiments'
 	
 # directory upload case
 flag=1
@@ -61,8 +61,8 @@ while flag==1:
 		flag=0
 
 # error handle empty zip file
-if(os.path.exists('uploadzip.zip')):
-	if(os.stat('uploadzip.zip').st_size!=0):
+if(os.path.exists('experiments.zip')):
+	if(os.stat('experiments.zip').st_size!=0):
 		# open zip to be uploaded
 		fin = open('uploadzip.zip', 'rb')			
 		files = {'file': fin}
