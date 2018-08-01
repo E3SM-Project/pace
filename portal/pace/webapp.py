@@ -23,7 +23,7 @@ from flask import request,redirect,url_for
 from werkzeug.utils import secure_filename
 import os
 
-# Limit file size
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024 
 def stream(file_proxy, chunk = 4096): # file_proxy is of type GridFSProxy
 	while True:
 		next_chunk = file_proxy.read(chunk)
@@ -50,7 +50,8 @@ def upload_file():
 			#sys.stderr.write('inside allowed file')
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(UPLOAD_FOLDER, filename))
-			return('File Upload Success')
+			os.system("python /pace/dev1/portal/upload/parse.py")
+			return('File Upload and Store in Database Success')
 		else:
 			return ('Error Uploading file, Try again')
 	return render_template('upload.html')
