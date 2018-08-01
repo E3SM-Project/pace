@@ -13,7 +13,7 @@ Column('expID',Integer),\
 Column('jsonVal',MEDIUMTEXT),\
 Column('extension',VARCHAR(10)))
 
-paceEngine = create_engine('mysql+pymysql://zachary:USA2018@localhost/pace')
+paceEngine = create_engine('mysql+pymysql://user:pw@localhost/pace')
 metadata.create_all(paceEngine)
 paceConn = paceEngine.connect()
 
