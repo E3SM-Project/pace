@@ -4,6 +4,7 @@ import gzip
 import tarfile
 import shutil
 import zipfile
+import pymysql
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 #from datatest import Base, User, Experiment
