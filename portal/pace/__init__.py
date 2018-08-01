@@ -10,7 +10,7 @@ from werkzeug.contrib.fixers import ProxyFix
 from flask import request,redirect,url_for
 from werkzeug.utils import secure_filename
 
-UPLOAD_FOLDER = '/var/www/portal/uploads'
+UPLOAD_FOLDER = '/pace/prod/portal/uploads'
 
 app = Flask(__name__)
 # Use the fixer
