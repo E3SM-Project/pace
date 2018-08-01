@@ -1,5 +1,6 @@
 #Author: Zachary Mitchell
 #Purpose: A table that goes with e3sm_timing to bring nodes from the database.
+from pace_common import *
 from sqlalchemy import Table,Column,Integer,MetaData,create_engine,String,VARCHAR
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from subprocess import Popen,PIPE
@@ -13,9 +14,9 @@ Column('expID',Integer),\
 Column('jsonVal',MEDIUMTEXT),\
 Column('extension',VARCHAR(10)))
 
-paceEngine = create_engine('mysql+pymysql://user:pw@localhost/pace')
-metadata.create_all(paceEngine)
-paceConn = paceEngine.connect()
+# Connection happens in common
+# metadata.create_all(paceEngine)
+# paceConn = paceEngine.connect()
 
 def insert(mtFile,expID):
     results = []
