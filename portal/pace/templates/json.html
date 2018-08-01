@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% block content %}
+<h3> Details
+</h3>
+
+<pre><code id="expdata"></code></pre>
+
+<style>
+.string { color: green; }
+.number { color: darkorange; }
+.boolean { color: blue; }
+.null { color: magenta; }
+.key { color: red; }
+</style>
+
+
+<script charset="utf-8">
+function output(inp) {
+	document.getElementById('expdata').innerHTML = inp;
+}
+
+function syntaxHighlight(json) {
+	json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+			var cls = 'number';
+			if (/^"/.test(match)) {
+			if (/:$/.test(match)) {
+			cls = 'key';
+			} else {
+			cls = 'string';
+			}
+			} else if (/true|false/.test(match)) {
+			cls = 'boolean';
+			} else if (/null/.test(match)) {
+			cls = 'null';
+			}
+			return '<span class="' + cls + '">' + match + '</span>';
+			});
+}
+
+function insertURL(json){
+	//json = json.replace(/(\$oid\"\: \")(\S+)(\")/g,"$1\<a href=\" $2\"\>here $2 \<\/a>there$3");
+	//json = json.replace(/(<span class="key">"\$oid":<\/span>) <span class="string">"(\S+?)"<\/span>/g, '$1 $2 <a href="../file-download/$2">(Download)</a>');
+	// only match the oid field under rawData
+	json = json.replace(/(rawData[\s\S]*)(<span class="key">"\$oid":<\/span>) <span class="string">"(\S+?)"<\/span>/g, '$1 $2 $3<a href="../file-download/$3">(Download)</a>');
+	return json;
+}
+
+var obj = {{ myjson | safe }};
+var str = JSON.stringify(obj, undefined, 4);
+
+//output(syntaxHighlight(str));
+output(insertURL(syntaxHighlight(str)));
+
+</script>
+
+
+{% endblock %}
+
