@@ -14,9 +14,18 @@ import operator
 import json
 import urllib
 
-# Destination and allowed file extention
+#Model Timing Library:
+import modelTiming as mt
+#modelTiming database information:
+import mtDB
+
+from pace_common import *
+
+# Initialize database connection
+connectDatabase()
+
 UPLOAD_FOLDER='/pace/prod/portal/upload'
-ALLOWED_EXTENSIONS = set(['txt','csv', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'zip', 'tgz', 'gz', 'tar', 'aspen'])
+ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
 
 # Uploading file
 from flask import request,redirect,url_for
@@ -24,12 +33,6 @@ from werkzeug.utils import secure_filename
 import os
 
 app.config['MAX_CONTENT_LENGTH'] = 128 * 1024 * 1024
-def stream(file_proxy, chunk = 4096): # file_proxy is of type GridFSProxy
-	while True:
-		next_chunk = file_proxy.read(chunk)
-		if len(next_chunk) == 0:
-			return
-		yield next_chunk
 
 # Home page
 @app.route("/")
@@ -84,4 +87,13 @@ def uploadlogin():
 @app.errorhandler(404)
 def page_not_found(error):
 	return render_template('error.html'), 404	
+
+#Model Timing web-interface.
+@app.route("/mt")
+def mthtml():
+    return render_template("modelTiming.html")
+@app.route("/mtQuery/",methods=["POST"])
+def mtQuery():
+    resultNodes = mtDB.paceConn.execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and extension = '"+request.form['extension']+"'").fetchall()[0].jsonVal
+    return "["+resultNodes+","+json.dumps(mt.valueList[0])+"]"
 
