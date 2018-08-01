@@ -5,7 +5,8 @@ import tarfile
 import shutil
 import zipfile
 import pymysql
-#import pace.mtDB
+import mtDB as mt
+from pace_common import *
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 #from datatest import Base, User, Experiment
@@ -13,6 +14,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, TEXT
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
+#paceConn = connectDatabase()
 
 def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
     phraseIn = phraseIn.strip(filter)
@@ -211,28 +213,28 @@ def createdatabase(filename):
 	conn=engine.connect()
 	Base.metadata.bind = conn 
 	DBSession = sessionmaker(bind=conn)
-	session = DBSession()
+	paceConn = DBSession()
 	 
 	# Insert an experiment in the experiment table
 	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],curr_date=onetags[6],grid=onetags[7],compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5])
-	session.add(new_experiment)
+	paceConn.add(new_experiment)
 
 	# table has to have a same experiment id
-	forexpid = session.query(Timingprofile).order_by(Timingprofile.expid.desc()).first()
+	forexpid = paceConn.query(Timingprofile).order_by(Timingprofile.expid.desc()).first()
 
 	#insert pelayout
 	i=0
 	while i < len(twotags):
 		new_pelayout = Pelayout(expid=forexpid.expid,component=twotags[i],comp_pes=twotags[i+1],root_pe=twotags[i+2],tasks=twotags[i+3],threads=twotags[i+4],instances=twotags[i+5],stride=twotags[i+6])
-		session.add(new_pelayout)	
+		paceConn.add(new_pelayout)	
 		i=i+7
 	#insert run time
 	i=0
 	while i < len(fourtags):
 		new_runtime = Runtime(expid=forexpid.expid,component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3])
-		session.add(new_runtime)
+		paceConn.add(new_runtime)
 		i=i+4
-	session.commit()
+	paceConn.commit()
 	
 
 	print("-------------------------Stored-in-Database-------------------------------")
@@ -240,14 +242,15 @@ def createdatabase(filename):
 
 # start main
 #first unzip uploaded file
-zip_ref=zipfile.ZipFile('/pace/dev1/portal/upload/uploadzip.zip','r')
-zip_ref.extractall('/pace/dev1/portal/upload/')
+fpath='/pace/dev1/portal/upload'
+zip_ref=zipfile.ZipFile('/pace/dev1/portal/upload/experiments.zip','r')
+zip_ref.extractall(fpath)
 zip_ref.close
 
 # list and store path of all new uploaded file
 dic=[]
-for i in os.listdir('/pace/dev1/portal/upload'):
-	 dic.append(os.path.join('/pace/dev1/portal/upload',i))
+for i in os.listdir(fpath):
+	 dic.append(os.path.join(fpath,i))
 
 
 # untar all tar files
@@ -259,8 +262,8 @@ for i in range(len(dic)):
 
 # store path of all directories
 dic1=[]
-for i in os.listdir('/pace/dev1/portal/upload'):
-	if i !='parse.py' and i!='upload' and i!='experiments' and i!='uploadzip.zip':	
+for i in os.listdir(fpath):
+	if i !='parse.py' and i!='upload' and i!='experiments.zip':	
 		dic1.append(i)
 
 
@@ -268,7 +271,7 @@ for i in os.listdir('/pace/dev1/portal/upload'):
 allfile=[]
 timingfile=[]
 for i in range(len(dic1)):
-	root=os.path.join('/pace/dev1/portal/upload',dic1[i])
+	root=os.path.join(fpath,dic1[i])
 	for path, subdirs, files in os.walk(root):
 		for name in files:
 			if name.startswith("timing."):
@@ -279,24 +282,25 @@ for i in range(len(dic1)):
 
 # parse and store timing profile file in a database
 exptag=[]
+print allfile
 for i in range(len(allfile)):
 	a,b=createdatabase(allfile[i])
 	#print a,b
-	#pace.mtDB.insert(timingfile[i],b)	
+	mt.insert(timingfile[i],b)	
 	exptag.append(a)
-
+'''
 # zip successfull experiments into folder experiments
 for i in range(len(exptag)):
-	root='/pace/dev1/portal/upload'
+	root=fpath
 	for path, subdirs, files in os.walk(root):
 		for name in subdirs:
 			if name.startswith(exptag[i]):
 				shutil.make_archive(os.path.join('experiments/', exptag[i]),'zip',os.path.join(path, name))
-
+'''
 # remove data
 try:
-	shutil.rmtree('/pace/dev1/portal/upload/uploadzip')
-	os.remove('/pace/dev1/portal/upload/uploadzip.zip')
+	shutil.rmtree(os.path.join(fpath,'experiments'))
+	#os.remove(os.path.join(fpath,'experiments.zip'))
 except OSError as e:
 	print("Error: %s - %s." % (e.filename, e.strerror))
 
