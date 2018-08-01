@@ -5,7 +5,7 @@ import tarfile
 import shutil
 import zipfile
 import pymysql
-import pace.mtDB
+#import pace.mtDB
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 #from datatest import Base, User, Experiment
@@ -281,8 +281,8 @@ for i in range(len(dic1)):
 exptag=[]
 for i in range(len(allfile)):
 	a,b=createdatabase(allfile[i])
-	print a,b
-	pace.mtDB.insert(timingfile[i],b)	
+	#print a,b
+	#pace.mtDB.insert(timingfile[i],b)	
 	exptag.append(a)
 
 # zip successfull experiments into folder experiments
