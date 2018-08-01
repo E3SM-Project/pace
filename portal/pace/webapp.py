@@ -15,7 +15,7 @@ import json
 import urllib
 
 # Destination and allowed file extention
-UPLOAD_FOLDER='/pace/dev1/portal/upload'
+UPLOAD_FOLDER='/pace/prod/portal/upload'
 ALLOWED_EXTENSIONS = set(['txt','csv', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'zip', 'tgz', 'gz', 'tar', 'aspen'])
 
 # Uploading file
@@ -23,7 +23,7 @@ from flask import request,redirect,url_for
 from werkzeug.utils import secure_filename
 import os
 
-app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 128 * 1024 * 1024
 def stream(file_proxy, chunk = 4096): # file_proxy is of type GridFSProxy
 	while True:
 		next_chunk = file_proxy.read(chunk)
