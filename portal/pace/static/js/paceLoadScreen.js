@@ -9,7 +9,7 @@ var barInterval;
 ["P","R","B","G"].forEach((letter,index)=>{
     barImg[index] = document.createElement("img");
     barTd[index] = document.createElement("td");
-    barImg[index].src="../static/bar"+letter+".png";
+    barImg[index].src="../static/img/bar"+letter+".png";
     barImg[index].style.width="100%";
     barTd[index].appendChild(barImg[index]);
 });

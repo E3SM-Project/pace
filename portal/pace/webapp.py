@@ -103,5 +103,5 @@ def mthtml():
     return render_template("modelTiming.html")
 @app.route("/mtQuery/",methods=["POST"])
 def mtQuery():
-    resultNodes = mt.parse("/pace/assets/static/"+str(request.form['exp']),1)
-    return "["+mt.toJson(resultNodes)+","+json.dumps(resultNodes[0][0].values.keys())+"]"
+    resultNodes = mtDB.paceConn.execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and extension = '"+request.form['extension']+"'").fetchall()[0].jsonVal
+    return "["+resultNodes+","+json.dumps(mt.valueList[0])+"]"

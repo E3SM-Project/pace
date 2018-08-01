@@ -11,7 +11,7 @@
                     position: absolute;
                     left:20.5%;
                     width:80%;
-                    background-image:url(/static/ornlLeaf.svg);
+                    background-image:url(/static/img/ornlLeaf.svg);
                     background-position: center;
                     background-repeat: no-repeat;
                     background-size: 50% 50%;
@@ -52,14 +52,14 @@
         </div>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
-        <script src="/static/domFunctions.js"></script>
-        <script src="/static/mt.js"></script>
-        <script src="/static/paceLoadScreen.js"></script>
+        <script src="/static/js/domFunctions.js"></script>
+        <script src="/static/js/modelTiming.js"></script>
+        <script src="/static/js/paceLoadScreen.js"></script>
         <script>//Fire up the summary:
                 $(document).ready(()=>{
                     animate();
                     expGetFunc.push(()=>{currExp = expList[0];currExp.view();animate(false);dataList.children[0].click();});
-                    getExperiment("model_timing.0000.new");
+                    getExperiment(1,"0000");
                 });</script>
     </body>
 </html>
