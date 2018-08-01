@@ -70,8 +70,6 @@ def readConfigFile(configFile):
 	myhost = parser.get('PACE','host')
 	return myuser, mypwd, mydb, myhost
 
-paceConn = ""
-
 def connectDatabase():	
 	configFile = None
 	if os.path.isfile('.pacerc'):
@@ -97,4 +95,5 @@ def connectDatabase():
 
 	paceEngine = create_engine(myhost)
 	paceConn = paceEngine.connect()
+	return paceConn
 

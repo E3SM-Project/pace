@@ -15,6 +15,7 @@ Column('jsonVal',MEDIUMTEXT),\
 Column('extension',VARCHAR(10)))
 
 # Connection happens in common
+paceConn = connectDatabase()
 # metadata.create_all(paceEngine)
 # paceConn = paceEngine.connect()
 
