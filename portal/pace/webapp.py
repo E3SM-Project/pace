@@ -20,6 +20,11 @@ import modelTiming as mt
 #modelTiming database information:
 import mtDB
 
+from pace_common import *
+
+# Initialize database connection
+connectDatabase()
+
 UPLOAD_FOLDER='/var/www/portal/pace/upload'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'zip', 'tgz', 'gz', 'tar', 'aspen'])
 # Uploading file
