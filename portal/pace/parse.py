@@ -291,7 +291,7 @@ for i in range(len(allfile)):
 	mt.insert(timingfile[i],b)	
 	exptag.append(a)
 
-newroot='../../../../../pace/assets/static/data/'
+newroot='/pace/assets/static/data/'
 # zip successfull experiments into folder experiments
 for i in range(len(exptag)):
 	root=fpath
@@ -301,7 +301,7 @@ for i in range(len(exptag)):
 				print(newroot)
 				shutil.make_archive(os.path.join(newroot,'experiment-'+exptag[i]),'zip',os.path.join(path, name))
 
-removeroot='../../../../pace/prod/portal/upload/'
+removeroot='/pace/prod/portal/upload/'
 # remove data
 try:
 	shutil.rmtree(os.path.join(removeroot,'experiments'))

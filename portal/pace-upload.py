@@ -7,7 +7,9 @@ import zipfile
 import getpass
 
 # server connection
+# use this url after merge to master
 url = "https://pace.ornl.gov/upload"
+#url = "https://pace.ornl.gov/dev1/upload"
 login_url="https://pace.ornl.gov/uploadlogin"
 
 def parseArguments(): 
@@ -59,12 +61,12 @@ while flag==1:
 		#	flag=0
 	else:
 		flag=0
-
+uploadfile='experiments.zip'
 # error handle empty zip file
-if(os.path.exists('experiments.zip')):
-	if(os.stat('experiments.zip').st_size!=0):
+if(os.path.exists(uploadfile)):
+	if(os.stat(uploadfile).st_size!=0):
 		# open zip to be uploaded
-		fin = open('uploadzip.zip', 'rb')			
+		fin = open(uploadfile, 'rb')			
 		files = {'file': fin}
 		try:
 			# request for connection to server
