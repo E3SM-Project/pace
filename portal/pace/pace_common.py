@@ -8,6 +8,7 @@ import sys
 import argparse
 from datetime import datetime
 
+from flask_sqlalchemy import SQLAlchemy
 import bson
 from bson.objectid import ObjectId
 # to get current username from env - used for uploadedBy
@@ -94,10 +95,9 @@ def connectDatabase():
 		mydb = 'pace'
 		myhost = 'localhost'
 
-	myhost = 'mysql+pymysql://' + myuser + ':' + mypwd + '@' + myhost +  '/' + mydb
-	# myhost = 'mongodb://' + myuser + ':' + mypwd + '@' + myhost + ':' + myport + '/' + mydb
+	dburl = 'mysql+pymysql://' + myuser + ':' + mypwd + '@' + myhost +  '/' + mydb
 
-	paceEngine = create_engine(myhost)
-	paceConn = paceEngine.connect()
-	return paceConn
+	dbEngine = create_engine(dburl)
+	dbConn = dbEngine.connect()
+	return dbConn, dbEngine, dburl
 
