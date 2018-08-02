@@ -56,7 +56,7 @@ def getPACEVer(lastVer):
 def readConfigFile(configFile):
 	global PACE_USER
 	filePerms = oct(os.stat(configFile)[ST_MODE])
-	if filePerms != '0100640':
+	if filePerms != '0100600':
 		print bcolors.WARNING + "Config file permissions should be set to read, write for owner only and read for group" 
 		print "Please use chmod 640 " + configFile + " to dismiss this warning." + bcolors.ENDC
 		# print filePerms
@@ -78,6 +78,10 @@ def connectDatabase():
 		configFile = os.environ['HOME'] + '/.pacerc'
 	elif os.path.isfile('/pace/prod/.pacerc') and os.access("/pace/prod/.pacerc", os.R_OK):
 		configFile = '/pace/prod/.pacerc'
+	elif os.path.isfile('/pace/dev1/.pacerc') and os.access("/pace/dev1/.pacerc", os.R_OK):
+		configFile = '/pace/dev1/.pacerc'
+	elif os.path.isfile('/pace/dev2/.pacerc') and os.access("/pace/dev2/.pacerc", os.R_OK):
+		configFile = '/pace/dev2/.pacerc'
 
 	if configFile:
 		print "Reading configuration from " + configFile 
