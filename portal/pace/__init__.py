@@ -18,7 +18,7 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Limit payload to 32 MB
-app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 128 * 1024 * 1024 
 app.secret_key = 'p\xcb\xd8\x81z\xa5)D\x14(\x8dJ\nvjdb\x82\x9a\x8dH\rg='
 
 if __name__ == "__main__":

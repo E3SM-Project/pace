@@ -4,14 +4,13 @@ from flask import Flask
 from flask import render_template
 from flask import Response
 from flask import make_response 
-
-# from mongoengine import *
-
-from pace import app
-import collections
+from flask import send_from_directory
 from collections import OrderedDict
+from pace import app
+import parse as parse
+import sys 
+import collections
 import operator
-
 import json
 import urllib
 
@@ -25,79 +24,68 @@ from pace_common import *
 # Initialize database connection
 connectDatabase()
 
-UPLOAD_FOLDER='/var/www/portal/pace/upload'
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'zip', 'tgz', 'gz', 'tar', 'aspen'])
+UPLOAD_FOLDER='/pace/prod/portal/upload'
+#UPLOAD_FOLDER='/pace/dev1/portal/upload'
+ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
+
 # Uploading file
 from flask import request,redirect,url_for
 from werkzeug.utils import secure_filename
 import os
-def stream(file_proxy, chunk = 4096): # file_proxy is of type GridFSProxy
-	while True:
-		next_chunk = file_proxy.read(chunk)
-		if len(next_chunk) == 0:
-			return
-		yield next_chunk
 
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024
 
+# Home page
 @app.route("/")
 def welcome():
 	return render_template('welcome.html')
 
+# Check file extention
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-@app.route('/upload2', methods=['POST'])
-def upload_file2():
-	if request.method == 'POST':
-		file = request.files['myfilename']
-		if file and allowed_file(file.filename):
-			filename = secure_filename(file.filename)
-			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-			return '''
-			<!doctype html>
-			<title>Upload sucess</title>
-			<h1>Upload sucess</h1>
-			'''
-
+# Store file in server
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
 	if request.method == 'POST':
-		file = request.files['myfilename']
+		file = request.files['file']
 		if file and allowed_file(file.filename):
+			#sys.stderr.write('inside allowed file')
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(UPLOAD_FOLDER, filename))
-			return '''
-			<!doctype html>
-			<title>Upload sucess</title>
-			<h1>Upload sucess</h1>
-			'''
-			#return redirect(url_for('uploaded_file',filename=filename))
+			#os.system("/opt/venv/pace/bin/python /pace/prod/portal/pace/parse.py")
+			parse.main()			
+			return('File Upload and Store in Database Success')
 		else:
-			return '''
-				<!doctype html>
-				<title>Error</title>
-				<h1>Error uploading your file</h1>
-				'''
+			return ('Error Uploading file, Try again')
 	return render_template('upload.html')
-    # return '''
-    # <!doctype html>
-    # <title>Upload new File</title>
-    # <h1>Upload new File</h1>
-    # <form action="" method=post enctype=multipart/form-data>
-    #   <p><input type=file name=file>
-    #      <input type=submit value=Upload>
-    # </form>
-    # '''	
+ 	
+@app.route("/uploadlogin", methods=['GET','POST'])
+def uploadlogin():
+	if request.method == 'POST':
+		admin = request.form['name']
+		admin_pass = request.form['pass']
+		a=admin+admin_pass
+		z=int(len(a))
+		b=''
+		for i in range(z):
+			b = b + chr(ord(a[i]) + 2)
+		c=b+a
+		y=int(len(c))
+		d=''
+		for i in range(y):
+			d = d + chr(ord(c[i])+1)			
+		f=open('/pace/dev1/portal/pace/pass.txt','r')
+		for line in f:
+			admin = line.split(None,1)[0]
+			print(admin)
+			if admin==d:
+				return("ok")				
+				
+		return("not")
 
-from flask import send_from_directory
-
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               filename)
-
-
+# Error handler
 @app.errorhandler(404)
 def page_not_found(error):
 	return render_template('error.html'), 404	
@@ -110,3 +98,4 @@ def mthtml():
 def mtQuery():
     resultNodes = mtDB.paceConn.execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and extension = '"+request.form['extension']+"'").fetchall()[0].jsonVal
     return "["+resultNodes+","+json.dumps(mt.valueList[0])+"]"
+
