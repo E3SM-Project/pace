@@ -25,6 +25,7 @@ from pace_common import *
 connectDatabase()
 
 UPLOAD_FOLDER='/pace/prod/portal/upload'
+#UPLOAD_FOLDER='/pace/dev1/portal/upload'
 ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
 
 # Uploading file
@@ -53,6 +54,7 @@ def upload_file():
 			#sys.stderr.write('inside allowed file')
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(UPLOAD_FOLDER, filename))
+			#os.system("/opt/venv/pace/bin/python /pace/prod/portal/pace/parse.py")
 			os.system("/opt/venv/pace/bin/python /pace/dev1/portal/pace/parse.py")
 			return('File Upload and Store in Database Success')
 		else:

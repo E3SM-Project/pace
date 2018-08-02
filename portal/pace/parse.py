@@ -242,8 +242,10 @@ def createdatabase(filename):
 
 # start main
 #first unzip uploaded file
-fpath='/pace/dev1/portal/upload'
-zip_ref=zipfile.ZipFile('/pace/dev1/portal/upload/experiments.zip','r')
+fpath='/pace/prod/portal/upload'
+#fpath='/pace/dev1/portal/upload'
+zip_ref=zipfile.ZipFile('/pace/prod/portal/upload/experiments.zip','r')
+#zip_ref=zipfile.ZipFile('/pace/dev1/portal/upload/experiments.zip','r')
 zip_ref.extractall(fpath)
 zip_ref.close
 
@@ -288,19 +290,22 @@ for i in range(len(allfile)):
 	#print a,b
 	mt.insert(timingfile[i],b)	
 	exptag.append(a)
-'''
+
+newroot='../../../../../pace/assets/static/data/'
 # zip successfull experiments into folder experiments
 for i in range(len(exptag)):
 	root=fpath
 	for path, subdirs, files in os.walk(root):
 		for name in subdirs:
 			if name.startswith(exptag[i]):
-				shutil.make_archive(os.path.join('experiments/', exptag[i]),'zip',os.path.join(path, name))
-'''
+				print(newroot)
+				shutil.make_archive(os.path.join(newroot,'experiment-'+exptag[i]),'zip',os.path.join(path, name))
+
+removeroot='../../../../pace/prod/portal/upload/'
 # remove data
 try:
-	shutil.rmtree(os.path.join(fpath,'experiments'))
-	#os.remove(os.path.join(fpath,'experiments.zip'))
+	shutil.rmtree(os.path.join(removeroot,'experiments'))
+	os.remove(os.path.join(removeroot,'experiments.zip'))
 except OSError as e:
 	print("Error: %s - %s." % (e.filename, e.strerror))
 
