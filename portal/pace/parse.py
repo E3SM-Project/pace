@@ -240,73 +240,72 @@ def createdatabase(filename):
 	print("-------------------------Stored-in-Database-------------------------------")
 	return (onetags[1],forexpid.expid)
 
-# start main
-#first unzip uploaded file
-fpath='/pace/prod/portal/upload'
-#fpath='/pace/dev1/portal/upload'
-zip_ref=zipfile.ZipFile('/pace/prod/portal/upload/experiments.zip','r')
-#zip_ref=zipfile.ZipFile('/pace/dev1/portal/upload/experiments.zip','r')
-zip_ref.extractall(fpath)
-zip_ref.close
+def main():
+	# start main
+	#first unzip uploaded file
+	fpath='/pace/prod/portal/upload'
+	#fpath='/pace/dev1/portal/upload'
+	zip_ref=zipfile.ZipFile('/pace/prod/portal/upload/experiments.zip','r')
+	#zip_ref=zipfile.ZipFile('/pace/dev1/portal/upload/experiments.zip','r')
+	zip_ref.extractall(fpath)
+	zip_ref.close
 
-# list and store path of all new uploaded file
-dic=[]
-for i in os.listdir(fpath):
-	 dic.append(os.path.join(fpath,i))
-
-
-# untar all tar files
-for i in range(len(dic)):
-	if dic[i].endswith('.tar.gz'):
-		tar = tarfile.open(dic[i])
-		tar.extractall()
-		tar.close()
-
-# store path of all directories
-dic1=[]
-for i in os.listdir(fpath):
-	if i !='parse.py' and i!='upload' and i!='experiments.zip':	
-		dic1.append(i)
+	# list and store path of all new uploaded file
+	dic=[]
+	for i in os.listdir(fpath):
+		 dic.append(os.path.join(fpath,i))
 
 
-# go through all directories and store timing profile file only
-allfile=[]
-timingfile=[]
-for i in range(len(dic1)):
-	root=os.path.join(fpath,dic1[i])
-	for path, subdirs, files in os.walk(root):
-		for name in files:
-			if name.startswith("timing."):
-				timingfile.append(os.path.join(path, name))
-			if name.startswith("e3sm_timing."):		
-				allfile.append(os.path.join(path, name))
+	# untar all tar files
+	for i in range(len(dic)):
+		if dic[i].endswith('.tar.gz'):
+			tar = tarfile.open(dic[i])
+			tar.extractall()
+			tar.close()
+
+	# store path of all directories
+	dic1=[]
+	for i in os.listdir(fpath):
+		if i !='parse.py' and i!='upload' and i!='experiments.zip':	
+			dic1.append(i)
 
 
-# parse and store timing profile file in a database
-exptag=[]
-print allfile
-for i in range(len(allfile)):
-	a,b=createdatabase(allfile[i])
-	#print a,b
-	mt.insert(timingfile[i],b)	
-	exptag.append(a)
+	# go through all directories and store timing profile file only
+	allfile=[]
+	timingfile=[]
+	for i in range(len(dic1)):
+		root=os.path.join(fpath,dic1[i])
+		for path, subdirs, files in os.walk(root):
+			for name in files:
+				if name.startswith("timing."):
+					timingfile.append(os.path.join(path, name))
+				if name.startswith("e3sm_timing."):		
+					allfile.append(os.path.join(path, name))
 
-newroot='/pace/assets/static/data/'
-# zip successfull experiments into folder experiments
-for i in range(len(exptag)):
-	root=fpath
-	for path, subdirs, files in os.walk(root):
-		for name in subdirs:
-			if name.startswith(exptag[i]):
-				print(newroot)
-				shutil.make_archive(os.path.join(newroot,'experiment-'+exptag[i]),'zip',os.path.join(path, name))
 
-removeroot='/pace/prod/portal/upload/'
-# remove data
-try:
-	shutil.rmtree(os.path.join(removeroot,'experiments'))
-	os.remove(os.path.join(removeroot,'experiments.zip'))
-except OSError as e:
-	print("Error: %s - %s." % (e.filename, e.strerror))
+	# parse and store timing profile file in a database
+	exptag=[]
+	for i in range(len(allfile)):
+		a,b=createdatabase(allfile[i])
+		#print a,b
+		mt.insert(timingfile[i],b)	
+		exptag.append(a)
+
+	newroot='/pace/assets/static/data/'
+	# zip successfull experiments into folder experiments
+	for i in range(len(exptag)):
+		root=fpath
+		for path, subdirs, files in os.walk(root):
+			for name in subdirs:
+				if name.startswith(exptag[i]):
+					shutil.make_archive(os.path.join(newroot,'experiment-'+exptag[i]),'zip',os.path.join(path, name))
+
+	removeroot='/pace/prod/portal/upload/'
+	# remove data
+	try:
+		shutil.rmtree(os.path.join(removeroot,'experiments'))
+		os.remove(os.path.join(removeroot,'experiments.zip'))
+	except OSError as e:
+		print("Error: %s - %s." % (e.filename, e.strerror))
 
 

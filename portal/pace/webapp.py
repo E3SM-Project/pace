@@ -7,7 +7,7 @@ from flask import make_response
 from flask import send_from_directory
 from collections import OrderedDict
 from pace import app
-
+import parse as parse
 import sys 
 import collections
 import operator
@@ -33,7 +33,7 @@ from flask import request,redirect,url_for
 from werkzeug.utils import secure_filename
 import os
 
-app.config['MAX_CONTENT_LENGTH'] = 128 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024
 
 # Home page
 @app.route("/")
@@ -55,7 +55,7 @@ def upload_file():
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(UPLOAD_FOLDER, filename))
 			#os.system("/opt/venv/pace/bin/python /pace/prod/portal/pace/parse.py")
-			os.system("/opt/venv/pace/bin/python /pace/dev1/portal/pace/parse.py")
+			parse.main()			
 			return('File Upload and Store in Database Success')
 		else:
 			return ('Error Uploading file, Try again')
