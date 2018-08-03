@@ -22,7 +22,7 @@ import mtDB
 from pace_common import *
 
 # Initialize database connection
-connectDatabase()
+dbConn, dbEngine, dburl = connectDatabase()
 
 UPLOAD_FOLDER='/pace/prod/portal/upload'
 #UPLOAD_FOLDER='/pace/dev1/portal/upload'
@@ -104,7 +104,7 @@ def mtQuery():
     if len(request.form) > 0 and request.form["expID"] == "-1":
         resultNodes = mt.parse("/pace/assets/static/model_timing.0000.new")
     else:
-        resultNodes = connectDatabase()[0].execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and extension = '"+request.form['extension']+"'").fetchall()[0].jsonVal
+        resultNodes = dbConn.execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and extension = '"+request.form['extension']+"'").fetchall()[0].jsonVal
     return "["+resultNodes+","+json.dumps(mt.valueList[0])+"]"
 
 @app.route("/exps")
@@ -120,9 +120,8 @@ def experiments():
             resultList.append(resultListElement)
         return resultList
     try:
-        expCon = connectDatabase()[0]
-        expSelection = queryConvert(expCon.execute("select lid,expID from timing_profile").fetchall())
-        expExtensions = queryConvert(expCon.execute("select expID,extension from model_timing").fetchall())
+        expSelection = queryConvert(dbConn.execute("select lid,expID from timing_profile").fetchall())
+        expExtensions = queryConvert(dbConn.execute("select expID,extension from model_timing").fetchall())
         return render_template("experiments.html",expS = "var experiments="+json.dumps(expSelection),expE = "var extensions="+json.dumps(expExtensions))
     except:
         #run the failsafe, which basically returns nothing... If this happens, we will read placeholder data by file.
