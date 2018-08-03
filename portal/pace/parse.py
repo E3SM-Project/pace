@@ -14,7 +14,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, TEXT
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-#paceConn = connectDatabase()
+
 
 def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
     phraseIn = phraseIn.strip(filter)
@@ -46,7 +46,6 @@ def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
                 if not len(total[currPhrase]) == 0:
                     total[currPhrase]+=" "
                 total[currPhrase]+=phraseSplit[i]
-                #print(total[currPhrase])
     return total
 #Returns a list of items from the table. This is different because of how the data itself is structured. If "component" makes a good way to address these values, I'm open to making this return a dictionary.
 def tableParse(lineInput):
@@ -206,35 +205,33 @@ def createdatabase(filename):
 		model_day = Column(String(250), nullable=False)
 		model_years = Column(String(250), nullable=False)
 	    
-	engine = create_engine('mysql+pymysql://gaurab:Nepal2018@localhost/pace')
-	Base.metadata.create_all(engine)
-	# Bind the engine to the metadata of the Base class so that the
-	# declaratives can be accessed through a DBSession instance
-	conn=engine.connect()
-	Base.metadata.bind = conn 
-	DBSession = sessionmaker(bind=conn)
-	paceConn = DBSession()
-	 
+	
+	dbConn,dbengine,dburl=connectDatabase()
+	Base.metadata.create_all(dbengine)
+	Base.metadata.bind = dbConn
+	DBSession = sessionmaker(bind=dbConn)
+	paceDB = DBSession()
+
 	# Insert an experiment in the experiment table
 	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],curr_date=onetags[6],grid=onetags[7],compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5])
-	paceConn.add(new_experiment)
+	paceDB.add(new_experiment)
 
 	# table has to have a same experiment id
-	forexpid = paceConn.query(Timingprofile).order_by(Timingprofile.expid.desc()).first()
+	forexpid = paceDB.query(Timingprofile).order_by(Timingprofile.expid.desc()).first()
 
 	#insert pelayout
 	i=0
 	while i < len(twotags):
 		new_pelayout = Pelayout(expid=forexpid.expid,component=twotags[i],comp_pes=twotags[i+1],root_pe=twotags[i+2],tasks=twotags[i+3],threads=twotags[i+4],instances=twotags[i+5],stride=twotags[i+6])
-		paceConn.add(new_pelayout)	
+		paceDB.add(new_pelayout)	
 		i=i+7
 	#insert run time
 	i=0
 	while i < len(fourtags):
 		new_runtime = Runtime(expid=forexpid.expid,component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3])
-		paceConn.add(new_runtime)
+		paceDB.add(new_runtime)
 		i=i+4
-	paceConn.commit()
+	paceDB.commit()
 	
 
 	print("-------------------------Stored-in-Database-------------------------------")
@@ -244,9 +241,7 @@ def main():
 	# start main
 	#first unzip uploaded file
 	fpath='/pace/prod/portal/upload'
-	#fpath='/pace/dev1/portal/upload'
 	zip_ref=zipfile.ZipFile('/pace/prod/portal/upload/experiments.zip','r')
-	#zip_ref=zipfile.ZipFile('/pace/dev1/portal/upload/experiments.zip','r')
 	zip_ref.extractall(fpath)
 	zip_ref.close
 
@@ -287,7 +282,6 @@ def main():
 	exptag=[]
 	for i in range(len(allfile)):
 		a,b=createdatabase(allfile[i])
-		#print a,b
 		mt.insert(timingfile[i],b)	
 		exptag.append(a)
 
@@ -308,4 +302,5 @@ def main():
 	except OSError as e:
 		print("Error: %s - %s." % (e.filename, e.strerror))
 
+main()
 
