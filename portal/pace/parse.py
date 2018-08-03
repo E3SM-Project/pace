@@ -237,7 +237,7 @@ def createdatabase(filename):
 	print("-------------------------Stored-in-Database-------------------------------")
 	return (onetags[1],forexpid.expid)
 
-def main():
+def parseData():
 	# start main
 	#first unzip uploaded file
 	fpath='/pace/prod/portal/upload'
@@ -302,5 +302,6 @@ def main():
 	except OSError as e:
 		print("Error: %s - %s." % (e.filename, e.strerror))
 
-main()
 
+if __name__ == "__main__":
+	parseData()
