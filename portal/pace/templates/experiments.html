@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{%block topscripts%}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<style>
+.link{
+    margin-left:5px;
+}
+</style>
+{%endblock%}
+{% block content %}
+<div id="tInsert"></div>
+<script>
+var experiments=[{"expID":-1,"lid":-1}];
+var extensions=[{"expID":-1,"extension":"0000"}];
+{{expS|safe}};
+{{expE|safe}};
+
+function makeTable(){
+    let total='<form action="mt" method="post"><table id="expTable" class="tablesorter"><thead><tr><th>Experiment LID</th><th>files</th></tr></thead><tbody>';
+    experiments.forEach((element,index)=>{
+        total+="<tr><td>"+element.lid+"</td><td>";
+        for(let i=0;i<extensions.length;i++){
+            if(element.expID == extensions[i].expID)
+                total+="<a href='#' class='link' onclick='submitButton.value=\""+extensions[i].expID+'|'+extensions[i].extension+"\";submitButton.click()'>"+extensions[i].extension+"</a>";
+        }
+        total+="</td></tr>";
+    });
+    return total+"</tbody></table><button id='submitButton' name='exp' style='display:none' value='-1|0000' type='submit'></button></form>";
+}
+document.head.innerHTML+=""
+$(document).ready(function(){
+tSorter = document.createElement("script");
+tSorter.src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.min.js";
+document.body.appendChild(tSorter);
+tInsert.innerHTML+=makeTable();
+setTimeout(()=>{$("#expTable").tablesorter();},500);
+});
+</script>
+{% endblock %}

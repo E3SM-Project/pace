@@ -1,10 +1,7 @@
-<!--Author: Zachary Mitchell
-    Purpose: View your prevsiously parsed model_timing files in style!
-    Summarize any scope of timeNodes with sum or averages, and with any value you want! (Wallclock, min/max, etc)-->
-<!doctype html>
-<html>
-<head><title>PACE: Model Timing View</title></head>
-    <body>
+{% extends "layout.html" %}
+
+{% block topscripts %}
+<title>PACE: Model Timing View</title>
         <style>
                 #dataInfo{
                     border:.01in solid;
@@ -21,6 +18,7 @@
                     width:20%;
                     position: absolute;
                     resize:vertical;
+                    left:0px;
                 }
                 ul{
                     list-style-type: none;
@@ -34,12 +32,21 @@
                     font-family: monospace;
                     margin-bottom:70%
                 }
+                .unused{
+                    display: none;
+                }
             </style>
-        <!--Everything inside here is ciloed away from our nifty bootstrap-->
+{% endblock %}
+
+
+{% block content %}
+<!--Author: Zachary Mitchell
+    Purpose: View your prevsiously parsed model_timing files in style!
+    Summarize any scope of timeNodes with sum or averages, and with any value you want! (Wallclock, min/max, etc)-->
         <div id="mtMain">
             <div>
-                <select id="valueName" onclick="changeGraph(currExp.currentEntry)"><option value="nodes">Nodes</option><option value="min/max">Min / Max</option></select>
-                <select id="mode" onclick="changeGraph(currExp.currentEntry)">
+                <select id="valueName" class="unused" onclick="changeGraph(currExp.currentEntry)"><option value="nodes">Nodes</option><option value="min/max">Min / Max</option></select>
+                <select id="mode" class="unused" onclick="changeGraph(currExp.currentEntry)">
                     <option value="sum" selected>Sum</option>
                     <option value="avg">Average</option>
                 </select>
@@ -50,16 +57,22 @@
             <div id="dataList"><button id="summaryButton">Summary</button><div id="listContent"></div></div>
             <span id="backAndNodeId"><button id="backButton"><-Back</button><span id="nodeId" style="font-family: monospace"></span></span>
         </div>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
-        <script src="/static/js/domFunctions.js"></script>
-        <script src="/static/js/modelTiming.js"></script>
-        <script src="/static/js/paceLoadScreen.js"></script>
-        <script>//Fire up the summary:
-                $(document).ready(()=>{
-                    animate();
-                    expGetFunc.push(()=>{currExp = expList[0];currExp.view();animate(false);dataList.children[0].click();});
-                    getExperiment(1,"0000");
-                });</script>
-    </body>
-</html>
+{% endblock %}
+
+{% block bottomscripts %}
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+	<script src="/static/js/domFunctions.js"></script>
+	<script src="/static/js/modelTiming.js"></script>
+	<script src="/static/js/paceLoadScreen.js"></script>
+	<script>//Fire up the summary:
+    var expData = undefined
+    {{exp|safe}}
+	$(document).ready(()=>{
+			animate();
+			expGetFunc.push(()=>{currExp = expList[0];currExp.view();animate(false);dataList.children[0].click();});
+            if(expData!=undefined)
+                getExperiment(expData.split("|")[0],expData.split("|")[1]);
+			else getExperiment(1,"0000");
+			});</script>
+{% endblock %}

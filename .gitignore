@@ -103,3 +103,8 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+#Content that is private:
+extra/
+.pacerc
+portal/reload-gunicorn.sh
+portal/start-gunicorn.sh

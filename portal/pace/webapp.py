@@ -17,8 +17,8 @@ import urllib
 
 #Model Timing Library:
 import modelTiming as mt
-#modelTiming database information:
-import mtDB
+#Connection to the database:
+from pace_common import *
 
 UPLOAD_FOLDER='/var/www/portal/pace/upload'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'zip', 'tgz', 'gz', 'tar', 'aspen'])
@@ -98,10 +98,39 @@ def page_not_found(error):
 	return render_template('error.html'), 404	
 
 #Model Timing web-interface.
-@app.route("/mt")
+@app.route("/mt",methods=["POST","GET"])
 def mthtml():
-    return render_template("modelTiming.html")
+	expData = ""
+	if len(request.form) > 0:
+		expData = "var expData = '"+request.form["exp"]+"';"
+	return render_template("modelTiming.html",exp = expData)
+
 @app.route("/mtQuery/",methods=["POST"])
 def mtQuery():
-    resultNodes = mtDB.paceConn.execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and extension = '"+request.form['extension']+"'").fetchall()[0].jsonVal
-    return "["+resultNodes+","+json.dumps(mt.valueList[0])+"]"
+	resultNodes=""
+	if len(request.form) > 0 and request.form["expID"] == "-1":
+		resultNodes = mt.parse("/pace/assets/static/model_timing.0000.new")
+	else:
+		resultNodes = connectDatabase()[0].execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and extension = '"+request.form['extension']+"'").fetchall()[0].jsonVal
+	return "["+resultNodes+","+json.dumps(mt.valueList[0])+"]"
+
+@app.route("/exps")
+def experiments():
+	#Convert table elements into dictionaries:
+	def queryConvert(expQuery):
+		resultList = []
+		for element in expQuery:
+			elementTuple = element.items()
+			resultListElement = {}
+			for key in elementTuple:
+				resultListElement[key[0]] = key[1]
+			resultList.append(resultListElement)
+		return resultList
+	try:
+		expCon = connectDatabase()[0]
+		expSelection = queryConvert(expCon.execute("select lid,expID from timing_profile").fetchall())
+		expExtensions = queryConvert(expCon.execute("select expID,extension from model_timing").fetchall())
+		return render_template("experiments.html",expS = "var experiments="+json.dumps(expSelection),expE = "var extensions="+json.dumps(expExtensions))
+	except:
+		#run the failsafe, which basically returns nothing... If this happens, we will read placeholder data by file.
+		return render_template("experiments.html")
