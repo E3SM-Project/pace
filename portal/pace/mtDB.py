@@ -16,7 +16,7 @@ Column('extension',VARCHAR(10)))
 
 # Connection happens in common
 dbConn, dbengine, dburl  = connectDatabase()
-# metadata.create_all(paceEngine)
+metadata.create_all(dbEngine)
 # dbConn = paceEngine.connect()
 
 def insert(mtFile,expID):
