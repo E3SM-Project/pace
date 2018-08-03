@@ -1,12 +1,18 @@
 {% extends "layout.html" %}
 {%block topscripts%}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="/static/js/jquery.tablesorter.js"></script>
+	<script src="/static/js/jquery.tablesorter.widgets.js"></script>
+	<!--<script src="/static/js/jquery.tablesorter.pager.js"></script>-->
+	<link rel="stylesheet" href="/static/css/tablesorter/style.css" />
+	<!--<link rel="stylesheet" href="/static/css/jquery.tablesorter.pager.css"/>-->
 <style>
 .link{
     margin-left:5px;
 }
 </style>
 {%endblock%}
+
 {% block content %}
 <div id="tInsert"></div>
 <script>
@@ -16,7 +22,7 @@ var extensions=[{"expID":-1,"extension":"0000"}];
 {{expE|safe}};
 
 function makeTable(){
-    let total='<form action="mt" method="post"><table id="expTable" class="tablesorter"><thead><tr><th>Experiment LID</th><th>files</th></tr></thead><tbody>';
+    let total='<form action="mt" method="post"><table id="expTable" class="tablesorter"><thead><tr><th>Experiment LID</th><th>Timing Files</th></tr></thead><tbody>';
     experiments.forEach((element,index)=>{
         total+="<tr><td>"+element.lid+"</td><td>";
         for(let i=0;i<extensions.length;i++){
@@ -29,11 +35,12 @@ function makeTable(){
 }
 document.head.innerHTML+=""
 $(document).ready(function(){
-tSorter = document.createElement("script");
-tSorter.src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.min.js";
-document.body.appendChild(tSorter);
 tInsert.innerHTML+=makeTable();
-setTimeout(()=>{$("#expTable").tablesorter();},500);
+$("#expTable").tablesorter({
+	widgets: ['zebra'], 
+	theme: 'blue',
+	widthFixed: true
+	});
 });
 </script>
 {% endblock %}
