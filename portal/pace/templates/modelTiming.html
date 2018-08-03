@@ -18,6 +18,7 @@
                     width:20%;
                     position: absolute;
                     resize:vertical;
+                    left:0px;
                 }
                 ul{
                     list-style-type: none;
@@ -31,6 +32,9 @@
                     font-family: monospace;
                     margin-bottom:70%
                 }
+                .unused{
+                    display: none;
+                }
             </style>
 {% endblock %}
 
@@ -41,8 +45,8 @@
     Summarize any scope of timeNodes with sum or averages, and with any value you want! (Wallclock, min/max, etc)-->
         <div id="mtMain">
             <div>
-                <select id="valueName" onclick="changeGraph(currExp.currentEntry)"><option value="nodes">Nodes</option><option value="min/max">Min / Max</option></select>
-                <select id="mode" onclick="changeGraph(currExp.currentEntry)">
+                <select id="valueName" class="unused" onclick="changeGraph(currExp.currentEntry)"><option value="nodes">Nodes</option><option value="min/max">Min / Max</option></select>
+                <select id="mode" class="unused" onclick="changeGraph(currExp.currentEntry)">
                     <option value="sum" selected>Sum</option>
                     <option value="avg">Average</option>
                 </select>
@@ -62,9 +66,13 @@
 	<script src="/static/js/modelTiming.js"></script>
 	<script src="/static/js/paceLoadScreen.js"></script>
 	<script>//Fire up the summary:
+    var expData = undefined
+    {{exp|safe}}
 	$(document).ready(()=>{
 			animate();
 			expGetFunc.push(()=>{currExp = expList[0];currExp.view();animate(false);dataList.children[0].click();});
-			getExperiment(1,"0000");
+            if(expData!=undefined)
+                getExperiment(expData.split("|")[0],expData.split("|")[1]);
+			else getExperiment(1,"0000");
 			});</script>
 {% endblock %}

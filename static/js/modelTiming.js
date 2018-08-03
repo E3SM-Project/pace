@@ -60,7 +60,7 @@ function experiment(timeNodes,valueNames){
         this.threadSelectInner+="<option "+ (!i?"selected":"")+" value="+i+" >Thread "+i+"</option>";
     });
     this.valueNames.forEach((name)=>{
-        this.valueSelectInner+="<option "+(name=="wallClock"?"selected":"")+" value='"+name+"'>"+name+"</option>";
+        this.valueSelectInner+="<option value='nodes'>Nodes</option><option value='min/max'>Min / Max</option><option "+(name=="wallClock"?"selected":"")+" value='"+name+"'>"+name+"</option>";
     });
 
     this.view = function(){
