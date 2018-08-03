@@ -5,16 +5,11 @@ import tarfile
 import shutil
 import zipfile
 import pymysql
-import mtDB as mt
+from subprocess import Popen,PIPE
+from datastructs import *
 from pace_common import *
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-#from datatest import Base, User, Experiment
-from sqlalchemy import Column, ForeignKey, Integer, String, TEXT
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-
-
+import modelTiming as mt
+import io
 
 def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
     phraseIn = phraseIn.strip(filter)
@@ -158,80 +153,27 @@ def createdatabase(filename):
 		
 	parseFile.close()
 	
-	
-	# Database work					
-	Base = declarative_base() 
-	 
-	class Timingprofile(Base):
-		__tablename__ = 'timing_profile'
-		expid = Column(Integer, primary_key=True)    
-		case = Column(String(250),nullable=False)
-		lid = Column(String(250), nullable=False)
-		machine = Column(String(250), nullable=False)
-		caseroot = Column(String(250),nullable=False)	
-		timeroot = Column(String(250),nullable=False)	
-		user = Column(String(250),nullable=False)
-		curr_date = Column(String(250),nullable=False)
-		grid = Column(String(250),nullable=False)
-		compset = Column(String(250),nullable=False)
-		stop_option = Column(String(250),nullable=False)
-		stop_n = Column(String(250),nullable=False)        
-		run_length = Column(String(250), nullable=False)
-		total_pes_active = Column(String(250), nullable=False)
-		mpi_tasks_per_node = Column(String(250), nullable=False)
-		pe_count_for_cost_estimate = Column(String(250), nullable=False)
-		model_cost = Column(String(250), nullable=False)
-		model_throughput = Column(String(250), nullable=False)
-		actual_ocn_init_wait_time = Column(String(250), nullable=False)
-	    	
-	class Pelayout(Base):
-		__tablename__ = 'pe_layout'
-		id = Column(Integer, primary_key=True)
-		expid=Column(Integer, nullable=False)
-		component = Column(String(250), nullable=False)
-		comp_pes = Column(String(250), nullable=False)
-		root_pe = Column(String(250), nullable=False)
-		tasks = Column(String(250), nullable=False)
-		threads = Column(String(250), nullable=False)
-		instances = Column(String(250), nullable=False)
-		stride = Column(String(250), nullable=False)
-
-	class Runtime(Base):
-		__tablename__ = 'run_time'
-		id = Column(Integer, primary_key=True)
-		expid=Column(Integer, nullable=False)
-		component = Column(String(250), nullable=False)
-		seconds = Column(String(250), nullable=False)
-		model_day = Column(String(250), nullable=False)
-		model_years = Column(String(250), nullable=False)
-	    
-	
-	dbConn,dbengine,dburl=connectDatabase()
-	Base.metadata.create_all(dbengine)
-	Base.metadata.bind = dbConn
-	DBSession = sessionmaker(bind=dbConn)
-	paceDB = DBSession()
 
 	# Insert an experiment in the experiment table
 	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],curr_date=onetags[6],grid=onetags[7],compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5])
-	paceDB.add(new_experiment)
+	dbSession.add(new_experiment)
 
 	# table has to have a same experiment id
-	forexpid = paceDB.query(Timingprofile).order_by(Timingprofile.expid.desc()).first()
+	forexpid = dbSession.query(Timingprofile).order_by(Timingprofile.expid.desc()).first()
 
 	#insert pelayout
 	i=0
 	while i < len(twotags):
 		new_pelayout = Pelayout(expid=forexpid.expid,component=twotags[i],comp_pes=twotags[i+1],root_pe=twotags[i+2],tasks=twotags[i+3],threads=twotags[i+4],instances=twotags[i+5],stride=twotags[i+6])
-		paceDB.add(new_pelayout)	
+		dbSession.add(new_pelayout)	
 		i=i+7
 	#insert run time
 	i=0
 	while i < len(fourtags):
 		new_runtime = Runtime(expid=forexpid.expid,component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3])
-		paceDB.add(new_runtime)
+		dbSession.add(new_runtime)
 		i=i+4
-	paceDB.commit()
+	dbSession.commit()
 	
 
 	print("-------------------------Stored-in-Database-------------------------------")
@@ -282,7 +224,7 @@ def parseData():
 	exptag=[]
 	for i in range(len(allfile)):
 		a,b=createdatabase(allfile[i])
-		mt.insert(timingfile[i],b)	
+		insertTiming(timingfile[i],b)	
 		exptag.append(a)
 
 	newroot='/pace/assets/static/data/'
@@ -302,6 +244,15 @@ def parseData():
 	except OSError as e:
 		print("Error: %s - %s." % (e.filename, e.strerror))
 
+def insertTiming(mtFile,expID):
+    results = []
+    dirList = Popen(["tar","--list","-f",mtFile],stdout=PIPE).communicate()[0].split("\n")
+    for path in dirList:
+        if len(path.split("/")) > 1 and "." in path.split("/")[1]:
+            #This is a file we want! Let's save it:
+            results.append({"expID":expID,"jsonVal":mt.parse(io.StringIO(u""+Popen(["tar","-xzf",mtFile,path,"-O"],stdout=PIPE).communicate()[0])),"rank":path.split("/")[1].split(".")[1]})
+    dbConn.execute(experimentsTable.insert(),results)
+    return
 
 if __name__ == "__main__":
 	parseData()
