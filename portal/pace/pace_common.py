@@ -8,6 +8,7 @@ import sys
 import argparse
 from datetime import datetime
 
+from datastructs import *
 from flask_sqlalchemy import SQLAlchemy
 import bson
 from bson.objectid import ObjectId
@@ -23,6 +24,13 @@ from ConfigParser import RawConfigParser
 # SafeConfig parser does interpolation - refer to other desctions of file as %(foo)
 # This causes problems with strings containing % - e.g., password
 # from ConfigParser import SafeConfigParser
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column, ForeignKey, Integer, String, TEXT
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+from sqlalchemy import Table,Column,Integer,MetaData,create_engine,String,VARCHAR
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
 
 # Global var
@@ -71,7 +79,12 @@ def readConfigFile(configFile):
 	myhost = parser.get('PACE','host')
 	return myuser, mypwd, mydb, myhost
 
-def connectDatabase():	
+dbConn = ""
+dbSession = ""
+dbEngine = ""
+dburl = ""
+
+def initDatabase():	
 	configFile = None
 	if os.path.isfile('.pacerc'):
 		configFile = '.pacerc'
@@ -99,5 +112,8 @@ def connectDatabase():
 
 	dbEngine = create_engine(dburl)
 	dbConn = dbEngine.connect()
-	return dbConn, dbEngine, dburl
+	Base.metadata.create_all(dbEngine)
+	Base.metadata.bind = dbConn
+	dbSession = sessionmaker(bind=dbConn)
+	return dbConn, dbEngine, dburl, dbSession
 
