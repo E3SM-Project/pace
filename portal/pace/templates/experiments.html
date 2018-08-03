@@ -17,7 +17,7 @@
 <div id="tInsert"></div>
 <script>
 var experiments=[{"expID":-1,"lid":-1}];
-var extensions=[{"expID":-1,"extension":"0000"}];
+var extensions=[{"expID":-1,"rank":"0000"}];
 {{expS|safe}};
 {{expE|safe}};
 
@@ -27,7 +27,7 @@ function makeTable(){
         total+="<tr><td>"+element.lid+"</td><td>";
         for(let i=0;i<extensions.length;i++){
             if(element.expID == extensions[i].expID)
-                total+="<a href='#' class='link' onclick='submitButton.value=\""+extensions[i].expID+'|'+extensions[i].extension+"\";submitButton.click()'>"+extensions[i].extension+"</a>";
+                total+="<a href='#' class='link' onclick='submitButton.value=\""+extensions[i].expID+'|'+extensions[i].rank+"\";submitButton.click()'>"+extensions[i].rank+"</a>";
         }
         total+="</td></tr>";
     });

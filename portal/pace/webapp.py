@@ -17,12 +17,8 @@ import urllib
 #Model Timing Library:
 import modelTiming as mt
 #modelTiming database information:
-import mtDB
 
 from pace_common import *
-
-# Initialize database connection
-dbConn, dbEngine, dburl = connectDatabase()
 
 UPLOAD_FOLDER='/pace/prod/portal/upload'
 #UPLOAD_FOLDER='/pace/dev1/portal/upload'
@@ -32,8 +28,6 @@ ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
 from flask import request,redirect,url_for
 from werkzeug.utils import secure_filename
 import os
-
-app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024
 
 # Home page
 @app.route("/")
@@ -104,7 +98,7 @@ def mtQuery():
     if len(request.form) > 0 and request.form["expID"] == "-1":
         resultNodes = mt.parse("/pace/assets/static/model_timing.0000.new")
     else:
-        resultNodes = dbConn.execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and extension = '"+request.form['extension']+"'").fetchall()[0].jsonVal
+        resultNodes = dbConn.execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and rank = '"+request.form['rank']+"'").fetchall()[0].jsonVal
     return "["+resultNodes+","+json.dumps(mt.valueList[0])+"]"
 
 @app.route("/exps")
@@ -121,7 +115,7 @@ def experiments():
         return resultList
     try:
         expSelection = queryConvert(dbConn.execute("select lid,expID from timing_profile").fetchall())
-        expExtensions = queryConvert(dbConn.execute("select expID,extension from model_timing").fetchall())
+        expExtensions = queryConvert(dbConn.execute("select expID,rank from model_timing").fetchall())
         return render_template("experiments.html",expS = "var experiments="+json.dumps(expSelection),expE = "var extensions="+json.dumps(expExtensions))
     except:
         #run the failsafe, which basically returns nothing... If this happens, we will read placeholder data by file.
