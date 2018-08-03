@@ -9,7 +9,6 @@ import getpass
 # server connection
 # use this url after merge to master
 url = "https://pace.ornl.gov/upload"
-#url = "https://pace.ornl.gov/dev1/upload"
 login_url="https://pace.ornl.gov/uploadlogin"
 
 def parseArguments(): 
