@@ -1,18 +1,29 @@
 {% extends "layout.html" %}
 {% block topscripts %}
 	<title> PACE - Applications </title>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<script src="/static/js/jquery.tablesorter.js"></script>
-	<script src="/static/js/jquery.tablesorter.widgets.js"></script>
-	<script src="/static/js/jquery.tablesorter.pager.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.widgets.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/extras/jquery.tablesorter.pager.min.js"></script>
+	<!--<script src=""></script>-->
+	<!--<script src=""></script>-->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/css/jquery.tablesorter.pager.min.css" />
+	<!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/css/theme.bootstrap.min.css" />-->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/css/theme.dark.min.css" />
 	<link rel="stylesheet" href="/static/css/tablesorter/style.css" />
-	<link rel="stylesheet" href="/static/css/jquery.tablesorter.pager.css"/>
+
+	<!--<script src="/static/js/jquery.tablesorter.js"></script>-->
+	<!--<script src="/static/js/jquery.tablesorter.widgets.js"></script>-->
+	<!--<script src="/static/js/jquery.tablesorter.pager.js"></script>-->
+	<!--<link rel="stylesheet" href="/static/css/tablesorter/style.css" />-->
+	<!--<link rel="stylesheet" href="/static/css/jquery.tablesorter.pager.css"/>-->
 		<!--<script src="/static/tablesorter/dist/js/jquery.tablesorter.min.js"></script>-->
 		<!--<script src="/static/tablesorter/dist/js/jquery.tablesorter.widgets.min.js"></script>-->
 		<!--<script src="/static/tablesorter/dist/js/extras/jquery.tablesorter.pager.min.js"></script>-->
 		<!--<link rel="stylesheet" href="/static/tablesorter/dist/css/jquery.tablesorter.pager.min.css" />-->
 		<!-- Content -->
 
+						<!--// ajaxUrl: "{{ request.script_root | safe }}/ajax/exps/{page}",-->
 		<script type="text/javascript">
 			$(document).ready(function() 
 				{ 
@@ -36,18 +47,18 @@
 					});
 					$("#expTable").tablesorterPager({
 						container: $(".pager"),
-						size: 10,
+						size: 20,
 						savePages: false,
 						processAjaxOnInit: false,
 						output: 'Experiments {startRow} to {endRow} (of {totalRows})',
-						ajaxUrl: "{{ request.script_root | safe }}/ajax/exps/{page}",
+						ajaxUrl: "https://pace.ornl.gov/dev3/ajax/exps/{page}",
 						ajaxProcessing: function(data) {
 							if(data) {
 								var numr = data.numRows,
 								rows = [];
 								for (var i = 0; i < data.data.length; i++) {
 									var o = data.data[i];
-									var row = [o.expid, o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.grid];
+									var row = [o.expid,o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.grid];
 									rows.push(row);
 								}
 								return [numr, rows];
