@@ -7,6 +7,8 @@ import string
 import sys
 import argparse
 from datetime import datetime
+from sqlalchemy import Table,Column,Integer,MetaData,create_engine,String,VARCHAR
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
 from datastructs import *
 from flask_sqlalchemy import SQLAlchemy
@@ -83,8 +85,10 @@ dbConn = ""
 dbSession = ""
 dbEngine = ""
 dburl = ""
+experimentsTable = ""
 
 def initDatabase():	
+	global dbConn, dbSession, dbEngine, dburl, experimentsTable
 	configFile = None
 	if os.path.isfile('.pacerc'):
 		configFile = '.pacerc'
@@ -96,6 +100,8 @@ def initDatabase():
 		configFile = '/pace/dev1/.pacerc'
 	elif os.path.isfile('/pace/dev2/.pacerc') and os.access("/pace/dev2/.pacerc", os.R_OK):
 		configFile = '/pace/dev2/.pacerc'
+	elif os.path.isfile('/pace/dev3/.pacerc') and os.access("/pace/dev3/.pacerc", os.R_OK):
+		configFile = '/pace/dev3/.pacerc'
 
 	if configFile:
 		print "Reading configuration from " + configFile 
@@ -114,6 +120,16 @@ def initDatabase():
 	dbConn = dbEngine.connect()
 	Base.metadata.create_all(dbEngine)
 	Base.metadata.bind = dbConn
-	dbSession = sessionmaker(bind=dbConn)
+	dbSessionf = sessionmaker(bind=dbConn)
+	dbSession = dbSessionf()
+
+	metadata = MetaData()
+	experimentsTable = Table('model_timing',metadata,\
+	Column('id',Integer,primary_key=True,autoincrement=True),\
+	Column('expID',Integer),\
+	Column('jsonVal',MEDIUMTEXT),\
+	Column('rank',VARCHAR(10)))
+
+	metadata.create_all(dbEngine)
 	return dbConn, dbEngine, dburl, dbSession
 
