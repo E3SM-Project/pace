@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import Table,Column,Integer,MetaData,create_engine,String,VARCHAR
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
+from pace_common import *
 
 # Database work					
 Base = declarative_base() 
@@ -53,12 +54,11 @@ class Runtime(Base):
 	model_years = Column(String(250), nullable=False)
 	
 
-class ModelTiming(Base):
-	__tablename__ = 'model_timing'
-	id = Column(Integer, primary_key=True,autoincrement=True)
-	expid=Column(Integer, nullable=False)
-	jsonVal=Column(MEDIUMTEXT, nullable=False)
-	rank=Column(Integer, nullable=False)
-
+# class ModelTiming(Base):
+# 	__tablename__ = 'model_timing'
+# 	id = Column(Integer, primary_key=True,autoincrement=True)
+# 	expid=Column(Integer, nullable=False)
+# 	jsonVal=Column(MEDIUMTEXT, nullable=False)
+# 	rank=Column(String(10), nullable=False)
 
 
