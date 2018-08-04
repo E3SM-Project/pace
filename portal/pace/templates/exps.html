@@ -1,11 +1,16 @@
 {% extends "layout.html" %}
-{% block content %}
+{% block topscripts %}
 	<title> PACE - Applications </title>
-		<script src="/static/js/jquery.tablesorter.js"></script>
-		<script src="/static/js/jquery.tablesorter.widgets.js"></script>
-		<script src="/static/js/jquery.tablesorter.pager.js"></script>
-		<link rel="stylesheet" href="/static/css/tablesorter/style.css" />
-		<link rel="stylesheet" href="/static/css/jquery.tablesorter.pager.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="/static/js/jquery.tablesorter.js"></script>
+	<script src="/static/js/jquery.tablesorter.widgets.js"></script>
+	<script src="/static/js/jquery.tablesorter.pager.js"></script>
+	<link rel="stylesheet" href="/static/css/tablesorter/style.css" />
+	<link rel="stylesheet" href="/static/css/jquery.tablesorter.pager.css"/>
+		<!--<script src="/static/tablesorter/dist/js/jquery.tablesorter.min.js"></script>-->
+		<!--<script src="/static/tablesorter/dist/js/jquery.tablesorter.widgets.min.js"></script>-->
+		<!--<script src="/static/tablesorter/dist/js/extras/jquery.tablesorter.pager.min.js"></script>-->
+		<!--<link rel="stylesheet" href="/static/tablesorter/dist/css/jquery.tablesorter.pager.min.css" />-->
 		<!-- Content -->
 
 		<script type="text/javascript">
@@ -16,9 +21,6 @@
 						format: function(text, table, cell, colNum) {
 							if (colNum == 0) {
 								cell.innerHTML = '<a href="exp-details/' + text + '">' + text +"</a>";
-							}
-							if (colNum == 8) {
-								cell.innerHTML = '<a href="platform/' + text + '">' + text +"</a>";
 							}
 						},
 						parsed: false,
@@ -45,7 +47,7 @@
 								rows = [];
 								for (var i = 0; i < data.data.length; i++) {
 									var o = data.data[i];
-									var row = [o.id, o.appName, o.appVersion, o.toolName, o.toolVersion, o.experiment, o.experimentDate, o.uploadedBy, o.platform];
+									var row = [o.expid, o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.grid];
 									rows.push(row);
 								}
 								return [numr, rows];
@@ -56,12 +58,13 @@
 			); 
 		</script>
 
+{% endblock %}
+{% block content %}
 
 				<h3> Experiments </h3>
 				<hr>
 
-				<div class="table-responsive">
-				<table id="appTable" class="table table-hover" >
+				<table id="expTable" class="tablesorter" >
 				<thead>
 				<tr>
 				    <th>ID</th>
@@ -87,19 +90,32 @@
 					<td>{{exp.model_throughput|truncate(4,false,'')}}</td>
 					<td>{{exp.mpi_tasks_per_node}}</td>
 					<td>{{exp.compset|truncate(50)}} </td>
-					<td>{{exp.grid}} </td>
+					<td>{{exp.grid|truncate(30)}} </td>
 				</tr>
 				{% endfor %}
 
 				</tbody>
 				</table>
-				</div>
+
+
 <div id="pager" class="pager">
-  <form>
-    <a class="prev">Previous page</a>
-    <span class="pagedisplay"></span> <!-- this can be any element, including an input -->
-    <a class="next">Next page</a>
+  <a class="prev">Previous page</a>
+  <span class="pagedisplay"></span> <!-- this can be any element, including an input -->
+  <a class="next">Next page</a>
+  <!--<form>-->
+    <!--<img src="first.png" class="first"/>-->
+  <!--  <img src="prev.png" class="prev"/>-->
+    <!-- the "pagedisplay" can be any element, including an input -->
+  <!--  <span class="pagedisplay" data-pager-output-filtered="{startRow:input} &ndash; {endRow} / {filteredRows} of {totalRows} total rows"></span>-->
+  <!--  <img src="next.png" class="next"/>-->
+    <!--<img src="last.png" class="last"/>-->
+  <!--  <select class="pagesize">-->
+  <!--    <option value="10">10</option>-->
+      <!--<option value="20">20</option>-->
+      <!--<option value="30">30</option>-->
+      <!--<option value="40">40</option>-->
+      <!--<option value="all">All Rows</option>-->
+  <!--  </select>-->
   </form>
 </div>
-
 {% endblock %}
