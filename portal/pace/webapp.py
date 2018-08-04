@@ -125,18 +125,27 @@ def experiments():
 @app.route("/exps")
 def expsList():
     myexps = []
-    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.asc()).limit(25)
+    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.asc()).limit(20)
     # myexps = Timingprofile.query.order_by(Timingprofile.expid.asc()).limit(25)
     return render_template('exps.html', explist = myexps)
+
+@app.route("/exp-details/<mexpid>")
+def expDetails(mexpid):
+    myexp = 0
+    myexp = dbSession.query(Timingprofile).filter_by(expid = mexpid).all()[0]
+    mypelayout = dbSession.query(Pelayout).filter_by(expid = mexpid).all()[0]
+    myruntime = dbSession.query(Runtime).filter_by(expid = mexpid).all()[0]
+    return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime)
 
 EXPS_PER_RQ=20
 @app.route("/ajax/exps/<int:pageNum>")
 def expsAjax(pageNum):
     numexps = dbSession.query(Timingprofile).count()
-    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.desc())[pageNum * EXPS_PER_RQ : (pageNum + 1) * EXPS_PER_RQ]
+    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.asc())[pageNum * EXPS_PER_RQ : (pageNum + 1) * EXPS_PER_RQ]
     pruned_data = {"numRows": numexps, "data": []}
     for exp in myexps:
-        pruned_data["data"].append({"id": str(exp.expid), "User": exp.user, "Machine": exp.machine, "Total PEs": exp.total_pes_active, "Run Length": exp.run_length, "Throughput": exp.model_throughput, "MPI tasks/node": str(exp.mpi_tasks_per_node), "Compset": exp.compset, "Grid": exp.grid})
+	# var row = [o.expid,o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.grid];
+        pruned_data["data"].append({"expid": exp.expid, "user": exp.user, "machine": exp.machine, "total_pes_active": exp.total_pes_active, "run_length": exp.run_length, "model_throughput": exp.model_throughput, "mpi_tasks_per_node": str(exp.mpi_tasks_per_node), "compset": exp.compset, "grid": exp.grid})
     return make_response(json.dumps(pruned_data))
 
 
