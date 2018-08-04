@@ -125,7 +125,19 @@ def experiments():
 @app.route("/exps")
 def expsList():
     myexps = []
-    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.desc()).limit(10)
+    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.asc()).limit(25)
+    # myexps = Timingprofile.query.order_by(Timingprofile.expid.asc()).limit(25)
     return render_template('exps.html', explist = myexps)
+
+EXPS_PER_RQ=20
+@app.route("/ajax/exps/<int:pageNum>")
+def expsAjax(pageNum):
+    numexps = dbSession.query(Timingprofile).count()
+    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.desc())[pageNum * EXPS_PER_RQ : (pageNum + 1) * EXPS_PER_RQ]
+    pruned_data = {"numRows": numexps, "data": []}
+    for exp in myexps:
+        pruned_data["data"].append({"id": str(exp.expid), "User": exp.user, "Machine": exp.machine, "Total PEs": exp.total_pes_active, "Run Length": exp.run_length, "Throughput": exp.model_throughput, "MPI tasks/node": str(exp.mpi_tasks_per_node), "Compset": exp.compset, "Grid": exp.grid})
+    return make_response(json.dumps(pruned_data))
+
 
 
