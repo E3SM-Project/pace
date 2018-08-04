@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+{% block topcontent %}
+<!--<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/default.min.css">-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<!--<script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/highlight.min.js"></script>-->
+<script>hljs.initHighlightingOnLoad();</script>
+{% endblock topcontent %}
+
+<h3> Experiment Details
+</h3>
+<!--<pre><code class="json" id="expdata">{{myjson|safe}}</code></pre>-->
+<pre><code id="expsummmary">
+Id: {{ exp.expid}}
+User: {{exp.user}} 
+MachineL {{exp.machine}} 
+Total PEs: {{exp.total_pes_active}} 
+Run length: {{exp.run_length}} 
+Throughput: {{exp.model_throughput|truncate(4,false,'')}}
+MPI tasks/node: {{exp.mpi_tasks_per_node}}
+Compset: {{exp.compset}} 
+Grid: {{exp.grid}} 
+
+Runtime: {{ runtime.seconds }} seconds
+Pelayout: {{ pelayout }}
+<a href="/static/data/experiment-{{exp.lid}}.zip">Download Raw Data</a>
+
+<!--<a href="../file-download/exp.rawData.outputFile._id">Download Raw Data</a>-->
+
+</code></pre>
+
+
+{% endblock %}
+
