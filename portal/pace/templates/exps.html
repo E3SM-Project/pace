@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{% block content %}
+	<title> PACE - Applications </title>
+		<script src="/static/js/jquery.tablesorter.js"></script>
+		<script src="/static/js/jquery.tablesorter.widgets.js"></script>
+		<script src="/static/js/jquery.tablesorter.pager.js"></script>
+		<link rel="stylesheet" href="/static/css/tablesorter/style.css" />
+		<link rel="stylesheet" href="/static/css/jquery.tablesorter.pager.css"/>
+		<!-- Content -->
+
+		<script type="text/javascript">
+			$(document).ready(function() 
+				{ 
+					$.tablesorter.addParser({
+						id: 'linkapplier',
+						format: function(text, table, cell, colNum) {
+							if (colNum == 0) {
+								cell.innerHTML = '<a href="exp-details/' + text + '">' + text +"</a>";
+							}
+							if (colNum == 8) {
+								cell.innerHTML = '<a href="platform/' + text + '">' + text +"</a>";
+							}
+						},
+						parsed: false,
+						type: 'text',
+						is: function(s, table, cell) { 
+						return true;
+						}
+					});
+					$("#expTable").tablesorter({
+					widgets: ['zebra'], 
+					theme: 'blue',
+					widthFixed: true
+					});
+					$("#expTable").tablesorterPager({
+						container: $(".pager"),
+						size: 10,
+						savePages: false,
+						processAjaxOnInit: false,
+						output: 'Experiments {startRow} to {endRow} (of {totalRows})',
+						ajaxUrl: "{{ request.script_root | safe }}/ajax/exps/{page}",
+						ajaxProcessing: function(data) {
+							if(data) {
+								var numr = data.numRows,
+								rows = [];
+								for (var i = 0; i < data.data.length; i++) {
+									var o = data.data[i];
+									var row = [o.id, o.appName, o.appVersion, o.toolName, o.toolVersion, o.experiment, o.experimentDate, o.uploadedBy, o.platform];
+									rows.push(row);
+								}
+								return [numr, rows];
+							}
+						}
+					}); 
+				} 
+			); 
+		</script>
+
+
+				<h3> Experiments </h3>
+				<hr>
+
+				<div class="table-responsive">
+				<table id="appTable" class="table table-hover" >
+				<thead>
+				<tr>
+				    <th>ID</th>
+				    <th>User</th>
+				    <th>Machine</th>
+				    <th>Total PEs</th>
+				    <th>Run length</th>
+				    <th>Throughput</th>
+				    <th>MPI tasks/node</th>
+				    <th>Compset</th>
+				    <th>Grid</th>
+				</tr>
+				</thead>
+				<tbody>
+
+				{% for exp in explist %}
+				<tr>
+					<td>{{exp.expid}}</td>
+					<td>{{exp.user}} </td>
+					<td>{{exp.machine}} </td>
+					<td>{{exp.total_pes_active}} </td>
+					<td>{{exp.run_length}} </td>
+					<td>{{exp.model_throughput|truncate(4,false,'')}}</td>
+					<td>{{exp.mpi_tasks_per_node}}</td>
+					<td>{{exp.compset|truncate(50)}} </td>
+					<td>{{exp.grid}} </td>
+				</tr>
+				{% endfor %}
+
+				</tbody>
+				</table>
+				</div>
+<div id="pager" class="pager">
+  <form>
+    <a class="prev">Previous page</a>
+    <span class="pagedisplay"></span> <!-- this can be any element, including an input -->
+    <a class="next">Next page</a>
+  </form>
+</div>
+
+{% endblock %}
