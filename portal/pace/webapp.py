@@ -101,7 +101,7 @@ def mtQuery():
         resultNodes = dbConn.execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and rank = '"+request.form['rank']+"'").fetchall()[0].jsonVal
     return "["+resultNodes+","+json.dumps(mt.valueList[0])+"]"
 
-@app.route("/exps")
+@app.route("/exps2")
 def experiments():
     #Convert table elements into dictionaries:
     def queryConvert(expQuery):
@@ -120,4 +120,12 @@ def experiments():
     except:
         #run the failsafe, which basically returns nothing... If this happens, we will read placeholder data by file.
         return render_template("experiments.html")
+
+
+@app.route("/exps")
+def expsList():
+    myexps = []
+    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.desc()).limit(10)
+    return render_template('exps.html', explist = myexps)
+
 
