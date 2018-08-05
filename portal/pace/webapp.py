@@ -125,6 +125,8 @@ def experiments():
 @app.route("/exps")
 def expsList():
     myexps = []
+    # initDatabase()
+    dbSession = dbSessionf()
     myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.asc()).limit(20)
     # myexps = Timingprofile.query.order_by(Timingprofile.expid.asc()).limit(25)
     return render_template('exps.html', explist = myexps)
@@ -132,6 +134,7 @@ def expsList():
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
     myexp = 0
+    dbSession = dbSessionf()
     myexp = dbSession.query(Timingprofile).filter_by(expid = mexpid).all()[0]
     mypelayout = dbSession.query(Pelayout).filter_by(expid = mexpid).all()[0]
     myruntime = dbSession.query(Runtime).filter_by(expid = mexpid).all()[0]
