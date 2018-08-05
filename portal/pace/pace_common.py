@@ -83,12 +83,13 @@ def readConfigFile(configFile):
 
 dbConn = ""
 dbSession = ""
+dbSessionf = ""
 dbEngine = ""
 dburl = ""
 experimentsTable = ""
 
 def initDatabase():	
-	global dbConn, dbSession, dbEngine, dburl, experimentsTable
+	global dbConn, dbSession, dbSessionf, dbEngine, dburl, experimentsTable
 	configFile = None
 	if os.path.isfile('.pacerc'):
 		configFile = '.pacerc'
@@ -116,7 +117,7 @@ def initDatabase():
 
 	dburl = 'mysql+pymysql://' + myuser + ':' + mypwd + '@' + myhost +  '/' + mydb
 
-	dbEngine = create_engine(dburl)
+	dbEngine = create_engine(dburl, pool_recycle=3600)
 	dbConn = dbEngine.connect()
 	Base.metadata.create_all(dbEngine)
 	Base.metadata.bind = dbConn
