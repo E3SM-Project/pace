@@ -55,7 +55,7 @@ def tableParse(lineInput):
         resultList.append(tableColumn)
     return resultList
 
-def createdatabase(filename):
+def insertExperiment(filename,dbSession):
 	if filename.endswith('.gz'):
 		parseFile=gzip.open(filename,'rb')
 	else:
@@ -154,6 +154,7 @@ def createdatabase(filename):
 	parseFile.close()
 	
 
+	# dbSession = dbSessionf()
 	# Insert an experiment in the experiment table
 	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],curr_date=onetags[6],grid=onetags[7],compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5])
 	dbSession.add(new_experiment)
@@ -173,7 +174,7 @@ def createdatabase(filename):
 		new_runtime = Runtime(expid=forexpid.expid,component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3])
 		dbSession.add(new_runtime)
 		i=i+4
-	# dbSession.commit()
+	dbSession.commit()
 	
 
 	print("-------------------------Stored-in-Database-------------------------------")
@@ -220,15 +221,15 @@ def parseData():
 					allfile.append(os.path.join(path, name))
 
 
-	dbSession = dbSessionf()
 	# parse and store timing profile file in a database
+	dbSession = dbSessionf()
 	exptag=[]
 	for i in range(len(allfile)):
-		a,b=createdatabase(allfile[i])
-		insertTiming(timingfile[i],b)	
+		a,b=insertExperiment(allfile[i],dbSession)
+		insertTiming(timingfile[i],b,dbSession)	
 		exptag.append(a)
+	dbSession.commit()
 
-	dbSession.commit() 
 	newroot='/pace/assets/static/data/'
 	# zip successfull experiments into folder experiments
 	for i in range(len(exptag)):
@@ -246,9 +247,10 @@ def parseData():
 	except OSError as e:
 		print("Error: %s - %s." % (e.filename, e.strerror))
 
-def insertTiming(mtFile,expID):
+def insertTiming(mtFile,expID,dbSession):
 	results = []
 	dirList = Popen(["tar","--list","-f",mtFile],stdout=PIPE).communicate()[0].split("\n")
+	# dbSession = dbSessionf()
 	for path in dirList:
 		if len(path.split("/")) > 1 and "." in path.split("/")[1]:
 	#This is a file we want! Let's save it:
