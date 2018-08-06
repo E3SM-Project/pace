@@ -54,11 +54,11 @@ class Runtime(Base):
 	model_years = Column(String(250), nullable=False)
 	
 
-# class ModelTiming(Base):
-# 	__tablename__ = 'model_timing'
-# 	id = Column(Integer, primary_key=True,autoincrement=True)
-# 	expid=Column(Integer, nullable=False)
-# 	jsonVal=Column(MEDIUMTEXT, nullable=False)
-# 	rank=Column(String(10), nullable=False)
+class ModelTiming(Base):
+	__tablename__ = 'model_timing'
+	id = Column(Integer, primary_key=True,autoincrement=True)
+	expid=Column(Integer, nullable=False)
+	jsonVal=Column(MEDIUMTEXT, nullable=False)
+	rank=Column(String(10), nullable=False)
 
 

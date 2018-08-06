@@ -227,6 +227,7 @@ def parseData():
 		insertTiming(timingfile[i],b)	
 		exptag.append(a)
 
+	dbSession.commit() 
 	newroot='/pace/assets/static/data/'
 	# zip successfull experiments into folder experiments
 	for i in range(len(exptag)):
@@ -245,14 +246,17 @@ def parseData():
 		print("Error: %s - %s." % (e.filename, e.strerror))
 
 def insertTiming(mtFile,expID):
-    results = []
-    dirList = Popen(["tar","--list","-f",mtFile],stdout=PIPE).communicate()[0].split("\n")
-    for path in dirList:
-        if len(path.split("/")) > 1 and "." in path.split("/")[1]:
-            #This is a file we want! Let's save it:
-            results.append({"expID":expID,"jsonVal":mt.parse(io.StringIO(u""+Popen(["tar","-xzf",mtFile,path,"-O"],stdout=PIPE).communicate()[0])),"rank":path.split("/")[1].split(".")[1]})
-    dbConn.execute(experimentsTable.insert(),results)
-    return
+	results = []
+	dirList = Popen(["tar","--list","-f",mtFile],stdout=PIPE).communicate()[0].split("\n")
+	for path in dirList:
+		if len(path.split("/")) > 1 and "." in path.split("/")[1]:
+	#This is a file we want! Let's save it:
+	# results.append({"expID":expID,"jsonVal":mt.parse(io.StringIO(u""+Popen(["tar","-xzf",mtFile,path,"-O"],stdout=PIPE).communicate()[0])),"rank":path.split("/")[1].split(".")[1]})
+			new_modeltiming = ModelTiming(expid=expID,jsonVal=mt.parse(io.StringIO(u""+Popen(["tar","-xzf",mtFile,path,"-O"],stdout=PIPE).communicate()[0])),rank=path.split("/")[1].split(".")[1]})
+dbSession.add(new_modeltiming)
+	# dbConn.execute(experimentsTable.insert(),results)
+	dbSession.commit()
+	return
 
 if __name__ == "__main__":
 	parseData()

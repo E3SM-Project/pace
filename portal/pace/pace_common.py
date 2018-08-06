@@ -124,13 +124,13 @@ def initDatabase():
 	dbSessionf = sessionmaker(bind=dbConn)
 	dbSession = dbSessionf()
 
-	metadata = MetaData()
-	experimentsTable = Table('model_timing',metadata,\
-	Column('id',Integer,primary_key=True,autoincrement=True),\
-	Column('expID',Integer),\
-	Column('jsonVal',MEDIUMTEXT),\
-	Column('rank',VARCHAR(10)))
+	# metadata = MetaData()
+	# experimentsTable = Table('model_timing',metadata,\
+	# Column('id',Integer,primary_key=True,autoincrement=True),\
+	# Column('expID',Integer),\
+	# Column('jsonVal',MEDIUMTEXT),\
+	# Column('rank',VARCHAR(10)))
+	# metadata.create_all(dbEngine)
 
-	metadata.create_all(dbEngine)
 	return dbConn, dbEngine, dburl, dbSession
 
