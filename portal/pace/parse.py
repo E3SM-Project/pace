@@ -173,7 +173,7 @@ def createdatabase(filename):
 		new_runtime = Runtime(expid=forexpid.expid,component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3])
 		dbSession.add(new_runtime)
 		i=i+4
-	dbSession.commit()
+	# dbSession.commit()
 	
 
 	print("-------------------------Stored-in-Database-------------------------------")
@@ -220,6 +220,7 @@ def parseData():
 					allfile.append(os.path.join(path, name))
 
 
+	dbSession = dbSessionf()
 	# parse and store timing profile file in a database
 	exptag=[]
 	for i in range(len(allfile)):
@@ -252,10 +253,10 @@ def insertTiming(mtFile,expID):
 		if len(path.split("/")) > 1 and "." in path.split("/")[1]:
 	#This is a file we want! Let's save it:
 	# results.append({"expID":expID,"jsonVal":mt.parse(io.StringIO(u""+Popen(["tar","-xzf",mtFile,path,"-O"],stdout=PIPE).communicate()[0])),"rank":path.split("/")[1].split(".")[1]})
-			new_modeltiming = ModelTiming(expid=expID,jsonVal=mt.parse(io.StringIO(u""+Popen(["tar","-xzf",mtFile,path,"-O"],stdout=PIPE).communicate()[0])),rank=path.split("/")[1].split(".")[1]})
-dbSession.add(new_modeltiming)
+			new_modeltiming = ModelTiming(expid=expID,jsonVal=mt.parse(io.StringIO(u""+Popen(["tar","-xzf",mtFile,path,"-O"],stdout=PIPE).communicate()[0])),rank=path.split("/")[1].split(".")[1])
+			dbSession.add(new_modeltiming)
 	# dbConn.execute(experimentsTable.insert(),results)
-	dbSession.commit()
+	# dbSession.commit()
 	return
 
 if __name__ == "__main__":
