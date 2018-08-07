@@ -114,6 +114,9 @@ def experiments():
             resultList.append(resultListElement)
         return resultList
     try:
+        initDatabase()
+        # dbSession = dbSessionf()
+        # expSelection = queryConvert(dbSession.query(Timingprofile).	
         expSelection = queryConvert(dbConn.execute("select lid,expID from timing_profile").fetchall())
         expExtensions = queryConvert(dbConn.execute("select expID,rank from model_timing").fetchall())
         return render_template("experiments.html",expS = "var experiments="+json.dumps(expSelection),expE = "var extensions="+json.dumps(expExtensions))
@@ -129,6 +132,7 @@ def expsList():
     dbSession = dbSessionf()
     myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.asc()).limit(20)
     # myexps = Timingprofile.query.order_by(Timingprofile.expid.asc()).limit(25)
+    dbSession.close()
     return render_template('exps.html', explist = myexps)
 
 @app.route("/exp-details/<mexpid>")
@@ -138,17 +142,20 @@ def expDetails(mexpid):
     myexp = dbSession.query(Timingprofile).filter_by(expid = mexpid).all()[0]
     mypelayout = dbSession.query(Pelayout).filter_by(expid = mexpid).all()[0]
     myruntime = dbSession.query(Runtime).filter_by(expid = mexpid).all()[0]
+    dbSession.close()
     return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime)
 
 EXPS_PER_RQ=20
 @app.route("/ajax/exps/<int:pageNum>")
 def expsAjax(pageNum):
+    dbSession = dbSessionf()
     numexps = dbSession.query(Timingprofile).count()
     myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.asc())[pageNum * EXPS_PER_RQ : (pageNum + 1) * EXPS_PER_RQ]
     pruned_data = {"numRows": numexps, "data": []}
     for exp in myexps:
 	# var row = [o.expid,o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.grid];
         pruned_data["data"].append({"expid": exp.expid, "user": exp.user, "machine": exp.machine, "total_pes_active": exp.total_pes_active, "run_length": exp.run_length, "model_throughput": exp.model_throughput, "mpi_tasks_per_node": str(exp.mpi_tasks_per_node), "compset": exp.compset, "grid": exp.grid})
+    dbSession.close()
     return make_response(json.dumps(pruned_data))
 
 

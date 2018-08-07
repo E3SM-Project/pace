@@ -82,14 +82,14 @@ def readConfigFile(configFile):
 	return myuser, mypwd, mydb, myhost
 
 dbConn = ""
-dbSession = ""
+# dbSession = ""
 dbSessionf = ""
 dbEngine = ""
 dburl = ""
 experimentsTable = ""
 
 def initDatabase():	
-	global dbConn, dbSession, dbSessionf, dbEngine, dburl, experimentsTable
+	global dbConn, dbSessionf, dbEngine, dburl, experimentsTable
 	configFile = None
 	if os.path.isfile('.pacerc'):
 		configFile = '.pacerc'
@@ -122,7 +122,7 @@ def initDatabase():
 	Base.metadata.create_all(dbEngine)
 	Base.metadata.bind = dbConn
 	dbSessionf = sessionmaker(bind=dbConn)
-	dbSession = dbSessionf()
+	# dbSession = dbSessionf()
 
 	# metadata = MetaData()
 	# experimentsTable = Table('model_timing',metadata,\
@@ -132,5 +132,5 @@ def initDatabase():
 	# Column('rank',VARCHAR(10)))
 	# metadata.create_all(dbEngine)
 
-	return dbConn, dbEngine, dburl, dbSession
+	return dbConn, dbEngine, dburl, dbSessionf
 
