@@ -2,16 +2,32 @@
 //Purpose: A fun loading screen for PACE! This may or may not be needed, depending on the size of the JSON we load... (P.S, HI SARAT + GARUAB + RANDOM PERSON!!!)
 //What we're going for here is an html-free way to load these elements & play with them without directly writing inside modelTiming.html...
 //load the images:
-var barImg = [];
-var barTd=[];
-var barPercent=[[25,false],[50,false],[75,false],[100,false]];
+var chartBars = [];
 var barInterval;
+
+//Bar object: a simple object to keep track of each bar's values
+function chartBar(src,percent, upDown=false,speed = 10){
+    this.img = document.createElement("img");
+    this.img.src=src;
+    this.percent = percent;
+    this.upDown = upDown;
+    this.speed = speed;
+    this.move = function(movingSpeed = this.speed){
+        if(this.upDown){
+            this.percent+=movingSpeed;
+        }
+        else{
+            this.percent-=movingSpeed;
+        }
+        if(this.percent >= 100 && this.upDown)
+            this.upDown = false;
+        else if(this.percent <= 0 && !this.upDown)
+            this.upDown = true;
+    }
+}
+
 ["P","R","B","G"].forEach((letter,index)=>{
-    barImg[index] = document.createElement("img");
-    barTd[index] = document.createElement("td");
-    barImg[index].src="../static/img/bar"+letter+".png";
-    barImg[index].style.width="100%";
-    barTd[index].appendChild(barImg[index]);
+    chartBars.push(new chartBar("../static/img/bar"+letter+".svg", 100-(20 * (index+1 )) ));
 });
 
 //Stylesheet for fading in & out:
@@ -20,44 +36,54 @@ lsFade.innerHTML=`
 .loadScreen{
   position:absolute;
   top:0px;
-  width:100%;
-  height:100%;
-  background-color:white;
   animation: fadeIn .3s;
+  background-color:white;
 }
 @keyframes fadeIn{
     from{opacity:0;}
     to{opacity:1;}
 }`;
-//The load-screen background:
-lsBackground = document.createElement("div");
 
+lsBackground = document.createElement("canvas");
 lsBackground.className="loadScreen";
-lsBackground.innerHTML="<table style='margin-top:25%;margin-left:25%'><tbody><tr id='lsTableRow'></tr></tbody></table>";
-
-barTd.forEach((element)=>{
-    lsBackground.getElementsByTagName("tr")[0].appendChild(element);
-});
-
-function moveBar(index,speed){
-    if(barPercent[index][1]){
-        barPercent[index][0]+=speed;
-    }
-    else{
-        barPercent[index][0]-=speed;
-    }
-    barImg[index].style.height = barPercent[index][0] + "%";
-    barImg[index].style.marginTop = (100 - barPercent[index][0]*1.5) + "%";
-    if(barPercent[index][0] >= 100 && barPercent[index][1])
-        barPercent[index][1] = false;
-    else if(barPercent[index][0] <= 0 && !barPercent[index][1])
-        barPercent[index][1] = true;
+var lsContext = lsBackground.getContext("2d");
+//Due to technical limitations, I can't directly implement a listener for this load screen, but I can provide it!
+//This can rest inside a window.onresize function.
+var paceLoadResize = function(){
+    lsBackground.width=window.innerWidth;
+    lsBackground.height=window.innerHeight;
+    lsDraw();
 }
 
-function animate(tf=true,speed=10){
+//Animate the bars!
+function lsDraw(){
+    lsContext.clearRect(0,0,window.innerWidth,window.innerHeight);
+    let currX = (window.innerWidth/2) - ( chartBars[0].img.width * (chartBars.length / 2) );
+    let sizeMod = 100;
+    //Resize the charts if they don't fit:
+    /*if( window.innerWidth*.6 < chartBars[0].img.width*chartBars.length )
+        sizeMod*= 100;*/
+    //render each bar based on the resolution:
+    chartBars.forEach((element)=>{
+        //Firefox is a special snowflake, so transforming is disabled there :/
+        //got this from https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser :
+        let transform = typeof InstallTrigger == 'undefined';
+        lsContext.setTransform(1,0,0,1,0,(100-(element.percent * 2) ));
+        lsContext.drawImage(element.img,currX,window.innerHeight/2,element.img.width,element.img.height * (transform? (element.percent *.01):1) );
+        currX+=element.img.width;
+    });
+}
+
+function animate(tf=true,speed){
     if(tf){
+        paceLoadResize();
         function newInterval(){
-            barInterval = setInterval( (()=>{moveBar(0,speed);moveBar(1,speed);moveBar(2,speed);moveBar(3,speed)}),16.6);
+            barInterval = setInterval( (()=>{
+                chartBars.forEach((element)=>{
+                    element.move(speed);
+                });
+                lsDraw();
+            }),16.6);
         }
         if(!barInterval){
             document.body.appendChild(lsFade);
