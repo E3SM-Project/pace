@@ -66,13 +66,24 @@
 	<script src="/static/js/modelTiming.js"></script>
 	<script src="/static/js/paceLoadScreen.js"></script>
 	<script>//Fire up the summary:
-    var expData = undefined
+    var expData = undefined;
     {{exp|safe}}
+    /*$(document).ajaxError(()=>{
+        if(expGetFunc.length > 0){
+            alert("Could not find this experiment");
+            //location.replace("/exps");
+        }
+    });*/
 	$(document).ready(()=>{
 			animate();
-			expGetFunc.push(()=>{currExp = expList[0];currExp.view();animate(false);dataList.children[0].click();});
+			expGetFunc.push(()=>{
+                currExp = expList[0];currExp.view();animate(false);
+                if(window.location.hash=="")
+                    window.location.hash="#summary";
+                else window.onhashchange();
+                });
             if(expData!=undefined)
-                getExperiment(expData.split("|")[0],expData.split("|")[1]);
-			else getExperiment(1,"0000");
+                getExperiment(expData[0],expData[1]);
+			else getExperiment(-1,"0000");
 			});</script>
 {% endblock %}
