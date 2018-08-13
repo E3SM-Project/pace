@@ -3,6 +3,8 @@
 var triggerResize;
 //adjust the size of the dataList to reflect the graph's height:
 window.onresize = function(){
+        if(typeof(paceLoadResize)!=undefined && document.getElementsByClassName("loadScreen").length!=0)
+            paceLoadResize();
         dataList.style.height = chartTag.style.height;
         clearTimeout(triggerResize);
         triggerResize=setTimeout(()=>{dataList.style.height = chartTag.style.height;},10)
@@ -25,8 +27,9 @@ summaryButton.onclick=function(){
     window.location.hash="summary";
 }
 
-window.onhashchange = function(event){
-    event.preventDefault();
+window.onhashchange = function(event = undefined){
+    if(event)
+        event.preventDefault();
     window.scrollBy(0,-window.innerHeight)
     let clickID = "";
     let hash = window.location.hash.split("#");

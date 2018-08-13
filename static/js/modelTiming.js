@@ -75,12 +75,11 @@ function experiment(timeNodes,valueNames){
 function getExperiment(expSrc,extSrc){
     expGetCount++;
     //jquery test
-    $.post("./mtQuery/",{expID:expSrc,rank:extSrc},function(data,status){
+    $.post("/mtQuery/",{expID:expSrc,rank:extSrc},function(data,status){
         if(status == "success"){
             results = JSON.parse(data);
             expList.push(new experiment(results[0],results[1]));
         }
-        else alert("Could not find this experiment");
         expGetCount--;
         if(expGetCount == 0){
             expGetFunc.forEach((element)=>{
