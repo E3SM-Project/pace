@@ -35,9 +35,10 @@
 								expid = text;
 								cell.innerHTML = '<a href="exp-details/' + text + '">' + text +"</a>";
 							}
-							if (colNum == 7 ) {
-								cell.innerHTML = '<a href="exp-details/' + expid + '">' + text +"</a>";
+							if (colNum == 9 ) {
+								cell.innerHTML = '<a href="mt/' + expid + '/0000' + '">' + text +"</a>";
 							}
+
 						},
 						parsed: false,
 						type: 'text',
@@ -64,7 +65,7 @@
 								rows = [];
 								for (var i = 0; i < data.data.length; i++) {
 									var o = data.data[i];
-									var row = [o.expid,o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.grid];
+									var row = [o.expid,o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.grid,o.expid];
 									rows.push(row);
 								}
 								return [numr, rows];
@@ -93,6 +94,7 @@
 				    <th>MPI tasks/node</th>
 				    <th>Compset</th>
 				    <th>Grid</th>
+				    <th>Chart</th>
 				</tr>
 				</thead>
 				<tbody>
@@ -108,6 +110,7 @@
 					<td>{{exp.mpi_tasks_per_node}}</td>
 					<td>{{exp.compset|truncate(50)}} </td>
 					<td>{{exp.grid|truncate(30)}} </td>
+					<td>Chart</td>
 				</tr>
 				{% endfor %}
 
