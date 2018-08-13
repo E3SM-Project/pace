@@ -27,11 +27,11 @@ function makeTable(){
         total+="<tr><td>"+element.lid+"</td><td>";
         for(let i=0;i<extensions.length;i++){
             if(element.expID == extensions[i].expID)
-                total+="<a href='#' class='link' onclick='submitButton.value=\""+extensions[i].expID+'|'+extensions[i].rank+"\";submitButton.click()'>"+extensions[i].rank+"</a>";
+                total+="<a class='link' href='/mt/"+extensions[i].expID+'/'+extensions[i].rank+"';submitButton.click()'>"+extensions[i].rank+"</a>";
         }
         total+="</td></tr>";
     });
-    return total+"</tbody></table><button id='submitButton' name='exp' style='display:none' value='-1|0000' type='submit'></button></form>";
+    return total+"</tbody></table></form>";
 }
 document.head.innerHTML+=""
 $(document).ready(function(){
