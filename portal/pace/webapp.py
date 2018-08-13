@@ -85,12 +85,9 @@ def page_not_found(error):
 	return render_template('error.html'), 404	
 
 #Model Timing web-interface.
-@app.route("/mt",methods=["POST","GET"])
-def mthtml():
-    expData = ""
-    if len(request.form) > 0:
-        expData = "var expData = '"+request.form["exp"]+"';"
-    return render_template("modelTiming.html",exp = expData)
+@app.route("/mt/<expID>/<rank>")
+def mthtml(expID,rank):
+    return render_template("modelTiming.html",exp = "var expData = ['"+str(expID)+"','"+rank+"'];")
 
 @app.route("/mtQuery/",methods=["POST"])
 def mtQuery():
@@ -157,6 +154,3 @@ def expsAjax(pageNum):
         pruned_data["data"].append({"expid": exp.expid, "user": exp.user, "machine": exp.machine, "total_pes_active": exp.total_pes_active, "run_length": exp.run_length, "model_throughput": exp.model_throughput, "mpi_tasks_per_node": str(exp.mpi_tasks_per_node), "compset": exp.compset, "grid": exp.grid})
     dbSession.close()
     return make_response(json.dumps(pruned_data))
-
-
-
