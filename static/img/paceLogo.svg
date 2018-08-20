@@ -16,8 +16,8 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="paceLogoProto5E.svg"
-   inkscape:export-filename="/home/zachary/Pictures/svg/paceLogo/proto5/renders/paceLogoProto5E.png"
+   sodipodi:docname="paceLogoProto6A.svg"
+   inkscape:export-filename="/home/zachary/Pictures/svg/paceLogo/proto6/renders/paceLogoProto6A.png"
    inkscape:export-xdpi="200"
    inkscape:export-ydpi="200">
   <defs
@@ -54,7 +54,7 @@
          offset="0"
          id="stop4217" />
       <stop
-         style="stop-color:#2db9ff;stop-opacity:0"
+         style="stop-color:#ffffff;stop-opacity:1"
          offset="1"
          id="stop4219" />
     </linearGradient>
@@ -133,7 +133,7 @@
        x2="370.87045"
        y2="346.14511"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1,0,0,0.53753039,-58.45604,39.688978)" />
+       gradientTransform="matrix(0.99770329,0,0,0.53753039,-58.30439,39.688978)" />
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient4292"
@@ -143,7 +143,7 @@
        x2="688.01331"
        y2="369.72302"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1,0,0,0.53753039,-58.45604,39.688978)" />
+       gradientTransform="matrix(0.99770329,0,0,0.53753039,-58.30439,39.688978)" />
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient4215"
@@ -153,7 +153,7 @@
        x2="246.84743"
        y2="211.65123"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(0.80427947,0,0,0.7576732,112.92235,43.03639)" />
+       gradientTransform="matrix(0.80247281,0,0,0.75767316,112.91939,43.174513)" />
     <filter
        inkscape:collect="always"
        style="color-interpolation-filters:sRGB"
@@ -185,9 +185,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="295.38065"
-     inkscape:cy="-70.793073"
+     inkscape:zoom="2"
+     inkscape:cx="284.85668"
+     inkscape:cy="46.554624"
      inkscape:document-units="px"
      inkscape:current-layer="layer3"
      showgrid="false"
@@ -224,16 +224,17 @@
     <rect
        style="opacity:1;fill:url(#linearGradient4198);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4212"
-       width="626.4071"
-       height="200.00002"
-       x="-0.25126281"
-       y="99.861877" />
+       width="625"
+       height="200"
+       x="0"
+       y="100"
+       ry="28.284269" />
     <path
        style="opacity:0.70499998;fill:url(#linearGradient4290);fill-opacity:1;fill-rule:evenodd;stroke:url(#linearGradient4298);stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 1.6148222,297.5 C 37.822023,290.19637 53.04951,248.87085 89.105879,220.68115 110.0906,310.63892 175.49286,282.56813 232.114,257.04664 c 20.4782,41.55271 103.35305,26.64686 143.00812,0 4.26305,30.98044 65.29326,33.45399 108.16466,18.93222 19.52845,-6.61485 34.84347,-18.93222 34.84347,-18.93222 -0.48007,9.49482 8.54678,24.72107 19.03214,24.87448 30.2322,0.44235 40.68984,-3.73066 85.88224,15.57888 z"
+       d="m 6.717091,277.3109 c 36.124043,-7.30363 46.227973,-28.44005 82.201531,-56.62975 20.936528,89.95777 86.188578,61.88698 142.679678,36.36549 20.43116,41.55271 103.11567,26.64686 142.67967,0 4.25326,30.98044 65.1433,33.45399 107.91623,18.93222 19.4836,-6.61485 34.76345,-18.93222 34.76345,-18.93222 -0.47897,9.49482 7.29729,26.21019 17.7413,25.58877 46.58001,-2.77151 52.87842,3.93412 87.64476,-7.27363 0.59577,13.79353 -15.22077,23.2613 -31.94606,23.21367 -79.78856,-0.22724 -436.0028,0.34825 -548.403664,0 -16.330859,-0.0506 -32.4707518,-3.19364 -34.8224001,-9.28292 z"
        id="path4277"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccscscc" />
+       sodipodi:nodetypes="ccccscscsscc" />
   </g>
   <g
      inkscape:label="Layer 1"
@@ -246,8 +247,8 @@
       <ellipse
          ry="5.9375"
          rx="6.0531249"
-         cy="269.10037"
-         cx="10.975421"
+         cy="256.22092"
+         cx="10.189887"
          id="path9238"
          style="opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#1267be;stroke-width:2;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.70588235" />
       <ellipse
@@ -260,7 +261,7 @@
       <ellipse
          ry="5.9375"
          rx="6.0531249"
-         cy="234.30836"
+         cy="228.95122"
          cx="54.822876"
          id="ellipse9242"
          style="opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#1067bc;stroke-width:2;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.70588235" />
@@ -328,11 +329,6 @@
        xml:space="preserve"
        id="flowRoot4614"
        style="font-style:normal;font-weight:normal;font-size:25px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"><flowRegion
-         id="flowRegion4616"><rect
-           id="rect4618"
-           width="89.285713"
-           height="93.571426"
-           x="268.57144"
-           y="266.42856" /></flowRegion><flowPara
+         id="flowRegion4616" /><flowPara
          id="flowPara4620" /></flowRoot>  </g>
 </svg>
