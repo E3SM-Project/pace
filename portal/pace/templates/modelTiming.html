@@ -77,7 +77,7 @@
 	$(document).ready(()=>{
 			animate();
 			expGetFunc.push(()=>{
-                currExp = expList[0];currExp.view();animate(false);
+                currExp = expList[0];animate(false);currExp.view();
                 if(window.location.hash=="")
                     window.location.hash="#summary";
                 else window.onhashchange();

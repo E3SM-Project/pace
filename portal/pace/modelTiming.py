@@ -39,7 +39,7 @@ def getData(src):
     sourceFile.seek(0,0)
     lineCount=0
     if isStat:
-        threadIndexes.append(6)
+        threadIndexes.append(7)
 
     for line in threadIndexes:
         resultLines.append([])
