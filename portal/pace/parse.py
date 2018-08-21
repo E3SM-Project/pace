@@ -248,17 +248,20 @@ def parseData():
 		print("Error: %s - %s." % (e.filename, e.strerror))
 
 def insertTiming(mtFile,expID,dbSession):
-	results = []
-	dirList = Popen(["tar","--list","-f",mtFile],stdout=PIPE).communicate()[0].split("\n")
-	# dbSession = dbSessionf()
-	for path in dirList:
-		if len(path.split("/")) > 1 and "." in path.split("/")[1]:
-	#This is a file we want! Let's save it:
-	# results.append({"expID":expID,"jsonVal":mt.parse(io.StringIO(u""+Popen(["tar","-xzf",mtFile,path,"-O"],stdout=PIPE).communicate()[0])),"rank":path.split("/")[1].split(".")[1]})
-			new_modeltiming = ModelTiming(expid=expID,jsonVal=mt.parse(io.StringIO(u""+Popen(["tar","-xzf",mtFile,path,"-O"],stdout=PIPE).communicate()[0])),rank=path.split("/")[1].split(".")[1])
+	sourceFile = tarfile.open(mtFile)
+	for element in sourceFile:
+		#to determine everything, this string is split two different ways:
+		underScore = element.name.split("_")
+		slash = element.name.split("/")
+		if len(slash) == 2 and ( ("." in slash[1]) or underScore[len(underScore)-1] == "stats"):
+			rankStr = ""
+			if "." in slash[1]:
+				rankStr = slash[1].split(".")[1]
+			elif underScore[len(underScore)-1] == "stats":
+				rankStr = underScore[len(underScore)-1]
+			#This is a file we want! Let's save it:
+			new_modeltiming = ModelTiming(expid=expID,jsonVal=mt.parse(sourceFile.extractfile(element)),rank=rankStr)
 			dbSession.add(new_modeltiming)
-	# dbConn.execute(experimentsTable.insert(),results)
-	# dbSession.commit()
 	return
 
 if __name__ == "__main__":
