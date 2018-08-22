@@ -27,7 +27,7 @@ function chartBar(src,percent, upDown=false,speed = 10){
 }
 
 ["P","R","B","G"].forEach((letter,index)=>{
-    chartBars.push(new chartBar("../static/img/bar"+letter+".svg", 100-(20 * (index+1 )) ));
+    chartBars.push(new chartBar("/static/img/bar"+letter+".svg", 100-(20 * (index+1 )) ));
 });
 
 //Stylesheet for fading in & out:
