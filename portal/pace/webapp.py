@@ -1,10 +1,6 @@
 #! /usr/bin/env python
 
-from flask import Flask
-from flask import render_template
-from flask import Response
-from flask import make_response 
-from flask import send_from_directory
+from flask import Flask,render_template,Response,make_response,send_from_directory,request,redirect,url_for
 from collections import OrderedDict
 from pace import app
 import parse as parse
@@ -17,7 +13,6 @@ import urllib
 #Model Timing Library:
 import modelTiming as mt
 #modelTiming database information:
-
 from pace_common import *
 
 UPLOAD_FOLDER='/pace/prod/portal/upload'
@@ -25,7 +20,6 @@ UPLOAD_FOLDER='/pace/prod/portal/upload'
 ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
 
 # Uploading file
-from flask import request,redirect,url_for
 from werkzeug.utils import secure_filename
 import os
 
