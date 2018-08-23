@@ -51,7 +51,7 @@
                     <option value="avg">Average</option>
                 </select>
                 <select id="threadSelect"></select>
-                <input type="checkbox" onclick="stackedCharts = this.checked;changeGraph(currExp.currentEntry);" checked>Stacked bars</input>
+                <input type="checkbox" onclick="stackedCharts = this.checked;if(comparisonMode.on) comparisonMode.viewChart(comparisonMode.exp.currentEntry.name);else changeGraph(currExp.currentEntry);" checked>Stacked bars</input>
             </div>
             <div id="dataInfo"><canvas id="chartTag"></canvas></div>
             <div id="dataList"><button id="summaryButton">Summary</button><div id="listContent"></div></div>
