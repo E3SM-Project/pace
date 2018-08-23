@@ -14,12 +14,12 @@ backButton.onclick = function(){
         if(currExp.currentEntry.name == currExp.currentEntry.parent.name)
             summaryButton.click();
         else document.getElementById(currExp.currentEntry.parent.name).click();
-    }   
+    }
 }
 
 summaryButton.onclick=function(){
     let root={children:currExp.timeNodes[currExp.currThread]};
-    resultChart.options.title.text='Model Timing';
+    resultChart.options.title.text=(comparisonMode.on?comparisonMode.exp.name:currExp.name);
     changeGraph(root);
     currExp.currentEntry=root;
     okToClick = false;
