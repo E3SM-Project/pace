@@ -40,7 +40,7 @@ function addressTable(vals=undefined,jsonArray=false){
 }
 
 //This holds a single experiment. The goal is to be able to compare multiples, so they are compartmentelized here.
-function experiment(timeNodes,valueNames){
+function experiment(timeNodes,valueNames,name = "Unnamed Experiment"){
     this.timeNodes = timeNodes;
     //Whichever node is selected, everything in the code will follow this index for appropriate addressing:
     this.currThread = 0;
@@ -50,8 +50,9 @@ function experiment(timeNodes,valueNames){
     this.nodeTableList = [];
     this.nodeDomList = [];
     this.threadSelectInner = "";
-    this.valueSelectInner = "";
+    this.valueSelectInner = "<option value='nodes'>Nodes</option><option value='min/max'>Min / Max</option>";
     this.valueNames = valueNames;
+    this.name = name;
 
     //Construct:
     this.timeNodes.forEach((thread,i)=>{
@@ -60,7 +61,7 @@ function experiment(timeNodes,valueNames){
         this.threadSelectInner+="<option "+ (!i?"selected":"")+" value="+i+" >Thread "+i+"</option>";
     });
     this.valueNames.forEach((name)=>{
-        this.valueSelectInner+="<option value='nodes'>Nodes</option><option value='min/max'>Min / Max</option><option "+(name=="wallClock"?"selected":"")+" value='"+name+"'>"+name+"</option>";
+        this.valueSelectInner+="<option "+(name=="wallClock"?"selected":"")+" value='"+name+"'>"+name+"</option>";
     });
 
     this.view = function(){
@@ -75,10 +76,10 @@ function experiment(timeNodes,valueNames){
 function getExperiment(expSrc,extSrc){
     expGetCount++;
     //jquery test
-    $.post("/mtQuery/",{expID:expSrc,rank:extSrc},function(data,status){
+    $.post("../../mtQuery/",{expID:expSrc,rank:extSrc},function(data,status){
         if(status == "success"){
             results = JSON.parse(data);
-            expList.push(new experiment(results[0],results[1]));
+            expList.push(new experiment(results[0],results[1],results[2]));
         }
         expGetCount--;
         if(expGetCount == 0){

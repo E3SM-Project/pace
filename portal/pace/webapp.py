@@ -86,11 +86,16 @@ def mthtml(expID,rank):
 @app.route("/mtQuery/",methods=["POST"])
 def mtQuery():
     resultNodes=""
+    resultName="failsafe file"
+    listIndex = 0
+    if request.form['rank'] == 'stats':
+        listIndex = 1
     if len(request.form) > 0 and request.form["expID"] == "-1":
         resultNodes = mt.parse("/pace/assets/static/model_timing.0000.new")
     else:
         resultNodes = dbConn.execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and rank = '"+request.form['rank']+"'").fetchall()[0].jsonVal
-    return "["+resultNodes+","+json.dumps(mt.valueList[0])+"]"
+        resultName = dbConn.execute("select expid from timing_profile where expid = "+request.form["expID"]).fetchall()[0].expid
+    return "["+resultNodes+","+json.dumps(mt.valueList[listIndex])+",\""+str(resultName)+"\"]"
 
 @app.route("/exps2")
 def experiments():
