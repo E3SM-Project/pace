@@ -1,9 +1,6 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, ForeignKey, Integer, String, TEXT
+from sqlalchemy.orm import sessionmaker,relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from sqlalchemy import Table,Column,Integer,MetaData,create_engine,String,VARCHAR
+from sqlalchemy import Table,Column,Integer,MetaData,create_engine,String,VARCHAR,ForeignKey,TEXT
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from pace_common import *
 
@@ -60,5 +57,3 @@ class ModelTiming(Base):
 	expid=Column(Integer, nullable=False)
 	jsonVal=Column(MEDIUMTEXT, nullable=False)
 	rank=Column(String(10), nullable=False)
-
-

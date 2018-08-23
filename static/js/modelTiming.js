@@ -108,7 +108,8 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
         listElement.id=node.name;
         listElement.innerHTML+="<span>"+node.name+"</span>";
         listElement.onclick = function(){
-            if(currExp.currentEntry!=undefined && currExp.currentEntry.name == this.id && currExp.nodeTableList[currExp.currThread][this.id].children.length > 0){
+            targetExp = (comparisonMode.on?comparisonMode.exp:currExp);
+            if(targetExp.currentEntry!=undefined && targetExp.currentEntry.name == this.id && targetExp.nodeTableList[targetExp.currThread][this.id].children.length > 0){
                 let listTag = this.getElementsByTagName("ul")[0].style;
                 listTag.display=(listTag.display=="none"?"":"none");
                 //Pretty much stops all other clicks from triggering.
@@ -118,21 +119,24 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
                 setTimeout(()=>{okToClick = true;},10);
             }
             else if(okToClick){
-                if (currExp.currentEntry == undefined || currExp.currentEntry.name!= this.id){
+                if (targetExp.currentEntry == undefined || targetExp.currentEntry.name!= this.id){
                     this.style.fontWeight="bold";
-                    if(currExp.currentEntry !=undefined && currExp.currentEntry.name !=undefined)
-                        document.getElementById(currExp.currentEntry.name).style.fontWeight="";
-                    currExp.currentEntry = currExp.nodeTableList[currExp.currThread][this.id];
+                    if(targetExp.currentEntry !=undefined && targetExp.currentEntry.name !=undefined)
+                        document.getElementById(targetExp.currentEntry.name).style.fontWeight="";
+                    targetExp.currentEntry = targetExp.nodeTableList[targetExp.currThread][this.id];
                 }
                 okToClick = false;
                 window.location.hash=this.id;
                 setTimeout(()=>{okToClick = true;},10);
                 
                 //Display appropriate graph info:
-                if(currExp.nodeTableList[currExp.currThread][this.id].children.length > 0){
+                if(targetExp.nodeTableList[targetExp.currThread][this.id].children.length > 0){
                     resultChart.options.title.text=this.id;
+                    if(comparisonMode.on){
+                        setTimeout(()=>{comparisonMode.viewChart(this.id);},10);
+                    }
                     //Strange... there's a small chance that something asynchronous will take too long before chart.js can render the chart... LET'S FIX THAT!
-                    setTimeout(()=>{changeGraph(currExp.nodeTableList[currExp.currThread][this.id]);},10);
+                    else setTimeout(()=>{changeGraph(currExp.nodeTableList[currExp.currThread][this.id]);},10);
                 }
             }
         };
@@ -321,4 +325,94 @@ function arrayToPercentages(arrayIn){
         ratioVals.push((100/biggestNumber)*element);
     })
     return ratioVals;
+}
+
+var comparisonMode = {
+    on:false,
+    exp:undefined,
+    relatedNodes:[],
+    activeNodes:undefined,
+    new:function(timeNodeList,valList){
+        this.exp = new experiment([this.genList(timeNodeList)],valList);
+        let relNodeTemp = this.genList(timeNodeList,true);
+        this.relatedNodes = [];
+        relNodeTemp.forEach(element=>{
+            this.relatedNodes.push(new addressTable(element,true));
+        });
+    },
+    //Generates a compiled comparison between experiments selected by the user.
+    genList:function(timeNodeList,shallowSearch=false){
+        //timeNodeList holds all objects for comparison.
+        //Check linearly in each node in all arguments if any names are similiar, we will then go through more
+        let nameFrequencies = {};
+        let nameList = [];
+        for(let i=0;i<timeNodeList.length;i++){
+            for(let j=0;j<timeNodeList[i].length;j++){
+                if(!nameFrequencies[timeNodeList[i][j].name]){
+                    nameFrequencies[timeNodeList[i][j].name] = [i];
+                    nameList.push(timeNodeList[i][j].name);
+                }
+                else nameFrequencies[timeNodeList[i][j].name].push(i);
+            }
+        }
+        //this mode just returns a list of timeNodes that have similar values at the very top of the tree.
+        if(shallowSearch){
+            let results = [];
+            for(let i=0;i<nameList.length;i++){
+                if(nameFrequencies[nameList[i]].length > 1){
+                    if(results.length == timeNodeList.length)
+                        break;
+                    timeNodeList.forEach(currNode=>{
+                        currNode.forEach(element=>{
+                            if(element.name == nameList[i]){
+                                //Check to see if this node already exists:
+                                let exists = false;
+                                for(let j = 0;j<results.length;j++){
+                                    if(results[j] == currNode){
+                                        exists = true;
+                                        break;
+                                    }
+                                }
+                                if(!exists)
+                                    results.push(currNode);
+                            }
+                        });
+                    });
+                }
+            }
+            return results;
+        }
+        //This is the recursive mode, where a comparison tree is created:
+        else{
+            let compiledResult = [];
+            //See if any of these name appear more than once in these timeNodes, if so, go into a recursive loop in those timeNodes to find more matches:
+            nameList.forEach(element=>{
+                if(nameFrequencies[element].length > 1){
+                    let childElements = [];
+                    nameFrequencies[element].forEach(index=>{
+                        timeNodeList[index].forEach(timeNodeObject=>{
+                            if(timeNodeObject.name == element){
+                                childElements.push(timeNodeObject.children);
+                            }
+                        });
+                    });
+
+                    compiledResult.push({name:element,children:this.genList(childElements)});
+
+                }
+            });
+            return compiledResult;
+        }
+    },
+    viewChart:function(id){
+        childrenTemp = [];
+        this.activeNodes = [];
+        this.relatedNodes.forEach(element=>{
+            if(element[id]){
+                childrenTemp.push(element[id]);
+                this.activeNodes.push(element);
+            }
+        });
+        changeGraph({children:childrenTemp});
+    }
 }

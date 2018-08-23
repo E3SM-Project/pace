@@ -108,3 +108,5 @@ venv.bak/
 portal/reload-gunicorn.sh
 portal/start-gunicorn.sh
 portal/restart-server.sh
+
+extra/
