@@ -95,7 +95,7 @@ def mtQuery():
     else:
         resultNodes = dbConn.execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and rank = '"+request.form['rank']+"'").fetchall()[0].jsonVal
         resultName = dbConn.execute("select expid from timing_profile where expid = "+request.form["expID"]).fetchall()[0].expid
-    return "["+resultNodes+","+json.dumps(mt.valueList[listIndex])+",\""+str(resultName)+"\"]"
+    return "["+resultNodes+","+json.dumps(mt.valueList[listIndex])+",\""+str(resultName)+"\",\""+request.form['rank']+"\"]"
 
 @app.route("/exps2")
 def experiments():

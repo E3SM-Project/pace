@@ -3,38 +3,60 @@
 {% block topscripts %}
 <title>PACE: Model Timing View</title>
         <style>
-                #dataInfo{
-                    border:.01in solid;
-                    position: absolute;
-                    left:20.5%;
-                    width:80%;
-                    background-image:url(/static/img/ornlLeaf.svg); 
-                    background-position: center;
-                    background-repeat: no-repeat;
-                    background-size: auto;
-                }
-                #dataList{
-                    overflow: scroll;
-                    width:20%;
-                    position: absolute;
-                    resize:vertical;
-                    left:0px;
-                }
-                ul{
-                    list-style-type: none;
-                }
-                #backAndNodeId{
-                    position: absolute;
-                    left:20.5%;
-            
-                }
-                #mtMain{
-                    font-family: monospace;
-                    margin-bottom:70%
-                }
-                .unused{
-                    display: none;
-                }
+            #dataInfo{
+                border:.01in solid;
+                position: absolute;
+                left:20.5%;
+                width:80%;
+                background-image:url(/static/img/ornlLeaf.svg); 
+                background-position: center;
+                background-repeat: no-repeat;
+                background-size: auto;
+            }
+            #dataList{
+                overflow: scroll;
+                width:20%;
+                position: absolute;
+                resize:vertical;
+                left:0px;
+            }
+            ul{
+                list-style-type: none;
+            }
+            #backAndNodeId{
+                position: absolute;
+                left:20.5%;
+        
+            }
+            #mtMain{
+                font-family: monospace;
+                margin-bottom:70%
+            }
+            .unused{
+                display: none;
+            }
+            #compareSelectDiv{
+                width:60%;
+                height:60%;
+                position:absolute;
+                top:20%;
+                left:20%;
+                box-shadow:0px 5px 5px gray;
+                background-color:white;
+                opacity:0;
+                border-radius:10px;
+                font-family:arial;
+                text-align:center;
+                overflow:scroll;
+            }
+            .compareDiv{
+                width:10em;
+                height:7em;
+                display:inline-block;
+                margin-right:1em;
+                border:.1em solid gray;
+                border-radius:10px;
+            }
             </style>
 {% endblock %}
 
@@ -45,18 +67,25 @@
     Summarize any scope of timeNodes with sum or averages, and with any value you want! (Wallclock, min/max, etc)-->
         <div id="mtMain">
             <div>
-                <select id="valueName" onclick="changeGraph(currExp.currentEntry)"><option value="nodes">Nodes</option><option value="min/max">Min / Max</option></select>
-                <select id="mode" onclick="changeGraph(currExp.currentEntry)">
+                <select id="valueName" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )"><option value="nodes">Nodes</option><option value="min/max">Min / Max</option></select>
+                <select id="mode" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )">
                     <option value="sum" selected>Sum</option>
                     <option value="avg">Average</option>
                 </select>
                 <select id="threadSelect"></select>
-                <input type="checkbox" onclick="stackedCharts = this.checked;if(comparisonMode.on) comparisonMode.viewChart(comparisonMode.exp.currentEntry.name);else changeGraph(currExp.currentEntry);" checked>Stacked bars</input>
+                <button id="compareButton" onclick="compDivToggle()">Compare</button>
+                <input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked>Stacked bars</input>
             </div>
             <div id="dataInfo"><canvas id="chartTag"></canvas></div>
             <div id="dataList"><button id="summaryButton">Summary</button><div id="listContent"></div></div>
             <span id="backAndNodeId"><button id="backButton"><-Back</button><span id="nodeId" style="font-family: monospace"></span></span>
         </div>
+    <div id="compareSelectDiv">
+    <h2>Select the threads you wish to compare.</h2><br>
+    <p><button onclick='makeExpSelect()'>Add</button></p>
+    <div id="compDivBody"></div>
+    <p style="text-align:center"><button onclick="scanCompDiv()">Go!</button></p>
+    </div>
 {% endblock %}
 
 {% block bottomscripts %}
