@@ -40,7 +40,7 @@ function addressTable(vals=undefined,jsonArray=false){
 }
 
 //This holds a single experiment. The goal is to be able to compare multiples, so they are compartmentelized here.
-function experiment(timeNodes,valueNames,name = "Unnamed Experiment"){
+function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "0000"){
     this.timeNodes = timeNodes;
     //Whichever node is selected, everything in the code will follow this index for appropriate addressing:
     this.currThread = 0;
@@ -53,6 +53,7 @@ function experiment(timeNodes,valueNames,name = "Unnamed Experiment"){
     this.valueSelectInner = "<option value='nodes'>Nodes</option><option value='min/max'>Min / Max</option>";
     this.valueNames = valueNames;
     this.name = name;
+    this.rank = rank;
 
     //Construct:
     this.timeNodes.forEach((thread,i)=>{
@@ -79,7 +80,7 @@ function getExperiment(expSrc,extSrc){
     $.post("../../mtQuery/",{expID:expSrc,rank:extSrc},function(data,status){
         if(status == "success"){
             results = JSON.parse(data);
-            expList.push(new experiment(results[0],results[1],results[2]));
+            expList.push(new experiment(results[0],results[1],results[2],results[3]));
         }
         expGetCount--;
         if(expGetCount == 0){
@@ -333,13 +334,42 @@ var comparisonMode = {
     exp:undefined,
     relatedNodes:[],
     activeNodes:undefined,
-    new:function(timeNodeList,valList){
-        this.exp = new experiment([this.genList(timeNodeList)],valList);
-        let relNodeTemp = this.genList(timeNodeList,true);
-        this.relatedNodes = [];
-        relNodeTemp.forEach(element=>{
-            this.relatedNodes.push(new addressTable(element,true));
+    new:function(expList){
+        //As long as values are the same, we can run this function:
+        let valBenchmark = expList[0][0].valueNames;
+        let sameVals = true;
+        expList.forEach(element=>{
+            for(let i=0;i<valBenchmark.length;i++){
+                let found = false;
+                for(let j=0;j<element[0].valueNames.length;j++){
+                    if(element[0].valueNames[j] == valBenchmark[i])
+                        found = true;
+                }
+                if(!found){
+                    sameVals = false;
+                    break;
+                }
+            }
         });
+        if(sameVals){
+            let timeNodeList = [];
+            expList.forEach(exp=>{
+                timeNodeList.push(exp[0].timeNodes[exp[1]]);
+            });
+            let relNodeTemp = this.genList(timeNodeList,true);
+            this.relatedNodes = [];
+            relNodeTemp.forEach(element=>{
+                this.relatedNodes.push(expList[element]);
+            });
+            let compareName = "Comparison: ";
+            let firstStr = true;
+            this.relatedNodes.forEach(exp=>{
+                compareName+=(firstStr?"":",")+exp[0].name+"(thread "+exp[1]+")";
+                firstStr = false;
+            })
+            this.exp = new experiment([this.genList(timeNodeList)],expList[0][0].valueNames,compareName,(expList[0][0].rank == "stats"?"stats":"0000"));
+        }
+        else alert("Please select two experiment threads with the same value types.");
     },
     //Generates a compiled comparison between experiments selected by the user.
     genList:function(timeNodeList,shallowSearch=false){
@@ -363,7 +393,7 @@ var comparisonMode = {
                 if(nameFrequencies[nameList[i]].length > 1){
                     if(results.length == timeNodeList.length)
                         break;
-                    timeNodeList.forEach(currNode=>{
+                    timeNodeList.forEach((currNode,index)=>{
                         currNode.forEach(element=>{
                             if(element.name == nameList[i]){
                                 //Check to see if this node already exists:
@@ -375,7 +405,7 @@ var comparisonMode = {
                                     }
                                 }
                                 if(!exists)
-                                    results.push(currNode);
+                                    results.push(index);
                             }
                         });
                     });
@@ -409,11 +439,31 @@ var comparisonMode = {
         childrenTemp = [];
         this.activeNodes = [];
         this.relatedNodes.forEach(element=>{
-            if(element[id]){
-                childrenTemp.push(element[id]);
-                this.activeNodes.push(element);
+            if(id=="summary"){
+                childrenTemp.push({children:element[0].timeNodes[element[1]],name:element[0].name+"(Thread "+element[1]+")"});
+            }
+            else if(element[0].nodeTableList[element[1]][id]){
+                childrenTemp.push(element[0].nodeTableList[element[1]][id]);
+                this.activeNodes.push(element[0].nodeTableList[element[1]]);
             }
         });
-        changeGraph({children:childrenTemp});
+        this.exp.currentEntry = {children:childrenTemp};
+        changeGraph(this.exp.currentEntry);
+    },
+    start:function(){
+        this.on = true;
+        this.exp.view();
+        threadSelect.style.display = "none";
+        summaryButton.click();
+        compareButton.innerHTML = "End Comparison";
+        compareButton.onclick = ()=>{comparisonMode.finish()};
+    },
+    finish:function(){
+        this.on = false;
+        currExp.view();
+        threadSelect.style.display = "";
+        changeGraph(currExp.currentEntry);
+        compareButton.innerHTML = "Compare";
+        compareButton.onclick = ()=>{compDivToggle()};
     }
 }
