@@ -44,6 +44,7 @@
                 box-shadow:0px 5px 5px gray;
                 background-color:white;
                 opacity:0;
+                display:none;
                 border-radius:10px;
                 font-family:arial;
                 text-align:center;
@@ -67,13 +68,13 @@
     Summarize any scope of timeNodes with sum or averages, and with any value you want! (Wallclock, min/max, etc)-->
         <div id="mtMain">
             <div>
-                <select id="valueName" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )"><option value="nodes">Nodes</option><option value="min/max">Min / Max</option></select>
-                <select id="mode" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )">
+                <select id="valueName" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )"></select>
+                <select id="mode" class="unused" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )">
                     <option value="sum" selected>Sum</option>
                     <option value="avg">Average</option>
                 </select>
                 <select id="threadSelect"></select>
-                <button id="compareButton" onclick="compDivToggle()">Compare</button>
+                <button id="compareButton" onclick="compDivObj.toggle()">Compare</button>
                 <input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked>Stacked bars</input>
             </div>
             <div id="dataInfo"><canvas id="chartTag"></canvas></div>
@@ -82,9 +83,9 @@
         </div>
     <div id="compareSelectDiv">
     <h2>Select the threads you wish to compare.</h2><br>
-    <p><button onclick='makeExpSelect()'>Add</button></p>
+    <p><button onclick='compDivObj.makeExp()'>Add</button></p>
     <div id="compDivBody"></div>
-    <p style="text-align:center"><button onclick="scanCompDiv()">Go!</button></p>
+    <p style="text-align:center"><button id="compareGo" onclick="compDivObj.scan()">Go!</button></p>
     </div>
 {% endblock %}
 
