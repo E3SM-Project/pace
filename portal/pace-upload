@@ -52,13 +52,8 @@ flag=1
 while flag==1:
 	path = result.source				
 	if(path!=''):
-		#if (os.path.isdir(path)):
-			# zip it
 		zipSubdir(zfname,path)
 		flag=0
-		#else:
-		#	createOutputZip(zfname,path)
-		#	flag=0
 	else:
 		flag=0
 uploadfile='experiments.zip'
