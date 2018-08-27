@@ -41,6 +41,8 @@ function addressTable(vals=undefined,jsonArray=false){
 
 //This holds a single experiment. The goal is to be able to compare multiples, so they are compartmentelized here.
 function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "0000"){
+    this.name = name;
+    this.rank = rank;
     this.timeNodes = timeNodes;
     //Whichever node is selected, everything in the code will follow this index for appropriate addressing:
     this.currThread = 0;
@@ -50,10 +52,8 @@ function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "000
     this.nodeTableList = [];
     this.nodeDomList = [];
     this.threadSelectInner = "";
-    this.valueSelectInner = "<option value='nodes'>Nodes</option><option value='min/max'>Min / Max</option>";
+    this.valueSelectInner = this.rank == "stats"?"":"<option value='nodes'>processes</option><option value='min/max'>Min / Max</option>";
     this.valueNames = valueNames;
-    this.name = name;
-    this.rank = rank;
 
     //Construct:
     this.timeNodes.forEach((thread,i)=>{
@@ -439,7 +439,7 @@ var comparisonMode = {
         childrenTemp = [];
         this.activeNodes = [];
         this.relatedNodes.forEach(element=>{
-            if(id=="summary"){
+            if(id=="summaryButton"){
                 childrenTemp.push({children:element[0].timeNodes[element[1]],name:element[0].name+"(Thread "+element[1]+")"});
             }
             else if(element[0].nodeTableList[element[1]][id]){
@@ -447,23 +447,31 @@ var comparisonMode = {
                 this.activeNodes.push(element[0].nodeTableList[element[1]]);
             }
         });
-        this.exp.currentEntry = {children:childrenTemp};
+        this.exp.currentEntry = {children:childrenTemp,name:(id)};
         changeGraph(this.exp.currentEntry);
     },
     start:function(){
+        if(this.exp.timeNodes[0].length == 0){
+            alert("Error: there's nothing to compare.");
+            comparisonMode.finish();
+        }
+        else{
+        backButton.style.display="none";
         this.on = true;
         this.exp.view();
         threadSelect.style.display = "none";
         summaryButton.click();
         compareButton.innerHTML = "End Comparison";
         compareButton.onclick = ()=>{comparisonMode.finish()};
+        }
     },
     finish:function(){
+        backButton.style.display="";
         this.on = false;
         currExp.view();
         threadSelect.style.display = "";
         changeGraph(currExp.currentEntry);
         compareButton.innerHTML = "Compare";
-        compareButton.onclick = ()=>{compDivToggle()};
+        compareButton.onclick = ()=>{compDivObj.toggle()};
     }
 }
