@@ -79,21 +79,42 @@ def page_not_found(error):
 	return render_template('error.html'), 404	
 
 #Model Timing web-interface.
-@app.route("/mt/<expID>/<rank>")
-def mthtml(expID,rank):
-    return render_template("modelTiming.html",exp = "var expData = ['"+str(expID)+"','"+rank+"'];")
+@app.route("/mt/<expID>/<rank>/<compare>/<threads>/")
+@app.route("/mt/<expID>/<rank>/<compare>/")
+@app.route("/mt/<expID>/<rank>/")
+def mthtml(expID,rank,compare="",threads=""):
+    ids = expID.split(",")
+    ranks = rank.split(",")
+    resultString = ""
+    extraStr = ""
+    for i in range(len(ids)):
+        if i > 0:
+            resultString+=","
+        resultString+="['"+ids[i]+"','"+ranks[i]+"']"
+    if compare == "compare":
+        extraStr = "var compare = true;"
+    if (not threads == "") or ( (not compare == "") and not compare == "compare"):
+        rankStr=""
+        if(not compare == "compare"):
+            threadStr = compare
+        else:
+            threadStr = threads
+        extraStr+="threadList = "+json.dumps(threadStr.split(","))+";"
+            
 
-@app.route("/mtQuery/",methods=["POST"])
-def mtQuery():
+    return render_template("modelTiming.html",exp = "var expData = ["+resultString+"];"+extraStr)
+
+@app.route("/mtQuery/<expID>/<rank>",methods=["GET"])
+def mtQuery(expID,rank):
     resultNodes=""
     resultName="failsafe file"
     listIndex = 0
-    if len(request.form) > 0 and request.form["expID"] == "-1":
+    if expID == "-1":
         resultNodes = mt.parse("/pace/assets/static/model_timing.0000.new")
     else:
-        resultNodes = dbConn.execute("select jsonVal from model_timing where expID = "+request.form['expID']+ " and rank = '"+request.form['rank']+"'").fetchall()[0].jsonVal
-        resultName = dbConn.execute("select expid from timing_profile where expid = "+request.form["expID"]).fetchall()[0].expid
-        if request.form['rank'] == 'stats':
+        resultNodes = dbConn.execute("select jsonVal from model_timing where expID = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
+        resultName = dbConn.execute("select expid from timing_profile where expid = "+expID).fetchall()[0].expid
+        if rank == 'stats':
             listIndex = 1
             #Grab processes > 1 second:
             nodeTemp = json.loads(resultNodes)
@@ -112,7 +133,7 @@ def mtQuery():
             while not len(newJson) == 20:
                 newJson.pop()
             resultNodes = "["+json.dumps(newJson)+"]"
-    return "["+resultNodes+","+json.dumps(mt.valueList[listIndex])+",\""+str(resultName)+"\",\""+request.form['rank']+"\"]"
+    return "["+resultNodes+","+json.dumps(mt.valueList[listIndex])+",\""+str(resultName)+"\",\""+rank+"\"]"
 
 @app.route("/exps2")
 def experiments():

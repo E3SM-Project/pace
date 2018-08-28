@@ -74,11 +74,14 @@ function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "000
 
 }
 
-function getExperiment(expSrc,extSrc){
+function getExperiment(expSrc,extSrc,funcPush = expDownloadDefault){
     expGetCount++;
+    if(funcPush)
+        expGetFunc.push(funcPush);
     //jquery test
-    $.post("../../mtQuery/",{expID:expSrc,rank:extSrc},function(data,status){
+    $.get(detectRootUrl()+"mtQuery/"+expSrc+"/"+extSrc,function(data,status){
         if(status == "success"){
+            //console.log(data);
             results = JSON.parse(data);
             expList.push(new experiment(results[0],results[1],results[2],results[3]));
         }
@@ -90,6 +93,36 @@ function getExperiment(expSrc,extSrc){
             expGetFunc = [];
         }
     });
+}
+//this is the default function that's executed during an experiment download
+function expDownloadDefault(){
+    currExp = expList[expList.length-1];
+    updateExpSelect();
+    animate(false);
+    currExp.view();
+    if(window.location.hash==""  || expList.length > 1)
+        summaryButton.click();
+    else window.onhashchange();
+    expSelect.selectedIndex = expList.length-1;
+    }
+
+function switchExperiment(index = expSelect.selectedIndex){
+    currExp = expList[index];
+    currExp.view();
+    if(currExp.currentEntry == undefined)
+        summaryButton.click();
+    else changeGraph(currExp.currentEntry);
+}
+
+function detectRootUrl(marker = "mt"){
+    splitUrl = document.URL.split("/");
+    resultStr = "";
+    index = 0;
+    while(splitUrl[index]!=marker){
+        resultStr+=splitUrl[index]+"/";
+        index++;
+    }
+    return resultStr;
 }
 
 //This creates an HTML list that directly associates with the address table (which in-turn addresses to the original json file). When a tag is clicked, the other lists witihin it are collapsed.
@@ -460,6 +493,7 @@ var comparisonMode = {
         this.on = true;
         this.exp.view();
         threadSelect.style.display = "none";
+        expSelect.style.display = "none";
         summaryButton.click();
         compareButton.innerHTML = "End Comparison";
         compareButton.onclick = ()=>{comparisonMode.finish()};
@@ -470,6 +504,7 @@ var comparisonMode = {
         this.on = false;
         currExp.view();
         threadSelect.style.display = "";
+        expSelect.style.display = "";
         changeGraph(currExp.currentEntry);
         compareButton.innerHTML = "Compare";
         compareButton.onclick = ()=>{compDivObj.toggle()};

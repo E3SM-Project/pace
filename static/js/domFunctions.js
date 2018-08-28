@@ -101,7 +101,7 @@ chartTag.onmousemove = function(event){
     }
 }
 
-threadSelect.onclick = function(){
+threadSelect.onchange = function(){
     currExp.currThread = threadSelect.children[threadSelect.selectedIndex].value;
     listContent.innerHTML = "";
     listContent.appendChild(currExp.nodeDomList[currExp.currThread]);
@@ -158,6 +158,14 @@ var compDivObj = {
         comparisonMode.start();
         compDivObj.toggle();
     }
+}
+
+function updateExpSelect(){
+    let resultString = "";
+    expList.forEach(element=>{
+        resultString +="<option>"+element.name+"</option>";
+    }); 
+    expSelect.innerHTML = resultString;
 }
 
 window.onresize();

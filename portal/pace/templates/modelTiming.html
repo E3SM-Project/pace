@@ -78,7 +78,10 @@
                 <input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked>Stacked bars</input>
             </div>
             <div id="dataInfo"><canvas id="chartTag"></canvas></div>
-            <div id="dataList"><button id="summaryButton">Summary</button><div id="listContent"></div></div>
+            <div id="dataList">
+            <select id="expSelect" onchange="switchExperiment()"></select>
+            <br>
+            <button id="summaryButton">Summary</button><div id="listContent"></div></div>
             <span id="backAndNodeId"><button id="backButton"><-Back</button><span id="nodeId" style="font-family: monospace"></span></span>
         </div>
     <div id="compareSelectDiv">
@@ -97,6 +100,8 @@
 	<script src="/static/js/paceLoadScreen.js"></script>
 	<script>//Fire up the summary:
     var expData = undefined;
+    var compare = undefined;
+    var threadList = undefined;
     {{exp|safe}}
     /*$(document).ajaxError(()=>{
         if(expGetFunc.length > 0){
@@ -106,14 +111,34 @@
     });*/
 	$(document).ready(()=>{
 			animate();
-			expGetFunc.push(()=>{
-                currExp = expList[0];animate(false);currExp.view();
-                if(window.location.hash=="")
-                    window.location.hash="#summary";
-                else window.onhashchange();
-                });
-            if(expData!=undefined)
-                getExperiment(expData[0],expData[1]);
+            if(expData!=undefined){
+                for(let i=0;i<expData.length;i++){
+                    if(i<expData.length-1)
+                        getExperiment(expData[i][0],expData[i][1],false);
+                    else{
+                        getExperiment(expData[i][0],expData[i][1],()=>{
+                        expDownloadDefault();
+                        if(threadList){
+                            threadList.forEach((element,index)=>{
+                                expList[index].currThread = element*1;
+                            });
+                        }
+                        if(threadList && !compare && threadList.length == expData.length){
+                            threadSelect.selectedIndex = threadList[threadList.length-1]*1;
+                            threadSelect.onchange();
+                        }
+                        if(compare){
+                            let resultList = [];
+                            expList.forEach( (element,index)=>{
+                                resultList.push([element,( (threadList!=undefined && threadList[index]!=undefined) ?threadList[index]*1:0)]);
+                            });
+                            comparisonMode.new(resultList);
+                            comparisonMode.start();
+                        }
+                    });
+                    }
+                }
+            }
 			else getExperiment(-1,"0000");
 			});</script>
 {% endblock %}
