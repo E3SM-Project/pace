@@ -10,9 +10,11 @@
 
   <!-- Custom styles for this template -->
   <link rel="stylesheet" type="text/css" href="/static/css/pace.css" />
+  
+  <!--Search bar CSS-->
+  <link rel="stylesheet" type="text/css" href="/static/css/searchBar.css" />
   {% block topscripts %}
   {% endblock %}
-
   <title> {% block title %} Performance Analytics for Climate Experiments (PACE) {% endblock %} </title>
 </head>
 
@@ -45,8 +47,8 @@
       </li>
     </ul>
     <form class="form-inline my-2 my-lg-0">
-      <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+      <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" id="searchBar">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="searchButton">Search</button>
     </form>
     </div>
   </nav>
@@ -68,6 +70,8 @@
      {% endblock %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em" crossorigin="anonymous"></script>
+    <!--Search bar script:-->
+  <script src="/static/js/searchBar.js"></script>
    <!-- Default Statcounter code for Pace.ornl.gov
     https://pace.ornl.gov -->
     <script type="text/javascript">
