@@ -3,15 +3,15 @@
 import argparse
 import requests
 import sys
-import os
+import os, shutil
 import zipfile
 import getpass
 
-# server connection
+
 # use this url after merge to master
 url = "https://pace.ornl.gov/upload"
-login_url="https://pace.ornl.gov/uploadlogin"
 
+# argumented parser
 def parseArguments(): 
 	parser = argparse.ArgumentParser(description="PACE upload tool.")
 	parser.add_argument('-ed', action='store', dest='source', help="Experiment directory Name", required=True)
@@ -43,34 +43,69 @@ def zipSubdir(zfname, path):
 	zf.close()
 	return
 
+# upload E3SM experiment files
+def uploadE3SMexp(uploadfile):
+	if(os.path.exists(uploadfile)):
+		if(os.stat(uploadfile).st_size!=0):
+			# open zip to be uploaded
+			fin = open(uploadfile, 'rb')			
+			files = {'file': fin}
+			try:
+				# request for connection to server
+				r = requests.post(url, files=files)
+				print(r.text)
+			finally:
+				fin.close()
+		else:
+			print('Nothing to upload, Empty zip folder')
+	else:
+		print('Nothing to upload, Exiting ...')
+
+
 # main start
 result=parseArguments()
-zfname='experiments'
-	
-# directory upload case
-flag=1
-while flag==1:
-	path = result.source				
-	if(path!=''):
-		zipSubdir(zfname,path)
-		flag=0
+zfname = 'experiments'
+expfile = result.source
+timefile = False
+etimefile = False
+completeexp = False
+# If path is not empty
+if(expfile!=''):
+	# open zipfile for read
+	with zipfile.ZipFile(expfile,'r') as name:
+		# grab all files			
+		tmpfile= name.namelist()
+		# check for "timing." and "e3sm_timing." files
+		for x in range(len(tmpfile)):
+			tmpname=tmpfile[x].split("/")
+			if timefile==False or etimefile==False:
+				for i in range(len(tmpname)):
+					# These files should not be empty
+					if tmpname[i].startswith("timing.") and timefile==False:	
+						timefile=True
+					if tmpname[i].startswith("e3sm_timing.") and etimefile==False:
+						etimefile=True
+					# both file valid, so we done, no more iterations
+					if timefile == True and etimefile == True:
+						break
+			# no more iteration needed
+			if timefile == True and etimefile == True:
+				completeexp=True			
+				break
+	# close the zip file	
+	name.close()
+	if completeexp==True:	
+		# aggregate all file		
+		zipSubdir(zfname,expfile)
+		uploadfile='experiments.zip'
+		# upload E3SM experiment file		
+		uploadE3SMexp(uploadfile)
+		# remove temporary aggregated file
+		os.remove(uploadfile)
 	else:
-		flag=0
-uploadfile='experiments.zip'
-# error handle empty zip file
-if(os.path.exists(uploadfile)):
-	if(os.stat(uploadfile).st_size!=0):
-		# open zip to be uploaded
-		fin = open(uploadfile, 'rb')			
-		files = {'file': fin}
-		try:
-			# request for connection to server
-			r = requests.post(url, files=files)
-			print(r.text)
-		finally:
-			fin.close()
-	else:
-		print('Nothing to upload, Empty zip folder')
+		# experiment is incomplete when there are no file containing "timing.*" and "e3sm_timing.*"
+		print("This experiment is incomplete")
 else:
-	print('Nothing to upload, Exiting ...')
+	print('Empty path')
+
 
