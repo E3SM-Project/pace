@@ -191,3 +191,46 @@ def expsAjax(pageNum):
         pruned_data["data"].append({"expid": exp.expid, "user": exp.user, "machine": exp.machine, "total_pes_active": exp.total_pes_active, "run_length": exp.run_length, "model_throughput": exp.model_throughput, "mpi_tasks_per_node": str(exp.mpi_tasks_per_node), "compset": exp.compset, "grid": exp.grid})
     dbSession.close()
     return make_response(json.dumps(pruned_data))
+
+@app.route("/ajax/search/<searchTerms>")
+@app.route("/ajax/search/<searchTerms>/<limit>")
+def searchBar(searchTerms,limit = False):
+    termList = []
+    for word in searchTerms.split("+"):
+        termList.append(word.replace(";","").replace("\\c",""))
+    resultItems = []
+    filteredItems = []
+    variableList = ["user","expid","machine"]
+    for word in variableList:
+        queryStr = "select "
+        firstValue = True
+        for value in variableList:
+            if not firstValue:
+                queryStr+=","
+            queryStr+=value
+            firstValue = False
+        queryStr+=" from timing_profile where "+word+" in ("
+        firstValue = True
+        for term in termList:
+            if not firstValue:
+                queryStr+=","
+            queryStr+='"'+term+'"'
+            firstValue = False
+        queryStr+=")"
+        if limit:
+            queryStr+=" limit "+limit
+        resultItems.append(dbConn.execute(queryStr).fetchall())
+    #Filter out duplicates:
+    for query in resultItems:
+        for element in query:
+            unique = True
+            for item in filteredItems:
+                if element.user == item["user"] and element.expid == item["expid"] and element.machine == item["machine"]:
+                    unique = False
+                    break
+            if unique:
+                resultDict = {}
+                for key in element.keys():
+                    resultDict[key] = element[key]
+                filteredItems.append(resultDict)
+    return json.dumps(filteredItems)

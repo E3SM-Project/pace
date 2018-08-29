@@ -1,0 +1,19 @@
+.searchBody{
+    overflow:scroll;
+    resize: both;
+    width:10em;
+    height:12em;
+}
+
+.searchItem{
+    border-bottom:.2em solid gray;
+}
+
+.searchMenu{
+    border:1px solid gray;
+    position:absolute;
+    border-radius: 5px;
+    background-color:white;
+    top:5em;
+    left:80%;
+}
