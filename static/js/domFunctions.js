@@ -69,8 +69,8 @@ var resultChart = new Chart(chartTag, {
                 display:false,
             },
             onClick:(event)=>{
+                let activeElement = resultChart.getElementAtEvent(event);
                 if(!comparisonMode.on){
-                    let activeElement = resultChart.getElementAtEvent(event);
                     if(activeElement.length > 0){
                         let timeNodeObject = (!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || (resultChart.data.datasets.length == 1 && currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children.length == 0)?currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label]:currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children[activeElement[0]._datasetIndex]);
                         let timeNode = document.getElementById(timeNodeObject.name).getElementsByTagName('ul')[0];
@@ -83,6 +83,23 @@ var resultChart = new Chart(chartTag, {
                             timeNode.click();
                     }
                 }
+                else if (activeElement.length>0){
+                    let evtData = comparisonEvt(activeElement);
+                    let changeExp = false;
+                    if(evtData.nodeObject.children.length > 0)
+                        changeExp = confirm("Clicking Ok will take you to "+evtData.spefExp.name+" (Thread "+evtData.spefThread+") process \""+evtData.targetNode+".");
+                    if(changeExp){
+                        //console.log(evtData.nodeObject.name);
+                        evtData.spefExp.currThread = evtData.spefThread;
+                        evtData.spefExp.currentEntry = evtData.nodeObject;
+                        currExp = evtData.spefExp;
+                        setTimeout(()=>{comparisonMode.finish();},10);
+                        for(let i=0;i<expSelect.children.length;i++){
+                            if(expSelect.children[i].innerHTML == evtData.spefExp.name)
+                                expSelect.selectedIndex = i;
+                        }
+                    }
+                }
             },
             scales: {
                 yAxes: [{stacked:true}],
@@ -92,13 +109,19 @@ var resultChart = new Chart(chartTag, {
     });
 //You can't directly define specific variables for some reason when one is highlighted by chart.js, so here's a quick fix:
 chartTag.onmousemove = function(event){
-    if(!comparisonMode.on){
-        let results = resultChart.getElementAtEvent(event);
-        if(results.length > 0)
-            nodeId.innerHTML=(!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || resultChart.data.datasets.length == 1?currExp.nodeTableList[currExp.currThread][results[0]._model.label].name:currExp.nodeTableList[currExp.currThread][results[0]._model.label].children[results[0]._datasetIndex].name);
-        else if(nodeId.innerHTML!="")
-            nodeId.innerHTML="";
+    let results = resultChart.getElementAtEvent(event);
+    if(results.length > 0){
+        if(!comparisonMode.on){
+                nodeId.innerHTML=(!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || resultChart.data.datasets.length == 1?currExp.nodeTableList[currExp.currThread][results[0]._model.label].name:currExp.nodeTableList[currExp.currThread][results[0]._model.label].children[results[0]._datasetIndex].name);
+        }
+        else{
+            if(results.length > 0){
+                nodeId.innerHTML = comparisonEvt(results).targetNode;
+            }
+        }
     }
+    else if(nodeId.innerHTML!="")
+        nodeId.innerHTML="";
 }
 
 threadSelect.onchange = function(){
@@ -166,6 +189,31 @@ function updateExpSelect(){
         resultString +="<option>"+element.name+"</option>";
     }); 
     expSelect.innerHTML = resultString;
+}
+
+function comparisonEvt(evt){
+    let result = {};
+    result.spefExp = comparisonMode.activeExps[evt[0]._index][0];
+    result.spefThread = comparisonMode.activeExps[evt[0]._index][1];
+    result.spefChildIndex;
+    result.targetNode = "";
+    let foundLabel = true;
+    if(stackedCharts){
+        result.spefChildIndex = evt[0]._datasetIndex;
+        if(result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label] && result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label].children[result.spefChildIndex]){
+            result.targetNode = result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label].children[result.spefChildIndex].name;
+        }
+        else{
+            //console.log(result.spefExp);
+            result.targetNode = result.spefExp.currentEntry.children[result.spefChildIndex].name;
+            foundLabel = false;
+        }
+    }
+    else result.targetNode = (result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label]?evt[0]._model.label:"summaryButton");
+    if(foundLabel)
+        result.nodeObject = result.spefExp.nodeTableList[result.spefThread][result.targetNode];
+    else result.nodeObject = result.spefExp.currentEntry.children[result.spefChildIndex];
+    return result;
 }
 
 window.onresize();
