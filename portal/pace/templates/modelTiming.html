@@ -75,7 +75,7 @@
                 </select>
                 <select id="threadSelect"></select>
                 <button id="compareButton" onclick="compDivObj.toggle()">Compare</button>
-                <input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked>Stacked bars</input>
+                <input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked/>Stacked bars
             </div>
             <div id="dataInfo"><canvas id="chartTag"></canvas></div>
             <div id="dataList">
@@ -102,6 +102,7 @@
     var expData = undefined;
     var compare = undefined;
     var threadList = undefined;
+    var onMtPage = true;
     {{exp|safe}}
     /*$(document).ajaxError(()=>{
         if(expGetFunc.length > 0){

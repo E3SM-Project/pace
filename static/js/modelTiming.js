@@ -64,6 +64,7 @@ function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "000
     this.valueNames.forEach((name)=>{
         this.valueSelectInner+="<option "+(name=="wallClock"?"selected":"")+" value='"+name+"'>"+name+"</option>";
     });
+    this.currentEntry = {children:this.timeNodes[this.currThread],name:"summaryButton"};
 
     this.view = function(){
         threadSelect.innerHTML = this.threadSelectInner;
@@ -79,7 +80,7 @@ function getExperiment(expSrc,extSrc,funcPush = expDownloadDefault){
     if(funcPush)
         expGetFunc.push(funcPush);
     //jquery test
-    $.get(detectRootUrl()+"mtQuery/"+expSrc+"/"+extSrc,function(data,status){
+    $.get(detectRootUrl()+"mtQuery/"+expSrc+"/"+extSrc+"/",function(data,status){
         if(status == "success"){
             //console.log(data);
             results = JSON.parse(data);
@@ -107,11 +108,12 @@ function expDownloadDefault(){
     }
 
 function switchExperiment(index = expSelect.selectedIndex){
-    currExp = expList[index];
+    currExp = (typeof(index) == "object"?index:expList[index]);
     currExp.view();
     if(currExp.currentEntry == undefined)
         summaryButton.click();
     else changeGraph(currExp.currentEntry);
+    resultChart.options.title.text=currExp.name + " (Thread "+currExp.currThread+")";
 }
 
 function detectRootUrl(marker = "mt"){
@@ -366,7 +368,7 @@ var comparisonMode = {
     on:false,
     exp:undefined,
     relatedNodes:[],
-    activeNodes:undefined,
+    activeExps:undefined,
     new:function(expList){
         //As long as values are the same, we can run this function:
         let valBenchmark = expList[0][0].valueNames;
@@ -470,14 +472,20 @@ var comparisonMode = {
     },
     viewChart:function(id){
         childrenTemp = [];
-        this.activeNodes = [];
+        this.activeExps = [];
         this.relatedNodes.forEach(element=>{
             if(id=="summaryButton"){
-                childrenTemp.push({children:element[0].timeNodes[element[1]],name:element[0].name+"(Thread "+element[1]+")"});
+                let resultNode = {children:element[0].timeNodes[element[1]],name:element[0].name+"(Thread "+element[1]+")",values:{}};
+                //Fill in pseudo data to meet graph-changing needs: (Averaging with these is not ideal).
+                element[0].valueNames.forEach(name=>{
+                    resultNode.values[name] = 0;
+                });
+                childrenTemp.push(resultNode);
+                this.activeExps.push(element);
             }
             else if(element[0].nodeTableList[element[1]][id]){
                 childrenTemp.push(element[0].nodeTableList[element[1]][id]);
-                this.activeNodes.push(element[0].nodeTableList[element[1]]);
+                this.activeExps.push(element);
             }
         });
         this.exp.currentEntry = {children:childrenTemp,name:(id)};
@@ -502,11 +510,10 @@ var comparisonMode = {
     finish:function(){
         backButton.style.display="";
         this.on = false;
-        currExp.view();
         threadSelect.style.display = "";
         expSelect.style.display = "";
-        changeGraph(currExp.currentEntry);
         compareButton.innerHTML = "Compare";
         compareButton.onclick = ()=>{compDivObj.toggle()};
+        switchExperiment(currExp);
     }
 }

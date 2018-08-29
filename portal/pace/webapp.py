@@ -104,7 +104,7 @@ def mthtml(expID,rank,compare="",threads=""):
 
     return render_template("modelTiming.html",exp = "var expData = ["+resultString+"];"+extraStr)
 
-@app.route("/mtQuery/<expID>/<rank>",methods=["GET"])
+@app.route("/mtQuery/<expID>/<rank>/",methods=["GET"])
 def mtQuery(expID,rank):
     resultNodes=""
     resultName="failsafe file"
