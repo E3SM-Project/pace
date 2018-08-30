@@ -4,7 +4,7 @@ import argparse
 import requests
 import sys
 import os, shutil
-import zipfile
+import zipfile, tarfile
 import getpass
 
 
@@ -70,30 +70,43 @@ timefile = False
 etimefile = False
 completeexp = False
 # If path is not empty
-if(expfile!=''):
-	# open zipfile for read
-	with zipfile.ZipFile(expfile,'r') as name:
-		# grab all files			
-		tmpfile= name.namelist()
-		# check for "timing." and "e3sm_timing." files
-		for x in range(len(tmpfile)):
-			tmpname=tmpfile[x].split("/")
-			if timefile==False or etimefile==False:
-				for i in range(len(tmpname)):
-					# These files should not be empty
-					if tmpname[i].startswith("timing.") and timefile==False:	
-						timefile=True
-					if tmpname[i].startswith("e3sm_timing.") and etimefile==False:
-						etimefile=True
-					# both file valid, so we done, no more iterations
-					if timefile == True and etimefile == True:
-						break
-			# no more iteration needed
+
+if(expfile!='' and os.path.isdir(expfile)):
+	#tar = tarfile.open(expfile)
+	# grab all files
+	#tmpfile= tar.getnames()			
+	# check for "timing." and "e3sm_timing." files
+	#for x in range(len(tmpfile)):
+	#	tmpname=tmpfile[x].split("/")
+	#	if timefile==False or etimefile==False:
+	#		for i in range(len(tmpname)):
+	#			# These files should not be empty
+	#			if tmpname[i].startswith("timing.") and timefile==False:	
+	#				timefile=True
+	#			if tmpname[i].startswith("e3sm_timing.") and etimefile==False:
+	#				etimefile=True
+	#			# both file valid, so we done, no more iterations
+	#			if timefile == True and etimefile == True:
+	#				break
+	#	# no more iteration needed
+	#	if timefile == True and etimefile == True:
+	#		completeexp=True			
+	#		break
+	
+	for path, subdirs, files in os.walk(expfile):
+		for name in files:
+			if name.startswith("timing.") and timefile==False:	
+				timefile=True
+			if name.startswith("e3sm_timing.") and etimefile==False:
+				etimefile=True
+			# both file valid, so we done, no more iterations
 			if timefile == True and etimefile == True:
-				completeexp=True			
 				break
+		# no more iteration needed
+		if timefile == True and etimefile == True:
+			completeexp=True			
+			break	
 	# close the zip file	
-	name.close()
 	if completeexp==True:	
 		# aggregate all file		
 		zipSubdir(zfname,expfile)
