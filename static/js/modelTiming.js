@@ -52,7 +52,7 @@ function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "000
     this.nodeTableList = [];
     this.nodeDomList = [];
     this.threadSelectInner = "";
-    this.valueSelectInner = this.rank == "stats"?"":"<option value='nodes'>processes</option><option value='min/max'>Min / Max</option>";
+    this.valueSelectInner = this.rank == "stats"?"<option value='wallmin/wallmax'>wallMin / wallMax</option>":"<option value='nodes'>processes</option><option value='min/max'>Min / Max</option>";
     this.valueNames = valueNames;
 
     //Construct:
@@ -62,7 +62,7 @@ function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "000
         this.threadSelectInner+="<option "+ (!i?"selected":"")+" value="+i+" >Thread "+i+"</option>";
     });
     this.valueNames.forEach((name)=>{
-        this.valueSelectInner+="<option "+(name=="wallClock"?"selected":"")+" value='"+name+"'>"+name+"</option>";
+        this.valueSelectInner+="<option "+(name=="wallClock" || name=="wallmax"?"selected":"")+" value='"+name+"'>"+name+"</option>";
     });
     this.currentEntry = {children:this.timeNodes[this.currThread],name:"summaryButton"};
 
@@ -112,19 +112,8 @@ function switchExperiment(index = expSelect.selectedIndex){
     currExp.view();
     if(currExp.currentEntry == undefined)
         summaryButton.click();
-    else changeGraph(currExp.currentEntry);
-    resultChart.options.title.text=currExp.name + " (Thread "+currExp.currThread+")";
-}
-
-function detectRootUrl(marker = "mt"){
-    splitUrl = document.URL.split("/");
-    resultStr = "";
-    index = 0;
-    while(splitUrl[index]!=marker){
-        resultStr+=splitUrl[index]+"/";
-        index++;
-    }
-    return resultStr;
+    else changeGraph( (currExp.currentEntry.children.length == 0?{children:currExp.currentEntry}:currExp.currentEntry) );
+    resultChart.options.title.text=currExp.name +": "+currExp.rank+ " (Thread "+currExp.currThread+")";
 }
 
 //This creates an HTML list that directly associates with the address table (which in-turn addresses to the original json file). When a tag is clicked, the other lists witihin it are collapsed.
@@ -169,11 +158,15 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
                 //Display appropriate graph info:
                 if(targetExp.nodeTableList[targetExp.currThread][this.id].children.length > 0){
                     resultChart.options.title.text=this.id;
-                    if(comparisonMode.on){
+                    if(comparisonMode.on)
                         setTimeout(()=>{comparisonMode.viewChart(this.id);},10);
-                    }
                     //Strange... there's a small chance that something asynchronous will take too long before chart.js can render the chart... LET'S FIX THAT!
                     else setTimeout(()=>{changeGraph(currExp.nodeTableList[currExp.currThread][this.id]);},10);
+                }
+                else{
+                    if(comparisonMode.on)
+                        setTimeout(()=>{comparisonMode.viewChart(this.id);},10);
+                    else setTimeout(()=>{changeGraph({children:[currExp.nodeTableList[currExp.currThread][this.id]]});},10);
                 }
             }
         };
@@ -197,16 +190,23 @@ function changeGraph(nodeIn,valIn=valueName.children[valueName.selectedIndex].va
     resultChart.data.labels=[];
     //This is the easiest way to clear out multi-bar data...
     resultChart.data.datasets = [];
-        if(valIn=="min/max"){
+        if(valIn=="min/max" || valIn == "wallmin/wallmax"){
+            minmaxIndex = 0;
+            minmaxArray = [
+                ["min","max"],
+                ["wallmin","wallmax"]
+            ];
+            if(valIn == "wallmin/wallmax")
+                minmaxIndex++;
             for(let i=0;i<nodeIn.children.length;i++){
                 resultChart.data.labels.push(nodeIn.children[i].name);
-                ["min","max"].forEach((minMax)=>{
-                    makeGraphBar({children:[nodeIn.children[i]]},minMax,i,(minMax == "min"?0:1));
+                minmaxArray[minmaxIndex].forEach((minMax,index)=>{
+                    makeGraphBar({children:[nodeIn.children[i]]},minMax,i,index);
                 });
             }
             colorChart();
-            resultChart.data.datasets[0].label="Min";
-            resultChart.data.datasets[1].label="Max";
+            resultChart.data.datasets[0].label=minmaxArray[minmaxIndex][0];
+            resultChart.data.datasets[1].label=minmaxArray[minmaxIndex][1];
         }
         else{
             //First,lets check to see if everything has no children, that way, we can turn stackedBar off if needed:
@@ -399,7 +399,7 @@ var comparisonMode = {
             let compareName = "Comparison: ";
             let firstStr = true;
             this.relatedNodes.forEach(exp=>{
-                compareName+=(firstStr?"":",")+exp[0].name+"(thread "+exp[1]+")";
+                compareName+=(firstStr?"":",")+exp[0].name+"_"+exp[0].rank+"(thread "+exp[1]+")";
                 firstStr = false;
             })
             this.exp = new experiment([this.genList(timeNodeList)],expList[0][0].valueNames,compareName,(expList[0][0].rank == "stats"?"stats":"0000"));

@@ -25,7 +25,7 @@ summaryButton.onclick=function(){
         changeGraph(root);
         currExp.currentEntry=root;
     }
-    resultChart.options.title.text=(comparisonMode.on?comparisonMode.exp.name:currExp.name + " (Thread "+currExp.currThread+")");
+    resultChart.options.title.text=(comparisonMode.on?comparisonMode.exp.name:currExp.name +": "+currExp.rank+ " (Thread "+currExp.currThread+")");
     okToClick = false;
     setTimeout(()=>{okToClick = true;},10);
     window.location.hash="summary";
@@ -49,7 +49,7 @@ window.onhashchange = function(event = undefined){
         document.getElementById(clickID).click();
 };
 var resultChart = new Chart(chartTag, {
-        type: 'bar',
+        type: 'horizontalBar',
         data: {
             labels: [],
             datasets: [{
@@ -85,9 +85,7 @@ var resultChart = new Chart(chartTag, {
                 }
                 else if (activeElement.length>0){
                     let evtData = comparisonEvt(activeElement);
-                    let changeExp = false;
-                    if(evtData.nodeObject.children.length > 0)
-                        changeExp = confirm("Clicking Ok will take you to "+evtData.spefExp.name+" (Thread "+evtData.spefThread+") process \""+evtData.targetNode+".");
+                    let changeExp = confirm("Clicking Ok will take you to "+evtData.spefExp.name+" (Thread "+evtData.spefThread+") process \""+evtData.targetNode+".");
                     if(changeExp){
                         //console.log(evtData.nodeObject.name);
                         evtData.spefExp.currThread = evtData.spefThread;
@@ -146,7 +144,7 @@ var compDivObj = {
     makeExp:function(){
         let resultString = "<div class='compareDiv'><p style='text-align:right;'><button onclick='this.parentElement.parentElement.outerHTML=\"\";compDivObj.expCountCheck();'>X</button></p><select onchange='compDivObj.updateThreads(this)'>";
             expList.forEach(exp=>{
-                resultString+="<option>"+exp.name+"</option>"
+                resultString+="<option>"+exp.name+"_"+exp.rank+"</option>"
             });
             resultString+="</select><select>";
             expList[0].timeNodes.forEach((element,index)=>{
@@ -186,7 +184,7 @@ var compDivObj = {
 function updateExpSelect(){
     let resultString = "";
     expList.forEach(element=>{
-        resultString +="<option>"+element.name+"</option>";
+        resultString +="<option>"+element.name+"_"+element.rank+"</option>";
     }); 
     expSelect.innerHTML = resultString;
 }
