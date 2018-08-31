@@ -112,7 +112,7 @@ def mtQuery(expID,rank):
     if expID == "-1":
         resultNodes = mt.parse("/pace/assets/static/model_timing.0000.new")
     else:
-        resultNodes = dbConn.execute("select jsonVal from model_timing where expID = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
+        resultNodes = dbConn.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
         resultName = dbConn.execute("select expid from timing_profile where expid = "+expID).fetchall()[0].expid
         if rank == 'stats':
             listIndex = 1
@@ -130,7 +130,7 @@ def mtQuery(expID,rank):
                         newJson[i] = newJson[j]
                         newJson[j] = temp
             #Grab the top twenty nodes:
-            while not len(newJson) == 20:
+            while not len(newJson) == 50:
                 newJson.pop()
             resultNodes = "["+json.dumps(newJson)+"]"
     return "["+resultNodes+","+json.dumps(mt.valueList[listIndex])+",\""+str(resultName)+"\",\""+rank+"\"]"
@@ -233,4 +233,13 @@ def searchBar(searchTerms,limit = False):
                 for key in element.keys():
                     resultDict[key] = element[key]
                 filteredItems.append(resultDict)
-    return json.dumps(filteredItems)
+    #Grab the ranks based of of filteredItems:
+    rankList = []
+    for item in filteredItems:
+        itemRanks = []
+        queryResults = dbConn.execute("select rank from model_timing where expid = "+str(item["expid"])).fetchall()
+        for result in queryResults:
+            itemRanks.append(result.rank)
+        rankList.append([itemRanks,[]])
+        
+    return json.dumps([filteredItems,rankList])
