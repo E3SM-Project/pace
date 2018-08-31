@@ -45,8 +45,6 @@ def zipSubdir(zfname, path):
 
 # upload E3SM experiment files
 def uploadE3SMexp(uploadfile):
-	print ("ready to upload")
-	exit()
 	if(os.path.exists(uploadfile)):
 		if(os.stat(uploadfile).st_size!=0):
 			# open zip to be uploaded
