@@ -79,10 +79,10 @@ def page_not_found(error):
 	return render_template('error.html'), 404	
 
 #Model Timing web-interface.
-@app.route("/mt/<expID>/<rank>/<compare>/<threads>/")
-@app.route("/mt/<expID>/<rank>/<compare>/")
-@app.route("/mt/<expID>/<rank>/")
-def mthtml(expID,rank,compare="",threads=""):
+@app.route("/summary/<expID>/<rank>/<compare>/<threads>/")
+@app.route("/summary/<expID>/<rank>/<compare>/")
+@app.route("/summary/<expID>/<rank>/")
+def summaryHtml(expID,rank,compare="",threads=""):
     ids = expID.split(",")
     ranks = rank.split(",")
     resultString = ""
@@ -104,8 +104,8 @@ def mthtml(expID,rank,compare="",threads=""):
 
     return render_template("modelTiming.html",exp = "var expData = ["+resultString+"];"+extraStr)
 
-@app.route("/mtQuery/<expID>/<rank>/",methods=["GET"])
-def mtQuery(expID,rank):
+@app.route("/summaryQuery/<expID>/<rank>/",methods=["GET"])
+def summaryQuery(expID,rank):
     resultNodes=""
     resultName="failsafe file"
     listIndex = 0

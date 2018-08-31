@@ -33,10 +33,10 @@
 						format: function(text, table, cell, colNum) {
 							if (colNum == 0 ) {
 								expid = text;
-								cell.innerHTML = '<a href="exp-details/' + text + '">' + text +"</a>";
+								cell.innerHTML = '<a href="'+detectRootUrl()+'exp-details/' + text + '">' + text +"</a>";
 							}
 							if (colNum == 9 ) {
-								cell.innerHTML = '<a href="mt/' + expid + '/0000' + '">' + text +"</a>";
+								cell.innerHTML = '<a href="'+detectRootUrl()+'summary/' + expid + '/0000' + '">' + text +"</a>";
 							}
 
 						},

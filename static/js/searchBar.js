@@ -16,7 +16,7 @@ var searchObj = {
                 document.getElementsByClassName("searchMenu")[0].style.display = "none";
         }
         else{
-            $.get("https://pace.ornl.gov/dev2/ajax/search/"+searchStr.replace(" ","+")+"/"+limit,(data)=>{
+            $.get(detectRootUrl()+"/ajax/search/"+searchStr.replace(" ","+")+"/"+limit,(data)=>{
             let resultData = JSON.parse(data)
             this.searchData = resultData[0];
             this.rankData = resultData[1];
@@ -28,7 +28,7 @@ var searchObj = {
                 let searchResult = document.createElement("div");
                 searchResult.className = "searchItem";
                 searchResult.value = index;
-                searchResult.innerHTML+="<a href='/exp-details/"+element.expid+"' target='_blank' title='Click here for more details.'><h4>"+element.expid+"</h4></a>User: "+element.user+"</h3><br>Machine:"+element.machine;
+                searchResult.innerHTML+="<a href='"+detectRootUrl()+"/exp-details/"+element.expid+"' target='_blank' title='Click here for more details.'><h4>"+element.expid+"</h4></a>User: "+element.user+"</h3><br>Machine:"+element.machine;
                 checkStr = "<div style='display:inline-block;margin-left:5px'>";
                 searchObj.rankData[index][0].forEach( rank=>{
                     checkStr+="<span style='margin-right:5px'><b>"+rank+"</b><input type='checkbox' onchange='searchObj.scanChecks()'/></span>";
@@ -168,7 +168,7 @@ var searchObj = {
         else{
             searchViewBtn.onclick = undefined;
             searchCompareBtn.onclick = undefined;
-            let totalString = "https://pace.ornl.gov/dev2/mt/";
+            let totalString = detectRootUrl()+"summary/";
             let expStr = "";
             let rankStr = "";
             for(let i=0;i<searchObj.rankData.length;i++){
