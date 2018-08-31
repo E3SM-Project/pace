@@ -45,6 +45,8 @@ def zipSubdir(zfname, path):
 
 # upload E3SM experiment files
 def uploadE3SMexp(uploadfile):
+	print ("ready to upload")
+	exit()
 	if(os.path.exists(uploadfile)):
 		if(os.stat(uploadfile).st_size!=0):
 			# open zip to be uploaded
@@ -63,62 +65,44 @@ def uploadE3SMexp(uploadfile):
 
 
 # main start
-result=parseArguments()
-zfname = 'experiments'
-expfile = result.source
-timefile = False
-etimefile = False
-completeexp = False
-# If path is not empty
-
-if(expfile!='' and os.path.isdir(expfile)):
-	#tar = tarfile.open(expfile)
-	# grab all files
-	#tmpfile= tar.getnames()			
-	# check for "timing." and "e3sm_timing." files
-	#for x in range(len(tmpfile)):
-	#	tmpname=tmpfile[x].split("/")
-	#	if timefile==False or etimefile==False:
-	#		for i in range(len(tmpname)):
-	#			# These files should not be empty
-	#			if tmpname[i].startswith("timing.") and timefile==False:	
-	#				timefile=True
-	#			if tmpname[i].startswith("e3sm_timing.") and etimefile==False:
-	#				etimefile=True
-	#			# both file valid, so we done, no more iterations
-	#			if timefile == True and etimefile == True:
-	#				break
-	#	# no more iteration needed
-	#	if timefile == True and etimefile == True:
-	#		completeexp=True			
-	#		break
-	
-	for path, subdirs, files in os.walk(expfile):
-		for name in files:
-			if name.startswith("timing.") and timefile==False:	
-				timefile=True
-			if name.startswith("e3sm_timing.") and etimefile==False:
-				etimefile=True
-			# both file valid, so we done, no more iterations
+def start():
+	result=parseArguments()
+	zfname = 'experiments'
+	expfile = result.source
+	timefile = False
+	etimefile = False
+	completeexp = False
+	# If path is not empty, and is a directory
+	if(expfile!='' and os.path.isdir(expfile)):
+		# iterate to check for timing files
+		for path, subdirs, files in os.walk(expfile):
+			for name in files:
+				if name.startswith("timing.") and timefile==False:	
+					timefile=True
+				if name.startswith("e3sm_timing.") and etimefile==False:
+					etimefile=True
+				# both file valid, so we done, no more iterations
+				if timefile == True and etimefile == True:
+					break
+			# no more iteration needed
 			if timefile == True and etimefile == True:
-				break
-		# no more iteration needed
-		if timefile == True and etimefile == True:
-			completeexp=True			
-			break	
-	# close the zip file	
-	if completeexp==True:	
-		# aggregate all file		
-		zipSubdir(zfname,expfile)
-		uploadfile='experiments.zip'
-		# upload E3SM experiment file		
-		uploadE3SMexp(uploadfile)
-		# remove temporary aggregated file
-		os.remove(uploadfile)
+				completeexp=True			
+				break	
+		# close the zip file	
+		if completeexp==True:	
+			# aggregate all file		
+			zipSubdir(zfname,expfile)
+			uploadfile='experiments.zip'
+			# upload E3SM experiment file		
+			uploadE3SMexp(uploadfile)
+			# remove temporary aggregated file
+			os.remove(uploadfile)
+		else:
+			# experiment is incomplete when there are no file containing "timing.*" and "e3sm_timing.*"
+			print("This experiment is incomplete")
 	else:
-		# experiment is incomplete when there are no file containing "timing.*" and "e3sm_timing.*"
-		print("This experiment is incomplete")
-else:
-	print('Empty path')
+		print('Not a directory')
 
 
+if __name__ == "__main__":
+	start()
