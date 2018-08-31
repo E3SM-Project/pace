@@ -117,7 +117,8 @@ def initDatabase():
 
 	dburl = 'mysql+pymysql://' + myuser + ':' + mypwd + '@' + myhost +  '/' + mydb
 
-	dbEngine = create_engine(dburl, pool_recycle=3600)
+	# Ref: https://docs.sqlalchemy.org/en/latest/core/pooling.html
+	dbEngine = create_engine(dburl, pool_pre_ping=True)
 	dbConn = dbEngine.connect()
 	Base.metadata.create_all(dbEngine)
 	Base.metadata.bind = dbConn

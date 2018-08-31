@@ -8,6 +8,7 @@ import pymysql
 from subprocess import Popen,PIPE
 from datastructs import *
 from pace_common import *
+from sqlalchemy.orm import sessionmaker
 import modelTiming as mt
 import io
 
@@ -222,6 +223,7 @@ def parseData():
 
 
 	# parse and store timing profile file in a database
+	dbSessionf = sessionmaker(bind=dbConn)
 	dbSession = dbSessionf()
 	exptag=[]
 	for i in range(len(allfile)):
