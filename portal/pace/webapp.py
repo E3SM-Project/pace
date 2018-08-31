@@ -164,7 +164,7 @@ def expsList():
     myexps = []
     # initDatabase()
     dbSession = dbSessionf()
-    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.asc()).limit(20)
+    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.desc()).limit(20)
     # myexps = Timingprofile.query.order_by(Timingprofile.expid.asc()).limit(25)
     dbSession.close()
     return render_template('exps.html', explist = myexps)
@@ -184,7 +184,7 @@ EXPS_PER_RQ=20
 def expsAjax(pageNum):
     dbSession = dbSessionf()
     numexps = dbSession.query(Timingprofile).count()
-    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.asc())[pageNum * EXPS_PER_RQ : (pageNum + 1) * EXPS_PER_RQ]
+    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.desc())[pageNum * EXPS_PER_RQ : (pageNum + 1) * EXPS_PER_RQ]
     pruned_data = {"numRows": numexps, "data": []}
     for exp in myexps:
 	# var row = [o.expid,o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.grid];
