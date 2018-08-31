@@ -80,7 +80,7 @@ function getExperiment(expSrc,extSrc,funcPush = expDownloadDefault){
     if(funcPush)
         expGetFunc.push(funcPush);
     //jquery test
-    $.get(detectRootUrl()+"mtQuery/"+expSrc+"/"+extSrc+"/",function(data,status){
+    $.get(detectRootUrl()+"summaryQuery/"+expSrc+"/"+extSrc+"/",function(data,status){
         if(status == "success"){
             //console.log(data);
             results = JSON.parse(data);

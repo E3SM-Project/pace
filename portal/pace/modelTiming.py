@@ -38,8 +38,10 @@ def getData(src):
     #Reset the file & read from the new thread indexes
     sourceFile.seek(0,0)
     lineCount=0
+    #If this is a "stats" file, this will be the only thread we need to record:
+    STATSINDEX=7
     if isStat:
-        threadIndexes.append(7)
+        threadIndexes.append(STATSINDEX)
 
     for line in threadIndexes:
         resultLines.append([])
