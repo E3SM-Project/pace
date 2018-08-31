@@ -36,7 +36,10 @@
 								cell.innerHTML = '<a href="'+detectRootUrl()+'exp-details/' + text + '">' + text +"</a>";
 							}
 							if (colNum == 8 ) {
-								cell.innerHTML = '<a href="'+detectRootUrl()+'summary/' + expid + '/stats' + '">' + text +"</a>";
+								cell.innerHTML = '<a href="'+detectRootUrl()+'summary/' + expid + '/stats' + '">' + "Summary" +"</a>";
+							}
+							if (colNum == 9 ) {
+								cell.innerHTML = '<a href="'+detectRootUrl()+'summary/' + expid + '/0000' + '">' + "TreeView" +"</a>";
 							}
 
 						},
@@ -65,7 +68,7 @@
 								rows = [];
 								for (var i = 0; i < data.data.length; i++) {
 									var o = data.data[i];
-									var row = [o.expid,o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.expid];
+									var row = [o.expid,o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.grid,o.expid];
 									rows.push(row);
 								}
 								return [numr, rows];
@@ -93,7 +96,8 @@
 				    <th>Throughput</th>
 				    <th>MPI tasks/node</th>
 				    <th>Compset</th>
-				    <th>Chart</th>
+				    <th>Global Summary</th>
+				    <th>TreeView (Rank 0)</th>
 				</tr>
 				</thead>
 				<tbody>
@@ -109,6 +113,7 @@
 					<td>{{exp.mpi_tasks_per_node}}</td>
 					<td>{{exp.compset|truncate(50)}} </td>
 					<td>Chart</td>
+					<td>Chart2</td>
 				</tr>
 				{% endfor %}
 
