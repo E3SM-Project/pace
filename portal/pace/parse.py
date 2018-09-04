@@ -258,7 +258,14 @@ def insertTiming(mtFile,expID,dbSession):
 		if len(slash) == 2 and ( ("." in slash[1]) or underScore[len(underScore)-1] == "stats"):
 			rankStr = ""
 			if "." in slash[1]:
+				#Check if all digits are zeros:
+				zeroCount = 0
 				rankStr = slash[1].split(".")[1]
+				for i in range(len(rankStr)):
+					if(rankStr[i] == "0")
+						zeroCount = zeroCount+1
+				if zeroCount == len(rankStr):
+					rankStr = "0"
 			elif underScore[len(underScore)-1] == "stats":
 				rankStr = underScore[len(underScore)-1]
 			#This is a file we want! Let's save it:

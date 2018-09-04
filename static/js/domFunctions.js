@@ -68,6 +68,9 @@ var resultChart = new Chart(chartTag, {
             legend:{
                 display:false,
             },
+            tooltips:{
+                enabled:false
+            },
             onClick:(event)=>{
                 let activeElement = resultChart.getElementAtEvent(event);
                 if(!comparisonMode.on){
@@ -109,12 +112,16 @@ var resultChart = new Chart(chartTag, {
 chartTag.onmousemove = function(event){
     let results = resultChart.getElementAtEvent(event);
     if(results.length > 0){
+        nodeId.style.left = (event.x + 20)+"px";
+        nodeId.style.top = (event.y - 20)+"px";
         if(!comparisonMode.on){
-                nodeId.innerHTML=(!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || resultChart.data.datasets.length == 1?currExp.nodeTableList[currExp.currThread][results[0]._model.label].name:currExp.nodeTableList[currExp.currThread][results[0]._model.label].children[results[0]._datasetIndex].name);
+            let resultNode = (!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || resultChart.data.datasets.length == 1?currExp.nodeTableList[currExp.currThread][results[0]._model.label].name:currExp.nodeTableList[currExp.currThread][results[0]._model.label].children[results[0]._datasetIndex].name);
+            nodeId.innerHTML=currExp.name+"_"+currExp.rank+"(Thread "+currExp.currThread+")<br>"+resultNode+"<br>"+valueName.children[valueName.selectedIndex].innerHTML+": "+currExp.nodeTableList[currExp.currThread][resultNode].values[valueName.children[valueName.selectedIndex].innerHTML];
         }
         else{
             if(results.length > 0){
-                nodeId.innerHTML = comparisonEvt(results).targetNode;
+                let output = comparisonEvt(results);
+                nodeId.innerHTML=output.spefExp.name+"_"+output.spefExp.rank+"(Thread "+output.spefThread+")<br>"+output.targetNode+"<br>"+valueName.children[valueName.selectedIndex].innerHTML+": "+output.spefExp.nodeTableList[output.spefThread][output.targetNode].values[valueName.children[valueName.selectedIndex].innerHTML];
             }
         }
     }
@@ -156,7 +163,7 @@ var compDivObj = {
     },
     //This name is weird XP
     expCountCheck:function(){
-        compareGo.style.display = compDivBody.getElementsByClassName("compareDiv").length < 2 && compareGo.style.display!="none"?"none":"";
+        compareGo.style.display = compDivBody.getElementsByClassName("compareDiv").length < 2?"none":"";
     },
     updateThreads:function(context){
         let resultString = "<select>";
@@ -196,7 +203,14 @@ function comparisonEvt(evt){
     result.spefChildIndex;
     result.targetNode = "";
     let foundLabel = true;
-    if(stackedCharts){
+    //Check to see if everything has no children:
+    let noChildrenCount = 0;
+    for(let i=0;i<comparisonMode.exp.currentEntry.children.length;i++){
+        if(comparisonMode.exp.currentEntry.children[i].children.length == 0){
+            noChildrenCount++;
+        }
+    }
+    if(stackedCharts && !(noChildrenCount == comparisonMode.exp.currentEntry.children.length)){
         result.spefChildIndex = evt[0]._datasetIndex;
         if(result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label] && result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label].children[result.spefChildIndex]){
             result.targetNode = result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label].children[result.spefChildIndex].name;
@@ -213,5 +227,42 @@ function comparisonEvt(evt){
     else result.nodeObject = result.spefExp.currentEntry.children[result.spefChildIndex];
     return result;
 }
+
+var dmObj={
+    percentage:0,
+    interval:undefined,
+    bgcolor:[[255,255,255],[13,13,13]],
+    footColor:[[245,245,245],[17,17,17]],
+    toggle:function(tf){
+        //Change cookies:
+        document.cookie = "darkMode="+(tf?1:0)+"; path="+detectRootUrl().replace("https://pace.ornl.gov","")+"summary/";
+        clearInterval(dmObj.interval);
+        lsBackground.style.backgroundColor = (tf?"rgb(17,17,17)":"white");
+        dmObj.interval = setInterval(()=>{
+            let percentCondition = (tf?dmObj.percentage!=100:dmObj.percentage!=0);
+    
+            if(percentCondition){
+                if(tf)
+                    dmObj.percentage+=4;
+                else dmObj.percentage-=4;
+                document.body.style.backgroundColor = percentToColor(dmObj.percentage,0,0,(tf?dmObj.bgcolor:[dmObj.bgcolor[0],dmObj.bgcolor[1]]));
+                compareSelectDiv.style.backgroundColor = percentToColor(dmObj.percentage,0,0,(tf?dmObj.bgcolor:[dmObj.bgcolor[0],dmObj.bgcolor[1]]));
+                document.getElementsByClassName("footer")[0].style.backgroundColor = percentToColor(dmObj.percentage,0,0,(tf?dmObj.footColor:[dmObj.footColor[0],dmObj.footColor[1]]));
+            }
+            else clearInterval(dmObj.interval);
+        },17)
+    },
+    checkCookies:function(){
+        let cookies = document.cookie.split(";");
+        let cookieRegex = /darkMode/;
+        let result = false;
+        cookies.forEach(element=>{
+            if(cookieRegex.test(element)){
+                if(element.split("=")[1]=='1') result=true;
+            }
+        });
+        return result;
+    }
+};
 
 window.onresize();

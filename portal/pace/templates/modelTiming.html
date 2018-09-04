@@ -23,7 +23,7 @@
             ul{
                 list-style-type: none;
             }
-            #backAndNodeId{
+            #backButton{
                 position: absolute;
                 left:20.5%;
         
@@ -58,6 +58,12 @@
                 border:.1em solid gray;
                 border-radius:10px;
             }
+            #nodeId{
+                font-family: monospace;
+                position:absolute;
+                background-color:lightgray;
+                border-radius:5px;
+            }
             </style>
 {% endblock %}
 
@@ -67,6 +73,7 @@
     Purpose: View your prevsiously parsed model_timing files in style!
     Summarize any scope of timeNodes with sum or averages, and with any value you want! (Wallclock, min/max, etc)-->
         <div id="mtMain">
+            <span id="nodeId"></span>
             <div>
                 <select id="valueName" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )"></select>
                 <select id="mode" class="unused" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )">
@@ -75,14 +82,14 @@
                 </select>
                 <select id="threadSelect"></select>
                 <button id="compareButton" onclick="compDivObj.toggle()">Compare</button>
-                <input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked/>Stacked bars
+                <input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked/>Stacked bars <input id="dmCheck" type="checkbox" onclick="dmObj.toggle(this.checked)"/>Dark Mode
             </div>
             <div id="dataInfo"><canvas id="chartTag"></canvas></div>
             <div id="dataList">
             <select id="expSelect" onchange="switchExperiment()"></select>
             <br>
             <button id="summaryButton">Summary</button><div id="listContent"></div></div>
-            <span id="backAndNodeId"><button id="backButton"><-Back</button><span id="nodeId" style="font-family: monospace"></span></span>
+            <button id="backButton"><-Back</button>
         </div>
     <div id="compareSelectDiv">
     <h2>Select the threads you wish to compare.</h2><br>
@@ -111,6 +118,8 @@
         }
     });*/
 	$(document).ready(()=>{
+            dmObj.toggle(dmObj.checkCookies());
+            dmCheck.checked = dmObj.checkCookies();
 			animate();
             if(expData!=undefined){
                 for(let i=0;i<expData.length;i++){
