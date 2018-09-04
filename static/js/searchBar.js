@@ -89,8 +89,8 @@ var searchObj = {
                 searchObj.mouseCoord[1] = evt.y;
             }
             if(searchObj.searchCoord.length == 0){
-                searchObj.searchCoord[0] = (searchObj.mouseCoord[0] *.9);
-                searchObj.searchCoord[1] = (searchObj.mouseCoord[1] *.9);
+                searchObj.searchCoord[0] = (searchObj.mouseCoord[0] *.95);
+                searchObj.searchCoord[1] = (searchObj.mouseCoord[1] *.95);
             }
             searchObj.searchCoord[0]-= (searchObj.mouseCoord[0] - evt.x);
             searchObj.searchCoord[1]-= (searchObj.mouseCoord[1] - evt.y);
