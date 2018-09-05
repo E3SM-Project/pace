@@ -262,7 +262,7 @@ def insertTiming(mtFile,expID,dbSession):
 				zeroCount = 0
 				rankStr = slash[1].split(".")[1]
 				for i in range(len(rankStr)):
-					if(rankStr[i] == "0")
+					if rankStr[i] == "0":
 						zeroCount = zeroCount+1
 				if zeroCount == len(rankStr):
 					rankStr = "0"

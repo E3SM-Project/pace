@@ -113,7 +113,6 @@ def summaryQuery(expID,rank):
         resultNodes = mt.parse("/pace/assets/static/model_timing.0000.new")
     else:
         resultNodes = dbConn.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
-        resultName = dbConn.execute("select expid from timing_profile where expid = "+expID).fetchall()[0].expid
         if rank == 'stats':
             listIndex = 1
             #Grab processes > 1 second:
@@ -133,7 +132,7 @@ def summaryQuery(expID,rank):
             while not len(newJson) == 50:
                 newJson.pop()
             resultNodes = "["+json.dumps(newJson)+"]"
-    return "["+resultNodes+","+json.dumps(mt.valueList[listIndex])+",\""+str(resultName)+"\",\""+rank+"\"]"
+    return "["+resultNodes+","+json.dumps(mt.valueList[listIndex])+",\""+expID+"\",\""+rank+"\"]"
 
 @app.route("/exps2")
 def experiments():

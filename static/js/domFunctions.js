@@ -114,14 +114,38 @@ chartTag.onmousemove = function(event){
     if(results.length > 0){
         nodeId.style.left = (event.x + 20)+"px";
         nodeId.style.top = (event.y - 20)+"px";
+        let formattedNames = [
+            [["Min","min"],["Max","max"]],
+            [["WallMin","wallmin"],["WallMax","wallmax"]],
+        ];
+        let formatNameIndex = 0;
+        if(valueName.children[valueName.selectedIndex].value == "wallmin/wallmax")
+            formatNameIndex++;
+
         if(!comparisonMode.on){
-            let resultNode = (!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || resultChart.data.datasets.length == 1?currExp.nodeTableList[currExp.currThread][results[0]._model.label].name:currExp.nodeTableList[currExp.currThread][results[0]._model.label].children[results[0]._datasetIndex].name);
-            nodeId.innerHTML=currExp.name+"_"+currExp.rank+"(Thread "+currExp.currThread+")<br>"+resultNode+"<br>"+valueName.children[valueName.selectedIndex].innerHTML+": "+currExp.nodeTableList[currExp.currThread][resultNode].values[valueName.children[valueName.selectedIndex].innerHTML];
+            let resultNode = (!stackedCharts ||
+                valueName.children[valueName.selectedIndex].value == "min/max" || 
+                valueName.children[valueName.selectedIndex].value == "wallmin/wallmax" || 
+                resultChart.data.datasets.length == 1?currExp.nodeTableList[currExp.currThread][results[0]._model.label].name:
+                currExp.nodeTableList[currExp.currThread][results[0]._model.label].children[results[0]._datasetIndex].name);
+            let outputStr = "";
+            if(valueName.children[valueName.selectedIndex].value == "min/max" || valueName.children[valueName.selectedIndex].value == "wallmin/wallmax"){
+                outputStr=formattedNames[formatNameIndex][0][0]+": "+currExp.nodeTableList[currExp.currThread][resultNode].values[formattedNames[formatNameIndex][0][1]] +
+                "<br>"+ formattedNames[formatNameIndex][1][0]+": "+currExp.nodeTableList[currExp.currThread][resultNode].values[formattedNames[formatNameIndex][1][1]];
+            }
+            else outputStr = valueName.children[valueName.selectedIndex].innerHTML+": "+currExp.nodeTableList[currExp.currThread][resultNode].values[valueName.children[valueName.selectedIndex].innerHTML]
+            nodeId.innerHTML=currExp.name+"_"+currExp.rank+"(Thread "+currExp.currThread+")<br>"+resultNode+"<br>"+outputStr;
         }
         else{
             if(results.length > 0){
                 let output = comparisonEvt(results);
-                nodeId.innerHTML=output.spefExp.name+"_"+output.spefExp.rank+"(Thread "+output.spefThread+")<br>"+output.targetNode+"<br>"+valueName.children[valueName.selectedIndex].innerHTML+": "+output.spefExp.nodeTableList[output.spefThread][output.targetNode].values[valueName.children[valueName.selectedIndex].innerHTML];
+                let valueStr = "";
+                if(valueName.children[valueName.selectedIndex].value == "min/max" || valueName.children[valueName.selectedIndex].value == "wallmin/wallmax"){
+                    valueStr=formattedNames[formatNameIndex][0][0]+": "+output.spefExp.nodeTableList[output.spefThread][output.targetNode].values[formattedNames[formatNameIndex][0][1]] +
+                "<br>"+ formattedNames[formatNameIndex][1][0]+": "+output.spefExp.nodeTableList[output.spefThread][output.targetNode].values[formattedNames[formatNameIndex][1][1]];
+                }
+                else valueStr = valueName.children[valueName.selectedIndex].innerHTML+": "+output.spefExp.nodeTableList[output.spefThread][output.targetNode].values[valueName.children[valueName.selectedIndex].innerHTML];
+                nodeId.innerHTML=output.spefExp.name+"_"+output.spefExp.rank+"(Thread "+output.spefThread+")<br>"+output.targetNode+"<br>"+valueStr;
             }
         }
     }
@@ -195,7 +219,7 @@ function updateExpSelect(){
     }); 
     expSelect.innerHTML = resultString;
 }
-
+//This function is for comparison mode; whenever the user clicks or hovers over something, general information is returned to match the functionality of regular viewing.
 function comparisonEvt(evt){
     let result = {};
     result.spefExp = comparisonMode.activeExps[evt[0]._index][0];
@@ -228,29 +252,48 @@ function comparisonEvt(evt){
     return result;
 }
 
+//This object is for Dark Mode!
 var dmObj={
+    on:false,
     percentage:0,
     interval:undefined,
-    bgcolor:[[255,255,255],[13,13,13]],
+    bgcolor:[[255,255,255],[25,25,25]],
     footColor:[[245,245,245],[17,17,17]],
+    textColor:[[0,0,0],[100,100,100]],
     toggle:function(tf){
+        this.on = tf;
         //Change cookies:
         document.cookie = "darkMode="+(tf?1:0)+"; path="+detectRootUrl().replace("https://pace.ornl.gov","")+"summary/";
         clearInterval(dmObj.interval);
-        lsBackground.style.backgroundColor = (tf?"rgb(17,17,17)":"white");
+        lsBackground.style.backgroundColor = (tf?"rgb(25,25,25)":"white");
         dmObj.interval = setInterval(()=>{
             let percentCondition = (tf?dmObj.percentage!=100:dmObj.percentage!=0);
-    
             if(percentCondition){
                 if(tf)
                     dmObj.percentage+=4;
                 else dmObj.percentage-=4;
-                document.body.style.backgroundColor = percentToColor(dmObj.percentage,0,0,(tf?dmObj.bgcolor:[dmObj.bgcolor[0],dmObj.bgcolor[1]]));
-                compareSelectDiv.style.backgroundColor = percentToColor(dmObj.percentage,0,0,(tf?dmObj.bgcolor:[dmObj.bgcolor[0],dmObj.bgcolor[1]]));
-                document.getElementsByClassName("footer")[0].style.backgroundColor = percentToColor(dmObj.percentage,0,0,(tf?dmObj.footColor:[dmObj.footColor[0],dmObj.footColor[1]]));
+                [document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],searchBar].forEach(element=>{
+                    if(element!=undefined)
+                        element.style.backgroundColor = dmObj.colorNegator(dmObj.bgcolor);
+                });
+                document.getElementsByClassName("footer")[0].style.backgroundColor = this.colorNegator(this.footColor);
+                //textColor
+                [listContent,searchBar].forEach(element=>{
+                    element.style.color = dmObj.colorNegator(dmObj.textColor);
+                })
+                //Headers
+                let paceHeaders = document.getElementsByTagName("h2");
+                for(let i=0;i<paceHeaders.length;i++){
+                    paceHeaders[i].style.color = this.colorNegator(this.textColor);
+                }
             }
             else clearInterval(dmObj.interval);
         },17)
+    },
+    //This helps clean up the above code in case we have many more things needing to be applied to dark mode:
+    colorNegator:function(colorArrayIn,darkOn = this.on, percentIn = this.percentage){
+        resultArray = (darkOn? colorArrayIn:[colorArrayIn[0],colorArrayIn[1]]);
+        return percentToColor(percentIn,0,0,resultArray);
     },
     checkCookies:function(){
         let cookies = document.cookie.split(";");
