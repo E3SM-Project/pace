@@ -11,7 +11,7 @@ var expGetCount = 0;
 var expGetFunc = [];
 
 //This will be where we look for a specific node. (Making the structured time-node into something linear at the same time)
-function addressTable(vals=undefined,jsonArray=false){
+function addressTable(vals=undefined,jsonArray=false,srcExp){
     this.length = function (){
         let count = 0
         while (this[count] !=undefined){
@@ -33,6 +33,7 @@ function addressTable(vals=undefined,jsonArray=false){
             });
             //Making Parents...
             this[jsonIn.name].parent=(parent==undefined?jsonIn:parent);
+            this[jsonIn.name].srcExp = srcExp;
         }
     }
     if(vals)
@@ -57,7 +58,7 @@ function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "000
 
     //Construct:
     this.timeNodes.forEach((thread,i)=>{
-        this.nodeTableList.push(new addressTable(thread,true));
+        this.nodeTableList.push(new addressTable(thread,true,this));
         this.nodeDomList.push(htmlList(thread,[0,2]));
         this.threadSelectInner+="<option "+ (!i?"selected":"")+" value="+i+" >Thread "+i+"</option>";
     });
@@ -120,7 +121,6 @@ function switchExperiment(index = expSelect.selectedIndex){
 //scope is the range you want the subprocesses to be closed by default. (e.g a range of 0-2 would have the rest of the nodes opened by default by the 3rd layer.)
 function htmlList(jsonList,scope=[0,0],currScope=0){
     let newList = document.createElement("ul");
-
     //Add colors to each element on the list as long as it contains children:
     let sumList = [];
     jsonList.forEach((child)=>{

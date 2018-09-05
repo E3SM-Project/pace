@@ -62,6 +62,8 @@ var searchObj = {
                 }
             }
             searchBodyContainer.appendChild(resultBody);
+            if(dmObj.on)
+                document.getElementsByClassName("searchMenu")[0].style.backgroundColor="rgb(25,25,25)";
         });
         }
     },
@@ -199,4 +201,3 @@ var searchObj = {
 }
 //onchange is strange when bootstrap is involved, so here's an elaborate keydown instead :P
 searchBar.onkeydown = evt=>{if(evt.key == "Enter") searchObj.listenerStop(evt);};
-searchButton.onclick = searchObj.listenerStop;

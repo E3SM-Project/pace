@@ -34,14 +34,12 @@ def getData(src):
         elif "GLOBAL STATISTICS" in currLine:
             isStat=True #we found a statistics file instead of a regular file.
         lineCount+=1
+        if isStat and "name" in currLine:
+            threadIndexes.append(lineCount+1)
         currLine = sourceFile.readline()
     #Reset the file & read from the new thread indexes
     sourceFile.seek(0,0)
     lineCount=0
-    #If this is a "stats" file, this will be the only thread we need to record:
-    STATSINDEX=7
-    if isStat:
-        threadIndexes.append(STATSINDEX)
 
     for line in threadIndexes:
         resultLines.append([])
