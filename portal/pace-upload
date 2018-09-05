@@ -3,7 +3,8 @@
 import argparse
 import requests
 import sys
-import os, shutil
+import os, shutil, distutils
+from distutils import dir_util
 import zipfile, tarfile
 import getpass
 
@@ -38,7 +39,7 @@ def zipSubdir(zfname, path):
 		for file in files:
 			absname = os.path.abspath(os.path.join(root, file))
 			arcname = zfname + "/" + absname[len(abs_src) + 1:]
-			print "Adding file: %s to archive: %s.zip" % (arcname, zfname)
+			#print "Adding file: %s to archive: %s.zip" % (arcname, zfname)
 			zf.write(absname,arcname)
 	zf.close()
 	return
@@ -68,22 +69,31 @@ def isValidE3SMexp(expfile):
 	timefile = False
 	etimefile = False
 	completeexp = False
+	tmpfile = 'paceExperiments'
+	explist = []
 	# iterate to check for timing files
 	for path, subdirs, files in os.walk(expfile):
 		for name in files:
 			# experiment is incomplete when there are no file containing "timing.*" and "e3sm_timing.*"			
-			if name.startswith("timing.") and timefile==False:	
+			if name.startswith("timing."):			
 				timefile=True
-			if name.startswith("e3sm_timing.") and etimefile==False:
+			if name.startswith("e3sm_timing."):
 				etimefile=True
-			# both file valid, so we done, no more iterations
-			if timefile == True and etimefile == True:
-				break
-		# no more iteration needed
-		if timefile == True and etimefile == True:
-			completeexp=True			
-			break
+			if etimefile == True and timefile == True:
+				completeexp=True
+				explist.append(path)
+				etimefile = False
+				timefile = False
+		
+	# for complete experiments 
 	if completeexp == True:
+		i=0
+		# copy them into temporary folder
+		if (os.path.exists(tmpfile)):
+			distutils.dir_util.remove_tree(tmpfile)
+		for f in explist:
+			distutils.dir_util.copy_tree(f,tmpfile+'/exp'+str(i))
+			i=i+1
 		return(True)
 	else:
 		return(False)
@@ -97,16 +107,18 @@ def main():
 	result=parseArguments()
 	zfname = 'experiments'
 	expfile = result.source
+	tmpfile = 'paceExperiments'
 	# If path is not empty, and is a directory
 	if(expfile!=''):
 		if (result.application=='e3sm' and isValidE3SMexp(expfile)==True): 	
-			# aggregate all file	
-			zipSubdir(zfname,expfile)
+			# aggregate all file
+			zipSubdir(zfname,tmpfile)
 			uploadfile='experiments.zip'
 			# upload experiment file		
 			uploadExp(uploadfile)
 			# remove temporary aggregated file
 			os.remove(uploadfile)
+			distutils.dir_util.remove_tree(tmpfile)
 		elif (result.application=='fusion' and isValidFusionExp(expfile)==True):
 			exit()		
 		else:
