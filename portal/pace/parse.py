@@ -184,43 +184,47 @@ def insertExperiment(filename,dbSession):
 def parseData():
 	# start main
 	#first unzip uploaded file
-	fpath='/pace/prod/portal/upload'
-	zip_ref=zipfile.ZipFile('/pace/prod/portal/upload/experiments.zip','r')
-	zip_ref.extractall(fpath)
-	zip_ref.close
-
-	# list and store path of all new uploaded file
-	dic=[]
-	for i in os.listdir(fpath):
-		 dic.append(os.path.join(fpath,i))
-
-
-	# untar all tar files
-	for i in range(len(dic)):
-		if dic[i].endswith('.tar.gz'):
-			tar = tarfile.open(dic[i])
-			tar.extractall()
-			tar.close()
-
-	# store path of all directories
-	dic1=[]
-	for i in os.listdir(fpath):
-		if i !='parse.py' and i!='upload' and i!='experiments.zip':	
-			dic1.append(i)
+	try:	
+		fpath='/pace/prod/portal/upload'
+		zip_ref=zipfile.ZipFile('/pace/prod/portal/upload/experiments.zip','r')
+		zip_ref.extractall(fpath)
+		zip_ref.close
+	
+		# list and store path of all new uploaded file
+		dic=[]
+		for i in os.listdir(fpath):
+			dic.append(os.path.join(fpath,i))
 
 
-	# go through all directories and store timing profile file only
-	allfile=[]
-	timingfile=[]
-	for i in range(len(dic1)):
-		root=os.path.join(fpath,dic1[i])
-		for path, subdirs, files in os.walk(root):
-			for name in files:
-				if name.startswith("timing."):
-					timingfile.append(os.path.join(path, name))
-				if name.startswith("e3sm_timing."):		
-					allfile.append(os.path.join(path, name))
+		# untar all tar files
+		for i in range(len(dic)):
+			if dic[i].endswith('.tar.gz'):
+				tar = tarfile.open(dic[i])
+				tar.extractall()
+				tar.close()
 
+		# store path of all directories
+		dic1=[]
+		for i in os.listdir(fpath):
+			if i !='parse.py' and i!='upload' and i!='experiments.zip':	
+				dic1.append(i)
+
+
+		# go through all directories and store timing profile file only
+		allfile=[]
+		timingfile=[]
+		for i in range(len(dic1)):
+			root=os.path.join(fpath,dic1[i])
+			for path, subdirs, files in os.walk(root):
+				for name in files:
+					if name.startswith("timing."):
+						timingfile.append(os.path.join(path, name))
+					if name.startswith("e3sm_timing."):		
+						allfile.append(os.path.join(path, name))
+	except IOError as e:
+		return('Error: %s' % e.strerror)
+	except OSError as e:
+		return('Error: %s' % e.strerror)
 
 	# parse and store timing profile file in a database
 	dbSessionf = sessionmaker(bind=dbConn)
@@ -247,7 +251,9 @@ def parseData():
 		shutil.rmtree(os.path.join(removeroot,'experiments'))
 		os.remove(os.path.join(removeroot,'experiments.zip'))
 	except OSError as e:
-		print("Error: %s - %s." % (e.filename, e.strerror))
+		return("Error: %s - %s." % (e.filename, e.strerror))
+
+	return('File Upload and Store in Database Success')
 
 def insertTiming(mtFile,expID,dbSession):
 	sourceFile = tarfile.open(mtFile)
