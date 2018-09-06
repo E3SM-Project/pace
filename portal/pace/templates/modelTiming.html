@@ -66,7 +66,7 @@
             }
             </style>
 <!--Search bar CSS-->
-<link rel="stylesheet" type="text/css" href="/static/css/searchBar.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/quickSearch.css" />
 {% endblock %}
 
 
@@ -85,7 +85,7 @@
                 <select id="threadSelect"></select>
                 <button id="compareButton" onclick="compDivObj.toggle()">Compare</button>
                 <input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked/>Stacked bars <input id="dmCheck" type="checkbox" onclick="dmObj.toggle(this.checked)"/>Dark Mode
-                <input type="text" id="searchBar" placeholder="Quick Search"/>
+                <input type="text" id="quickSearchBar" placeholder="Quick Search"/>
             </div>
             <div id="dataInfo"><canvas id="chartTag"></canvas></div>
             <div id="dataList">
@@ -105,7 +105,7 @@
 {% block bottomscripts %}
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
-    <script src="/static/js/searchBar.js"></script>
+    <script src="/static/js/quickSearch.js"></script>
 	<script src="/static/js/domFunctions.js"></script>
 	<script src="/static/js/modelTiming.js"></script>
 	<script src="/static/js/paceLoadScreen.js"></script>

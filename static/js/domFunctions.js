@@ -272,13 +272,13 @@ var dmObj={
                 if(tf)
                     dmObj.percentage+=4;
                 else dmObj.percentage-=4;
-                [document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],searchBar].forEach(element=>{
+                [document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar].forEach(element=>{
                     if(element!=undefined)
                         element.style.backgroundColor = dmObj.colorNegator(dmObj.bgcolor);
                 });
                 document.getElementsByClassName("footer")[0].style.backgroundColor = this.colorNegator(this.footColor);
                 //textColor
-                [listContent,searchBar].forEach(element=>{
+                [listContent,quickSearchBar].forEach(element=>{
                     element.style.color = dmObj.colorNegator(dmObj.textColor);
                 })
                 //Headers

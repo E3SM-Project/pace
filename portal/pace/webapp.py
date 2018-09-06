@@ -168,6 +168,11 @@ def expsList():
     dbSession.close()
     return render_template('exps.html', explist = myexps)
 
+@app.route("/exps3/")
+@app.route("/exps3/<searchQuery>")
+def exps3(searchQuery="*"):
+    return render_template("exps3.html",sq = "var searchQuery = '"+searchQuery+"';")
+
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
     myexp = 0
@@ -194,44 +199,56 @@ def expsAjax(pageNum):
 @app.route("/ajax/search/<searchTerms>")
 @app.route("/ajax/search/<searchTerms>/<limit>")
 def searchBar(searchTerms,limit = False):
-    termList = []
-    for word in searchTerms.split("+"):
-        termList.append(word.replace(";","").replace("\\c",""))
     resultItems = []
     filteredItems = []
-    variableList = ["user","expid","machine"]
-    for word in variableList:
-        queryStr = "select "
-        firstValue = True
-        for value in variableList:
-            if not firstValue:
-                queryStr+=","
-            queryStr+=value
-            firstValue = False
-        queryStr+=" from timing_profile where "+word+" in ("
-        firstValue = True
-        for term in termList:
-            if not firstValue:
-                queryStr+=","
-            queryStr+='"'+term+'"'
-            firstValue = False
-        queryStr+=")"
-        if limit:
-            queryStr+=" limit "+limit
-        resultItems.append(dbConn.execute(queryStr).fetchall())
-    #Filter out duplicates:
-    for query in resultItems:
-        for element in query:
-            unique = True
-            for item in filteredItems:
-                if element.user == item["user"] and element.expid == item["expid"] and element.machine == item["machine"]:
-                    unique = False
-                    break
-            if unique:
-                resultDict = {}
-                for key in element.keys():
-                    resultDict[key] = element[key]
-                filteredItems.append(resultDict)
+    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset"]
+    termList = []
+    if searchTerms == "*":
+        allResults = dbConn.execute("select "+str(variableList).strip("[]").replace("'","")+" from timing_profile limit "+limit).fetchall()
+        for result in allResults:
+            resultItems.append(result)
+        #Replacement for filtered items loop:
+        for item in resultItems:
+            resultDict = {}
+            for key in item.keys():
+                resultDict[key] = item[key]
+            filteredItems.append(resultDict)
+
+    else:
+        for word in searchTerms.split("+"):
+            termList.append(word.replace(";","").replace("\\c",""))
+        for word in variableList:
+            queryStr = "select "
+            firstValue = True
+            for value in variableList:
+                if not firstValue:
+                    queryStr+=","
+                queryStr+=value
+                firstValue = False
+            queryStr+=" from timing_profile where "+word+" in ("
+            firstValue = True
+            for term in termList:
+                if not firstValue:
+                    queryStr+=","
+                queryStr+='"'+term+'"'
+                firstValue = False
+            queryStr+=")"
+            if limit:
+                queryStr+=" limit "+limit
+            resultItems.append(dbConn.execute(queryStr).fetchall())
+        #Filter out duplicates:
+        for query in resultItems:
+            for element in query:
+                unique = True
+                for item in filteredItems:
+                    if element.user == item["user"] and element.expid == item["expid"] and element.machine == item["machine"]:
+                        unique = False
+                        break
+                if unique:
+                    resultDict = {}
+                    for key in element.keys():
+                        resultDict[key] = element[key]
+                    filteredItems.append(resultDict)
     #Grab the ranks based of of filteredItems:
     rankList = []
     for item in filteredItems:
@@ -242,3 +259,15 @@ def searchBar(searchTerms,limit = False):
         rankList.append([itemRanks,[]])
         
     return json.dumps([filteredItems,rankList])
+
+@app.route("/ajax/getMachines/")
+def getMachines():
+    machineQuery = dbConn.execute("select distinct machine from timing_profile").fetchall()
+    machineList = []
+    for machine in machineQuery:
+        machineList.append(machine.machine)
+    return json.dumps(machineList)
+
+@app.route("/platforms/<platform>/")
+def platforms(platform):
+    return exps3(platform)

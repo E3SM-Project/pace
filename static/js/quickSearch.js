@@ -1,6 +1,6 @@
 //Author: Zachary Mitchell
 //Purpose: create a querying interface for the search bar! This should pull up any relavent experiments; if one is selected, you can choose to view/compare it.
-var searchObj = {
+var quickSearchObj = {
     searchData:[],
     rankData:[],
     lastRankIndex:[0,0],
@@ -28,10 +28,10 @@ var searchObj = {
                 let searchResult = document.createElement("div");
                 searchResult.className = "searchItem";
                 searchResult.value = index;
-                searchResult.innerHTML+="<a href='"+detectRootUrl()+"/exp-details/"+element.expid+"' target='_blank' title='Click here for more details.'><h4>"+element.expid+"</h4></a>User: "+element.user+"</h3><br>Machine:"+element.machine;
+                searchResult.innerHTML+="<a href='"+detectRootUrl()+"exp-details/"+element.expid+"' target='_blank' title='Click here for more details.'><h4>"+element.expid+"</h4></a>User: "+element.user+"</h3><br>Machine:"+element.machine;
                 checkStr = "<div style='display:inline-block;margin-left:5px'>";
-                searchObj.rankData[index][0].forEach( rank=>{
-                    checkStr+="<span style='margin-right:5px'><b>"+rank+"</b><input type='checkbox' onchange='searchObj.scanChecks()'/></span>";
+                quickSearchObj.rankData[index][0].forEach( rank=>{
+                    checkStr+="<span style='margin-right:5px'><b>"+rank+"</b><input type='checkbox' onchange='quickSearchObj.scanChecks()'/></span>";
                 });
                 searchResult.innerHTML+=checkStr+"</div>";
                 resultBody.appendChild(searchResult);
@@ -70,43 +70,43 @@ var searchObj = {
     //Tames the beast known as bootstrap:
     listenerStop:function(evt){
         evt.preventDefault();
-        searchObj.search(searchBar.value);
+        quickSearchObj.search(quickSearchBar.value);
     },
     //functions to help it detect if resultPage is being dragged:
     searchMouseDown:function(){
-        searchObj.click = true;
+        quickSearchObj.click = true;
     },
     searchMouseUp:function(){
-        searchObj.click = false;
-        searchObj.mouseCoord = [];
+        quickSearchObj.click = false;
+        quickSearchObj.mouseCoord = [];
     },
     searchMouseOut:function(evt){
-        searchObj.mouseCoord = [];
-        searchObj.searchMouseMove(evt);
+        quickSearchObj.mouseCoord = [];
+        quickSearchObj.searchMouseMove(evt);
     },
     searchMouseMove:function(evt){
-        if(searchObj.click && !searchObj.bodyClick){
-            if(searchObj.mouseCoord.length == 0){
-                searchObj.mouseCoord[0] = evt.x;
-                searchObj.mouseCoord[1] = evt.y;
+        if(quickSearchObj.click && !quickSearchObj.bodyClick){
+            if(quickSearchObj.mouseCoord.length == 0){
+                quickSearchObj.mouseCoord[0] = evt.x;
+                quickSearchObj.mouseCoord[1] = evt.y;
             }
-            if(searchObj.searchCoord.length == 0){
-                searchObj.searchCoord[0] = (searchObj.mouseCoord[0] *.95);
-                searchObj.searchCoord[1] = (searchObj.mouseCoord[1] *.95);
+            if(quickSearchObj.searchCoord.length == 0){
+                quickSearchObj.searchCoord[0] = (quickSearchObj.mouseCoord[0] *.95);
+                quickSearchObj.searchCoord[1] = (quickSearchObj.mouseCoord[1] *.95);
             }
-            searchObj.searchCoord[0]-= (searchObj.mouseCoord[0] - evt.x);
-            searchObj.searchCoord[1]-= (searchObj.mouseCoord[1] - evt.y);
-            searchObj.mouseCoord[0] = evt.x;
-            searchObj.mouseCoord[1] = evt.y;
-            this.style.left = searchObj.searchCoord[0]+"px";
-            this.style.top = searchObj.searchCoord[1]+"px";
+            quickSearchObj.searchCoord[0]-= (quickSearchObj.mouseCoord[0] - evt.x);
+            quickSearchObj.searchCoord[1]-= (quickSearchObj.mouseCoord[1] - evt.y);
+            quickSearchObj.mouseCoord[0] = evt.x;
+            quickSearchObj.mouseCoord[1] = evt.y;
+            this.style.left = quickSearchObj.searchCoord[0]+"px";
+            this.style.top = quickSearchObj.searchCoord[1]+"px";
         }
     },
     searchBodymD:function(){
-        searchObj.bodyClick = true;
+        quickSearchObj.bodyClick = true;
     },
     searchBodymU:function(){
-        searchObj.bodyClick = false;
+        quickSearchObj.bodyClick = false;
     },
     scanChecks:function(){
         let searchResults = document.getElementsByClassName("searchItem");
@@ -146,23 +146,23 @@ var searchObj = {
 
         //If we're on another page besides the modelTiming viewer, let's immediately create a clickable link in the buttons:
         if(onMtPage){
-            searchViewBtn.onclick = ()=>{searchObj.doAction()};
-            searchCompareBtn.onclick = ()=>{searchObj.doAction(true)};
+            searchViewBtn.onclick = ()=>{quickSearchObj.doAction()};
+            searchCompareBtn.onclick = ()=>{quickSearchObj.doAction(true)};
         }
         else this.doAction();
     },
     doAction:function(compToggle = false){
-        searchObj.doComparison = compToggle;
+        quickSearchObj.doComparison = compToggle;
         //Scan through everything and dump it into a url. If we're on the modelTiming webpage, it will be separate calls to the server instead:
         if(onMtPage){
             document.getElementsByClassName("searchMenu")[0].style.display="none";
             animate();
             searchViewBtn.parentElement.href="#";
             searchCompareBtn.parentElement.href="#";
-            for(let i=0;i<searchObj.rankData.length;i++){
-                for(let j=0;j<searchObj.rankData[i][0].length;j++){
-                    if(searchObj.rankData[i][1][j]){
-                        getExperiment(searchObj.searchData[i].expid,searchObj.rankData[i][0][j],(i == searchObj.lastRankIndex[0] && j == searchObj.lastRankIndex[1])?searchObj.postAction:false);
+            for(let i=0;i<quickSearchObj.rankData.length;i++){
+                for(let j=0;j<quickSearchObj.rankData[i][0].length;j++){
+                    if(quickSearchObj.rankData[i][1][j]){
+                        getExperiment(quickSearchObj.searchData[i].expid,quickSearchObj.rankData[i][0][j],(i == quickSearchObj.lastRankIndex[0] && j == quickSearchObj.lastRankIndex[1])?quickSearchObj.postAction:false);
                     }
                 }
             }
@@ -173,12 +173,12 @@ var searchObj = {
             let totalString = detectRootUrl()+"summary/";
             let expStr = "";
             let rankStr = "";
-            for(let i=0;i<searchObj.rankData.length;i++){
-                for(let j=0;j<searchObj.rankData[i][0].length;j++){
-                    if(searchObj.rankData[i][1][j]){
-                        let lastRank = (i == searchObj.lastRankIndex[0] && j == searchObj.lastRankIndex[1]);
-                        expStr+=searchObj.searchData[i].expid+(lastRank?"":",");
-                        rankStr+=searchObj.rankData[i][0][j]+(lastRank?"":",");
+            for(let i=0;i<quickSearchObj.rankData.length;i++){
+                for(let j=0;j<quickSearchObj.rankData[i][0].length;j++){
+                    if(quickSearchObj.rankData[i][1][j]){
+                        let lastRank = (i == quickSearchObj.lastRankIndex[0] && j == quickSearchObj.lastRankIndex[1]);
+                        expStr+=quickSearchObj.searchData[i].expid+(lastRank?"":",");
+                        rankStr+=quickSearchObj.rankData[i][0][j]+(lastRank?"":",");
                     }
                 }
             }
@@ -189,7 +189,7 @@ var searchObj = {
     },
     postAction:function(){
         expDownloadDefault();
-        if(searchObj.doComparison){
+        if(quickSearchObj.doComparison){
             compList = [];
             expList.forEach(element=>{
                 compList.push([element,0]);
@@ -200,4 +200,4 @@ var searchObj = {
     }
 }
 //onchange is strange when bootstrap is involved, so here's an elaborate keydown instead :P
-searchBar.onkeydown = evt=>{if(evt.key == "Enter") searchObj.listenerStop(evt);};
+quickSearchBar.onkeydown = evt=>{if(evt.key == "Enter") quickSearchObj.listenerStop(evt);};
