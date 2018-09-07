@@ -1,13 +1,16 @@
 //Author: Zachary Mitchell
 //Purpose: The logic for the search page. This is a heavy modification of quickSearch.js designed for full screen usage.
 var searchObj = {
+    limit:20,
     searchData:[],
     rankData:[],
     lastRankIndex:[0,0],
     doComparison:false,
-    search:function(searchStr,limit = 20){
+    afterFunctions:[],
+    search:function(searchStr,limit = this.limit,afterFunc){
         console.log("HI SARAAAAT!");
         searchBody.innerHTML="";
+        this.afterFunctions.push(afterFunc);
         $.get(detectRootUrl()+"/ajax/search/"+searchStr.replace(" ","+")+"/"+limit,(data)=>{
         let resultData = JSON.parse(data)
         this.searchData = resultData[0];
@@ -43,6 +46,14 @@ var searchObj = {
         //Generate the search page object:
         searchViewBtn.disabled = true;
         searchCompareBtn.disabled = true;
+
+        //Execute any functions that are in the list for que:
+        if(searchObj.afterFunctions.length > 0){
+            searchObj.afterFunctions.forEach(element=>{
+                element();
+            });
+            searchObj.afterFunctions = [];
+        }
         });
     },
     scanChecks:function(){
@@ -112,17 +123,6 @@ var searchObj = {
         totalString+=expStr+"/"+rankStr+"/";
         searchViewBtn.parentElement.href=totalString;
         searchCompareBtn.parentElement.href=totalString+"compare/";
-    },
-    postAction:function(){
-        expDownloadDefault();
-        if(searchObj.doComparison){
-            compList = [];
-            expList.forEach(element=>{
-                compList.push([element,0]);
-            });
-            comparisonMode.new(compList);
-            comparisonMode.start();
-        }
     },
     moreClick:function(element){
         let more = element.getElementsByClassName("moreContainer")[0];

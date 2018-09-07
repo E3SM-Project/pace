@@ -154,37 +154,16 @@ var quickSearchObj = {
     doAction:function(compToggle = false){
         quickSearchObj.doComparison = compToggle;
         //Scan through everything and dump it into a url. If we're on the modelTiming webpage, it will be separate calls to the server instead:
-        if(onMtPage){
-            document.getElementsByClassName("searchMenu")[0].style.display="none";
-            animate();
-            searchViewBtn.parentElement.href="#";
-            searchCompareBtn.parentElement.href="#";
-            for(let i=0;i<quickSearchObj.rankData.length;i++){
-                for(let j=0;j<quickSearchObj.rankData[i][0].length;j++){
-                    if(quickSearchObj.rankData[i][1][j]){
-                        getExperiment(quickSearchObj.searchData[i].expid,quickSearchObj.rankData[i][0][j],(i == quickSearchObj.lastRankIndex[0] && j == quickSearchObj.lastRankIndex[1])?quickSearchObj.postAction:false);
-                    }
+        document.getElementsByClassName("searchMenu")[0].style.display="none";
+        animate();
+        searchViewBtn.parentElement.href="#";
+        searchCompareBtn.parentElement.href="#";
+        for(let i=0;i<quickSearchObj.rankData.length;i++){
+            for(let j=0;j<quickSearchObj.rankData[i][0].length;j++){
+                if(quickSearchObj.rankData[i][1][j]){
+                    getExperiment(quickSearchObj.searchData[i].expid,quickSearchObj.rankData[i][0][j],(i == quickSearchObj.lastRankIndex[0] && j == quickSearchObj.lastRankIndex[1])?quickSearchObj.postAction:false);
                 }
             }
-        }
-        else{
-            searchViewBtn.onclick = undefined;
-            searchCompareBtn.onclick = undefined;
-            let totalString = detectRootUrl()+"summary/";
-            let expStr = "";
-            let rankStr = "";
-            for(let i=0;i<quickSearchObj.rankData.length;i++){
-                for(let j=0;j<quickSearchObj.rankData[i][0].length;j++){
-                    if(quickSearchObj.rankData[i][1][j]){
-                        let lastRank = (i == quickSearchObj.lastRankIndex[0] && j == quickSearchObj.lastRankIndex[1]);
-                        expStr+=quickSearchObj.searchData[i].expid+(lastRank?"":",");
-                        rankStr+=quickSearchObj.rankData[i][0][j]+(lastRank?"":",");
-                    }
-                }
-            }
-            totalString+=expStr+"/"+rankStr+"/";
-            searchViewBtn.parentElement.href=totalString;
-            searchCompareBtn.parentElement.href=totalString+"compare/";
         }
     },
     postAction:function(){

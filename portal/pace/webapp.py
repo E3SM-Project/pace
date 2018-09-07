@@ -134,30 +134,6 @@ def summaryQuery(expID,rank):
             resultNodes = "["+json.dumps(newJson)+"]"
     return "["+resultNodes+","+json.dumps(mt.valueList[listIndex])+",\""+expID+"\",\""+rank+"\"]"
 
-@app.route("/exps2")
-def experiments():
-    #Convert table elements into dictionaries:
-    def queryConvert(expQuery):
-        resultList = []
-        for element in expQuery:
-            elementTuple = element.items()
-            resultListElement = {}
-            for key in elementTuple:
-                resultListElement[key[0]] = key[1]
-            resultList.append(resultListElement)
-        return resultList
-    try:
-        initDatabase()
-        # dbSession = dbSessionf()
-        # expSelection = queryConvert(dbSession.query(Timingprofile).	
-        expSelection = queryConvert(dbConn.execute("select lid,expID from timing_profile").fetchall())
-        expExtensions = queryConvert(dbConn.execute("select expID,rank from model_timing").fetchall())
-        return render_template("experiments.html",expS = "var experiments="+json.dumps(expSelection),expE = "var extensions="+json.dumps(expExtensions))
-    except:
-        #run the failsafe, which basically returns nothing... If this happens, we will read placeholder data by file.
-        return render_template("experiments.html")
-
-
 @app.route("/exps")
 def expsList():
     myexps = []
@@ -204,7 +180,10 @@ def searchBar(searchTerms,limit = False):
     variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset"]
     termList = []
     if searchTerms == "*":
-        allResults = dbConn.execute("select "+str(variableList).strip("[]").replace("'","")+" from timing_profile limit "+limit).fetchall()
+        queryStr = "select "+str(variableList).strip("[]").replace("'","")+" from timing_profile"
+        if limit:
+            queryStr+=" limit "+limit
+        allResults = dbConn.execute(queryStr).fetchall()
         for result in allResults:
             resultItems.append(result)
         #Replacement for filtered items loop:
@@ -225,16 +204,17 @@ def searchBar(searchTerms,limit = False):
                     queryStr+=","
                 queryStr+=value
                 firstValue = False
-            queryStr+=" from timing_profile where "+word+" in ("
+            queryStr+=" from timing_profile where "+word+" like "
             firstValue = True
             for term in termList:
                 if not firstValue:
-                    queryStr+=","
-                queryStr+='"'+term+'"'
+                    queryStr+=" or "+word+" like "
+                queryStr+='"%%'+term+'%%"'
                 firstValue = False
-            queryStr+=")"
             if limit:
-                queryStr+=" limit "+limit
+                queryStr+=" limit "+limit+";"
+            else:
+                queryStr+=";"
             resultItems.append(dbConn.execute(queryStr).fetchall())
         #Filter out duplicates:
         for query in resultItems:
