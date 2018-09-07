@@ -39,12 +39,9 @@ def upload_file():
 	if request.method == 'POST':
 		file = request.files['file']
 		if file and allowed_file(file.filename):
-			#sys.stderr.write('inside allowed file')
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(UPLOAD_FOLDER, filename))
-			#os.system("/opt/venv/pace/bin/python /pace/prod/portal/pace/parse.py")
 			return(parse.parseData())
-			#return('File Upload and Store in Database Success')
 		else:
 			return ('Error Uploading file, Try again')
 	return render_template('upload.html')

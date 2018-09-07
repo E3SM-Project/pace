@@ -253,7 +253,7 @@ def parseData():
 	except OSError as e:
 		return("Error: %s - %s." % (e.filename, e.strerror))
 
-	return('File Upload and Store in Database Success')
+	return('File Upload and Stored in Database Success')
 
 def insertTiming(mtFile,expID,dbSession):
 	sourceFile = tarfile.open(mtFile)
@@ -277,6 +277,7 @@ def insertTiming(mtFile,expID,dbSession):
 			#This is a file we want! Let's save it:
 			new_modeltiming = ModelTiming(expid=expID,jsonVal=mt.parse(sourceFile.extractfile(element)),rank=rankStr)
 			dbSession.add(new_modeltiming)
+	dbSession.commit()
 	return
 
 if __name__ == "__main__":
