@@ -22,15 +22,13 @@ function addressTable(vals=undefined,jsonArray=false,srcExp){
     //It appears that all names for nodes are unique! Let's make use of that...
     this.addVals = function(jsonIn,jsonArray = false,parent=undefined){
         if(jsonArray){
-            jsonIn.forEach((element)=>{this.addVals(element);});
+            jsonIn.forEach(element=>this.addVals(element));
         }
         else{
             //The awesomness of Javascript allows us to iterate AND call objects by name
             this[jsonIn.name] = jsonIn;
             this[this.length()] = jsonIn;
-            jsonIn.children.forEach((child)=>{
-                this.addVals(child,false,jsonIn);
-            });
+            jsonIn.children.forEach(child=>this.addVals(child,false,jsonIn));
             //Making Parents...
             this[jsonIn.name].parent=(parent==undefined?jsonIn:parent);
             this[jsonIn.name].srcExp = srcExp;
@@ -62,9 +60,7 @@ function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "000
         this.nodeDomList.push(htmlList(thread,[0,2]));
         this.threadSelectInner+="<option "+ (!i?"selected":"")+" value="+i+" >Thread "+i+"</option>";
     });
-    this.valueNames.forEach((name)=>{
-        this.valueSelectInner+="<option "+(name=="wallClock" || name=="wallmax"?"selected":"")+" value='"+name+"'>"+name+"</option>";
-    });
+    this.valueNames.forEach(name=>this.valueSelectInner+="<option "+(name=="wallClock" || name=="wallmax"?"selected":"")+" value='"+name+"'>"+name+"</option>");
     this.currentEntry = {children:this.timeNodes[this.currThread],name:"summaryButton"};
 
     this.view = function(){
@@ -89,9 +85,7 @@ function getExperiment(expSrc,extSrc,funcPush = expDownloadDefault){
         }
         expGetCount--;
         if(expGetCount == 0){
-            expGetFunc.forEach((element)=>{
-                element();
-            });
+            expGetFunc.forEach(element=>element());
             expGetFunc = [];
         }
     });
@@ -123,9 +117,7 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
     let newList = document.createElement("ul");
     //Add colors to each element on the list as long as it contains children:
     let sumList = [];
-    jsonList.forEach((child)=>{
-        sumList.push(mtSum(child)[1]);
-    });
+    jsonList.forEach(child=>sumList.push(mtSum(child)[1]));
     let percentList=arrayToPercentages(sumList);
     let percentIndex=0;
     //List of nodes go inside...
@@ -142,7 +134,7 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
                 okToClick = false;
                 //Change the url; this would normaly be recursive, but thanks to okToClick, that can all be prevented!
                 window.location.hash=this.id;
-                setTimeout(()=>{okToClick = true;},10);
+                setTimeout(()=>okToClick = true,10);
             }
             else if(okToClick){
                 if (targetExp.currentEntry == undefined || targetExp.currentEntry.name!= this.id){
@@ -153,20 +145,20 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
                 }
                 okToClick = false;
                 window.location.hash=this.id;
-                setTimeout(()=>{okToClick = true;},10);
+                setTimeout(()=>okToClick = true,10);
                 
                 //Display appropriate graph info:
                 if(targetExp.nodeTableList[targetExp.currThread][this.id].children.length > 0){
                     resultChart.options.title.text=this.id;
                     if(comparisonMode.on)
-                        setTimeout(()=>{comparisonMode.viewChart(this.id);},10);
+                        setTimeout(()=>comparisonMode.viewChart(this.id),10);
                     //Strange... there's a small chance that something asynchronous will take too long before chart.js can render the chart... LET'S FIX THAT!
-                    else setTimeout(()=>{changeGraph(currExp.nodeTableList[currExp.currThread][this.id]);},10);
+                    else setTimeout(()=>changeGraph(currExp.nodeTableList[currExp.currThread][this.id]),10);
                 }
                 else{
                     if(comparisonMode.on)
-                        setTimeout(()=>{comparisonMode.viewChart(this.id);},10);
-                    else setTimeout(()=>{changeGraph({children:[currExp.nodeTableList[currExp.currThread][this.id]]});},10);
+                        setTimeout(()=>comparisonMode.viewChart(this.id),10);
+                    else setTimeout(()=>changeGraph({children:[currExp.nodeTableList[currExp.currThread][this.id]]}),10);
                 }
             }
         };
@@ -200,9 +192,7 @@ function changeGraph(nodeIn,valIn=valueName.children[valueName.selectedIndex].va
                 minmaxIndex++;
             for(let i=0;i<nodeIn.children.length;i++){
                 resultChart.data.labels.push(nodeIn.children[i].name);
-                minmaxArray[minmaxIndex].forEach((minMax,index)=>{
-                    makeGraphBar({children:[nodeIn.children[i]]},minMax,i,index);
-                });
+                minmaxArray[minmaxIndex].forEach((minMax,index)=>makeGraphBar({children:[nodeIn.children[i]]},minMax,i,index));
             }
             colorChart();
             resultChart.data.datasets[0].label=minmaxArray[minmaxIndex][0];
@@ -231,9 +221,7 @@ function makeGraphBar(nodeIn,valIn="nodes",dataIndex=0,stackOffset=0){
     // console.log(nodeIn.children);
     //Get all the children in this node:
     let mtData = [];//Data from mtSum
-    nodeIn.children.forEach((child)=>{
-        mtData.push(mtSum(child,valIn));
-    });
+    nodeIn.children.forEach(child=>mtData.push(mtSum(child,valIn)));
 
     let offset = nodeIn.children.length * stackOffset;
 
@@ -299,7 +287,7 @@ function colorChart(vertical=true){
 function mtSum(nodeIn,valName="nodes"){
     let total=0;
     let nodeCount=1;
-    nodeIn.children.forEach((child)=>{
+    nodeIn.children.forEach(child=>{
         let output = mtSum(child,valName);
         total+=output[0];
         nodeCount+=output[1];
@@ -353,14 +341,12 @@ function arrayToPercentages(arrayIn){
     //Compare the node count, find the largest, and make percentages based off of those numbers
     let ratioVals=[];
     let biggestNumber = 0;
-    arrayIn.forEach((element)=>{
+    arrayIn.forEach(element=>{
         if(element > biggestNumber)
             biggestNumber = element;
     });
 
-    arrayIn.forEach((element)=>{
-        ratioVals.push((100/biggestNumber)*element);
-    })
+    arrayIn.forEach(element=>ratioVals.push((100/biggestNumber)*element))
     return ratioVals;
 }
 
@@ -388,14 +374,10 @@ var comparisonMode = {
         });
         if(sameVals){
             let timeNodeList = [];
-            expList.forEach(exp=>{
-                timeNodeList.push(exp[0].timeNodes[exp[1]]);
-            });
+            expList.forEach(exp=>timeNodeList.push(exp[0].timeNodes[exp[1]]));
             let relNodeTemp = this.genList(timeNodeList,true);
             this.relatedNodes = [];
-            relNodeTemp.forEach(element=>{
-                this.relatedNodes.push(expList[element]);
-            });
+            relNodeTemp.forEach(element=>this.relatedNodes.push(expList[element]));
             let compareName = "Comparison: ";
             let firstStr = true;
             this.relatedNodes.forEach(exp=>{
@@ -477,9 +459,7 @@ var comparisonMode = {
             if(id=="summaryButton"){
                 let resultNode = {children:element[0].timeNodes[element[1]],name:element[0].name+"(Thread "+element[1]+")",values:{}};
                 //Fill in pseudo data to meet graph-changing needs: (Averaging with these is not ideal).
-                element[0].valueNames.forEach(name=>{
-                    resultNode.values[name] = 0;
-                });
+                element[0].valueNames.forEach(name=>resultNode.values[name] = 0);
                 childrenTemp.push(resultNode);
                 this.activeExps.push(element);
             }
@@ -504,7 +484,7 @@ var comparisonMode = {
         expSelect.style.display = "none";
         summaryButton.click();
         compareButton.innerHTML = "End Comparison";
-        compareButton.onclick = ()=>{comparisonMode.finish()};
+        compareButton.onclick = ()=>comparisonMode.finish();
         }
     },
     finish:function(){
@@ -513,7 +493,7 @@ var comparisonMode = {
         threadSelect.style.display = "";
         expSelect.style.display = "";
         compareButton.innerHTML = "Compare";
-        compareButton.onclick = ()=>{compDivObj.toggle()};
+        compareButton.onclick = ()=>compDivObj.toggle();
         switchExperiment(currExp);
     }
 }

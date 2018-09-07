@@ -7,7 +7,7 @@ window.onresize = function(){
             paceLoadResize();
         dataList.style.height = chartTag.style.height;
         clearTimeout(triggerResize);
-        triggerResize=setTimeout(()=>{dataList.style.height = chartTag.style.height;},10)
+        triggerResize=setTimeout(()=>dataList.style.height = chartTag.style.height,10)
 }
 backButton.onclick = function(){
     if(currExp.currentEntry.parent!=undefined){
@@ -27,7 +27,7 @@ summaryButton.onclick=function(){
     }
     resultChart.options.title.text=(comparisonMode.on?comparisonMode.exp.name:currExp.name +": "+currExp.rank+ " (Thread "+currExp.currThread+")");
     okToClick = false;
-    setTimeout(()=>{okToClick = true;},10);
+    setTimeout(()=>okToClick = true,10);
     window.location.hash="summary";
 }
 
@@ -94,7 +94,7 @@ var resultChart = new Chart(chartTag, {
                         evtData.spefExp.currThread = evtData.spefThread;
                         evtData.spefExp.currentEntry = evtData.nodeObject;
                         currExp = evtData.spefExp;
-                        setTimeout(()=>{comparisonMode.finish();},10);
+                        setTimeout(()=>comparisonMode.finish(),10);
                         for(let i=0;i<expSelect.children.length;i++){
                             if(expSelect.children[i].innerHTML == evtData.spefExp.name)
                                 expSelect.selectedIndex = i;
@@ -178,9 +178,7 @@ var compDivObj = {
                 resultString+="<option>"+exp.name+"_"+exp.rank+"</option>"
             });
             resultString+="</select><select>";
-            expList[0].timeNodes.forEach((element,index)=>{
-                resultString+="<option value='"+index+"'>Thread "+index+"</option>";
-            });
+            expList[0].timeNodes.forEach((element,index)=>resultString+="<option value='"+index+"'>Thread "+index+"</option>");
         resultString+="</select></div>";
         compDivBody.innerHTML+=resultString;
         this.expCountCheck();
@@ -193,9 +191,7 @@ var compDivObj = {
         let resultString = "<select>";
         let ctxThread = context.parentElement.getElementsByTagName("select")[1];
         ctxThread.innerHTML="";
-        expList[context.selectedIndex].timeNodes.forEach((element,index)=>{
-            resultString+="<option value='"+index+"'>Thread "+index+"</option>";
-        });
+        expList[context.selectedIndex].timeNodes.forEach((element,index)=>resultString+="<option value='"+index+"'>Thread "+index+"</option>");
         ctxThread.innerHTML = resultString+"</select>";
     },
     scan:function(){
@@ -214,9 +210,7 @@ var compDivObj = {
 
 function updateExpSelect(){
     let resultString = "";
-    expList.forEach(element=>{
-        resultString +="<option>"+element.name+"_"+element.rank+"</option>";
-    }); 
+    expList.forEach(element=>resultString +="<option>"+element.name+"_"+element.rank+"</option>"); 
     expSelect.innerHTML = resultString;
 }
 //This function is for comparison mode; whenever the user clicks or hovers over something, general information is returned to match the functionality of regular viewing.
@@ -278,9 +272,7 @@ var dmObj={
                 });
                 document.getElementsByClassName("footer")[0].style.backgroundColor = this.colorNegator(this.footColor);
                 //textColor
-                [listContent,quickSearchBar].forEach(element=>{
-                    element.style.color = dmObj.colorNegator(dmObj.textColor);
-                })
+                [listContent,quickSearchBar].forEach(element=>element.style.color = dmObj.colorNegator(dmObj.textColor))
                 //Headers
                 let paceHeaders = document.getElementsByTagName("h2");
                 for(let i=0;i<paceHeaders.length;i++){
@@ -307,5 +299,3 @@ var dmObj={
         return result;
     }
 };
-
-window.onresize();
