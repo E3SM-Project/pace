@@ -20,6 +20,7 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 initDatabase()
 app.config['SQLALCHEMY_DATABASE_URI'] = dburl;
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False;
+app.config['SQLALCHEMY_POOL_RECYCLE']=499
 db = SQLAlchemy(app)
 
 UPLOAD_FOLDER = '/pace/prod/portal/uploads'
