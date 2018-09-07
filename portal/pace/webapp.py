@@ -144,10 +144,10 @@ def expsList():
     dbSession.close()
     return render_template('exps.html', explist = myexps)
 
-@app.route("/exps3/")
-@app.route("/exps3/<searchQuery>")
+@app.route("/search/")
+@app.route("/search/<searchQuery>")
 def exps3(searchQuery="*"):
-    return render_template("exps3.html",sq = "var searchQuery = '"+searchQuery+"';")
+    return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';")
 
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):

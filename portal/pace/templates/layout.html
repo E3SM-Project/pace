@@ -102,7 +102,7 @@
       if(evt)
         evt.preventDefault();
       if(searchBar.value!="")
-          open(detectRootUrl()+"exps3/"+searchBar.value.replace(" ","+"));
+          open(detectRootUrl()+"search/"+searchBar.value.replace(" ","+"));
     }
     searchBar.onkeydown = evt=>{
       if(evt.key == "Enter"){

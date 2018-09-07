@@ -48,66 +48,70 @@ window.onhashchange = function(event = undefined){
     if(document.getElementById(clickID)!=undefined && okToClick)
         document.getElementById(clickID).click();
 };
-var resultChart = new Chart(chartTag, {
-        type: 'horizontalBar',
-        data: {
-            labels: [],
-            datasets: [{
-                label:"",
-                data: [],
-                backgroundColor: [],
-                borderColor: [],
-                borderWidth: 1
-            }]
+
+var chartSettings = {
+    type: 'horizontalBar',
+    data: {
+        labels: [],
+        datasets: [{
+            label:"",
+            data: [],
+            backgroundColor: [],
+            borderColor: [],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        /*maintainAspectRatio:false,*/
+        title:{
+            display: true,
+            text:""
         },
-        options: {
-            title:{
-                display: true,
-                text:""
-            },
-            legend:{
-                display:false,
-            },
-            tooltips:{
-                enabled:false
-            },
-            onClick:(event)=>{
-                let activeElement = resultChart.getElementAtEvent(event);
-                if(!comparisonMode.on){
-                    if(activeElement.length > 0){
-                        let timeNodeObject = (!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || (resultChart.data.datasets.length == 1 && currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children.length == 0)?currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label]:currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children[activeElement[0]._datasetIndex]);
-                        let timeNode = document.getElementById(timeNodeObject.name).getElementsByTagName('ul')[0];
-                        parentPath(timeNodeObject).forEach((listName)=>{
-                            let listElement = document.getElementById(listName).getElementsByTagName('ul');
-                            if(listElement.length > 0)
-                                listElement[0].style.display="";
-                        });
-                        if(okToClick && timeNode!=undefined)
-                            timeNode.click();
-                    }
+        legend:{
+            display:false,
+        },
+        tooltips:{
+            enabled:false
+        },
+        onClick:(event)=>{
+            let activeElement = resultChart.getElementAtEvent(event);
+            if(!comparisonMode.on){
+                if(activeElement.length > 0){
+                    let timeNodeObject = (!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || (resultChart.data.datasets.length == 1 && currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children.length == 0)?currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label]:currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children[activeElement[0]._datasetIndex]);
+                    let timeNode = document.getElementById(timeNodeObject.name).getElementsByTagName('ul')[0];
+                    parentPath(timeNodeObject).forEach((listName)=>{
+                        let listElement = document.getElementById(listName).getElementsByTagName('ul');
+                        if(listElement.length > 0)
+                            listElement[0].style.display="";
+                    });
+                    if(okToClick && timeNode!=undefined)
+                        timeNode.click();
                 }
-                else if (activeElement.length>0){
-                    let evtData = comparisonEvt(activeElement);
-                    let changeExp = confirm("Clicking Ok will take you to "+evtData.spefExp.name+" (Thread "+evtData.spefThread+") process \""+evtData.targetNode+".");
-                    if(changeExp){
-                        //console.log(evtData.nodeObject.name);
-                        evtData.spefExp.currThread = evtData.spefThread;
-                        evtData.spefExp.currentEntry = evtData.nodeObject;
-                        currExp = evtData.spefExp;
-                        setTimeout(()=>comparisonMode.finish(),10);
-                        for(let i=0;i<expSelect.children.length;i++){
-                            if(expSelect.children[i].innerHTML == evtData.spefExp.name)
-                                expSelect.selectedIndex = i;
-                        }
-                    }
-                }
-            },
-            scales: {
-                yAxes: [{stacked:true}],
-                xAxes:[{stacked:true}]
             }
+            else if (activeElement.length>0){
+                let evtData = comparisonEvt(activeElement);
+                let changeExp = confirm("Clicking Ok will take you to "+evtData.spefExp.name+" (Thread "+evtData.spefThread+") process \""+evtData.targetNode+".");
+                if(changeExp){
+                    //console.log(evtData.nodeObject.name);
+                    evtData.spefExp.currThread = evtData.spefThread;
+                    evtData.spefExp.currentEntry = evtData.nodeObject;
+                    currExp = evtData.spefExp;
+                    setTimeout(()=>comparisonMode.finish(),10);
+                    for(let i=0;i<expSelect.children.length;i++){
+                        if(expSelect.children[i].innerHTML == evtData.spefExp.name)
+                            expSelect.selectedIndex = i;
+                    }
+                }
+            }
+        },
+        scales: {
+            yAxes: [{stacked:true}],
+            xAxes:[{stacked:true}]
         }
-    });
+    }
+}
+
+var resultChart = new Chart(chartTag, chartSettings);
 //You can't directly define specific variables for some reason when one is highlighted by chart.js, so here's a quick fix:
 chartTag.onmousemove = function(event){
     let results = resultChart.getElementAtEvent(event);
