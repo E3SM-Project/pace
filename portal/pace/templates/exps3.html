@@ -11,7 +11,10 @@
 
 {% block content %}
 <h4> Experiments </h4>
-<p><a><button id='searchCompareBtn' disabled>compare</button></a><a><button id='searchViewBtn' disabled>View</button></a></p>
+<div class="btn-group">
+	<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>compare</button></a>
+	<a><button class="btn btn-primary btn-dark" id='searchViewBtn' disabled>View</button></a>
+</div>
 <table id="expTable" class="table table-striped">
 <thead>
     <tr>
@@ -20,14 +23,25 @@
 </thead>
 <tbody id="searchBody"></tbody>
 </table>
+<p style="text-align:center"><button class="btn btn-dark" id="moreBtn" onclick="searchAndCheck()">More Experiments</button></p>
 {% endblock %}
 
 {% block bottomscripts %}
 <script src="/static/js/search.js"></script>
 <script>
-$(document).ready(function(){
 {{sq|safe}}
-searchObj.search(searchQuery,20);
+
+function searchAndCheck(sq = searchQuery){
+	searchObj.search(sq,searchObj.limit,()=>{
+	if(searchObj.searchData.length == searchObj.limit){
+	 searchObj.limit*=2;
+	}
+	else moreBtn.style.display = "none";
+	});
+}
+
+$(document).ready(function(){
+searchAndCheck();
 /*$("#expTable").tablesorter({
 	widthFixed: false
 	});*/
