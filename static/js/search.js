@@ -15,6 +15,21 @@ var searchObj = {
         let resultData = JSON.parse(data)
         this.searchData = resultData[0];
         this.rankData = resultData[1];
+        //First and foremost, lets organize the data; if we find anything related to "stats" or "0", we place those up front:
+        this.rankData.forEach(element=>{
+            for(let i=0;i<element[0].length;i++){
+                if(element[0][i] == "stats" || element[0][i][0] == "0"){
+                    for(let j=0;j<element[0].length;j++){
+                        if(!(element[0][j] == "stats" || element[0][j][0] == "0")){
+                            let temp = element[0][j];
+                            element[0][j] = element[0][i];
+                            element[0][i] = temp;
+                            break;
+                        }
+                    }
+                }
+            }
+        });
         this.searchData.forEach( (element,index) => {
             let searchResult = document.createElement("tr");
             searchResult.className = "searchItem";
@@ -96,12 +111,7 @@ var searchObj = {
             searchViewBtn.disabled = true;
         }
 
-        //If we're on another page besides the modelTiming viewer, let's immediately create a clickable link in the buttons:
-        if(onMtPage){
-            searchViewBtn.onclick = ()=>{searchObj.doAction()};
-            searchCompareBtn.onclick = ()=>{searchObj.doAction(true)};
-        }
-        else this.doAction();
+        this.doAction();
     },
     doAction:function(compToggle = false){
         searchObj.doComparison = compToggle;
