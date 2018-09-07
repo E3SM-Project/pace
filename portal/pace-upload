@@ -7,6 +7,7 @@ import os, shutil, distutils
 from distutils import dir_util
 import zipfile, tarfile
 import getpass
+from datetime import datetime
 
 
 # use this url after merge to master
@@ -69,7 +70,7 @@ def isValidE3SMexp(expfile):
 	timefile = False
 	etimefile = False
 	completeexp = False
-	tmpfile = 'paceExperiments'
+	tmpfile = 'pace-exps-' + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
 	explist = []
 	# iterate to check for timing files
 	for path, subdirs, files in os.walk(expfile):
@@ -107,7 +108,7 @@ def main():
 	result=parseArguments()
 	zfname = 'experiments'
 	expfile = result.source
-	tmpfile = 'paceExperiments'
+	tmpfile = 'pace-exps-' + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
 	# If path is not empty, and is a directory
 	if(expfile!=''):
 		if (result.application=='e3sm' and isValidE3SMexp(expfile)==True): 	
