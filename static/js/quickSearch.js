@@ -16,7 +16,7 @@ var quickSearchObj = {
                 document.getElementsByClassName("searchMenu")[0].style.display = "none";
         }
         else{
-            $.get(detectRootUrl()+"/ajax/search/"+searchStr.replace(" ","+")+"/"+limit,(data)=>{
+            $.get(detectRootUrl()+"ajax/search/"+searchStr.replace(" ","+")+"/"+limit,(data)=>{
             let resultData = JSON.parse(data)
             this.searchData = resultData[0];
             this.rankData = resultData[1];

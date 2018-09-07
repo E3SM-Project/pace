@@ -256,24 +256,22 @@ function colorChart(vertical=true){
     //console.log(resultChart.data.datasets);
     if(vertical){
         for(let i=0;i<resultChart.data.datasets[0].data.length;i++){
-        let colorSumlist = [];
-        for(let j=0;j<resultChart.data.datasets.length;j++){
-            colorSumlist.push(resultChart.data.datasets[j].data[i]);
-        }
-        let colorPercentages = arrayToPercentages(colorSumlist);
-        for(let j=0;j<resultChart.data.datasets.length;j++){
-                let colorData = percentToColor(colorPercentages[j],.2,2);
-                resultChart.data.datasets[j].backgroundColor.push(colorData[0]);
-                resultChart.data.datasets[j].borderColor.push(percentToColor(50,.2,0,[colorData[1],[0,0,0]]));
-            }
+            let colorSumlist = [];
+            for(let j=0;j<resultChart.data.datasets.length;j++)
+                colorSumlist.push(resultChart.data.datasets[j].data[i]);
+            let colorPercentages = arrayToPercentages(colorSumlist);
+            for(let j=0;j<resultChart.data.datasets.length;j++){
+                    let colorData = percentToColor(colorPercentages[j],.2,2);
+                    resultChart.data.datasets[j].backgroundColor.push(colorData[0]);
+                    resultChart.data.datasets[j].borderColor.push(percentToColor(50,.2,0,[colorData[1],[0,0,0]]));
+                }
         }
     }
     else{
         //Same thing, except we're only looking at one layer
             let colorSumlist = [];
-            for(let j=0;j<resultChart.data.datasets[0].data.length;j++){
+            for(let j=0;j<resultChart.data.datasets[0].data.length;j++)
                 colorSumlist.push(resultChart.data.datasets[0].data[j]);
-            }
             let colorPercentages = arrayToPercentages(colorSumlist);
             for(let j=0;j<resultChart.data.datasets[0].data.length;j++){
                     let colorData = percentToColor(colorPercentages[j],.2,2);
