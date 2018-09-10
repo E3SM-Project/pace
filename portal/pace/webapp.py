@@ -145,7 +145,7 @@ def expsList():
 
 @app.route("/search/")
 @app.route("/search/<searchQuery>")
-def exps3(searchQuery="*"):
+def searchPage(searchQuery="*"):
     return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';")
 
 @app.route("/exp-details/<mexpid>")
@@ -249,4 +249,4 @@ def getMachines():
 
 @app.route("/platforms/<platform>/")
 def platforms(platform):
-    return exps3(platform)
+    return searchPage(platform)
