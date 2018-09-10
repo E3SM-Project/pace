@@ -353,6 +353,7 @@ var comparisonMode = {
     exp:undefined,
     relatedNodes:[],
     activeExps:undefined,
+    activeChildren:[],
     new:function(expList){
         //As long as values are the same, we can run this function:
         let valBenchmark = expList[0][0].valueNames;
@@ -452,6 +453,8 @@ var comparisonMode = {
     },
     viewChart:function(id){
         childrenTemp = [];
+        expNames = [];
+        expNameSort = [];
         this.activeExps = [];
         this.relatedNodes.forEach(element=>{
             if(id=="summaryButton"){
@@ -462,12 +465,40 @@ var comparisonMode = {
                 this.activeExps.push(element);
             }
             else if(element[0].nodeTableList[element[1]][id]){
-                childrenTemp.push(element[0].nodeTableList[element[1]][id]);
+                element[0].nodeTableList[element[1]][id].children.forEach(node=>{
+                    let uniqueName = true;
+                    for(let i=0;i<expNames.length;i++){
+                        if(expNames[i] == node.name){
+                            uniqueName = false;
+                            break;
+                        }
+                    }
+                    if(uniqueName)
+                            expNames.push(node.name);
+                    if(!expNameSort[node.name])
+                        expNameSort[node.name] = [];
+                    expNameSort[node.name].push(node);
+                });
                 this.activeExps.push(element);
             }
         });
+        expNames.forEach(element=>expNameSort[element].forEach(node=>childrenTemp.push(node)));
         this.exp.currentEntry = {children:childrenTemp,name:(id)};
+        this.activeChildren = [childrenTemp];
         changeGraph(this.exp.currentEntry);
+
+        //Remove duplicate labels:
+        for(let i=0;i<resultChart.data.labels.length;i++){
+            if(i!=0){
+                nonBlankIndex = i-1;
+                while(resultChart.data.labels[nonBlankIndex]=="")
+                    nonBlankIndex--;
+                if(resultChart.data.labels[i] == resultChart.data.labels[nonBlankIndex]){
+                    resultChart.data.labels[i] = "";
+                }
+            }
+        }
+        resultChart.update();
     },
     start:function(){
         if(this.exp.timeNodes[0].length == 0){
