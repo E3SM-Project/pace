@@ -9,6 +9,7 @@ import collections
 import operator
 import json
 import urllib
+from sqlalchemy.orm import sessionmaker
 
 #Model Timing Library:
 import modelTiming as mt
@@ -135,6 +136,7 @@ def summaryQuery(expID,rank):
 def expsList():
     myexps = []
     # initDatabase()
+    dbSessionf = sessionmaker(bind=dbConn)
     dbSession = dbSessionf()
     myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.desc()).limit(20)
     # myexps = Timingprofile.query.order_by(Timingprofile.expid.asc()).limit(25)
