@@ -5,9 +5,9 @@ var triggerResize;
 window.onresize = function(){
         if(typeof(paceLoadResize)!=undefined && document.getElementsByClassName("loadScreen").length!=0)
             paceLoadResize();
-        dataList.style.height = chartTag.style.height;
+        dataList.style.height = dataList.style.height;
         clearTimeout(triggerResize);
-        triggerResize=setTimeout(()=>dataList.style.height = chartTag.style.height,10)
+        triggerResize=setTimeout(()=>dataList.style.height = dataInfo.style.height,10)
 }
 backButton.onclick = function(){
     if(currExp.currentEntry.parent!=undefined){
@@ -62,7 +62,7 @@ var chartSettings = {
         }]
     },
     options: {
-        /*maintainAspectRatio:false,*/
+        maintainAspectRatio:false,
         title:{
             display: true,
             text:""
@@ -303,3 +303,24 @@ var dmObj={
         return result;
     }
 };
+var resizeChartVal = 1;
+//The sole purpose of this function is to help with the really weird quirk that happens when the chart resizes within a scalable div :/
+function resizeChart(dataSetCount = resultChart.data.datasets[0].data.length){
+    resizeChartVal = dataSetCount;
+    let multiplier = (dataSetCount < 25?.75:dataSetCount/25);
+    chartTag.style.height = (window.innerHeight * multiplier)+"px";
+    dataInfo.style.height = (parseFloat(dataInfo.style.height.replace("px","")) - 1)+"px";
+    setTimeout(()=>{
+    dataInfo.style.height = (parseFloat(dataInfo.style.height.replace("px","")) +1)+"px";
+    },10);
+}
+
+dataInfo.onwheel = function(evt){
+    if(evt.altKey){
+        evt.preventDefault();
+        resizeChartVal= (evt.deltaY < 0?resizeChartVal+25:resizeChartVal-25);
+        if(resizeChartVal < 0)
+            resizeChartVal = 1;
+        resizeChart(resizeChartVal);
+    }
+}

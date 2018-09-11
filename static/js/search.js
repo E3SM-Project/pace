@@ -42,7 +42,7 @@ var searchObj = {
             "<td>"+element.mpi_tasks_per_node+"</td>"+
             "<td>"+element.compset+"</td>";
             let checkStr = "<td>";
-            let checkMoreStr = "<div><span onclick='searchObj.moreClick(this.parentElement)' style='font-weight:bold;'>More</span><div style='display:none' class='moreContainer'>";
+            let checkMoreStr = "<div><div style='display:none' class='moreContainer'>";
             let foundMore = false;
             searchObj.rankData[index][0].forEach( rank=>{
                 outputStr= "<a href='"+detectRootUrl()+"summary/"+element.expid+"/"+rank+"' title='View this experiment.'><b>"+rank+"</b></a><input type='checkbox' onchange='searchObj.scanChecks()'/></br>"; 
@@ -53,7 +53,7 @@ var searchObj = {
                     foundMore = true;
                 }
             });
-            checkMoreStr+="</div></div>"
+            checkMoreStr+="</div><button onclick='searchObj.moreClick(this.parentElement);' class='btn btn-dark' style='margin-top:3px'>More</button></div>"
             searchResult.innerHTML+=checkStr+(foundMore?checkMoreStr:"")+"</td>";
             searchBody.appendChild(searchResult);
         });
@@ -132,7 +132,10 @@ var searchObj = {
     },
     moreClick:function(element){
         let more = element.getElementsByClassName("moreContainer")[0];
-        more.style.display=(more.style.display == "none"?"":"none");
+        let button = element.getElementsByTagName("button")[0];
+        $(more).slideToggle("fast");
+        button.innerHTML = (button.innerHTML == "More"?"Less":"More");
+
     },
     disableCompareBtn:function(tf){
         searchCompareBtn.disabled = tf;

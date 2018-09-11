@@ -213,6 +213,7 @@ function changeGraph(nodeIn,valIn=valueName.children[valueName.selectedIndex].va
             }
             colorChart(stackedBar);
         }
+    resizeChart();
     resultChart.update();
 }
 
@@ -461,30 +462,20 @@ var comparisonMode = {
                 let resultNode = {children:element[0].timeNodes[element[1]],name:element[0].name+"(Thread "+element[1]+")",values:{}};
                 //Fill in pseudo data to meet graph-changing needs: (Averaging with these is not ideal).
                 element[0].valueNames.forEach(name=>resultNode.values[name] = 0);
-                childrenTemp.push(resultNode);
+                if(resultNode.children == 0)
+                    childrenTemp.push(resultNode);
+                else resultNode.children.forEach(this.viewChart_childPrint);
                 this.activeExps.push(element);
             }
             else if(element[0].nodeTableList[element[1]][id]){
-                element[0].nodeTableList[element[1]][id].children.forEach(node=>{
-                    let uniqueName = true;
-                    for(let i=0;i<expNames.length;i++){
-                        if(expNames[i] == node.name){
-                            uniqueName = false;
-                            break;
-                        }
-                    }
-                    if(uniqueName)
-                            expNames.push(node.name);
-                    if(!expNameSort[node.name])
-                        expNameSort[node.name] = [];
-                    expNameSort[node.name].push(node);
-                });
+                if(element[0].nodeTableList[element[1]][id].children.length == 0) childrenTemp.push(element[0].nodeTableList[element[1]][id]);
+                else element[0].nodeTableList[element[1]][id].children.forEach(this.viewChart_childPrint);
                 this.activeExps.push(element);
             }
         });
         expNames.forEach(element=>expNameSort[element].forEach(node=>childrenTemp.push(node)));
         this.exp.currentEntry = {children:childrenTemp,name:(id)};
-        this.activeChildren = [childrenTemp];
+        this.activeChildren = childrenTemp;
         changeGraph(this.exp.currentEntry);
 
         //Remove duplicate labels:
@@ -500,6 +491,21 @@ var comparisonMode = {
         }
         resultChart.update();
     },
+    //This is reserved for the viewChart function.
+    viewChart_childPrint:node=>{
+        let uniqueName = true;
+        for(let i=0;i<expNames.length;i++){
+            if(expNames[i] == node.name){
+                uniqueName = false;
+                break;
+            }
+        }
+        if(uniqueName)
+                expNames.push(node.name);
+        if(!expNameSort[node.name])
+            expNameSort[node.name] = [];
+        expNameSort[node.name].push(node);
+        },
     start:function(){
         if(this.exp.timeNodes[0].length == 0){
             alert("Error: there's nothing to compare.");
