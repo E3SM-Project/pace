@@ -90,11 +90,11 @@ var chartSettings = {
             }
             else if (activeElement.length>0){
                 let evtData = comparisonEvt(activeElement);
-                let changeExp = confirm("Clicking Ok will take you to "+evtData.spefExp.name+" (Thread "+evtData.spefThread+") process \""+evtData.targetNode+".");
+                let changeExp = confirm("Clicking Ok will take you to "+evtData.spefExp.name+" (Thread "+evtData.targetNode.thread+") process \""+evtData.targetNode.name+".");
                 if(changeExp){
                     //console.log(evtData.nodeObject.name);
-                    evtData.spefExp.currThread = evtData.spefThread;
-                    evtData.spefExp.currentEntry = evtData.nodeObject;
+                    evtData.spefExp.currThread = evtData.targetNode.thread;
+                    evtData.spefExp.currentEntry = evtData.targetNode;
                     currExp = evtData.spefExp;
                     setTimeout(()=>comparisonMode.finish(),10);
                     for(let i=0;i<expSelect.children.length;i++){
@@ -145,11 +145,11 @@ chartTag.onmousemove = function(event){
                 let output = comparisonEvt(results);
                 let valueStr = "";
                 if(valueName.children[valueName.selectedIndex].value == "min/max" || valueName.children[valueName.selectedIndex].value == "wallmin/wallmax"){
-                    valueStr=formattedNames[formatNameIndex][0][0]+": "+output.spefExp.nodeTableList[output.spefThread][output.targetNode].values[formattedNames[formatNameIndex][0][1]] +
-                "<br>"+ formattedNames[formatNameIndex][1][0]+": "+output.spefExp.nodeTableList[output.spefThread][output.targetNode].values[formattedNames[formatNameIndex][1][1]];
+                    valueStr=formattedNames[formatNameIndex][0][0]+": "+output.targetNode.values[formattedNames[formatNameIndex][0][1]] +
+                "<br>"+ formattedNames[formatNameIndex][1][0]+": "+output.targetNode.values[formattedNames[formatNameIndex][1][1]];
                 }
-                else valueStr = valueName.children[valueName.selectedIndex].innerHTML+": "+output.spefExp.nodeTableList[output.spefThread][output.targetNode].values[valueName.children[valueName.selectedIndex].innerHTML];
-                nodeId.innerHTML=output.spefExp.name+"_"+output.spefExp.rank+"(Thread "+output.spefThread+")<br>"+output.targetNode+"<br>"+valueStr;
+                else valueStr = valueName.children[valueName.selectedIndex].innerHTML+": "+output.targetNode.values[valueName.children[valueName.selectedIndex].innerHTML];
+                nodeId.innerHTML=output.spefExp.name+"_"+output.spefExp.rank+"(Thread "+output.targetNode.thread+")<br>"+output.targetNode.name+"<br>"+valueStr;
             }
         }
     }
@@ -220,33 +220,9 @@ function updateExpSelect(){
 //This function is for comparison mode; whenever the user clicks or hovers over something, general information is returned to match the functionality of regular viewing.
 function comparisonEvt(evt){
     let result = {};
-    result.spefExp = comparisonMode.activeExps[evt[0]._index][0];
-    result.spefThread = comparisonMode.activeExps[evt[0]._index][1];
-    result.spefChildIndex;
-    result.targetNode = "";
-    let foundLabel = true;
-    //Check to see if everything has no children:
-    let noChildrenCount = 0;
-    for(let i=0;i<comparisonMode.exp.currentEntry.children.length;i++){
-        if(comparisonMode.exp.currentEntry.children[i].children.length == 0){
-            noChildrenCount++;
-        }
-    }
-    if(stackedCharts && !(noChildrenCount == comparisonMode.exp.currentEntry.children.length)){
-        result.spefChildIndex = evt[0]._datasetIndex;
-        if(result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label] && result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label].children[result.spefChildIndex]){
-            result.targetNode = result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label].children[result.spefChildIndex].name;
-        }
-        else{
-            //console.log(result.spefExp);
-            result.targetNode = result.spefExp.currentEntry.children[result.spefChildIndex].name;
-            foundLabel = false;
-        }
-    }
-    else result.targetNode = (result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label]?evt[0]._model.label:"summaryButton");
-    if(foundLabel)
-        result.nodeObject = result.spefExp.nodeTableList[result.spefThread][result.targetNode];
-    else result.nodeObject = result.spefExp.currentEntry.children[result.spefChildIndex];
+    result.spefExp = comparisonMode.activeChildren[evt[0]._index].srcExp;
+    result.spefChildIndex = (comparisonMode.activeChildren[evt[0]._index].children.length > 0?evt[0]._datasetIndex:undefined);
+    result.targetNode = (result.spefChildIndex!=undefined?comparisonMode.activeChildren[evt[0]._index].children[result.spefChildIndex]:comparisonMode.activeChildren[evt[0]._index]);
     return result;
 }
 
@@ -310,9 +286,7 @@ function resizeChart(dataSetCount = resultChart.data.datasets[0].data.length){
     let multiplier = (dataSetCount < 25?.75:dataSetCount/25);
     chartTag.style.height = (window.innerHeight * multiplier)+"px";
     dataInfo.style.height = (parseFloat(dataInfo.style.height.replace("px","")) - 1)+"px";
-    setTimeout(()=>{
-    dataInfo.style.height = (parseFloat(dataInfo.style.height.replace("px","")) +1)+"px";
-    },10);
+    setTimeout(()=>dataInfo.style.height = (parseFloat(dataInfo.style.height.replace("px","")) +1)+"px",10);
 }
 
 dataInfo.onwheel = function(evt){

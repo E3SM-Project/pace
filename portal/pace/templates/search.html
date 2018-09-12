@@ -10,7 +10,9 @@
 {% endblock %}
 
 {% block content %}
-<h4> Experiments </h4>
+<div id="searchContent"><h4> Experiments </h4></div>
+<!--<input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" id="searchBar">-->
+<p style="text-align:center;display:none" id="homePageContent"><input class="form-control" style="font-size:1.5em;text-align:center;width:50%;margin-left:25%" placeholder="Search" onchange="searchObj.limit = 20;if(this.value!='') searchObj.search(this.value);"/></p>
 <p style="text-align:center">
 	<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>compare</button></a>
 	<a><button class="btn btn-primary btn-dark" id='searchViewBtn' disabled>View</button></a>
@@ -29,7 +31,14 @@
 {% block bottomscripts %}
 <script src="/static/js/search.js"></script>
 <script>
+var homePage = false;
 {{sq|safe}}
+{{homePageStr|safe}}
+
+if(homePage){
+	homePageContent.style.display="";
+	searchContent.style.display="none";
+}
 
 function searchAndCheck(sq = searchQuery){
 	searchObj.search(sq,searchObj.limit,()=>{

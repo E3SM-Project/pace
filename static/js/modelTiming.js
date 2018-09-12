@@ -11,7 +11,7 @@ var expGetCount = 0;
 var expGetFunc = [];
 
 //This will be where we look for a specific node. (Making the structured time-node into something linear at the same time)
-function addressTable(vals=undefined,jsonArray=false,srcExp){
+function addressTable(vals=undefined,jsonArray=false,srcExp,thread = -1){
     this.length = function (){
         let count = 0
         while (this[count] !=undefined){
@@ -32,6 +32,7 @@ function addressTable(vals=undefined,jsonArray=false,srcExp){
             //Making Parents...
             this[jsonIn.name].parent=(parent==undefined?jsonIn:parent);
             this[jsonIn.name].srcExp = srcExp;
+            this[jsonIn.name].thread = thread;
         }
     }
     if(vals)
@@ -56,7 +57,7 @@ function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "000
 
     //Construct:
     this.timeNodes.forEach((thread,i)=>{
-        this.nodeTableList.push(new addressTable(thread,true,this));
+        this.nodeTableList.push(new addressTable(thread,true,this,i));
         this.nodeDomList.push(htmlList(thread,[0,2]));
         this.threadSelectInner+="<option "+ (!i?"selected":"")+" value="+i+" >Thread "+i+"</option>";
     });
@@ -460,20 +461,24 @@ var comparisonMode = {
         this.relatedNodes.forEach(element=>{
             if(id=="summaryButton"){
                 let resultNode = {children:element[0].timeNodes[element[1]],name:element[0].name+"(Thread "+element[1]+")",values:{}};
+                console.log(resultNode);
                 //Fill in pseudo data to meet graph-changing needs: (Averaging with these is not ideal).
                 element[0].valueNames.forEach(name=>resultNode.values[name] = 0);
-                if(resultNode.children == 0)
-                    childrenTemp.push(resultNode);
-                else resultNode.children.forEach(this.viewChart_childPrint);
-                this.activeExps.push(element);
+                //if(resultNode.children == 0) childrenTemp.push(resultNode);
+                /*else*/ resultNode.children.forEach(this.viewChart_childPrint);
             }
             else if(element[0].nodeTableList[element[1]][id]){
-                if(element[0].nodeTableList[element[1]][id].children.length == 0) childrenTemp.push(element[0].nodeTableList[element[1]][id]);
-                else element[0].nodeTableList[element[1]][id].children.forEach(this.viewChart_childPrint);
-                this.activeExps.push(element);
+                //if(element[0].nodeTableList[element[1]][id].children.length == 0) childrenTemp.push(element[0].nodeTableList[element[1]][id]);
+                /*else*/ element[0].nodeTableList[element[1]][id].children.forEach(this.viewChart_childPrint);
             }
+            this.activeExps.push(element);
+            this.activeExps[element.name] = element;
         });
-        expNames.forEach(element=>expNameSort[element].forEach(node=>childrenTemp.push(node)));
+        expNames.forEach(element=>expNameSort[element].forEach(node=>{
+            //if(node.children.length > 0)
+                childrenTemp.push(node);
+            //else childrenTemp.push({children:[node]});
+        }));
         this.exp.currentEntry = {children:childrenTemp,name:(id)};
         this.activeChildren = childrenTemp;
         changeGraph(this.exp.currentEntry);

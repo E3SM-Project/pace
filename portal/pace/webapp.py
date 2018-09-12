@@ -105,31 +105,32 @@ def summaryHtml(expID,rank,compare="",threads=""):
 @app.route("/summaryQuery/<expID>/<rank>/",methods=["GET"])
 def summaryQuery(expID,rank):
     resultNodes=""
-    resultName="failsafe file"
     listIndex = 0
     if expID == "-1":
         resultNodes = mt.parse("/pace/assets/static/model_timing.0000.new")
+    elif expID == "-2":
+        resultNodes = mt.parse("/pace/assets/static/model_timing_stats")
     else:
         resultNodes = dbConn.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
-        if rank == 'stats':
-            listIndex = 1
-            #Grab processes > 1 second:
-            nodeTemp = json.loads(resultNodes)
-            newJson = []
-            for node in nodeTemp[0]:
-                if node["values"]["wallmax"] > 0:
-                    newJson.append(node)
-            #Sort from least to greatest:
-            for i in range(len(newJson)):
-                for j in range(len(newJson)):
-                    if(newJson[j]["values"]["wallmax"] < newJson[i]["values"]["wallmax"]):
-                        temp = newJson[i]
-                        newJson[i] = newJson[j]
-                        newJson[j] = temp
-            #Grab the top twenty nodes:
-            while not len(newJson) == 50:
-                newJson.pop()
-            resultNodes = "["+json.dumps(newJson)+"]"
+    if rank == 'stats':
+        listIndex = 1
+        #Grab processes > 1 second:
+        nodeTemp = json.loads(resultNodes)
+        newJson = []
+        for node in nodeTemp[0]:
+            if node["values"]["wallmax"] > 0:
+                newJson.append(node)
+        #Sort from least to greatest:
+        for i in range(len(newJson)):
+            for j in range(len(newJson)):
+                if(newJson[j]["values"]["wallmax"] < newJson[i]["values"]["wallmax"]):
+                    temp = newJson[i]
+                    newJson[i] = newJson[j]
+                    newJson[j] = temp
+        #Grab the top twenty nodes:
+        while not len(newJson) == 50:
+            newJson.pop()
+        resultNodes = "["+json.dumps(newJson)+"]"
     return "["+resultNodes+","+json.dumps(mt.valueList[listIndex])+",\""+expID+"\",\""+rank+"\"]"
 
 @app.route("/exps")
@@ -145,8 +146,11 @@ def expsList():
 
 @app.route("/search/")
 @app.route("/search/<searchQuery>")
-def searchPage(searchQuery="*"):
-    return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';")
+def searchPage(searchQuery="*",isHomepage=False):
+    homePageStr = ""
+    if isHomepage:
+        homePageStr = "var homePage = true;"
+    return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';",homePageStr = homePageStr)
 
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
@@ -250,3 +254,7 @@ def getMachines():
 @app.route("/platforms/<platform>/")
 def platforms(platform):
     return searchPage(platform)
+
+@app.route("/homePageProto/")
+def homePage():
+    return searchPage("*",True)

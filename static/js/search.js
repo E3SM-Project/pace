@@ -9,7 +9,8 @@ var searchObj = {
     search:function(searchStr,limit = this.limit,afterFunc){
         console.log("HI SARAAAAT!");
         searchBody.innerHTML="";
-        this.afterFunctions.push(afterFunc);
+        if(afterFunc)
+            this.afterFunctions.push(afterFunc);
         $.get(detectRootUrl()+"/ajax/search/"+searchStr.replace(" ","+")+"/"+limit,(data)=>{
         let resultData = JSON.parse(data)
         this.searchData = resultData[0];
@@ -101,11 +102,12 @@ var searchObj = {
                     break;
             }
         }
-        if(foundStats && foundRegular){
+        if(foundStats && foundRegular)
             this.disableCompareBtn(true);
+        else if(foundStats || foundRegular){
+            this.disableCompareBtn(rankCount > 1?false:true);
+            this.disableViewBtn(false);
         }
-        else if( (foundStats || foundRegular) && rankCount > 1)
-            this.disableCompareBtn(false);
         else{
             this.disableCompareBtn(true);
             this.disableViewBtn(true);
@@ -139,12 +141,12 @@ var searchObj = {
     },
     disableCompareBtn:function(tf){
         searchCompareBtn.disabled = tf;
-        if(tf) searchCompareBtn.parentElement.href = "#";
+        if(tf) searchCompareBtn.parentElement.href = "";
         searchCompareBtn.className = (tf?"btn btn-primary btn-dark":"btn btn-primary btn-success");
     },
     disableViewBtn:function(tf){
         searchViewBtn.disabled = tf;
-        if(!tf) searchViewBtn.parentElement.href = "#";
+        if(!tf) searchViewBtn.parentElement.href = "";
         searchViewBtn.className = (tf?"btn btn-primary btn-dark":"btn btn-primary btn-success");
     }
 }
