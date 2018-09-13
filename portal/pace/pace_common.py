@@ -26,12 +26,9 @@ from ConfigParser import RawConfigParser
 # SafeConfig parser does interpolation - refer to other desctions of file as %(foo)
 # This causes problems with strings containing % - e.g., password
 # from ConfigParser import SafeConfigParser
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, ForeignKey, Integer, String, TEXT
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from sqlalchemy import Table,Column,Integer,MetaData,create_engine,String,VARCHAR
+
+
+
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
 
@@ -81,15 +78,11 @@ def readConfigFile(configFile):
 	myhost = parser.get('PACE','host')
 	return myuser, mypwd, mydb, myhost
 
-dbConn = ""
-# dbSession = ""
-dbSessionf = ""
-dbEngine = ""
+
 dburl = ""
-experimentsTable = ""
 
 def initDatabase():	
-	global dbConn, dbSessionf, dbEngine, dburl, experimentsTable
+	global dburl
 	configFile = None
 	if os.path.isfile('.pacerc'):
 		configFile = '.pacerc'
@@ -118,20 +111,6 @@ def initDatabase():
 	dburl = 'mysql+pymysql://' + myuser + ':' + mypwd + '@' + myhost +  '/' + mydb
 
 	# Ref: https://docs.sqlalchemy.org/en/latest/core/pooling.html
-	dbEngine = create_engine(dburl, pool_pre_ping=True)
-	dbConn = dbEngine.connect()
-	Base.metadata.create_all(dbEngine)
-	Base.metadata.bind = dbConn
-	dbSessionf = sessionmaker(bind=dbConn)
-	# dbSession = dbSessionf()
-
-	# metadata = MetaData()
-	# experimentsTable = Table('model_timing',metadata,\
-	# Column('id',Integer,primary_key=True,autoincrement=True),\
-	# Column('expID',Integer),\
-	# Column('jsonVal',MEDIUMTEXT),\
-	# Column('rank',VARCHAR(10)))
-	# metadata.create_all(dbEngine)
-
-	return dbConn, dbEngine, dburl, dbSessionf
+	
+	return dburl
 
