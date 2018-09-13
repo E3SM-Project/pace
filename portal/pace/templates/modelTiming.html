@@ -7,15 +7,18 @@
                 border:.01in solid;
                 position: absolute;
                 left:20.5%;
-                width:80%;
+                width:78%;
                 background-image:url(/static/img/ornlLeaf.svg); 
                 background-position: center;
                 background-repeat: no-repeat;
                 background-size: auto;
+                overflow: scroll;
+                resize:vertical;
             }
             #dataList{
                 overflow: scroll;
                 width:20%;
+                height:80%;
                 position: absolute;
                 resize:vertical;
                 left:0px;
@@ -84,10 +87,10 @@
                 </select>
                 <select id="threadSelect"></select>
                 <button id="compareButton" onclick="compDivObj.toggle()">Compare</button>
-                <input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked/>Stacked bars <input id="dmCheck" type="checkbox" onclick="dmObj.toggle(this.checked)"/>Dark Mode
+                <span class="checkboxRow"><input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked/>Stacked bars <input id="dmCheck" type="checkbox" onclick="dmObj.toggle(this.checked)"/>Dark Mode</span>
                 <input type="text" id="quickSearchBar" placeholder="Quick Search"/>
             </div>
-            <div id="dataInfo"><canvas id="chartTag"></canvas></div>
+            <div id="dataInfo"><div id="chartResizeContainer"><canvas id="chartTag"></canvas></div></div>
             <div id="dataList">
             <select id="expSelect" onchange="switchExperiment()"></select>
             <br>
@@ -122,6 +125,7 @@
         }
     });*/
 	$(document).ready(()=>{
+            dataInfo.style.height = (window.innerHeight*.8)+"px";
             dmObj.toggle(dmObj.checkCookies());
             dmCheck.checked = dmObj.checkCookies();
 			animate();

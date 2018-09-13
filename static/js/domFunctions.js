@@ -5,9 +5,9 @@ var triggerResize;
 window.onresize = function(){
         if(typeof(paceLoadResize)!=undefined && document.getElementsByClassName("loadScreen").length!=0)
             paceLoadResize();
-        dataList.style.height = chartTag.style.height;
+        dataList.style.height = dataList.style.height;
         clearTimeout(triggerResize);
-        triggerResize=setTimeout(()=>dataList.style.height = chartTag.style.height,10)
+        triggerResize=setTimeout(()=>dataList.style.height = dataInfo.style.height,10)
 }
 backButton.onclick = function(){
     if(currExp.currentEntry.parent!=undefined){
@@ -62,7 +62,7 @@ var chartSettings = {
         }]
     },
     options: {
-        /*maintainAspectRatio:false,*/
+        maintainAspectRatio:false,
         title:{
             display: true,
             text:""
@@ -77,7 +77,11 @@ var chartSettings = {
             let activeElement = resultChart.getElementAtEvent(event);
             if(!comparisonMode.on){
                 if(activeElement.length > 0){
-                    let timeNodeObject = (!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || (resultChart.data.datasets.length == 1 && currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children.length == 0)?currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label]:currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children[activeElement[0]._datasetIndex]);
+                    let timeNodeObject = (!stackedCharts 
+                        || valueName.children[valueName.selectedIndex].value == "min/max" || 
+                        (resultChart.data.datasets.length == 1 && currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children.length == 0)?
+                        currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label]:
+                        currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children[activeElement[0]._datasetIndex]);
                     let timeNode = document.getElementById(timeNodeObject.name).getElementsByTagName('ul')[0];
                     parentPath(timeNodeObject).forEach((listName)=>{
                         let listElement = document.getElementById(listName).getElementsByTagName('ul');
@@ -90,11 +94,11 @@ var chartSettings = {
             }
             else if (activeElement.length>0){
                 let evtData = comparisonEvt(activeElement);
-                let changeExp = confirm("Clicking Ok will take you to "+evtData.spefExp.name+" (Thread "+evtData.spefThread+") process \""+evtData.targetNode+".");
+                let changeExp = confirm("Clicking Ok will take you to "+evtData.spefExp.name+" (Thread "+evtData.targetNode.thread+") process \""+evtData.targetNode.name+".");
                 if(changeExp){
                     //console.log(evtData.nodeObject.name);
-                    evtData.spefExp.currThread = evtData.spefThread;
-                    evtData.spefExp.currentEntry = evtData.nodeObject;
+                    evtData.spefExp.currThread = evtData.targetNode.thread;
+                    evtData.spefExp.currentEntry = evtData.targetNode;
                     currExp = evtData.spefExp;
                     setTimeout(()=>comparisonMode.finish(),10);
                     for(let i=0;i<expSelect.children.length;i++){
@@ -143,13 +147,14 @@ chartTag.onmousemove = function(event){
         else{
             if(results.length > 0){
                 let output = comparisonEvt(results);
+                //console.log(output);
                 let valueStr = "";
                 if(valueName.children[valueName.selectedIndex].value == "min/max" || valueName.children[valueName.selectedIndex].value == "wallmin/wallmax"){
-                    valueStr=formattedNames[formatNameIndex][0][0]+": "+output.spefExp.nodeTableList[output.spefThread][output.targetNode].values[formattedNames[formatNameIndex][0][1]] +
-                "<br>"+ formattedNames[formatNameIndex][1][0]+": "+output.spefExp.nodeTableList[output.spefThread][output.targetNode].values[formattedNames[formatNameIndex][1][1]];
+                    valueStr=formattedNames[formatNameIndex][0][0]+": "+output.targetNode.values[formattedNames[formatNameIndex][0][1]] +
+                "<br>"+ formattedNames[formatNameIndex][1][0]+": "+output.targetNode.values[formattedNames[formatNameIndex][1][1]];
                 }
-                else valueStr = valueName.children[valueName.selectedIndex].innerHTML+": "+output.spefExp.nodeTableList[output.spefThread][output.targetNode].values[valueName.children[valueName.selectedIndex].innerHTML];
-                nodeId.innerHTML=output.spefExp.name+"_"+output.spefExp.rank+"(Thread "+output.spefThread+")<br>"+output.targetNode+"<br>"+valueStr;
+                else valueStr = valueName.children[valueName.selectedIndex].innerHTML+": "+output.targetNode.values[valueName.children[valueName.selectedIndex].innerHTML];
+                nodeId.innerHTML=output.spefExp.name+"_"+output.spefExp.rank+"(Thread "+output.targetNode.thread+")<br>"+output.targetNode.name+"<br>"+valueStr;
             }
         }
     }
@@ -220,33 +225,10 @@ function updateExpSelect(){
 //This function is for comparison mode; whenever the user clicks or hovers over something, general information is returned to match the functionality of regular viewing.
 function comparisonEvt(evt){
     let result = {};
-    result.spefExp = comparisonMode.activeExps[evt[0]._index][0];
-    result.spefThread = comparisonMode.activeExps[evt[0]._index][1];
-    result.spefChildIndex;
-    result.targetNode = "";
-    let foundLabel = true;
-    //Check to see if everything has no children:
-    let noChildrenCount = 0;
-    for(let i=0;i<comparisonMode.exp.currentEntry.children.length;i++){
-        if(comparisonMode.exp.currentEntry.children[i].children.length == 0){
-            noChildrenCount++;
-        }
-    }
-    if(stackedCharts && !(noChildrenCount == comparisonMode.exp.currentEntry.children.length)){
-        result.spefChildIndex = evt[0]._datasetIndex;
-        if(result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label] && result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label].children[result.spefChildIndex]){
-            result.targetNode = result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label].children[result.spefChildIndex].name;
-        }
-        else{
-            //console.log(result.spefExp);
-            result.targetNode = result.spefExp.currentEntry.children[result.spefChildIndex].name;
-            foundLabel = false;
-        }
-    }
-    else result.targetNode = (result.spefExp.nodeTableList[result.spefThread][evt[0]._model.label]?evt[0]._model.label:"summaryButton");
-    if(foundLabel)
-        result.nodeObject = result.spefExp.nodeTableList[result.spefThread][result.targetNode];
-    else result.nodeObject = result.spefExp.currentEntry.children[result.spefChildIndex];
+    result.spefExp = comparisonMode.activeChildren[evt[0]._index].srcExp;
+    //console.log(comparisonMode.activeChildren[evt[0]._index]);
+    result.spefChildIndex = (comparisonMode.activeChildren[evt[0]._index].children.length > 0?evt[0]._datasetIndex:undefined);
+    result.targetNode = (result.spefChildIndex!=undefined && stackedCharts?comparisonMode.activeChildren[evt[0]._index].children[result.spefChildIndex]:comparisonMode.activeChildren[evt[0]._index]);
     return result;
 }
 
@@ -270,18 +252,14 @@ var dmObj={
                 if(tf)
                     dmObj.percentage+=4;
                 else dmObj.percentage-=4;
-                [document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar].forEach(element=>{
-                    if(element!=undefined)
-                        element.style.backgroundColor = dmObj.colorNegator(dmObj.bgcolor);
-                });
-                document.getElementsByClassName("footer")[0].style.backgroundColor = this.colorNegator(this.footColor);
+                //Body Colors:
+                this.colorElements([[document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar]],"backgroundColor",this.bgcolor);
+                this.colorElements([[document.getElementsByClassName("footer")[0]]],"backgroundColor",this.footColor);
                 //textColor
-                [listContent,quickSearchBar].forEach(element=>element.style.color = dmObj.colorNegator(dmObj.textColor))
-                //Headers
-                let paceHeaders = document.getElementsByTagName("h2");
-                for(let i=0;i<paceHeaders.length;i++){
-                    paceHeaders[i].style.color = this.colorNegator(this.textColor);
-                }
+                this.colorElements([[listContent,quickSearchBar],
+                document.getElementsByTagName("h2"),
+                document.getElementsByClassName("checkboxRow"),
+                document.getElementsByClassName("searchItem")],"color",this.textColor);
             }
             else clearInterval(dmObj.interval);
         },17)
@@ -290,6 +268,20 @@ var dmObj={
     colorNegator:function(colorArrayIn,darkOn = this.on, percentIn = this.percentage){
         resultArray = (darkOn? colorArrayIn:[colorArrayIn[0],colorArrayIn[1]]);
         return percentToColor(percentIn,0,0,resultArray);
+    },
+    //Arrays/htmlCollections go in, and everything's colored accordingly:
+    colorElements:function(elements,varStr,colorArray){
+        //Elements is an array of arrays: each array contains a list of elements requested for coloring:
+        //varStr is what you want to color: (e.g "backgroundColor", "color")
+        elements.forEach(elementArray=>{
+            if(elementArray!=undefined){
+                for(let i=0;i<elementArray.length;i++){
+                    if(elementArray[i]!=undefined)
+                        elementArray[i].style[varStr] = dmObj.colorNegator(colorArray);
+                }
+            }
+        });
+
     },
     checkCookies:function(){
         let cookies = document.cookie.split(";");
@@ -303,3 +295,22 @@ var dmObj={
         return result;
     }
 };
+var resizeChartVal = 1;
+//The sole purpose of this function is to help with the really weird quirk that happens when the chart resizes within a scalable div :/
+function resizeChart(dataSetCount = resultChart.data.datasets[0].data.length){
+    resizeChartVal = dataSetCount;
+    let multiplier = (dataSetCount < 25?.75:dataSetCount/25);
+    chartTag.style.height = (window.innerHeight * multiplier)+"px";
+    dataInfo.style.height = (parseFloat(dataInfo.style.height.replace("px","")) - 1)+"px";
+    setTimeout(()=>dataInfo.style.height = (parseFloat(dataInfo.style.height.replace("px","")) +1)+"px",10);
+}
+
+dataInfo.onwheel = function(evt){
+    if(evt.altKey){
+        evt.preventDefault();
+        resizeChartVal= (evt.deltaY < 0?resizeChartVal+25:resizeChartVal-25);
+        if(resizeChartVal < 0)
+            resizeChartVal = 1;
+        resizeChart(resizeChartVal);
+    }
+}

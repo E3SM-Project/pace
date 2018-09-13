@@ -78,14 +78,29 @@ def parseNode(lineInput,currLine=0,parent=None):
         resultNode.parent = parent
     #Parse information from the line:
     #Look for the element that has quotation marks in it:
-    nameSearch = lineInput[currLine].split('"',2)
+    foundQuotes = True
+    nameSearch = []
+    if '"' not in lineInput[currLine]:
+        foundQuotes = False
+        nsMarkerSplit = lineInput[currLine].split(" ")
+        marker = ""
+        for markerWord in nsMarkerSplit:
+            if not markerWord == "" and not markerWord == "*":
+                marker = markerWord
+                break
+        nameSearch = lineInput[currLine].split(marker,1)
+        resultNode.name = marker.replace('"',"")
+    else:
+        nameSearch = lineInput[currLine].split('"',2)
     for word in nameSearch:
         if len(word) > 0:
-            if word[0] not in [" ","*"]:
-                resultNode.name=word
+            if word[0] not in ["*"," "] and foundQuotes:
+                resultNode.name = word
                 break
             elif word[0] == "*":
                 resultNode.multiParent = True
+                if not foundQuotes:
+                    break
 
     elements=nameSearch[len(nameSearch)-1].split(" ")
     valueCount=0
@@ -117,7 +132,9 @@ def parseNode(lineInput,currLine=0,parent=None):
 #When reading threads from a file, the returned list goes down to three dimensions! This "meta function" is to help with those headaches.
 #This function assumes you're inserting thread(s) from getData()
 def parseThread(thread):
-    if type(thread[0][0]) == types.StringType:
+    if len(thread) == 0:
+        return []
+    elif type(thread[0][0]) == types.StringType:
         resultNodes = []
         for nodes in thread:
             resultNodes.append(parseNode(nodes))

@@ -62,8 +62,13 @@ var quickSearchObj = {
                 }
             }
             searchBodyContainer.appendChild(resultBody);
-            if(dmObj.on)
+            if(dmObj.on){
                 document.getElementsByClassName("searchMenu")[0].style.backgroundColor="rgb(25,25,25)";
+                var searchItems = document.getElementsByClassName("searchItem");
+                for(let i=0;i<searchItems.length;i++){
+                    searchItems[i].style.color = "rgb(100,100,100)";
+                }
+            }
         });
         }
     },

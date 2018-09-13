@@ -11,7 +11,7 @@ var expGetCount = 0;
 var expGetFunc = [];
 
 //This will be where we look for a specific node. (Making the structured time-node into something linear at the same time)
-function addressTable(vals=undefined,jsonArray=false,srcExp){
+function addressTable(vals=undefined,jsonArray=false,srcExp,thread = -1){
     this.length = function (){
         let count = 0
         while (this[count] !=undefined){
@@ -32,6 +32,7 @@ function addressTable(vals=undefined,jsonArray=false,srcExp){
             //Making Parents...
             this[jsonIn.name].parent=(parent==undefined?jsonIn:parent);
             this[jsonIn.name].srcExp = srcExp;
+            this[jsonIn.name].thread = thread;
         }
     }
     if(vals)
@@ -56,7 +57,7 @@ function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "000
 
     //Construct:
     this.timeNodes.forEach((thread,i)=>{
-        this.nodeTableList.push(new addressTable(thread,true,this));
+        this.nodeTableList.push(new addressTable(thread,true,this,i));
         this.nodeDomList.push(htmlList(thread,[0,2]));
         this.threadSelectInner+="<option "+ (!i?"selected":"")+" value="+i+" >Thread "+i+"</option>";
     });
@@ -213,6 +214,7 @@ function changeGraph(nodeIn,valIn=valueName.children[valueName.selectedIndex].va
             }
             colorChart(stackedBar);
         }
+    resizeChart();
     resultChart.update();
 }
 
@@ -353,6 +355,7 @@ var comparisonMode = {
     exp:undefined,
     relatedNodes:[],
     activeExps:undefined,
+    activeChildren:[],
     new:function(expList){
         //As long as values are the same, we can run this function:
         let valBenchmark = expList[0][0].valueNames;
@@ -452,23 +455,63 @@ var comparisonMode = {
     },
     viewChart:function(id){
         childrenTemp = [];
+        expNames = [];
+        expNameSort = [];
         this.activeExps = [];
         this.relatedNodes.forEach(element=>{
             if(id=="summaryButton"){
                 let resultNode = {children:element[0].timeNodes[element[1]],name:element[0].name+"(Thread "+element[1]+")",values:{}};
+                //console.log(resultNode);
                 //Fill in pseudo data to meet graph-changing needs: (Averaging with these is not ideal).
                 element[0].valueNames.forEach(name=>resultNode.values[name] = 0);
-                childrenTemp.push(resultNode);
-                this.activeExps.push(element);
+                //if(resultNode.children == 0) childrenTemp.push(resultNode);
+                /*else*/ resultNode.children.forEach(this.viewChart_childPrint);
             }
             else if(element[0].nodeTableList[element[1]][id]){
-                childrenTemp.push(element[0].nodeTableList[element[1]][id]);
-                this.activeExps.push(element);
+                if(element[0].nodeTableList[element[1]][id].children.length == 0) 
+                    childrenTemp.push(element[0].nodeTableList[element[1]][id]);
+                else element[0].nodeTableList[element[1]][id].children.forEach(this.viewChart_childPrint);
             }
+            this.activeExps.push(element);
+            this.activeExps[element.name] = element;
         });
+        expNames.forEach(element=>expNameSort[element].forEach(node=>{
+                childrenTemp.push(node);
+        }));
         this.exp.currentEntry = {children:childrenTemp,name:(id)};
+        this.activeChildren = childrenTemp;
         changeGraph(this.exp.currentEntry);
+
+        //Remove duplicate labels:
+        for(let i=0;i<resultChart.data.labels.length;i++){
+            if(i!=0){
+                nonBlankIndex = i-1;
+                while(resultChart.data.labels[nonBlankIndex]=="")
+                    nonBlankIndex--;
+                if(resultChart.data.labels[i] == resultChart.data.labels[nonBlankIndex]){
+                    resultChart.data.labels[i] = "";
+                }
+            }
+        }
+        resultChart.update();
     },
+    //This is reserved for the viewChart function.
+    viewChart_childPrint:node=>{
+        let uniqueName = true;
+        for(let i=0;i<expNames.length;i++){
+            if(expNames[i] == node.name){
+                uniqueName = false;
+                break;
+            }
+        }
+        if(uniqueName)
+                expNames.push(node.name);
+        if(!expNameSort[node.name])
+            expNameSort[node.name] = [];
+        if(node.children.length >0 || !stackedCharts)
+            expNameSort[node.name].push(node);
+        else if (stackedCharts) expNameSort[node.name].push({name:node.name,children:[node],srcExp:node.srcExp});
+        },
     start:function(){
         if(this.exp.timeNodes[0].length == 0){
             alert("Error: there's nothing to compare.");

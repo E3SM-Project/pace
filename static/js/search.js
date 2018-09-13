@@ -5,13 +5,13 @@ var searchObj = {
     searchData:[],
     rankData:[],
     lastRankIndex:[0,0],
-    doComparison:false,
     afterFunctions:[],
-    search:function(searchStr,limit = this.limit,afterFunc){
+    search:function(searchStr,limit = this.limit,afterFunc,matchAll = false){
         console.log("HI SARAAAAT!");
         searchBody.innerHTML="";
-        this.afterFunctions.push(afterFunc);
-        $.get(detectRootUrl()+"/ajax/search/"+searchStr.replace(" ","+")+"/"+limit,(data)=>{
+        if(afterFunc)
+            this.afterFunctions.push(afterFunc);
+        $.get(detectRootUrl()+"/ajax/search/"+searchStr.replace(" ","+")+"/"+limit+(matchAll?"/matchall":""),(data)=>{
         let resultData = JSON.parse(data)
         this.searchData = resultData[0];
         this.rankData = resultData[1];
@@ -43,7 +43,7 @@ var searchObj = {
             "<td>"+element.mpi_tasks_per_node+"</td>"+
             "<td>"+element.compset+"</td>";
             let checkStr = "<td>";
-            let checkMoreStr = "<div><span onclick='searchObj.moreClick(this.parentElement)' style='font-weight:bold;'>More</span><div style='display:none' class='moreContainer'>";
+            let checkMoreStr = "<div><div style='display:none' class='moreContainer'>";
             let foundMore = false;
             searchObj.rankData[index][0].forEach( rank=>{
                 outputStr= "<a href='"+detectRootUrl()+"summary/"+element.expid+"/"+rank+"' title='View this experiment.'><b>"+rank+"</b></a><input type='checkbox' onchange='searchObj.scanChecks()'/></br>"; 
@@ -54,7 +54,7 @@ var searchObj = {
                     foundMore = true;
                 }
             });
-            checkMoreStr+="</div></div>"
+            checkMoreStr+="</div><button onclick='searchObj.moreClick(this.parentElement);' class='btn btn-dark' style='margin-top:3px'>More</button></div>"
             searchResult.innerHTML+=checkStr+(foundMore?checkMoreStr:"")+"</td>";
             searchBody.appendChild(searchResult);
         });
@@ -87,34 +87,32 @@ var searchObj = {
         }
         let foundStats = false;
         let foundRegular = false;
+        let rankCount = 0;
         //Check to see if anything can be compared or viewed:
         for(let i=0;i<this.rankData.length;i++){
             for(let j=0;j<this.rankData[i][0].length;j++){
                 if(this.rankData[i][1][j]){
-                    searchViewBtn.disabled = false;
+                    this.disableViewBtn(false);
                     if(this.rankData[i][0][j] == "stats")
                         foundStats = true;
                     else foundRegular = true;
+                    rankCount++;
                 }
                 if(foundRegular && foundStats)
                     break;
             }
         }
-        if(foundStats && foundRegular){
-            searchCompareBtn.disabled = true;
-            searchCompareBtn.parentElement.href = "#";
+        if(foundStats && foundRegular)
+            this.disableCompareBtn(true);
+        else if(foundStats || foundRegular){
+            this.disableCompareBtn(rankCount > 1?false:true);
+            this.disableViewBtn(false);
         }
-        else if(foundStats || foundRegular)
-            searchCompareBtn.disabled = false;
         else{
-            searchCompareBtn.disabled = true;
-            searchViewBtn.disabled = true;
+            this.disableCompareBtn(true);
+            this.disableViewBtn(true);
         }
 
-        this.doAction();
-    },
-    doAction:function(compToggle = false){
-        searchObj.doComparison = compToggle;
         //Scan through everything and dump it into a url.
         searchViewBtn.onclick = undefined;
         searchCompareBtn.onclick = undefined;
@@ -131,11 +129,24 @@ var searchObj = {
             }
         }
         totalString+=expStr+"/"+rankStr+"/";
-        searchViewBtn.parentElement.href=totalString;
-        searchCompareBtn.parentElement.href=totalString+"compare/";
+        if(!searchViewBtn.disabled) searchViewBtn.parentElement.href=totalString;
+        if(!searchCompareBtn.disabled) searchCompareBtn.parentElement.href=totalString+"compare/";
     },
     moreClick:function(element){
         let more = element.getElementsByClassName("moreContainer")[0];
-        more.style.display=(more.style.display == "none"?"":"none");
+        let button = element.getElementsByTagName("button")[0];
+        $(more).slideToggle("fast");
+        button.innerHTML = (button.innerHTML == "More"?"Less":"More");
+
+    },
+    disableCompareBtn:function(tf){
+        searchCompareBtn.disabled = tf;
+        if(tf) searchCompareBtn.parentElement.href = "";
+        searchCompareBtn.className = (tf?"btn btn-primary btn-dark":"btn btn-primary btn-success");
+    },
+    disableViewBtn:function(tf){
+        searchViewBtn.disabled = tf;
+        if(!tf) searchViewBtn.parentElement.href = "";
+        searchViewBtn.className = (tf?"btn btn-primary btn-dark":"btn btn-primary btn-success");
     }
 }
