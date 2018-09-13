@@ -1,59 +1,52 @@
-from sqlalchemy.orm import sessionmaker,relationship
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Table,Column,Integer,MetaData,create_engine,String,VARCHAR,ForeignKey,TEXT
-from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from pace_common import *
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
-# Database work					
-Base = declarative_base() 
- 
-class Timingprofile(Base):
-	__tablename__ = 'timing_profile'
-	expid = Column(Integer, primary_key=True)    
-	case = Column(String(250),nullable=False)
-	lid = Column(String(250), nullable=False)
-	machine = Column(String(250), nullable=False)
-	caseroot = Column(String(250),nullable=False)	
-	timeroot = Column(String(250),nullable=False)	
-	user = Column(String(250),nullable=False)
-	curr_date = Column(String(250),nullable=False)
-	grid = Column(String(250),nullable=False)
-	compset = Column(String(250),nullable=False)
-	stop_option = Column(String(250),nullable=False)
-	stop_n = Column(String(250),nullable=False)        
-	run_length = Column(String(250), nullable=False)
-	total_pes_active = Column(String(250), nullable=False)
-	mpi_tasks_per_node = Column(String(250), nullable=False)
-	pe_count_for_cost_estimate = Column(String(250), nullable=False)
-	model_cost = Column(String(250), nullable=False)
-	model_throughput = Column(String(250), nullable=False)
-	actual_ocn_init_wait_time = Column(String(250), nullable=False)
 
-class Pelayout(Base):
-	__tablename__ = 'pe_layout'
-	id = Column(Integer, primary_key=True)
-	expid=Column(Integer, nullable=False)
-	component = Column(String(250), nullable=False)
-	comp_pes = Column(String(250), nullable=False)
-	root_pe = Column(String(250), nullable=False)
-	tasks = Column(String(250), nullable=False)
-	threads = Column(String(250), nullable=False)
-	instances = Column(String(250), nullable=False)
-	stride = Column(String(250), nullable=False)
+class Timingprofile(db.Model):
+	expid = db.Column(db.Integer, primary_key=True)    
+	case = db.Column(db.String(100),nullable=False)
+	lid = db.Column(db.String(50), nullable=False)
+	machine = db.Column(db.String(25), nullable=False)
+	caseroot = db.Column(db.String(250),nullable=False)	
+	timeroot = db.Column(db.String(250),nullable=False)	
+	user = db.Column(db.String(25),nullable=False)
+	curr_date = db.Column(db.String(50),nullable=False)
+	grid = db.Column(db.String(100),nullable=False)
+	compset = db.Column(db.String(100),nullable=False)
+	stop_option = db.Column(db.String(25),nullable=False)
+	stop_n = db.Column(db.String(25),nullable=False)        
+	run_length = db.Column(db.String(25), nullable=False)
+	total_pes_active = db.Column(db.Integer, nullable=False)
+	mpi_tasks_per_node = db.Column(db.Integer, nullable=False)
+	pe_count_for_cost_estimate = db.Column(db.Integer, nullable=False)
+	model_cost = db.Column(db.String(50), nullable=False)
+	model_throughput = db.Column(db.String(50), nullable=False)
+	actual_ocn_init_wait_time = db.Column(db.String(25), nullable=False)
 
-class Runtime(Base):
-	__tablename__ = 'run_time'
-	id = Column(Integer, primary_key=True)
-	expid=Column(Integer, nullable=False)
-	component = Column(String(250), nullable=False)
-	seconds = Column(String(250), nullable=False)
-	model_day = Column(String(250), nullable=False)
-	model_years = Column(String(250), nullable=False)
+class Pelayout(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	expid = db.Column(db.Integer, nullable=False)
+	component = db.Column(db.String(25), nullable=False)
+	comp_pes = db.Column(db.Integer, nullable=False)
+	root_pe = db.Column(db.Integer, nullable=False)
+	tasks = db.Column(db.Integer, nullable=False)
+	threads = db.Column(db.String(10), nullable=False)
+	instances = db.Column(db.Integer, nullable=False)
+	stride = db.Column(db.Integer, nullable=False)
+
+class Runtime(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	expid = db.Column(db.Integer, nullable=False)
+	component = db.Column(db.String(25), nullable=False)
+	seconds = db.Column(db.Float, nullable=False)
+	model_day = db.Column(db.Float, nullable=False)
+	model_years = db.Column(db.Float, nullable=False)
 	
 
-class ModelTiming(Base):
-	__tablename__ = 'model_timing'
-	id = Column(Integer, primary_key=True,autoincrement=True)
-	expid=Column(Integer, nullable=False)
-	jsonVal=Column(MEDIUMTEXT, nullable=False)
-	rank=Column(String(10), nullable=False)
+class ModelTiming(db.Model):
+	id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+	expid = db.Column(db.Integer, nullable=False)
+	jsonVal = db.Column(MEDIUMTEXT, nullable=False)
+	rank = db.Column(db.String(10), nullable=False)

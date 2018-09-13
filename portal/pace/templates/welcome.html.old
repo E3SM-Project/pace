@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block content %}
+
+Start by looking at experiments on a desired platform or use search to narrow down experiments of interest.
+
+<br>
+<hr>
+
+<h3> Architecture </h3>
+<img align=center width=800 src="/static/img/workflow.png">
+
+{% endblock %}
