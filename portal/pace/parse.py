@@ -1,3 +1,8 @@
+#from data import db
+#from data import ModelTiming, Timingprofile, Pelayout, Runtime
+from datastructs import *
+from pace_common import *
+db.create_all()
 import array
 import sys,os
 import gzip
@@ -5,10 +10,8 @@ import tarfile
 import shutil
 import zipfile
 import pymysql
-from subprocess import Popen,PIPE
-from datastructs import *
-from pace_common import *
-from sqlalchemy.orm import sessionmaker
+
+
 import modelTiming as mt
 import io
 
@@ -56,7 +59,7 @@ def tableParse(lineInput):
         resultList.append(tableColumn)
     return resultList
 
-def insertExperiment(filename,dbSession):
+def insertExperiment(filename,db):
 	if filename.endswith('.gz'):
 		parseFile=gzip.open(filename,'rb')
 	else:
@@ -155,30 +158,28 @@ def insertExperiment(filename,dbSession):
 	parseFile.close()
 	
 
-	# dbSession = dbSessionf()
-	# Insert an experiment in the experiment table
+	
 	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],curr_date=onetags[6],grid=onetags[7],compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5])
-	dbSession.add(new_experiment)
+	db.session.add(new_experiment)
 
 	# table has to have a same experiment id
-	forexpid = dbSession.query(Timingprofile).order_by(Timingprofile.expid.desc()).first()
+	
+	forexpid = Timingprofile.query.order_by(Timingprofile.expid.desc()).first()
 
 	#insert pelayout
 	i=0
 	while i < len(twotags):
 		new_pelayout = Pelayout(expid=forexpid.expid,component=twotags[i],comp_pes=twotags[i+1],root_pe=twotags[i+2],tasks=twotags[i+3],threads=twotags[i+4],instances=twotags[i+5],stride=twotags[i+6])
-		dbSession.add(new_pelayout)	
+		db.session.add(new_pelayout)	
 		i=i+7
 	#insert run time
 	i=0
 	while i < len(fourtags):
 		new_runtime = Runtime(expid=forexpid.expid,component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3])
-		dbSession.add(new_runtime)
+		db.session.add(new_runtime)
 		i=i+4
-	dbSession.commit()
 	
-
-	print("-------------------------Stored-in-Database-------------------------------")
+	
 	return (onetags[1],forexpid.expid)
 
 def parseData():
@@ -227,14 +228,13 @@ def parseData():
 		return('Error: %s' % e.strerror)
 
 	# parse and store timing profile file in a database
-	dbSessionf = sessionmaker(bind=dbConn)
-	dbSession = dbSessionf()
 	exptag=[]
 	for i in range(len(allfile)):
-		a,b=insertExperiment(allfile[i],dbSession)
-		insertTiming(timingfile[i],b,dbSession)	
+		a,b=insertExperiment(allfile[i],db)
+		insertTiming(timingfile[i],b,db)	
 		exptag.append(a)
-	dbSession.commit()
+		print("-----------------Stored-in-Database-------------------")
+	db.session.commit()
 
 	newroot='/pace/assets/static/data/'
 	# zip successfull experiments into folder experiments
@@ -255,7 +255,7 @@ def parseData():
 
 	return('File Upload and Stored in Database Success')
 
-def insertTiming(mtFile,expID,dbSession):
+def insertTiming(mtFile,expID,db):
 	sourceFile = tarfile.open(mtFile)
 	for element in sourceFile:
 		#to determine everything, this string is split two different ways:
@@ -275,9 +275,10 @@ def insertTiming(mtFile,expID,dbSession):
 			elif underScore[len(underScore)-1] == "stats":
 				rankStr = underScore[len(underScore)-1]
 			#This is a file we want! Let's save it:
+			print(element.name)
 			new_modeltiming = ModelTiming(expid=expID,jsonVal=mt.parse(sourceFile.extractfile(element)),rank=rankStr)
-			dbSession.add(new_modeltiming)
-	dbSession.commit()
+			db.session.add(new_modeltiming)
+	
 	return
 
 if __name__ == "__main__":
