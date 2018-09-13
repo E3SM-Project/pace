@@ -6,12 +6,12 @@ var searchObj = {
     rankData:[],
     lastRankIndex:[0,0],
     afterFunctions:[],
-    search:function(searchStr,limit = this.limit,afterFunc){
+    search:function(searchStr,limit = this.limit,afterFunc,matchAll = false){
         console.log("HI SARAAAAT!");
         searchBody.innerHTML="";
         if(afterFunc)
             this.afterFunctions.push(afterFunc);
-        $.get(detectRootUrl()+"/ajax/search/"+searchStr.replace(" ","+")+"/"+limit,(data)=>{
+        $.get(detectRootUrl()+"/ajax/search/"+searchStr.replace(" ","+")+"/"+limit+(matchAll?"/matchall":""),(data)=>{
         let resultData = JSON.parse(data)
         this.searchData = resultData[0];
         this.rankData = resultData[1];

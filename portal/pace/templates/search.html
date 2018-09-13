@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block topscripts %}
-	<title> PACE - Applications </title>
+	<title> {%if homePageStr==""%}PACE - Applications{%else%}PACE - Home{%endif%}</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.widgets.min.js"></script>
@@ -12,7 +12,8 @@
 {% block content %}
 <div id="searchContent"><h4> Experiments </h4></div>
 <!--<input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" id="searchBar">-->
-<p style="text-align:center;display:none" id="homePageContent"><input class="form-control" style="font-size:1.5em;text-align:center;width:50%;margin-left:25%" placeholder="Search" onchange="searchObj.limit = 20;if(this.value!='') searchObj.search(this.value);"/></p>
+{%if homePageStr!=""%}<p style="text-align:center;" id="homePageContent"><input class="form-control" id="homeSearchBar" style="font-size:1.5em;text-align:center;width:50%;margin-left:25%" placeholder="Search" onchange="searchObj.limit = 20;if(this.value!='') searchAndCheck(this.value,matchModeCheck.checked);"/>
+<input type="checkbox" id="matchModeCheck"/>Match Mode</p>{%endif%}
 <p style="text-align:center">
 	<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>compare</button></a>
 	<a><button class="btn btn-primary btn-dark" id='searchViewBtn' disabled>View</button></a>
@@ -35,19 +36,20 @@ var homePage = false;
 {{sq|safe}}
 {{homePageStr|safe}}
 
-if(homePage){
-	homePageContent.style.display="";
-	searchContent.style.display="none";
-}
-
-function searchAndCheck(sq = searchQuery){
+function searchAndCheck(sq = searchQuery,matchMode = false){
 	searchObj.search(sq,searchObj.limit,()=>{
 	if(searchObj.searchData.length == searchObj.limit){
 	 searchObj.limit*=2;
 	}
 	else moreBtn.style.display = "none";
-	});
+	},matchMode);
 }
+
+{%if homePageStr !=""%}
+matchModeCheck.onclick = function(){
+	homeSearchBar.placeholder = (this.checked?"user:username machine:target_machine etc:etc":"Search");
+}
+{%endif%}
 
 $(document).ready(function(){
 searchAndCheck();

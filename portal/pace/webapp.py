@@ -26,8 +26,12 @@ import os
 
 # Home page
 @app.route("/")
-def welcome():
-	return render_template('welcome.html')
+def homePage():
+    return searchPage("*",True)
+
+@app.route("/about")
+def aboutPage():
+    return render_template("about.html")
 
 # Check file extention
 def allowed_file(filename):
@@ -177,7 +181,8 @@ def expsAjax(pageNum):
 
 @app.route("/ajax/search/<searchTerms>")
 @app.route("/ajax/search/<searchTerms>/<limit>")
-def searchBar(searchTerms,limit = False):
+@app.route("/ajax/search/<searchTerms>/<limit>/<matchAll>")
+def searchBar(searchTerms,limit = False,matchAll = False):
     resultItems = []
     filteredItems = []
     variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset"]
@@ -196,18 +201,38 @@ def searchBar(searchTerms,limit = False):
                 resultDict[key] = item[key]
             filteredItems.append(resultDict)
 
+    elif matchAll == "matchall":
+        #We assume the user is typing information with the following format: "user:name machine:titan etc:etc"
+        for word in searchTerms.split("+"):
+            termList.append(word.replace(";","").replace("\\c",""))
+        #Make a list of compiled variables to query in one swoop:
+        strList = []
+        for element in termList:
+            syntax = element.split(":")
+            if syntax[0] in variableList:
+                strList.append(syntax[0]+' like "%%'+syntax[1]+'%%"')
+        compiledString = "select " + str(variableList).strip("[]").replace("'","") + " from timing_profile where "
+        for i in range(len(strList)):
+            compiledString+=strList[i]
+            if not i==len(strList) - 1:
+                compiledString+=" and "
+        compiledString+=" limit "+limit+";"
+        #Copy/paste from above:
+        allResults = dbConn.execute(compiledString).fetchall()
+        for result in allResults:
+            resultItems.append(result)
+        #Replacement for filtered items loop:
+        for item in resultItems:
+            resultDict = {}
+            for key in item.keys():
+                resultDict[key] = item[key]
+            filteredItems.append(resultDict)
+
     else:
         for word in searchTerms.split("+"):
             termList.append(word.replace(";","").replace("\\c",""))
         for word in variableList:
-            queryStr = "select "
-            firstValue = True
-            for value in variableList:
-                if not firstValue:
-                    queryStr+=","
-                queryStr+=value
-                firstValue = False
-            queryStr+=" from timing_profile where "+word+" like "
+            queryStr = "select " + str(variableList).strip("[]").replace("'","") + " from timing_profile where "+word+" like "
             firstValue = True
             for term in termList:
                 if not firstValue:
@@ -254,7 +279,3 @@ def getMachines():
 @app.route("/platforms/<platform>/")
 def platforms(platform):
     return searchPage(platform)
-
-@app.route("/homePageProto/")
-def homePage():
-    return searchPage("*",True)

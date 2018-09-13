@@ -461,23 +461,22 @@ var comparisonMode = {
         this.relatedNodes.forEach(element=>{
             if(id=="summaryButton"){
                 let resultNode = {children:element[0].timeNodes[element[1]],name:element[0].name+"(Thread "+element[1]+")",values:{}};
-                console.log(resultNode);
+                //console.log(resultNode);
                 //Fill in pseudo data to meet graph-changing needs: (Averaging with these is not ideal).
                 element[0].valueNames.forEach(name=>resultNode.values[name] = 0);
                 //if(resultNode.children == 0) childrenTemp.push(resultNode);
                 /*else*/ resultNode.children.forEach(this.viewChart_childPrint);
             }
             else if(element[0].nodeTableList[element[1]][id]){
-                //if(element[0].nodeTableList[element[1]][id].children.length == 0) childrenTemp.push(element[0].nodeTableList[element[1]][id]);
-                /*else*/ element[0].nodeTableList[element[1]][id].children.forEach(this.viewChart_childPrint);
+                if(element[0].nodeTableList[element[1]][id].children.length == 0) 
+                    childrenTemp.push(element[0].nodeTableList[element[1]][id]);
+                else element[0].nodeTableList[element[1]][id].children.forEach(this.viewChart_childPrint);
             }
             this.activeExps.push(element);
             this.activeExps[element.name] = element;
         });
         expNames.forEach(element=>expNameSort[element].forEach(node=>{
-            //if(node.children.length > 0)
                 childrenTemp.push(node);
-            //else childrenTemp.push({children:[node]});
         }));
         this.exp.currentEntry = {children:childrenTemp,name:(id)};
         this.activeChildren = childrenTemp;
@@ -509,7 +508,9 @@ var comparisonMode = {
                 expNames.push(node.name);
         if(!expNameSort[node.name])
             expNameSort[node.name] = [];
-        expNameSort[node.name].push(node);
+        if(node.children.length >0 || !stackedCharts)
+            expNameSort[node.name].push(node);
+        else if (stackedCharts) expNameSort[node.name].push({name:node.name,children:[node],srcExp:node.srcExp});
         },
     start:function(){
         if(this.exp.timeNodes[0].length == 0){

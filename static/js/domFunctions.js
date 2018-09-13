@@ -77,7 +77,11 @@ var chartSettings = {
             let activeElement = resultChart.getElementAtEvent(event);
             if(!comparisonMode.on){
                 if(activeElement.length > 0){
-                    let timeNodeObject = (!stackedCharts || valueName.children[valueName.selectedIndex].value == "min/max" || (resultChart.data.datasets.length == 1 && currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children.length == 0)?currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label]:currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children[activeElement[0]._datasetIndex]);
+                    let timeNodeObject = (!stackedCharts 
+                        || valueName.children[valueName.selectedIndex].value == "min/max" || 
+                        (resultChart.data.datasets.length == 1 && currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children.length == 0)?
+                        currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label]:
+                        currExp.nodeTableList[currExp.currThread][activeElement[0]._model.label].children[activeElement[0]._datasetIndex]);
                     let timeNode = document.getElementById(timeNodeObject.name).getElementsByTagName('ul')[0];
                     parentPath(timeNodeObject).forEach((listName)=>{
                         let listElement = document.getElementById(listName).getElementsByTagName('ul');
@@ -143,6 +147,7 @@ chartTag.onmousemove = function(event){
         else{
             if(results.length > 0){
                 let output = comparisonEvt(results);
+                //console.log(output);
                 let valueStr = "";
                 if(valueName.children[valueName.selectedIndex].value == "min/max" || valueName.children[valueName.selectedIndex].value == "wallmin/wallmax"){
                     valueStr=formattedNames[formatNameIndex][0][0]+": "+output.targetNode.values[formattedNames[formatNameIndex][0][1]] +
@@ -221,8 +226,9 @@ function updateExpSelect(){
 function comparisonEvt(evt){
     let result = {};
     result.spefExp = comparisonMode.activeChildren[evt[0]._index].srcExp;
+    //console.log(comparisonMode.activeChildren[evt[0]._index]);
     result.spefChildIndex = (comparisonMode.activeChildren[evt[0]._index].children.length > 0?evt[0]._datasetIndex:undefined);
-    result.targetNode = (result.spefChildIndex!=undefined?comparisonMode.activeChildren[evt[0]._index].children[result.spefChildIndex]:comparisonMode.activeChildren[evt[0]._index]);
+    result.targetNode = (result.spefChildIndex!=undefined && stackedCharts?comparisonMode.activeChildren[evt[0]._index].children[result.spefChildIndex]:comparisonMode.activeChildren[evt[0]._index]);
     return result;
 }
 
@@ -246,18 +252,14 @@ var dmObj={
                 if(tf)
                     dmObj.percentage+=4;
                 else dmObj.percentage-=4;
-                [document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar].forEach(element=>{
-                    if(element!=undefined)
-                        element.style.backgroundColor = dmObj.colorNegator(dmObj.bgcolor);
-                });
-                document.getElementsByClassName("footer")[0].style.backgroundColor = this.colorNegator(this.footColor);
+                //Body Colors:
+                this.colorElements([[document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar]],"backgroundColor",this.bgcolor);
+                this.colorElements([[document.getElementsByClassName("footer")[0]]],"backgroundColor",this.footColor);
                 //textColor
-                [listContent,quickSearchBar].forEach(element=>element.style.color = dmObj.colorNegator(dmObj.textColor))
-                //Headers
-                let paceHeaders = document.getElementsByTagName("h2");
-                for(let i=0;i<paceHeaders.length;i++){
-                    paceHeaders[i].style.color = this.colorNegator(this.textColor);
-                }
+                this.colorElements([[listContent,quickSearchBar],
+                document.getElementsByTagName("h2"),
+                document.getElementsByClassName("checkboxRow"),
+                document.getElementsByClassName("searchItem")],"color",this.textColor);
             }
             else clearInterval(dmObj.interval);
         },17)
@@ -266,6 +268,20 @@ var dmObj={
     colorNegator:function(colorArrayIn,darkOn = this.on, percentIn = this.percentage){
         resultArray = (darkOn? colorArrayIn:[colorArrayIn[0],colorArrayIn[1]]);
         return percentToColor(percentIn,0,0,resultArray);
+    },
+    //Arrays/htmlCollections go in, and everything's colored accordingly:
+    colorElements:function(elements,varStr,colorArray){
+        //Elements is an array of arrays: each array contains a list of elements requested for coloring:
+        //varStr is what you want to color: (e.g "backgroundColor", "color")
+        elements.forEach(elementArray=>{
+            if(elementArray!=undefined){
+                for(let i=0;i<elementArray.length;i++){
+                    if(elementArray[i]!=undefined)
+                        elementArray[i].style[varStr] = dmObj.colorNegator(colorArray);
+                }
+            }
+        });
+
     },
     checkCookies:function(){
         let cookies = document.cookie.split(";");
