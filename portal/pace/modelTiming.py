@@ -94,11 +94,13 @@ def parseNode(lineInput,currLine=0,parent=None):
         nameSearch = lineInput[currLine].split('"',2)
     for word in nameSearch:
         if len(word) > 0:
-            if word not in ["*"," "] and foundQuotes:
+            if word[0] not in ["*"," "] and foundQuotes:
                 resultNode.name = word
+                break
             elif word[0] == "*":
                 resultNode.multiParent = True
-                break
+                if not foundQuotes:
+                    break
 
     elements=nameSearch[len(nameSearch)-1].split(" ")
     valueCount=0
