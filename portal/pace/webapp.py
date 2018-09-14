@@ -10,6 +10,7 @@ import operator
 import json
 import urllib
 from sqlalchemy.orm import sessionmaker
+from __init__ import db
 
 #Model Timing Library:
 import modelTiming as mt
@@ -115,7 +116,7 @@ def summaryQuery(expID,rank):
     elif expID == "-2":
         resultNodes = mt.parse("/pace/assets/static/model_timing_stats")
     else:
-        resultNodes = dbConn.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
+        resultNodes = db.engine.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
     if rank == 'stats':
         listIndex = 1
         #Grab processes > 1 second:
@@ -141,11 +142,8 @@ def summaryQuery(expID,rank):
 def expsList():
     myexps = []
     # initDatabase()
-    dbSessionf = sessionmaker(bind=dbConn)
-    dbSession = dbSessionf()
-    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.desc()).limit(20)
+    myexps = db.session.query(Timingprofile).order_by(Timingprofile.expid.desc()).limit(20)
     # myexps = Timingprofile.query.order_by(Timingprofile.expid.asc()).limit(25)
-    dbSession.close()
     return render_template('exps.html', explist = myexps)
 
 @app.route("/search/")
@@ -159,24 +157,20 @@ def searchPage(searchQuery="*",isHomepage=False):
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
     myexp = 0
-    dbSession = dbSessionf()
-    myexp = dbSession.query(Timingprofile).filter_by(expid = mexpid).all()[0]
-    mypelayout = dbSession.query(Pelayout).filter_by(expid = mexpid).all()[0]
-    myruntime = dbSession.query(Runtime).filter_by(expid = mexpid).all()[0]
-    dbSession.close()
+    myexp = db.session.query(Timingprofile).filter_by(expid = mexpid).all()[0]
+    mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
+    myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()[0]
     return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime)
 
 EXPS_PER_RQ=20
 @app.route("/ajax/exps/<int:pageNum>")
 def expsAjax(pageNum):
-    dbSession = dbSessionf()
-    numexps = dbSession.query(Timingprofile).count()
-    myexps = dbSession.query(Timingprofile).order_by(Timingprofile.expid.desc())[pageNum * EXPS_PER_RQ : (pageNum + 1) * EXPS_PER_RQ]
+    numexps = db.session.query(Timingprofile).count()
+    myexps = db.session.query(Timingprofile).order_by(Timingprofile.expid.desc())[pageNum * EXPS_PER_RQ : (pageNum + 1) * EXPS_PER_RQ]
     pruned_data = {"numRows": numexps, "data": []}
     for exp in myexps:
 	# var row = [o.expid,o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.grid];
         pruned_data["data"].append({"expid": exp.expid, "user": exp.user, "machine": exp.machine, "total_pes_active": exp.total_pes_active, "run_length": exp.run_length, "model_throughput": exp.model_throughput, "mpi_tasks_per_node": str(exp.mpi_tasks_per_node), "compset": exp.compset, "grid": exp.grid})
-    dbSession.close()
     return make_response(json.dumps(pruned_data))
 
 @app.route("/ajax/search/<searchTerms>")
@@ -188,10 +182,10 @@ def searchBar(searchTerms,limit = False,matchAll = False):
     variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset"]
     termList = []
     if searchTerms == "*":
-        queryStr = "select "+str(variableList).strip("[]").replace("'","")+" from timing_profile"
+        queryStr = "select "+str(variableList).strip("[]").replace("'","")+" from timingprofile"
         if limit:
             queryStr+=" limit "+limit
-        allResults = dbConn.execute(queryStr).fetchall()
+        allResults = db.engine.execute(queryStr).fetchall()
         for result in allResults:
             resultItems.append(result)
         #Replacement for filtered items loop:
@@ -211,14 +205,14 @@ def searchBar(searchTerms,limit = False,matchAll = False):
             syntax = element.split(":")
             if syntax[0] in variableList:
                 strList.append(syntax[0]+' like "%%'+syntax[1]+'%%"')
-        compiledString = "select " + str(variableList).strip("[]").replace("'","") + " from timing_profile where "
+        compiledString = "select " + str(variableList).strip("[]").replace("'","") + " from timingprofile where "
         for i in range(len(strList)):
             compiledString+=strList[i]
             if not i==len(strList) - 1:
                 compiledString+=" and "
         compiledString+=" limit "+limit+";"
         #Copy/paste from above:
-        allResults = dbConn.execute(compiledString).fetchall()
+        allResults = db.engine.execute(compiledString).fetchall()
         for result in allResults:
             resultItems.append(result)
         #Replacement for filtered items loop:
@@ -232,7 +226,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
         for word in searchTerms.split("+"):
             termList.append(word.replace(";","").replace("\\c",""))
         for word in variableList:
-            queryStr = "select " + str(variableList).strip("[]").replace("'","") + " from timing_profile where "+word+" like "
+            queryStr = "select " + str(variableList).strip("[]").replace("'","") + " from timingprofile where "+word+" like "
             firstValue = True
             for term in termList:
                 if not firstValue:
@@ -243,7 +237,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
                 queryStr+=" limit "+limit+";"
             else:
                 queryStr+=";"
-            resultItems.append(dbConn.execute(queryStr).fetchall())
+            resultItems.append(db.engine.execute(queryStr).fetchall())
         #Filter out duplicates:
         for query in resultItems:
             for element in query:
@@ -261,7 +255,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
     rankList = []
     for item in filteredItems:
         itemRanks = []
-        queryResults = dbConn.execute("select rank from model_timing where expid = "+str(item["expid"])).fetchall()
+        queryResults = db.engine.execute("select rank from model_timing where expid = "+str(item["expid"])).fetchall()
         for result in queryResults:
             itemRanks.append(result.rank)
         rankList.append([itemRanks,[]])
@@ -270,7 +264,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
 
 @app.route("/ajax/getMachines/")
 def getMachines():
-    machineQuery = dbConn.execute("select distinct machine from timing_profile").fetchall()
+    machineQuery = db.engine.execute("select distinct machine from timingprofile").fetchall()
     machineList = []
     for machine in machineQuery:
         machineList.append(machine.machine)
