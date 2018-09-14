@@ -47,7 +47,8 @@ var searchObj = {
             "<td>"+element.total_pes_active+"</td>"+
             "<td>"+element.run_length+"</td>"+
             "<td>"+element.model_throughput+"</td>"+
-            "<td>"+element.mpi_tasks_per_node+"</td>";
+            "<td>"+element.mpi_tasks_per_node+"</td>"+
+            "<td>"+element.curr_date+"</td>";
             let checkStr = "<td>";
             let checkMoreStr = "<div><div style='display:none' class='moreContainer'>";
             let foundMore = false;
