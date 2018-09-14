@@ -10,10 +10,10 @@ from datetime import datetime
 from sqlalchemy import Table,Column,Integer,MetaData,create_engine,String,VARCHAR
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
-from datastructs import *
+# Avoid circular imports - so, don't import datastructs here
+#from datastructs import *
+
 from flask_sqlalchemy import SQLAlchemy
-import bson
-from bson.objectid import ObjectId
 # to get current username from env - used for uploadedBy
 import getpass
 from sqlalchemy import create_engine
@@ -27,10 +27,7 @@ from ConfigParser import RawConfigParser
 # This causes problems with strings containing % - e.g., password
 # from ConfigParser import SafeConfigParser
 
-
-
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
-
 
 # Global var
 PACE_USER = 'yourusername'
@@ -104,7 +101,7 @@ def initDatabase():
 		print bcolors.WARNING + "For convenience, you should create your configuration (.pacerc) using the template pacerc.tmpl"
 		print "Alternately, you can enter your credentials below." + bcolors.ENDC
 		myuser = raw_input('Username: ')
-		mypwd = getpass.getpass()
+		mypwd = getpass.getpass()		
 		mydb = 'pace'
 		myhost = 'localhost'
 

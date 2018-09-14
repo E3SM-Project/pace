@@ -16,9 +16,7 @@ app = Flask(__name__)
 # Use the fixer
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
-# dbConn, dbEngine, dburl, dbSession = initDatabase()
-initDatabase()
-app.config['SQLALCHEMY_DATABASE_URI'] = dburl;
+app.config['SQLALCHEMY_DATABASE_URI'] = initDatabase()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False;
 app.config['SQLALCHEMY_POOL_RECYCLE']=499
 db = SQLAlchemy(app)
