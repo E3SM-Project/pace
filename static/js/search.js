@@ -11,14 +11,14 @@ var searchObj = {
         searchBody.innerHTML="";
         if(afterFunc)
             this.afterFunctions.push(afterFunc);
-        $.get(detectRootUrl()+"/ajax/search/"+searchStr.replace(" ","+")+"/"+limit+(matchAll?"/matchall":""),(data)=>{
+        $.get(detectRootUrl()+"ajax/search/"+searchStr.replace(" ","+")+"/"+limit+(matchAll?"/matchall":""),(data)=>{
         let resultData = JSON.parse(data)
         this.searchData = resultData[0];
         this.rankData = resultData[1];
         //First and foremost, lets organize the data; if we find anything related to "stats" or "0", we place those up front:
         this.rankData.forEach(element=>{
             for(let i=0;i<element[0].length;i++){
-                if(element[0][i] == "stats" || element[0][i][0] == "0"){
+                if(element[0][i] == "stats" || element[0][i] == "0"){
                     for(let j=0;j<element[0].length;j++){
                         if(!(element[0][j] == "stats" || element[0][j][0] == "0")){
                             let temp = element[0][j];
@@ -29,7 +29,14 @@ var searchObj = {
                     }
                 }
             }
-        });
+            //Now, prioritize the stats variable so it's always on top:
+            if(element[0][0] == "0" && element[0][1] && element[0][1] == "stats"){
+                let temp = element[0][0];
+                element[0][0] = element[0][1];
+                element[0][1] = temp;
+            }
+        }
+        );
         this.searchData.forEach( (element,index) => {
             let searchResult = document.createElement("tr");
             searchResult.className = "searchItem";

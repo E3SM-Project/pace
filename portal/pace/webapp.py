@@ -182,7 +182,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
     variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset"]
     termList = []
     if searchTerms == "*":
-        queryStr = "select "+str(variableList).strip("[]").replace("'","")+" from timingprofile"
+        queryStr = "select "+str(variableList).strip("[]").replace("'","")+" from timingprofile order by expid desc"
         if limit:
             queryStr+=" limit "+limit
         allResults = db.engine.execute(queryStr).fetchall()
@@ -210,7 +210,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
             compiledString+=strList[i]
             if not i==len(strList) - 1:
                 compiledString+=" and "
-        compiledString+=" limit "+limit+";"
+        compiledString+=" order by expid desc limit "+limit+";"
         #Copy/paste from above:
         allResults = db.engine.execute(compiledString).fetchall()
         for result in allResults:
@@ -233,10 +233,9 @@ def searchBar(searchTerms,limit = False,matchAll = False):
                     queryStr+=" or "+word+" like "
                 queryStr+='"%%'+term+'%%"'
                 firstValue = False
+            queryStr+=" order by expid desc"
             if limit:
-                queryStr+=" limit "+limit+";"
-            else:
-                queryStr+=";"
+                queryStr+=" limit "+limit
             resultItems.append(db.engine.execute(queryStr).fetchall())
         #Filter out duplicates:
         for query in resultItems:

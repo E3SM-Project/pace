@@ -13,7 +13,7 @@
 <div id="searchContent"><h4> Experiments </h4></div>
 <!--<input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" id="searchBar">-->
 {%if homePageStr!=""%}<p style="text-align:center;" id="homePageContent"><input class="form-control" id="homeSearchBar" style="font-size:1.5em;text-align:center;width:50%;margin-left:25%" placeholder="Search" onchange="searchObj.limit = 20;if(this.value!='') searchAndCheck(this.value,matchModeCheck.checked);"/>
-<input type="checkbox" id="matchModeCheck"/>Match Mode</p>{%endif%}
+<input type="checkbox" id="matchModeCheck" style="margin-right:4px"/>Match Mode</p>{%endif%}
 <p style="text-align:center">
 	<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>compare</button></a>
 	<a><button class="btn btn-primary btn-dark" id='searchViewBtn' disabled>View</button></a>
