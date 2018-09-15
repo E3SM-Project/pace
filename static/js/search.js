@@ -61,7 +61,7 @@ var searchObj = {
                     foundMore = true;
                 }
             });
-            checkMoreStr+="</div><button onclick='searchObj.moreClick(this.parentElement);' class='btn btn-dark' style='margin-top:3px'>More</button></div>"
+            checkMoreStr+="</div><button onclick='searchObj.moreClick(this.parentElement);' class='btn-sm btn-outline-dark' style='margin-top:3px'>More</button></div>"
             searchResult.innerHTML+=checkStr+(foundMore?checkMoreStr:"")+"</td>";
             searchBody.appendChild(searchResult);
         });
