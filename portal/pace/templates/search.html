@@ -11,8 +11,8 @@
 
 {% block content %}
 {%if homePageStr!=""%}
-<p style="text-align:center" id="homePageContent"><input class="form-control" id="homeSearchBar" style="font-size:1.5em;text-align:center;width:40%;margin-left:5%;display:inline-block;margin-right:5px" placeholder="Keyword" onchange="searchObj.limit = 20;if(this.value!='') searchAndCheck(this.value,matchModeCheck.checked);"/>
-<button class="btn btn-dark" style="height:3em" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button><br>
+<p style="text-align:center" id="homePageContent"><input class="form-control" id="homeSearchBar" style="font-size:1.5em;text-align:center;height:60px;width:40%;margin-left:5%;display:inline-block;margin-right:5px;margin-top:2px;" placeholder="Keyword" onchange="searchObj.limit = 20;if(this.value!='') searchAndCheck(this.value,matchModeCheck.checked);"/>
+<button class="btn-lg btn-info" style="height:3em;margin-top:2px;" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button><br>
 <input type="checkbox" id="matchModeCheck" style="margin-right:4px"/>Category Search</p>
 {%else%}
 <h4> Experiments </h4>
@@ -30,7 +30,8 @@
 </thead>
 <tbody id="searchBody"></tbody>
 </table>
-<p style="text-align:center"><button class="btn btn-dark" id="moreBtn" onclick="searchAndCheck()">More Experiments</button></p>
+<p style="text-align:right;"><button class="btn btn-dark" id="moreBtn" onclick="searchAndCheck()">More Exps</button></p>
+<br>
 {% endblock %}
 
 {% block bottomscripts %}
