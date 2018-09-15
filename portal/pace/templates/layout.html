@@ -30,12 +30,6 @@
       <li class="nav-item active">
       <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
       </li>
-      <!-- <li class="nav-item">
-       <a class="nav-link" href="{{ request.script_root }}/exps">Experiments</a> 
-       </li> 
-       <li class="nav-item"> 
-       <a class="nav-link" href="{{ request.script_root }}/exps2">Charts(alpha)</a> 
-       </li> -->
       <li class="nav-item dropdown">
       <a class="nav-link dropdown-toggle" href="{{ request.script_root }}/platforms" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Platforms</a>
       <div class="dropdown-menu" aria-labelledby="dropdown01" id="machineDropDown"></div>
@@ -52,11 +46,10 @@
   <main role="main" class="container">
     <div class="pace-main-content">
 	<br>
-    <h2> Performance Analytics for Climate Experiments (PACE)</h2>
-    <hr>
+    <center><h2> Performance Analytics for Climate Experiments (PACE)</h2></center>
+	<!-- <p style="border:1px solid darkgrey;border-radius:1px" /> -->
       {% block content %}
       {% endblock %}
-    <hr>
     </div>
 
   </main><!-- /.container -->

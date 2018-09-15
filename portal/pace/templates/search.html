@@ -11,14 +11,14 @@
 
 {% block content %}
 {%if homePageStr!=""%}
-<p style="text-align:center" id="homePageContent"><input class="form-control" id="homeSearchBar" style="font-size:1.5em;text-align:center;width:50%;margin-left:5%;display:inline-block;margin-right:5px" placeholder="Search" onchange="searchObj.limit = 20;if(this.value!='') searchAndCheck(this.value,matchModeCheck.checked);"/>
+<p style="text-align:center" id="homePageContent"><input class="form-control" id="homeSearchBar" style="font-size:1.5em;text-align:center;width:40%;margin-left:5%;display:inline-block;margin-right:5px" placeholder="Keyword" onchange="searchObj.limit = 20;if(this.value!='') searchAndCheck(this.value,matchModeCheck.checked);"/>
 <button class="btn btn-dark" style="height:3em" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button><br>
 <input type="checkbox" id="matchModeCheck" style="margin-right:4px"/>Category Search</p>
 {%else%}
 <h4> Experiments </h4>
 {%endif%}
 <p style="text-align:right">
-	<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>compare</button></a>
+	<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>Compare</button></a>
 	<a><button class="btn btn-primary btn-dark" id='searchViewBtn' disabled>View</button></a>
 </p>
 <!--style="border:1px solid lightgrey;border-radius:5px"-->
@@ -51,7 +51,7 @@ function searchAndCheck(sq = searchQuery,matchMode = false){
 
 {%if homePageStr !=""%}
 matchModeCheck.onclick = function(){
-	homeSearchBar.placeholder = (this.checked?"user:username machine:target_machine etc:etc":"Search");
+	homeSearchBar.placeholder = (this.checked?"user:name machine:platform etc:etc":"Keyword");
 	if(homeSearchBar.innerHTML.replace(" ","")!="")
 		searchAndCheck(homeSearchBar.value,matchModeCheck.checked);
 }
