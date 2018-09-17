@@ -258,18 +258,23 @@ def searchBar(searchTerms,limit = False,matchAll = False):
         queryResults = db.engine.execute("select rank from model_timing where expid = "+str(item["expid"])).fetchall()
         for result in queryResults:
             itemRanks.append(result.rank)
-        rankList.append([itemRanks,[]])
-        
+        rankList.append([itemRanks,[]])    
     return json.dumps([filteredItems,rankList])
 
-@app.route("/ajax/getMachines/")
-def getMachines():
-    machineQuery = db.engine.execute("select distinct machine from timingprofile").fetchall()
-    machineList = []
-    for machine in machineQuery:
-        machineList.append(machine.machine)
-    return json.dumps(machineList)
+#Get a specific list of elements from timingprofile. Only specific elements are allowed, so users cannot grab everything.
+@app.route("/ajax/getDistinct/<entry>")
+def getMachines(entry):
+    queryList = []
+    if entry in ["machine","user"]:
+        distQuery = db.engine.execute("select distinct "+entry+" from timingprofile").fetchall()
+        for element in distQuery:
+            queryList.append(element[entry])
+    return json.dumps(queryList)
 
 @app.route("/platforms/<platform>/")
-def platforms(platform):
+def platformsRedirect(platform):
     return searchPage(platform)
+
+@app.route("/users/<user>/")
+def usersRedirect(user):
+    return searchPage(user)

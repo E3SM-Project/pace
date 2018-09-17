@@ -13,7 +13,6 @@
                 background-repeat: no-repeat;
                 background-size: auto;
                 overflow: scroll;
-                resize:vertical;
             }
             #dataList{
                 overflow: scroll;
@@ -113,11 +112,6 @@
 	<script src="/static/js/modelTiming.js"></script>
 	<script src="/static/js/paceLoadScreen.js"></script>
 	<script>//Fire up the summary:
-    var expData = undefined;
-    var compare = undefined;
-    var threadList = undefined;
-    var onMtPage = true;
-    {{exp|safe}}
     /*$(document).ajaxError(()=>{
         if(expGetFunc.length > 0){
             alert("Could not find this experiment");
@@ -125,39 +119,44 @@
         }
     });*/
 	$(document).ready(()=>{
-            dataInfo.style.height = (window.innerHeight*.8)+"px";
-            dmObj.toggle(dmObj.checkCookies());
-            dmCheck.checked = dmObj.checkCookies();
-			animate();
-            if(expData!=undefined){
-                for(let i=0;i<expData.length;i++){
-                    if(i<expData.length-1)
-                        getExperiment(expData[i][0],expData[i][1],false);
-                    else{
-                        getExperiment(expData[i][0],expData[i][1],()=>{
-                        expDownloadDefault();
-                        if(threadList){
-                            threadList.forEach((element,index)=>{
-                                expList[index].currThread = element*1;
-                            });
-                        }
-                        if(threadList && !compare && threadList.length == expData.length){
-                            threadSelect.selectedIndex = threadList[threadList.length-1]*1;
-                            threadSelect.onchange();
-                        }
-                        if(compare){
-                            let resultList = [];
-                            expList.forEach( (element,index)=>{
-                                resultList.push([element,( (threadList!=undefined && threadList[index]!=undefined) ?threadList[index]*1:0)]);
-                            });
-                            comparisonMode.new(resultList);
-                            comparisonMode.start();
-                        }
-                    });
+        var expData = undefined;
+        var compare = undefined;
+        var threadList = undefined;
+        var onMtPage = true;
+        {{exp|safe}}
+        dataInfo.style.height = (window.innerHeight*.8)+"px";
+        dmObj.toggle(dmObj.checkCookies());
+        dmCheck.checked = dmObj.checkCookies();
+		animate();
+        if(expData!=undefined){
+            for(let i=0;i<expData.length;i++){
+                if(i<expData.length-1)
+                    getExperiment(expData[i][0],expData[i][1],false);
+                else{
+                    getExperiment(expData[i][0],expData[i][1],()=>{
+                    expDownloadDefault();
+                    if(threadList){
+                        threadList.forEach((element,index)=>{
+                            expList[index].currThread = element*1;
+                        });
                     }
+                    if(threadList && !compare && threadList.length == expData.length){
+                        threadSelect.selectedIndex = threadList[threadList.length-1]*1;
+                        threadSelect.onchange();
+                    }
+                    if(compare){
+                        let resultList = [];
+                        expList.forEach( (element,index)=>{
+                            resultList.push([element,( (threadList!=undefined && threadList[index]!=undefined) ?threadList[index]*1:0)]);
+                        });
+                        comparisonMode.new(resultList);
+                        comparisonMode.start();
+                    }
+                });
                 }
             }
-			else getExperiment(-1,"0000");
-            window.onresize();
-			});</script>
+        }
+		else getExperiment(-1,"0000");
+        window.onresize();
+	});</script>
 {% endblock %}
