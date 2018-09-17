@@ -49,9 +49,8 @@ var quickSearchObj = {
                 resultPage.onmouseup = this.searchMouseUp;
                 resultPage.onmousemove = this.searchMouseMove;
                 //resultPage.onmouseout = this.searchMouseOut;
-
                 resultPage.innerHTML+="<a><button id='searchCompareBtn' disabled>compare</button></a><a><button id='searchViewBtn' disabled>View</button></a>";
-                document.body.appendChild(resultPage);
+                quickSearchContainer.appendChild(resultPage);
             }
             else{
                 resultPage = document.getElementsByClassName("searchMenu")[0];
@@ -97,8 +96,8 @@ var quickSearchObj = {
                 quickSearchObj.mouseCoord[1] = evt.y;
             }
             if(quickSearchObj.searchCoord.length == 0){
-                quickSearchObj.searchCoord[0] = (quickSearchObj.mouseCoord[0] *.95);
-                quickSearchObj.searchCoord[1] = (quickSearchObj.mouseCoord[1] *.95);
+                quickSearchObj.searchCoord[0] = (quickSearchObj.mouseCoord[0] *.78);
+                quickSearchObj.searchCoord[1] = (quickSearchObj.mouseCoord[1] *.47);
             }
             quickSearchObj.searchCoord[0]-= (quickSearchObj.mouseCoord[0] - evt.x);
             quickSearchObj.searchCoord[1]-= (quickSearchObj.mouseCoord[1] - evt.y);
