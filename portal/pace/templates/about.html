@@ -5,21 +5,25 @@
 p,h2{
     text-align:center;
 }
+img{
+    width:25em;
+    height:auto;
+}
 </style>
 {%endblock%}
 {% block content %}
 <p>
 <img src="/static/img/paceLogo.svg"/></p>
 <h2>About</h2>
-<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+<p>The <a href="https://e3sm.org"><i>Energy Exascale Earth System Model</i> <b>(E3SM)</b></a> is a earth system model that utilizes advanced supercomputers to address problems of national interest.<br> <b>PACE</b> was designed to visualize E3SM's performance data with ease.</p>
 <h2>How It Works</h2>
 <p>
-    <img style="width:800px;height:auto" src="/static/img/workflow.png"/><br>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    <img src="/static/img/workflow.png"/><br>
+    Our server first receives the experiment through a client-side program. We use this to retreive basic information about the experiment, which is then moved to PACE'S database. When stored, it can be queried by date,user,machine, etc.
 </p>
 <p>
     <img src="/static/img/domConnection.svg"/><br>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    We also read the process tree, which was generated while the experiment ran. This is processed into a readble format suitable for display this data over our website (or any other potential applications). This data can be used for comparing other experiments on this website.
 </p>
 
 {% endblock %}
