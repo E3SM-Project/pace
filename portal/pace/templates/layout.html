@@ -32,7 +32,11 @@
       </li>
       <li class="nav-item dropdown">
       <a class="nav-link dropdown-toggle" href="{{ request.script_root }}/platforms" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Platforms</a>
-      <div class="dropdown-menu" aria-labelledby="dropdown01" id="machineDropDown"></div>
+      <div class="dropdown-menu" aria-labelledby="dropdown01" data-distinct-type="machine" data-url-Label="platforms"></div>
+      </li>
+      <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="{{ request.script_root }}/users" id="dropdown02" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Users</a>
+      <div class="dropdown-menu" aria-labelledby="dropdown02" data-distinct-type="user" data-url-Label="users"></div>
       </li>
       <a href="/about" class="nav-link">About</a>
     </ul>
@@ -83,12 +87,20 @@
     <!-- End of Statcounter Code -->
     <!--Create a list of machines to display in the platforms dropdown:-->
     <script>
-    $.get(detectRootUrl()+"ajax/getMachines/",data=>{
-      let machines = JSON.parse(data);
-      machines.forEach((element)=>{
-        machineDropDown.innerHTML+='<a class="dropdown-item" href="'+detectRootUrl()+'platforms/'+element+'/">'+element[0].toUpperCase()+element.substring(1)+'</a>';
-      });
-    });
+    //Get a list of categories for each dropdown menu:
+    {
+      let dropdownElements = $(".dropdown-menu");
+      for(let i=0;i<dropdownElements.length;i++){
+        if(dropdownElements[i].dataset.distinctType){
+          $.get(detectRootUrl()+"ajax/getDistinct/"+dropdownElements[i].dataset.distinctType,data=>{
+            let results = JSON.parse(data);
+            results.forEach((element)=>{
+              dropdownElements[i].innerHTML+='<a class="dropdown-item" href="'+detectRootUrl()+dropdownElements[i].dataset.urlLabel+'/'+element+'/">'+element[0].toUpperCase()+element.substring(1)+'</a>';
+            });
+          });
+        }
+      }
+    }
 
     function searchEvt(evt){
       if(evt)

@@ -9,6 +9,7 @@ var quickSearchObj = {
     mouseCoord:[],
     searchCoord:[],
     doComparison:false,
+    searchDataSelected:0,
     search:function(searchStr,limit = 20){
         console.log("HI SARAAAAT!");
         if(searchStr == ""){
@@ -129,6 +130,7 @@ var quickSearchObj = {
         }
         let foundStats = false;
         let foundRegular = false;
+        let rankCount = 0;
         //Check to see if anything can be compared or viewed:
         for(let i=0;i<this.rankData.length;i++){
             for(let j=0;j<this.rankData[i][0].length;j++){
@@ -137,6 +139,7 @@ var quickSearchObj = {
                     if(this.rankData[i][0][j] == "stats")
                         foundStats = true;
                     else foundRegular = true;
+                    rankCount++;
                 }
                 if(foundRegular && foundStats)
                     break;
@@ -144,17 +147,18 @@ var quickSearchObj = {
         }
         if(foundStats && foundRegular){
             searchCompareBtn.disabled = true;
-            searchCompareBtn.parentElement.href = "#";
         }
-        else if(foundStats || foundRegular)
-            searchCompareBtn.disabled = false;
+        else if(foundStats || foundRegular){
+            searchCompareBtn.disabled = rankCount > 1?false:true;
+            searchViewBtn.disabled = false;
+        }
+        else{
+            searchCompareBtn.disabled = true;
+            searchViewBtn.disabled = true;
+        }
 
-        //If we're on another page besides the modelTiming viewer, let's immediately create a clickable link in the buttons:
-        if(onMtPage){
-            searchViewBtn.onclick = ()=>{quickSearchObj.doAction()};
-            searchCompareBtn.onclick = ()=>{quickSearchObj.doAction(true)};
-        }
-        else this.doAction();
+        searchViewBtn.onclick = ()=>{quickSearchObj.doAction()};
+        searchCompareBtn.onclick = ()=>{quickSearchObj.doAction(true)};
     },
     doAction:function(compToggle = false){
         quickSearchObj.doComparison = compToggle;
@@ -163,9 +167,11 @@ var quickSearchObj = {
         animate();
         searchViewBtn.parentElement.href="#";
         searchCompareBtn.parentElement.href="#";
+        this.searchDataSelected = 0;
         for(let i=0;i<quickSearchObj.rankData.length;i++){
             for(let j=0;j<quickSearchObj.rankData[i][0].length;j++){
                 if(quickSearchObj.rankData[i][1][j]){
+                    this.searchDataSelected++;
                     getExperiment(quickSearchObj.searchData[i].expid,quickSearchObj.rankData[i][0][j],(i == quickSearchObj.lastRankIndex[0] && j == quickSearchObj.lastRankIndex[1])?quickSearchObj.postAction:false);
                 }
             }
@@ -173,12 +179,12 @@ var quickSearchObj = {
     },
     postAction:function(){
         expDownloadDefault();
+        compView = [];
         if(quickSearchObj.doComparison){
-            compList = [];
-            expList.forEach(element=>{
-                compList.push([element,0]);
-            });
-            comparisonMode.new(compList);
+            for(let i=expList.length-quickSearchObj.searchDataSelected;i<expList.length;i++){
+                compView.push([expList[i],expList[i].currThread]);
+            }
+            comparisonMode.new(compView);
             comparisonMode.start();
         }
     }
