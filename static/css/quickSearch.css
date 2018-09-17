@@ -1,8 +1,8 @@
 .searchBody{
     overflow:scroll;
     resize: both;
-    width:10em;
-    height:12em;
+    width:15.625em;
+    height:18em;
 }
 
 .searchItem{
@@ -14,6 +14,8 @@
     position:absolute;
     border-radius: 5px;
     background-color:white;
-    top:18%;
-    left:47%;
+    z-index: 1;
+}
+#quickSearchContainer{
+    display:inline-block;
 }
