@@ -113,9 +113,9 @@ def summaryQuery(expID,rank):
     resultNodes=""
     listIndex = 0
     if expID == "-1":
-        resultNodes = mt.parse("/pace/assets/static/model_timing.0000.new")
+        resultNodes = mt.parse("/pace/assets/static/samples/model_timing.0000.new")
     elif expID == "-2":
-        resultNodes = mt.parse("/pace/assets/static/model_timing_stats")
+        resultNodes = mt.parse("/pace/assets/static/samples/model_timing_stats")
     else:
         resultNodes = db.engine.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
     if rank == 'stats':

@@ -2,74 +2,10 @@
 
 {% block topscripts %}
 <title>PACE: Model Timing View</title>
-        <style>
-            #dataInfo{
-                border:.01in solid;
-                position: absolute;
-                left:20.5%;
-                width:78%;
-                background-image:url(/static/img/ornlLeaf.svg); 
-                background-position: center;
-                background-repeat: no-repeat;
-                background-size: auto;
-                overflow: scroll;
-            }
-            #dataList{
-                overflow: scroll;
-                width:20%;
-                position: absolute;
-                resize:vertical;
-                left:0px;
-            }
-            ul{
-                list-style-type: none;
-            }
-            #backButton{
-                position: absolute;
-                left:20.5%;
-        
-            }
-            #mtMain{
-                font-family: monospace;
-                margin-bottom:70%
-            }
-            .unused{
-                display: none;
-            }
-            #compareSelectDiv{
-                width:60%;
-                height:60%;
-                position:absolute;
-                top:20%;
-                left:20%;
-                box-shadow:0px 5px 5px gray;
-                background-color:white;
-                opacity:0;
-                display:none;
-                border-radius:10px;
-                font-family:arial;
-                text-align:center;
-                overflow:scroll;
-            }
-            .compareDiv{
-                width:10em;
-                height:7em;
-                display:inline-block;
-                margin-right:1em;
-                border:.1em solid gray;
-                border-radius:10px;
-            }
-            #nodeId{
-                font-family: monospace;
-                position:absolute;
-                background-color:lightgray;
-                border-radius:5px;
-            }
-            </style>
+<link rel="stylesheet" type="text/css" href="/static/css/modelTiming.css" />
 <!--Search bar CSS-->
 <link rel="stylesheet" type="text/css" href="/static/css/quickSearch.css" />
 {% endblock %}
-
 
 {% block content %}
 <!--Author: Zachary Mitchell
@@ -92,10 +28,12 @@
             </div>
             <div id="dataInfo"><div id="chartResizeContainer"><canvas id="chartTag"></canvas></div></div>
             <div id="dataList">
-            <select id="expSelect" onchange="switchExperiment()"></select>
-            <br>
-            <button id="summaryButton">Summary</button><div id="listContent"></div></div>
+                <select id="expSelect" onchange="switchExperiment()"></select>
+                <br>
+                <button id="summaryButton">Summary</button><div id="listContent"></div>
+            </div>
             <button id="backButton"><-Back</button>
+            <div id="zoomDiv"><button onclick="resizeChartVal=(resizeChartVal <=1?1:resizeChartVal-25);resizeChart(resizeChartVal)">-</button><button onclick="resizeChartVal+=25;resizeChart(resizeChartVal)">+</button></div>
         </div>
     <div id="compareSelectDiv">
     <h2>Select the threads you wish to compare.</h2><br>
