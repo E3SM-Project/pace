@@ -2,7 +2,7 @@ from __init__ import db
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
-
+from datetime import datetime
 
 class Timingprofile(db.Model):
 	expid = db.Column(db.Integer, primary_key=True)    
@@ -12,17 +12,17 @@ class Timingprofile(db.Model):
 	caseroot = db.Column(db.String(250),nullable=False)	
 	timeroot = db.Column(db.String(250),nullable=False)	
 	user = db.Column(db.String(25),nullable=False)
-	curr_date = db.Column(db.String(50),nullable=False)
+	curr_date = db.Column(db.DateTime, default=datetime.utcnow)
 	grid = db.Column(db.String(100),nullable=False)
 	compset = db.Column(db.String(100),nullable=False)
 	stop_option = db.Column(db.String(25),nullable=False)
 	stop_n = db.Column(db.String(25),nullable=False)        
-	run_length = db.Column(db.String(25), nullable=False)
+	run_length = db.Column(db.Integer, nullable=False)
 	total_pes_active = db.Column(db.Integer, nullable=False)
 	mpi_tasks_per_node = db.Column(db.Integer, nullable=False)
 	pe_count_for_cost_estimate = db.Column(db.Integer, nullable=False)
 	model_cost = db.Column(db.String(50), nullable=False)
-	model_throughput = db.Column(db.String(50), nullable=False)
+	model_throughput = db.Column(db.Float, nullable=False)
 	actual_ocn_init_wait_time = db.Column(db.String(25), nullable=False)
 
 class Pelayout(db.Model):

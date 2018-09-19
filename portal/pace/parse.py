@@ -15,176 +15,10 @@ import pymysql
 import modelTiming as mt
 import io
 
-def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
-    phraseIn = phraseIn.strip(filter)
-    #Destroy spaces by default:
-    phraseSplit = phraseIn.split(" ")
-    #print(phraseSplit)
-    total=[""]
-    currPhrase = 0
-    onWord = False
-    firstPhrase = True
-    for i in range(len(phraseSplit)):
-        if onWord or not phraseSplit[i] == "":
-            if not onWord:
-                onWord = True
-                #print("On word")
-                if not subGroup or not firstPhrase:
-                    total.append("")
-            firstPhrase = False
-            addWord = True
-            #Ignore newlines:
-            if phraseSplit[i]  == "":
-                #print("'"+phraseSplit[i] + "' | '" + phraseSplit[i+1]+"'")
-                onWord = False
-                addWord = False
-                #print("Off word")
-                if subGroup:
-                    currPhrase+=1
-            if addWord:
-                if not len(total[currPhrase]) == 0:
-                    total[currPhrase]+=" "
-                total[currPhrase]+=phraseSplit[i]
-    return total
-#Returns a list of items from the table. This is different because of how the data itself is structured. If "component" makes a good way to address these values, I'm open to making this return a dictionary.
-def tableParse(lineInput):
-    names=["component","comp_pes","root_pe","tasks","threads","instances","stride"]
-    resultList=[]
-    for item in lineInput:
-        splitValues = spaceConcat(item,True)
-        tableColumn={}
-        for i in range(len(names)):
-            #print "test: "+splitValues[i]
-            tableColumn[names[i]] = splitValues[i].strip("(")
-        resultList.append(tableColumn)
-    return resultList
-
-def insertExperiment(filename,db):
-	if filename.endswith('.gz'):
-		parseFile=gzip.open(filename,'rb')
-	else:
-		parseFile=open(filename,'rb')	
-	onetags=[]
-	twotags=[]
-	threetags=[]
-	fourtags=[]
-	timeProfileFlag=0
-	word=''
-	for line in parseFile:
-		if line!='\n':
-			if timeProfileFlag==0:		
-				word=line.split(None,3)
-				if word[0]=='Case':
-					onetags.append(word[2])
-				elif word[0]=='LID':
-					onetags.append(word[2])
-				elif word[0]=='Machine':
-					onetags.append(word[2])
-				elif word[0]=='Caseroot':
-					onetags.append(word[2])
-				elif word[0]=='Timeroot':
-					onetags.append(word[2])
-				elif word[0]=='User':
-					onetags.append(word[2])
-				elif word[0]=='Curr':
-					onetags.append(word[3])
-				elif word[0]=='grid':
-					onetags.append(word[2])
-				elif word[0]=='compset':
-					onetags.append(word[2])
-				elif word[0]=='stop_option':
-					onetags.append(word[2])
-					newWord=word[3].split(" ")
-					onetags.append(newWord[2])			
-				elif word[0]=='run_length':
-					newWord=word[3].split(" ")
-					onetags.append(word[2]+" "+newWord[0])
-					timeProfileFlag=1
-		
-			word=line.split(None,1)
-			#print(word[1])
-			if word[0]=='total':
-				newWord=word[1].split(":")
-				newWord1=newWord[1].split(" ")
-				threetags.append(newWord1[1])
-			elif word[0]=='mpi':
-				newWord=word[1].split(":")
-				newWord1=newWord[1].split(" ")
-				threetags.append(newWord1[1])
-			elif word[0]=='pe':
-				newWord=word[1].split(":")
-				newWord1=newWord[1].split(" ")
-				threetags.append(newWord1[1])
-			elif word[0]=='Model':
-				newWord=word[1].split(":")
-				newWord1=newWord[1].split()
-				threetags.append(newWord1[0]+" "+newWord1[1])
-			elif word[0]=='Actual':
-				newWord=word[1].split(":")
-				newWord1=newWord[1].split()
-				threetags.append(newWord1[0]+" "+newWord1[1])
-				timeProfileFlag+=1
-			elif timeProfileFlag>=2:
-				break
-	parseFile.close()
-
-	tablelist=[]
-	if filename.endswith('.gz'):
-		parseFile=gzip.open(filename,'rb')
-	else:
-		parseFile=open(filename,'rb')
-	lines=parseFile.readlines()
-	for i in range(16,25):
-		tablelist.append(lines[i])	
-
-	resultlist=tableParse(tablelist)
-	word=[]
-	for i in range(46,57):
-		word=lines[i].split()
-		fourtags.append(word[0])
-		fourtags.append(word[3])
-		fourtags.append(word[5])
-		fourtags.append(word[7])	
-
-	for i in range(9):
-		twotags.append(resultlist[i]['component'])
-		twotags.append(resultlist[i]['comp_pes'])
-		twotags.append(resultlist[i]['root_pe'])
-		twotags.append(resultlist[i]['tasks'])
-		twotags.append(resultlist[i]['threads'])
-		twotags.append(resultlist[i]['instances'])
-		twotags.append(resultlist[i]['stride'])
-		
-	parseFile.close()
-	
-
-	
-	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],curr_date=onetags[6],grid=onetags[7],compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5])
-	db.session.add(new_experiment)
-
-	# table has to have a same experiment id
-	
-	forexpid = Timingprofile.query.order_by(Timingprofile.expid.desc()).first()
-
-	#insert pelayout
-	i=0
-	while i < len(twotags):
-		new_pelayout = Pelayout(expid=forexpid.expid,component=twotags[i],comp_pes=twotags[i+1],root_pe=twotags[i+2],tasks=twotags[i+3],threads=twotags[i+4],instances=twotags[i+5],stride=twotags[i+6])
-		db.session.add(new_pelayout)	
-		i=i+7
-	#insert run time
-	i=0
-	while i < len(fourtags):
-		new_runtime = Runtime(expid=forexpid.expid,component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3])
-		db.session.add(new_runtime)
-		i=i+4
-	
-	
-	return (onetags[1],forexpid.expid)
-
 def parseData():
 	# start main
 	#first unzip uploaded file
+	removeroot='/pace/prod/portal/upload/'
 	try:	
 		fpath='/pace/prod/portal/upload'
 		zip_ref=zipfile.ZipFile('/pace/prod/portal/upload/experiments.zip','r')
@@ -235,25 +69,214 @@ def parseData():
 		exptag.append(a)
 		print("-----------------Stored-in-Database-------------------")
 	db.session.commit()
-
-	newroot='/pace/assets/static/data/'
+	
 	# zip successfull experiments into folder experiments
+	zipFolder(exptag,fpath)
+	# remove data
+	removeFolder(removeroot)
+	
+
+	return('File Upload and Stored in Database Success')
+
+
+def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
+    phraseIn = phraseIn.strip(filter)
+    #Destroy spaces by default:
+    phraseSplit = phraseIn.split(" ")
+    #print(phraseSplit)
+    total=[""]
+    currPhrase = 0
+    onWord = False
+    firstPhrase = True
+    for i in range(len(phraseSplit)):
+        if onWord or not phraseSplit[i] == "":
+            if not onWord:
+                onWord = True
+                #print("On word")
+                if not subGroup or not firstPhrase:
+                    total.append("")
+            firstPhrase = False
+            addWord = True
+            #Ignore newlines:
+            if phraseSplit[i]  == "":
+                #print("'"+phraseSplit[i] + "' | '" + phraseSplit[i+1]+"'")
+                onWord = False
+                addWord = False
+                #print("Off word")
+                if subGroup:
+                    currPhrase+=1
+            if addWord:
+                if not len(total[currPhrase]) == 0:
+                    total[currPhrase]+=" "
+                total[currPhrase]+=phraseSplit[i]
+    return total
+#Returns a list of items from the table. This is different because of how the data itself is structured. If "component" makes a good way to address these values, I'm open to making this return a dictionary.
+def tableParse(lineInput):
+    names=["component","comp_pes","root_pe","tasks","threads","instances","stride"]
+    resultList=[]
+    for item in lineInput:
+        splitValues = spaceConcat(item,True)
+        tableColumn={}
+        for i in range(len(names)):
+            #print "test: "+splitValues[i]
+            tableColumn[names[i]] = splitValues[i].strip("(")
+        resultList.append(tableColumn)
+    return resultList
+
+def changeDateTime(c_date):
+	from time import strptime
+	from datetime import datetime
+	c_date = 'Sat Sep 15 4:44:01 2018'
+	thatdate = c_date.split(' ')
+	hhmmss=thatdate[3]
+	mm=strptime(thatdate[1],'%b').tm_mon
+	yy=thatdate[4]
+	dd=thatdate[2]
+	dtime=yy+'-'+str(mm)+'-'+dd+' '+hhmmss
+	return(dtime)
+
+def insertExperiment(filename,db):
+	if filename.endswith('.gz'):
+		parseFile=gzip.open(filename,'rb')
+	else:
+		parseFile=open(filename,'rb')	
+	onetags=[]
+	twotags=[]
+	threetags=[]
+	fourtags=[]
+	timeProfileFlag=0
+	word=''
+	for line in parseFile:
+		if line!='\n':
+			if timeProfileFlag==0:		
+				word=line.split(None,3)
+				if word[0]=='Case':
+					onetags.append(word[2])
+				elif word[0]=='LID':
+					onetags.append(word[2])
+				elif word[0]=='Machine':
+					onetags.append(word[2])
+				elif word[0]=='Caseroot':
+					onetags.append(word[2])
+				elif word[0]=='Timeroot':
+					onetags.append(word[2])
+				elif word[0]=='User':
+					onetags.append(word[2])
+				elif word[0]=='Curr':
+					onetags.append(word[3])
+				elif word[0]=='grid':
+					onetags.append(word[2])
+				elif word[0]=='compset':
+					onetags.append(word[2])
+				elif word[0]=='stop_option':
+					onetags.append(word[2])
+					newWord=word[3].split(" ")
+					onetags.append(newWord[2])			
+				elif word[0]=='run_length':
+					newWord=word[3].split(" ")
+					onetags.append(word[2])
+					timeProfileFlag=1
+		
+			word=line.split(None,1)
+			#print(word[1])
+			if word[0]=='total':
+				newWord=word[1].split(":")
+				newWord1=newWord[1].split(" ")
+				threetags.append(newWord1[1])
+			elif word[0]=='mpi':
+				newWord=word[1].split(":")
+				newWord1=newWord[1].split(" ")
+				threetags.append(newWord1[1])
+			elif word[0]=='pe':
+				newWord=word[1].split(":")
+				newWord1=newWord[1].split(" ")
+				threetags.append(newWord1[1])
+			elif word[0]=='Model':
+				newWord=word[1].split(":")
+				newWord1=newWord[1].split()
+				threetags.append(newWord1[0])
+			elif word[0]=='Actual':
+				newWord=word[1].split(":")
+				newWord1=newWord[1].split()
+				threetags.append(newWord1[0]+" "+newWord1[1])
+				timeProfileFlag+=1
+			elif timeProfileFlag>=2:
+				break
+	parseFile.close()
+
+	tablelist=[]
+	if filename.endswith('.gz'):
+		parseFile=gzip.open(filename,'rb')
+	else:
+		parseFile=open(filename,'rb')
+	lines=parseFile.readlines()
+	for i in range(16,25):
+		tablelist.append(lines[i])	
+
+	resultlist=tableParse(tablelist)
+	word=[]
+	for i in range(46,57):
+		word=lines[i].split()
+		fourtags.append(word[0])
+		fourtags.append(word[3])
+		fourtags.append(word[5])
+		fourtags.append(word[7])	
+
+	for i in range(9):
+		twotags.append(resultlist[i]['component'])
+		twotags.append(resultlist[i]['comp_pes'])
+		twotags.append(resultlist[i]['root_pe'])
+		twotags.append(resultlist[i]['tasks'])
+		twotags.append(resultlist[i]['threads'])
+		twotags.append(resultlist[i]['instances'])
+		twotags.append(resultlist[i]['stride'])
+		
+	parseFile.close()
+	
+
+	
+	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],curr_date=changeDateTime(onetags[6]),grid=onetags[7],compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5])
+	db.session.add(new_experiment)
+
+	# table has to have a same experiment id
+	
+	forexpid = Timingprofile.query.order_by(Timingprofile.expid.desc()).first()
+
+	#insert pelayout
+	i=0
+	while i < len(twotags):
+		new_pelayout = Pelayout(expid=forexpid.expid,component=twotags[i],comp_pes=twotags[i+1],root_pe=twotags[i+2],tasks=twotags[i+3],threads=twotags[i+4],instances=twotags[i+5],stride=twotags[i+6])
+		db.session.add(new_pelayout)	
+		i=i+7
+	#insert run time
+	i=0
+	while i < len(fourtags):
+		new_runtime = Runtime(expid=forexpid.expid,component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3])
+		db.session.add(new_runtime)
+		i=i+4
+	
+	
+	return (onetags[1],forexpid.expid)
+
+
+def removeFolder(removeroot):
+	try:
+		shutil.rmtree(os.path.join(removeroot,'experiments'))
+		os.remove(os.path.join(removeroot,'experiments.zip'))
+	except OSError as e:
+		return("Error: %s - %s." % (e.filename, e.strerror))
+	
+	return
+
+def zipFolder(exptag,fpath):
+	newroot='/pace/assets/static/data/'	
 	for i in range(len(exptag)):
 		root=fpath
 		for path, subdirs, files in os.walk(root):
 			for name in subdirs:
 				if name.startswith(exptag[i]):
 					shutil.make_archive(os.path.join(newroot,'experiment-'+exptag[i]),'zip',os.path.join(path, name))
-
-	removeroot='/pace/prod/portal/upload/'
-	# remove data
-	try:
-		shutil.rmtree(os.path.join(removeroot,'experiments'))
-		os.remove(os.path.join(removeroot,'experiments.zip'))
-	except OSError as e:
-		return("Error: %s - %s." % (e.filename, e.strerror))
-
-	return('File Upload and Stored in Database Success')
+	return
 
 def insertTiming(mtFile,expID,db):
 	sourceFile = tarfile.open(mtFile)
