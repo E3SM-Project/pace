@@ -2,7 +2,7 @@
 {% block topscripts %}
 <title>PACE - About</title>
 <style>
-p,h2{
+p,h2,h3{
     text-align:center;
 }
 img{
@@ -15,15 +15,20 @@ img{
 <p>
 <img src="/static/img/paceLogo.svg"/></p>
 <h2>About</h2>
-<p>The <a href="https://e3sm.org"><i>Energy Exascale Earth System Model</i> <b>(E3SM)</b></a> is a earth system model that utilizes advanced supercomputers to address problems of national interest.<br> <b>PACE</b> was designed to visualize E3SM's performance data with ease.</p>
-<h2>How It Works</h2>
+<p>The <a href="https://e3sm.org"><i>Energy Exascale Earth System Model</i> <b>(E3SM)</b></a> is a high-resolution coupled Earth system model that is designed to address energy-related science challenges
+while effficiently utilizing Department of Energy (DOE) supercomputers.
+<br> <b>PACE</b> enables climate scientists to view executive summary of E3SM experiments' performance and interactively deep-dive as desired.
+</p>
+<h2> Architecture </h2>
 <p>
     <img src="/static/img/workflow.png"/><br>
-    Our server first receives the experiment through a client-side program. We use this to retreive basic information about the experiment, which is then moved to PACE'S database. When stored, it can be queried by date,user,machine, etc.
+    Domain or computer scientists export experiment data from a computational platform (e.g., Summit)  to PACE using an upload tool. PACE processes and ingests that information into the backend database. Finally, an user can interactively explore the performance data through the web portal. 
 </p>
+<h3> Visualization Pipeline </h3>
 <p>
     <img src="/static/img/domConnection.svg"/><br>
-    We also read the process tree, which was generated while the experiment ran. This is processed into a readble format suitable for display this data over our website (or any other potential applications). This data can be used for comparing other experiments on this website.
+    Upon selection of a specific experiment, PACE reads the detailed timing profile to generate the process tree in a format suitable for visualization via the web portal. 
 </p>
+<br>
 
 {% endblock %}
