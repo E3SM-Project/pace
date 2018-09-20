@@ -65,9 +65,10 @@ def parseData():
 	exptag=[]
 	for i in range(len(allfile)):
 		a,b=insertExperiment(allfile[i],db)
-		insertTiming(timingfile[i],b,db)	
-		exptag.append(a)
-		print("-----------------Stored-in-Database-------------------")
+		if a is not 'duplicate':
+			insertTiming(timingfile[i],b,db)	
+			exptag.append(a)
+			print("-----------------Stored-in-Database-------------------")
 	db.session.commit()
 	
 	# zip successfull experiments into folder experiments
@@ -126,7 +127,6 @@ def tableParse(lineInput):
 def changeDateTime(c_date):
 	from time import strptime
 	from datetime import datetime
-	c_date = 'Sat Sep 15 4:44:01 2018'
 	thatdate = c_date.split(' ')
 	hhmmss=thatdate[3]
 	mm=strptime(thatdate[1],'%b').tm_mon
@@ -134,6 +134,13 @@ def changeDateTime(c_date):
 	dd=thatdate[2]
 	dtime=yy+'-'+str(mm)+'-'+dd+' '+hhmmss
 	return(dtime)
+
+def checkDuplicateExp(ecase,elid,euser):
+	flag=Timingprofile.query.filter_by(case=ecase,lid=elid,user=euser).first()
+	if flag is None:
+		return(False)
+	else:
+		return(True)
 
 def insertExperiment(filename,db):
 	if filename.endswith('.gz'):
@@ -145,6 +152,7 @@ def insertExperiment(filename,db):
 	threetags=[]
 	fourtags=[]
 	timeProfileFlag=0
+	duplicateFlag=False
 	word=''
 	for line in parseFile:
 		if line!='\n':
@@ -176,7 +184,7 @@ def insertExperiment(filename,db):
 					newWord=word[3].split(" ")
 					onetags.append(word[2])
 					timeProfileFlag=1
-		
+			
 			word=line.split(None,1)
 			#print(word[1])
 			if word[0]=='total':
@@ -203,7 +211,9 @@ def insertExperiment(filename,db):
 			elif timeProfileFlag>=2:
 				break
 	parseFile.close()
-
+	duplicateFlag = checkDuplicateExp(onetags[0],onetags[1],onetags[5])
+	if duplicateFlag is True:
+		return ('duplicate',0)
 	tablelist=[]
 	if filename.endswith('.gz'):
 		parseFile=gzip.open(filename,'rb')

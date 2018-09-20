@@ -13,6 +13,7 @@ class Timingprofile(db.Model):
 	timeroot = db.Column(db.String(250),nullable=False)	
 	user = db.Column(db.String(25),nullable=False)
 	curr_date = db.Column(db.DateTime, default=datetime.utcnow)
+	#upload_date = db.Column(db.DateTime, default=datetime.utcnow)
 	grid = db.Column(db.String(100),nullable=False)
 	compset = db.Column(db.String(100),nullable=False)
 	stop_option = db.Column(db.String(25),nullable=False)
