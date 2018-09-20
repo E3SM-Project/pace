@@ -288,7 +288,7 @@ def searchPrediction(keyword):
     columnNames = ["user","machine","expid"]
     resultWords = []
     for column in columnNames:
-        distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '"+keyword+"%%' limit 20").fetchall()
+        distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '%%"+keyword+"%%' limit 20").fetchall()
         for element in distQuery:
             resultWords.append(element[column])
     return json.dumps(resultWords)
