@@ -105,7 +105,7 @@ def parseNode(lineInput,currLine=0,parent=None):
     elements=nameSearch[len(nameSearch)-1].split(" ")
     valueCount=0
     for wordCheck in elements:
-        word = wordCheck.strip("()")
+        word = wordCheck.strip("()\n")
         if word not in ["","\n"]:
             if word not in ["-","y"]:
                 resultNode.values[valueList[vlIndex][valueCount]] = float(word.strip(')\n')) #The logic gate above fails to catch parenthesis with newlines, so this is here XP

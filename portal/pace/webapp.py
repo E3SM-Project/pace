@@ -263,10 +263,10 @@ def searchBar(searchTerms,limit = False,matchAll = False):
 
 #Get a specific list of elements from timingprofile. Only specific elements are allowed, so users cannot grab everything.
 @app.route("/ajax/getDistinct/<entry>")
-def getMachines(entry):
+def getDistinct(entry):
     queryList = []
     if entry in ["machine","user"]:
-        distQuery = db.engine.execute("select distinct "+entry+" from timingprofile").fetchall()
+        distQuery = db.engine.execute("select distinct "+entry+" from timingprofile order by "+entry).fetchall()
         for element in distQuery:
             queryList.append(element[entry])
     return json.dumps(queryList)
@@ -278,3 +278,17 @@ def platformsRedirect(platform):
 @app.route("/users/<user>/")
 def usersRedirect(user):
     return searchPage(user)
+
+#This is designed for the search bar on the website. It predicts what a user may be looking for based on where the dev specifies to search.
+@app.route("/ajax/similarDistinct/<keyword>")
+def searchPrediction(keyword):
+    #The keyword is designed to be a single word without any potential database loopholes:
+    keyword = keyword.replace("\\c","").replace(";","").replace(" ","")
+    #Grab elements based on these columns:
+    columnNames = ["user","machine","expid"]
+    resultWords = []
+    for column in columnNames:
+        distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '"+keyword+"%%' limit 20").fetchall()
+        for element in distQuery:
+            resultWords.append(element[column])
+    return json.dumps(resultWords)

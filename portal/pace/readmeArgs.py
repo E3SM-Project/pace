@@ -8,12 +8,16 @@ def parse(fileIn):
     if type(fileIn) == types.StringType:
         commandLine = open(fileIn).readline()
     else:
-        commandLine = fileIn
+        commandLine = fileIn.readline()
     cmdArgs = commandLine.split(": ",1)[1].strip("./\n").split(" ")
     resultElement["name"] = cmdArgs[0]
     for i in range(len(cmdArgs)):
         if cmdArgs[i][0] == "-":
-            argument = cmdArgs[i].strip("-")
-            resultElement[argument] = cmdArgs[i+1]
+            if "=" in cmdArgs[i]:
+                argumentStr = cmdArgs[i].strip("-").split("=")
+                resultElement[argumentStr[0]] = argumentStr[1]
+            else:
+                argument = cmdArgs[i].strip("-")
+                resultElement[argument] = cmdArgs[i+1]
     resultElement["date"] = commandLine.split(": ",1)[0].strip(":")
     return resultElement
