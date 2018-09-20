@@ -1,10 +1,11 @@
 from __init__ import db
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.dialects.mysql import MEDIUMTEXT
+from sqlalchemy.dialects.mysql import MEDIUMTEXT, INTEGER
 from datetime import datetime
 
 class Timingprofile(db.Model):
+	#expid = db.Column(INTEGER(unsigned=True), primary_key=True) 
 	expid = db.Column(db.Integer, primary_key=True)    
 	case = db.Column(db.String(100),nullable=False)
 	lid = db.Column(db.String(50), nullable=False)
