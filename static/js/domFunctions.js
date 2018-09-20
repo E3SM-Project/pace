@@ -51,9 +51,15 @@ window.onhashchange = function(event = undefined){
 //predictive search + quick search functionality:
 quickSearchPredict = new predictiveSearch.element(quickSearchBar,"qsb");
 quickSearchBar.onkeydown = evt=>{
-    if(evt.key == "Enter") quickSearchObj.search(quickSearchBar.value);
     quickSearchPredict.keydownListener(evt);
+    if(evt.key == "Enter" && quickSearchPredict.allowEnter) quickSearchObj.search(quickSearchBar.value);
 };
+quickSearchBar.onkeyup = evt=>{
+    quickSearchPredict.keyupListener(evt);
+    if(quickSearchBar.value!="")
+        $.get(detectRootUrl()+"ajax/similarDistinct/"+quickSearchPredict.inputWords[quickSearchPredict.wordIndex],data=>quickSearchPredict.refreshKeywords(JSON.parse(data)));
+}
+quickSearchBar.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("qsb"),150);
 
 var chartSettings = {
     type: 'horizontalBar',
