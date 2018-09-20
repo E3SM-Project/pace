@@ -72,11 +72,6 @@ var quickSearchObj = {
         });
         }
     },
-    //Tames the beast known as bootstrap:
-    listenerStop:function(evt){
-        evt.preventDefault();
-        quickSearchObj.search(quickSearchBar.value);
-    },
     //functions to help it detect if resultPage is being dragged:
     searchMouseDown:function(){
         quickSearchObj.click = true;
@@ -188,5 +183,3 @@ var quickSearchObj = {
         }
     }
 }
-//onchange is strange when bootstrap is involved, so here's an elaborate keydown instead :P
-quickSearchBar.onkeydown = evt=>{if(evt.key == "Enter") quickSearchObj.listenerStop(evt);};

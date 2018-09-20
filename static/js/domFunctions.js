@@ -48,6 +48,12 @@ window.onhashchange = function(event = undefined){
     if(document.getElementById(clickID)!=undefined && okToClick)
         document.getElementById(clickID).click();
 };
+//predictive search + quick search functionality:
+quickSearchPredict = new predictiveSearch.element(quickSearchBar,"qsb");
+quickSearchBar.onkeydown = evt=>{
+    if(evt.key == "Enter") quickSearchObj.search(quickSearchBar.value);
+    quickSearchPredict.keydownListener(evt);
+};
 
 var chartSettings = {
     type: 'horizontalBar',
