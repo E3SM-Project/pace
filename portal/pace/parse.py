@@ -206,7 +206,7 @@ def insertExperiment(filename,db):
 			elif word[0]=='Actual':
 				newWord=word[1].split(":")
 				newWord1=newWord[1].split()
-				threetags.append(newWord1[0]+" "+newWord1[1])
+				threetags.append(newWord1[0])
 				timeProfileFlag+=1
 			elif timeProfileFlag>=2:
 				break
@@ -237,7 +237,9 @@ def insertExperiment(filename,db):
 		twotags.append(resultlist[i]['comp_pes'])
 		twotags.append(resultlist[i]['root_pe'])
 		twotags.append(resultlist[i]['tasks'])
-		twotags.append(resultlist[i]['threads'])
+		tmpthread=resultlist[i]['threads']
+		change=tmpthread.split(" ")
+		twotags.append(change[1])
 		twotags.append(resultlist[i]['instances'])
 		twotags.append(resultlist[i]['stride'])
 		
