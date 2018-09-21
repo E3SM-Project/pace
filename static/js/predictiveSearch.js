@@ -94,9 +94,12 @@ var predictiveSearch = {
         }
         this.applyText = function(){
             //Re-create the user's string based on user position:
-            this.inputWords[this.wordIndex] = this.ptmValues[this.highlightIndex];
-            this.targetIn.value = this.inputWords.join(" ");
-            this.targetIn.focus();
+            //Not sure why this would ever happen, but the if-statement is here just in case...
+            if(this.ptmValues.length >0){
+                this.inputWords[this.wordIndex] = this.ptmValues[this.highlightIndex];
+                this.targetIn.value = this.inputWords.join(" ");
+                this.targetIn.focus();
+            }
         }
         predictiveSearch.pool[id] = this;
     },
