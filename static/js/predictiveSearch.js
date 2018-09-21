@@ -25,27 +25,33 @@ var predictiveSearch = {
         this.keydownListener = evt=>{
             if(this.targetIn.value == "")
                 this.pTextMenu.style.display="none";
-            if(evt.key == "ArrowDown" || evt.key == "ArrowUp" || (evt.key == "Enter" && !this.allowEnter) ){
+
+            if(evt.key == "ArrowDown" || evt.key == "ArrowUp"|| evt.key == "Tab" || (evt.key == "Enter" && !this.allowEnter) ){
                 evt.preventDefault();
             }
-            if(evt.key == "Escape" || evt.key == "Enter" || evt.key == " " || evt.key == "Tab"){
-                this.pTextMenu.style.display="none";
-                if(evt.key == "Tab" && this.highlightIndex === undefined)
-                    this.highlightIndex = 0;
-                if(evt.key!=" " && evt.key!="Escape" && this.targetIn.value!=""){
+            //This didn't look organized as a regular if statement XP
+            //Apply the predictive text depending on your key, also remove the searchDiv:
+            switch(evt.key){
+                case "Tab":
+                    if(this.highlightIndex === undefined)
+                        this.highlightIndex = 0;
+                case "Enter":
+                    if(this.targetIn.value!="")
                     this.applyText();
                     this.allowEnter = true;
-                }
+                case "Escape":
+                case " ":
+                this.pTextMenu.style.display="none";
             }
-            else if( (evt.key == "ArrowDown" || evt.key == "ArrowUp") && this.pTextMenu.style.display!="none" && this.ptmValues.length > 0){
-                    this.allowEnter = false;
-                    this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "";
-                    this.highlightIndex = (evt.key == "ArrowDown"? this.highlightIndex+1:this.highlightIndex-1);
-                    if(this.highlightIndex == this.ptmValues.length)
-                        this.highlightIndex--;
-                    else if(this.highlightIndex < 0)
-                        this.highlightIndex++;
-                    this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "gray";
+            if( (evt.key == "ArrowDown" || evt.key == "ArrowUp") && this.pTextMenu.style.display!="none" && this.ptmValues.length > 0){
+                this.allowEnter = false;
+                this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "";
+                this.highlightIndex = (evt.key == "ArrowDown"? this.highlightIndex+1:this.highlightIndex-1);
+                if(this.highlightIndex == this.ptmValues.length)
+                    this.highlightIndex--;
+                else if(this.highlightIndex < 0)
+                    this.highlightIndex++;
+                this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "gray";
             }
         };
         this.keyupListener = evt=>{
