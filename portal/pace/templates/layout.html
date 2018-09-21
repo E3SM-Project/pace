@@ -44,7 +44,7 @@
       <a href="/about" class="nav-link">About</a>
     </ul>
     <form class="form-inline my-2 my-lg-0">
-      <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" id="searchBar">
+      <span><input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" id="searchBar"></span>
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="searchButton">Search</button>
     </form>
     </div>
@@ -119,6 +119,20 @@
     searchButton.onclick = evt=>{
       searchEvt(evt);
     }
+
+    //predictive search + quick search functionality:
+    searchPredict = new predictiveSearch.element(searchBar,"sb");
+    searchBar.onkeydown = evt=>{
+    if(evt.key == "Enter" && searchPredict.allowEnter) searchEvt(evt);;
+      searchPredict.keydownListener(evt);
+    };
+    searchBar.onkeyup = evt=>{
+      searchPredict.keyupListener(evt);
+      if(searchBar.value!="")
+          $.get(detectRootUrl()+"ajax/similarDistinct/"+searchPredict.inputWords[searchPredict.wordIndex],data=>searchPredict.refreshKeywords(JSON.parse(data)));
+    }
+    searchBar.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("sb"),150);
+    searchPredict.pTextMenu.style.zIndex = 1001;
     </script>
   <footer class="footer">
     <div class="container">
