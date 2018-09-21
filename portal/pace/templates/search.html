@@ -62,11 +62,11 @@ searchButton.style.display = "none";
 //predictive search + home search functionality:
 homeSearchPredict = new predictiveSearch.element(homeSearchBar,"hsb");
 homeSearchBar.onkeydown = evt=>{
-  homeSearchPredict.keydownListener(evt);
-if(evt.key == "Enter" && homeSearchPredict.allowEnter){
-	searchObj.limit = 20;
-	if(homeSearchBar.value!='') searchAndCheck(homeSearchBar.value,matchModeCheck.checked);
-}
+	if(evt.key == "Enter" && homeSearchPredict.allowEnter){
+		searchObj.limit = 20;
+		if(homeSearchBar.value!='') searchAndCheck(homeSearchBar.value,matchModeCheck.checked);
+	}
+	homeSearchPredict.keydownListener(evt);
 };
 homeSearchBar.onkeyup = evt=>{
   homeSearchPredict.keyupListener(evt);
