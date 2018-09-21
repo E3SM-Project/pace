@@ -279,6 +279,17 @@ def platformsRedirect(platform):
 def usersRedirect(user):
     return searchPage(user)
 
+#A function to compare two things in alphabetical order. If word1 should be earlier alphabetized, return true.
+def charCompare(word1,word2):
+    maxCount = None
+    if len(word1) > len(word2):
+        maxCount = len(word2)
+    else:
+        maxCount = len(word1)
+    for i in range(maxCount):
+        if word1[i] < word2[i]:
+            return True
+    return False
 #This is designed for the search bar on the website. It predicts what a user may be looking for based on where the dev specifies to search.
 @app.route("/ajax/similarDistinct/<keyword>")
 def searchPrediction(keyword):
@@ -291,4 +302,15 @@ def searchPrediction(keyword):
         distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '%%"+keyword+"%%' limit 20").fetchall()
         for element in distQuery:
             resultWords.append(element[column])
+    #Sort them by similar name:
+    for i in range(len(resultWords)):
+        if keyword[0] == resultWords[i][0]:
+            for j in range(len(resultWords)):
+                print(j)
+                # or charCompare(resultWords[i],resultWords[j]
+                if not keyword[0] == resultWords[j][0]:
+                    temp = resultWords[j]
+                    resultWords[j] = resultWords[i]
+                    resultWords[i]=temp
+                    break
     return json.dumps(resultWords)
