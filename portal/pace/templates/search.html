@@ -11,7 +11,7 @@
 
 {% block content %}
 {%if homePageStr!=""%}
-<p style="text-align:center" id="homePageContent"><input class="form-control" id="homeSearchBar" style="font-size:1.5em;text-align:center;height:60px;width:40%;margin-left:5%;display:inline-block;margin-right:5px;margin-top:2px;" placeholder="Keyword" onchange="searchObj.limit = 20;if(this.value!='') searchAndCheck(this.value,matchModeCheck.checked);"/>
+<p style="text-align:center" id="homePageContent"><span><input class="form-control" id="homeSearchBar" style="font-size:1.5em;text-align:center;height:60px;width:40%;margin-left:5%;display:inline-block;margin-right:5px;margin-top:2px;" placeholder="Keyword" onchange="searchObj.limit = 20;if(this.value!='') searchAndCheck(this.value,matchModeCheck.checked);"/></span>
 <button class="btn-lg btn-info" style="height:3em;margin-top:2px;" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button><br>
 <input type="checkbox" id="matchModeCheck" style="margin-right:4px"/>Category Search</p>
 {%else%}
@@ -58,6 +58,20 @@ matchModeCheck.onclick = function(){
 }
 searchBar.style.display = "none";
 searchButton.style.display = "none";
+
+//predictive search + home search functionality:
+homeSearchPredict = new predictiveSearch.element(homeSearchBar,"hsb");
+homeSearchBar.onkeydown = evt=>{
+if(evt.key == "Enter" && homeSearchPredict.allowEnter) searchEvt(evt);;
+  homeSearchPredict.keydownListener(evt);
+};
+homeSearchBar.onkeyup = evt=>{
+  homeSearchPredict.keyupListener(evt);
+  if(homeSearchBar.value!="")
+      $.get(detectRootUrl()+"ajax/similarDistinct/"+homeSearchPredict.inputWords[homeSearchPredict.wordIndex],data=>homeSearchPredict.refreshKeywords(JSON.parse(data)));
+}
+homeSearchBar.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("hsb"),150);
+homeSearchPredict.pTextMenu.style.left="40%";
 {%endif%}
 
 $(document).ready(function(){
