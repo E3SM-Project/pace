@@ -36,8 +36,8 @@ var predictiveSearch = {
                     if(this.highlightIndex === undefined)
                         this.highlightIndex = 0;
                 case "Enter":
-                    if(this.targetIn.value!="")
-                    this.applyText();
+                    if(this.targetIn.value!="" && this.pTextMenu.style.display!="none")
+                        this.applyText();
                     this.allowEnter = true;
                 case "Escape":
                 case " ":
@@ -70,8 +70,8 @@ var predictiveSearch = {
             if(this.targetIn.value[totalStr] == " "){
                 this.wordIndex++;
             }
-            console.log("word: "+this.inputWords[this.wordIndex]);
-            console.log(this.targetIn.selectionStart);
+            // console.log("word: "+this.inputWords[this.wordIndex]);
+            // console.log(this.targetIn.selectionStart);
         }
         this.refreshKeywords = wordArray=>{
             this.ptmValues = wordArray;
