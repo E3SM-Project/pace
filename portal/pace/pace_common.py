@@ -105,7 +105,7 @@ def initDatabase():
 		mydb = 'pace'
 		myhost = 'localhost'
 
-	dburl = 'mysql+pymysql://' + myuser + ':' + mypwd + '@' + myhost +  '/' + mydb
+	dburl = 'mysql+pymysql://' + myuser + ':' + mypwd + '@' + myhost +  '/' + 'gtest'
 
 	# Ref: https://docs.sqlalchemy.org/en/latest/core/pooling.html
 	
