@@ -18,10 +18,10 @@ import io
 def parseData():
 	# start main
 	#first unzip uploaded file
-	removeroot='/pace/dev1/portal/upload/'
+	tmp_updir='/pace/prod/portal/upload/'
 	try:	
-		fpath='/pace/dev1/portal/upload'
-		zip_ref=zipfile.ZipFile('/pace/dev1/portal/upload/experiments.zip','r')
+		fpath=tmp_updir
+		zip_ref=zipfile.ZipFile(tmp_updir+'experiments.zip','r')
 		zip_ref.extractall(fpath)
 		zip_ref.close
 	
@@ -77,7 +77,7 @@ def parseData():
 	# zip successfull experiments into folder experiments
 	zipFolder(exptag,fpath)
 	# remove data
-	removeFolder(removeroot)
+	removeFolder(tmp_updir)
 	
 
 	return('File Upload and Stored in Database Success')
@@ -131,6 +131,8 @@ def changeDateTime(c_date):
 	from time import strptime
 	from datetime import datetime
 	thatdate = c_date.split(' ')
+	while '' in thatdate:
+		thatdate.remove('')
 	hhmmss=thatdate[3]
 	mm=strptime(thatdate[1],'%b').tm_mon
 	yy=thatdate[4].rstrip('\n')
@@ -273,7 +275,7 @@ def insertExperiment(filename,readmefile,db):
 	readmefile=gzip.open(readmefile,'rb')
 	readmeparse = parseReadme(readmefile)
 	readmefile.close()
-	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],curr_date=changeDateTime(onetags[6]),grid=onetags[7],res=readmeparse['res'],compset=readmeparse['compset'],long_compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5])
+	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],exp_date=changeDateTime(onetags[6]),long_res=onetags[7],res=readmeparse['res'],compset=readmeparse['compset'],long_compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5])
 	db.session.add(new_experiment)
 
 	# table has to have a same experiment id

@@ -17,8 +17,8 @@ import modelTiming as mt
 #modelTiming database information:
 from pace_common import *
 
-#UPLOAD_FOLDER='/pace/prod/portal/upload'
-UPLOAD_FOLDER='/pace/dev1/portal/upload'
+UPLOAD_FOLDER='/pace/prod/portal/upload'
+#UPLOAD_FOLDER='/pace/dev1/portal/upload'
 ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
 
 # Uploading file

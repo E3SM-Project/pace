@@ -21,7 +21,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False;
 app.config['SQLALCHEMY_POOL_RECYCLE']=499
 db = SQLAlchemy(app)
 
-UPLOAD_FOLDER = '/pace/dev1/portal/uploads'
+UPLOAD_FOLDER = '/pace/prod/portal/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Limit payload to 1024 MB
 app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024 
