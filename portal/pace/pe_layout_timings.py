@@ -26,16 +26,15 @@ from matplotlib.pyplot import cm
 import datetime
 #If converting this to python 3, use io.StringIO (if supported by python 3's matplotlib)
 import StringIO
-import sys
 ###############################################################################
 ###                           Options                                       ###
 ##
 default_args = {
     ## What datatype do you want to plot?
-    #         "runtime" = total number of sec spent for each component (default)
-    #         "sec_per_day" = wall seconds per modeled day
-    #         "myears_per_wday" = modeled years per wall day
-    'dtype': "runtime",
+    #         "seconds" = total number of sec spent for each component (default)
+    #         "model_day" = wall seconds per modeled day
+    #         "model_years" = modeled years per wall day
+    'dtype': "seconds",
     ## What components are you intersted in plotting?
     'comps': ['ICE','LND','ROF','WAV','OCN','ATM','GLC','CPL'],
     ## Do any of these components cause all PE's to stop and wait?
@@ -43,8 +42,6 @@ default_args = {
     'figname': "e3sm_timing_runtime",
     ## Do you want the pe-layout to be written on the side of the figure?
     'addlayout': True,
-    ## What is the path to the timing file? 
-    'timingfile': "e3smTiming.txt",
     }
 ## Do you have a block color preference?
 default_args['color'] = cm.rainbow(np.linspace(0,1,len(default_args['comps'])))
@@ -54,43 +51,19 @@ default_args['color'] = cm.rainbow(np.linspace(0,1,len(default_args['comps'])))
 ###                       Begin Code                                        ###
 # Class to describe basic info for each component
 class pe_component(object):
-    def __init__(self):
-        self.name = None
-        self.pe_layout = None
+    def __init__(self,nameIn,valuesIn):
+        self.name = nameIn
+        #self.pe_layout = None
         self.runtime = None
-        self.sec_per_day = None
-        self.myears_per_wday = None
         self.color = None
         self.plot_patch = None
         self.fullstop = None
-    
+        self.values = valuesIn
     def __str__(self):
         print self.name
     
-    def load_data(self,name,datafile):
-        self.name = name
-        with open(datafile,'r') as f:
-            tmp = f.readlines()
-            for line in tmp:
-                if line.count(" "+name+" Run Time") == 1:
-                    mydata = line.split()
-                    self.runtime = float(mydata[3])
-                    self.sec_per_day = float(mydata[5])
-                    self.myears_per_wday = float(mydata[7])
-                if line.count(name+" (pes ") == 1:
-                    mydata = line.split()
-                    self.pe_layout = [int(mydata[2]),int(mydata[4][:-1])]
-    def getdata(self,dtype):
-        if dtype == "runtime":
-            return self.runtime
-        elif dtype == "sec_per_day":
-            return self.sec_per_day
-        elif dtype == "myears_per_wday":
-            return self.myears_per_wday
-    
     def add2plot(self,ax,bdims):
-        self.plot_patch = patches.Rectangle(bdims[0:2], \
-                                            bdims[2],bdims[3],color=self.color)
+        self.plot_patch = patches.Rectangle(bdims[0:2], bdims[2],bdims[3],color=self.color)
         self.plot_patch.set_clip_on(False)
         ax.add_artist(self.plot_patch)
         if bdims[3] > 0.0:
@@ -103,10 +76,10 @@ class pe_component(object):
 def check_defaults(arg):
     # Pass a dictionary of all the arguments.  If any will cause an error then
     # change to default value.  Or kill run
-    if not arg.get('dtype') in ("runtime","sec_per_day","myears_per_wday"):
+    if not arg.get('dtype') in ("seconds","model_day","model_years"):
         print "ERROR: data type "+arg.get('dtype')+" not supported... "+\
-                "changing to default data type = runtime"
-        arg['dtype'] = "runtime"
+                "changing to default data type = seconds"
+        arg['dtype'] = "seconds"
     for ii in arg.get('comps'):
         if not ii in ('ICE','LND','ROF','WAV','OCN','ATM','GLC','CPL'):
             print """%s not a supported component please check my_comps variable
@@ -129,7 +102,7 @@ def check_defaults(arg):
 ###############################################################################
 
 #Render and export the graph to SVG:
-def render(opt_dict = None):
+def render(runtimeIn,opt_dict = None):
     #opt_dict wants to be a permanent variable even after the scope has run through once... Initializing below instead of arguments:
     if opt_dict == None:
         opt_dict = default_args.copy()
@@ -140,16 +113,14 @@ def render(opt_dict = None):
     ## Load data and create plot
     comp_data = list()
     max_pe = 0
-    TOT = pe_component()
-    TOT.load_data("TOT",opt_dict.get('timingfile'))
+    TOT = pe_component("TOT",runtimeIn["TOT"])
     for ii in range(len(opt_dict.get('comps'))):
         cc = opt_dict.get('comps')[ii]
-        node = pe_component()
-        node.load_data(cc,opt_dict.get('timingfile'))
+        node = pe_component(cc,runtimeIn[cc])
         node.color = next(opt_dict.get('color'))
         node.fullstop = opt_dict.get('fullstop')[ii]
         comp_data.append(node)
-        max_pe = np.amax([max_pe,node.pe_layout[1]])
+        max_pe = np.amax([max_pe,node.values["root_task_sum"]])
     ## Build figure
     fig = plt.figure(figsize=[16,10])
     ax  = fig.add_subplot(111)
@@ -161,28 +132,28 @@ def render(opt_dict = None):
     ytcks = list()
     layout = ''
     for cc in comp_data:
-        bx = np.double(cc.pe_layout[0])/max_pe                       # box start X
-        bw = np.double(cc.pe_layout[1]-cc.pe_layout[0])/max_pe       # box width
-        bh = cc.getdata(opt_dict.get('dtype'))/TOT.getdata(opt_dict.get('dtype'))              # box height
+        bx = np.double(cc.values["root_pe"])/max_pe                       # box start X
+        bw = np.double(cc.values["root_task_sum"]-cc.values["root_pe"])/max_pe       # box width
+        bh = cc.values[opt_dict.get('dtype')]/TOT.values[opt_dict.get('dtype')]              # box height
         ## To determine box start y value think of Tetris
         by = 0.0                                                     # box start Y
         for pt in y_pts:
-            if cc.pe_layout[0] < pt[1] and cc.pe_layout[1] > pt[0]:
+            if cc.values["root_pe"] < pt[1] and cc.values["root_task_sum"] > pt[0]:
                 by = np.amax([by,pt[2]])
         if not cc.fullstop:
-            y_pts.append([cc.pe_layout[0],cc.pe_layout[1],bh+by])
+            y_pts.append([cc.values["root_pe"],cc.values["root_task_sum"],bh+by])
         else:
             y_pts.append([0,max_pe,bh+by])
-        xtcks.append(cc.pe_layout[0])
-        xtcks.append(cc.pe_layout[1])
+        xtcks.append(cc.values["root_pe"])
+        xtcks.append(cc.values["root_task_sum"])
         ytcks.append(by+bh)
         cc.add2plot(ax,[bx,by,bw,bh])
         if max_pe>1e5:
-            layout = "%s\n%s: (%6d,%6d)" %(layout,cc.name,cc.pe_layout[0],\
-                              cc.pe_layout[1])
+            layout = "%s\n%s: (%6d,%6d)" %(layout,cc.name,cc.values["root_pe"],\
+                              cc.values["root_task_sum"])
         elif max_pe>1e4:
-            layout = "%s\n%s: (%5d,%5d)" %(layout,cc.name,cc.pe_layout[0],\
-                              cc.pe_layout[1])
+            layout = "%s\n%s: (%5d,%5d)" %(layout,cc.name,cc.values["root_pe"],\
+                              cc.values["root_task_sum"])
     ## clean up xtcks
     xtcks_tmp = np.unique(xtcks)
     xtcks = list()
@@ -193,7 +164,7 @@ def render(opt_dict = None):
     ax.set_xticks(np.unique(np.double(xtcks)/max_pe))
     ax.set_yticks(np.append(np.unique(ytcks),1.0))
     ax.set_xticklabels(np.unique(xtcks),rotation=60,fontsize=16)
-    ax.set_yticklabels(np.round(np.append(np.unique(ytcks)*TOT.getdata(opt_dict.get('dtype')),TOT.getdata(opt_dict.get('dtype')))),fontsize=16)
+    ax.set_yticklabels(np.round(np.append(np.unique(ytcks)*TOT.values[opt_dict.get('dtype')],TOT.values[opt_dict.get('dtype')])),fontsize=16)
     ax.set_xlabel('Processor #',fontsize=20)
     ax.set_ylabel('Simulation Time (s)',fontsize=20)
     if opt_dict.get('addlayout'):

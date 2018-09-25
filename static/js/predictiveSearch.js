@@ -51,7 +51,7 @@ var predictiveSearch = {
                     this.highlightIndex--;
                 else if(this.highlightIndex < 0)
                     this.highlightIndex++;
-                this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "gray";
+                this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "lightgray";
             }
         };
         this.keyupListener = evt=>{
@@ -87,7 +87,7 @@ var predictiveSearch = {
                     this.pTextMenu.style.display="block";
                     if(this.ptmValues.length > 0){
                         this.highlightIndex = 0
-                        this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "gray";
+                        this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "lightgray";
                     }
                 }
             }
@@ -106,7 +106,7 @@ var predictiveSearch = {
     //These two functions are for mouse listeners:
     highlight:function(element,poolId){
         this.pool[poolId].highlightIndex = element.dataset.index;
-        element.style.backgroundColor = "gray";
+        element.style.backgroundColor = "lightgray";
     },
     unHighlight:function(element,poolId){
         this.pool[poolId].highlightIndex = undefined;

@@ -26,6 +26,9 @@ from werkzeug.utils import secure_filename
 import os
 from datastructs import *
 
+#Runtime image generator: by donahue5 (Modified for use on PACE)
+import pe_layout_timings as runtimeSvg
+
 # Home page
 @app.route("/")
 def homePage():
@@ -161,7 +164,8 @@ def expDetails(mexpid):
     myexp = db.session.query(Timingprofile).filter_by(expid = mexpid).all()[0]
     mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
     myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()[0]
-    return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime)
+    ranks = db.session.query(ModelTiming.rank).filter_by(expid = mexpid)
+    return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks)
 
 EXPS_PER_RQ=20
 @app.route("/ajax/exps/<int:pageNum>")
@@ -314,3 +318,20 @@ def searchPrediction(keyword):
                     resultWords[i]=temp
                     break
     return json.dumps(resultWords)
+
+@app.route("/svg/runtime/<expid>")
+def getRuntimeSvg(expid):
+    resultElement = {}
+    try:
+        runtimeQuery = db.session.query(Runtime).filter_by(expid = int(expid)).all()
+        for element in runtimeQuery:
+            resultElement[element.component] = {"seconds":element.seconds,"model_years":element.model_years,"model_day":element.model_day}
+        for key in resultElement.keys():
+            peQuery = db.session.query(Pelayout.root_pe,Pelayout.tasks).filter(Pelayout.expid == int(expid),Pelayout.component.ilike("%"+key+"%")).all()
+            if len(peQuery) > 0:
+                resultElement[key]["root_pe"] = peQuery[0].root_pe
+                resultElement[key]["tasks"] = peQuery[0].tasks -1
+                resultElement[key]["root_task_sum"] = resultElement[key]["tasks"] + resultElement[key]["root_pe"]
+    except ValueError:
+        return render_template("error.html"),404
+    return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")
