@@ -18,6 +18,7 @@ import io
 def parseData():
 	# start main
 	#first unzip uploaded file
+	#db.create_all()
 	tmp_updir='/pace/prod/portal/upload/'
 	try:	
 		fpath=tmp_updir
@@ -67,12 +68,13 @@ def parseData():
 	# parse and store timing profile file in a database
 	exptag=[]
 	for i in range(len(allfile)):
+		print (allfile[i])
 		a,b=insertExperiment(allfile[i],readmefile[i],db)
 		if a is not 'duplicate':
 			insertTiming(timingfile[i],b,db)	
 			exptag.append(a)
 			print("-----------------Stored-in-Database-------------------")
-	db.session.commit()
+		db.session.commit()
 	
 	# zip successfull experiments into folder experiments
 	zipFolder(exptag,fpath)
@@ -130,9 +132,7 @@ def tableParse(lineInput):
 def changeDateTime(c_date):
 	from time import strptime
 	from datetime import datetime
-	thatdate = c_date.split(' ')
-	while '' in thatdate:
-		thatdate.remove('')
+	thatdate = c_date.split()
 	hhmmss=thatdate[3]
 	mm=strptime(thatdate[1],'%b').tm_mon
 	yy=thatdate[4].rstrip('\n')
@@ -148,25 +148,28 @@ def checkDuplicateExp(ecase,elid,euser):
 		return(True)
 
 def parseReadme(fileIn):
-    resultElement = {}
-    commandLine = None
-    #This should support file objects if one's inserted:
-    if type(fileIn) == types.StringType:
-        commandLine = open(fileIn).readline()
-    else:
-        commandLine = fileIn.readline()
-    cmdArgs = commandLine.split(": ",1)[1].strip("./\n").split(" ")
-    resultElement["name"] = cmdArgs[0]
-    for i in range(len(cmdArgs)):
-        if cmdArgs[i][0] == "-":
-            if "=" in cmdArgs[i]:
-                argumentStr = cmdArgs[i].strip("-").split("=")
-                resultElement[argumentStr[0]] = argumentStr[1]
-            else:
-                argument = cmdArgs[i].strip("-")
-                resultElement[argument] = cmdArgs[i+1]
-    resultElement["date"] = commandLine.split(": ",1)[0].strip(":")
-    return resultElement
+	resultElement = {}
+	commandLine = None
+	flag=False
+	for commandLine in fileIn:
+		word=commandLine.split(" ")
+		for element in word:
+			if ('create_newcase' in element):
+				cmdArgs = commandLine.split(": ",1)[1].strip("./\n").split(" ")
+				resultElement["name"] = cmdArgs[0]
+				for i in range(len(cmdArgs)):
+					if cmdArgs[i][0] == "-":
+						if "=" in cmdArgs[i]:
+							argumentStr = cmdArgs[i].strip("-").split("=")
+							resultElement[argumentStr[0]] = argumentStr[1]
+						else:
+							argument = cmdArgs[i].strip("-")
+							resultElement[argument] = cmdArgs[i+1]
+					resultElement["date"] = commandLine.split(": ",1)[0].strip(":")
+				break
+		if 'res' in resultElement.keys():		
+			break	
+	return resultElement
 
 def insertExperiment(filename,readmefile,db):
 	if filename.endswith('.gz'):
@@ -210,7 +213,9 @@ def insertExperiment(filename,readmefile,db):
 					newWord=word[3].split(" ")
 					onetags.append(word[2])
 					timeProfileFlag=1
-			
+			flagrun=False
+			flaginit=False
+			flagfinal=False
 			word=line.split(None,1)
 			#print(word[1])
 			if word[0]=='total':
@@ -234,6 +239,21 @@ def insertExperiment(filename,readmefile,db):
 				newWord1=newWord[1].split()
 				threetags.append(newWord1[0])
 				timeProfileFlag+=1
+			elif word[0]=='Init' and flaginit == False:
+				newWord=word[1].split(":")
+				newWord1=newWord[1].split()
+				threetags.append(newWord1[0])
+				flaginit = True
+			elif word[0]=='Run' and flagrun == False:
+				newWord=word[1].split(":")
+				newWord1=newWord[1].split()
+				threetags.append(newWord1[0])
+				flagrun = True
+			elif word[0]=='Final' and flagfinal == False:
+				newWord=word[1].split(":")
+				newWord1=newWord[1].split()
+				threetags.append(newWord1[0])
+				flagfinal = True
 			elif timeProfileFlag>=2:
 				break
 	parseFile.close()
@@ -260,7 +280,9 @@ def insertExperiment(filename,readmefile,db):
 		fourtags.append(word[7])	
 
 	for i in range(9):
-		twotags.append(resultlist[i]['component'])
+		tmpthread1=resultlist[i]['component']
+		change1=tmpthread1.split(" ")
+		twotags.append(change1[0])
 		twotags.append(resultlist[i]['comp_pes'])
 		twotags.append(resultlist[i]['root_pe'])
 		twotags.append(resultlist[i]['tasks'])
@@ -275,7 +297,7 @@ def insertExperiment(filename,readmefile,db):
 	readmefile=gzip.open(readmefile,'rb')
 	readmeparse = parseReadme(readmefile)
 	readmefile.close()
-	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],exp_date=changeDateTime(onetags[6]),long_res=onetags[7],res=readmeparse['res'],compset=readmeparse['compset'],long_compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5])
+	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],exp_date=changeDateTime(onetags[6]),long_res=onetags[7],res=readmeparse['res'],compset=readmeparse['compset'],long_compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5],init_time=threetags[6],run_time=threetags[7],final_time=threetags[8])
 	db.session.add(new_experiment)
 
 	# table has to have a same experiment id
