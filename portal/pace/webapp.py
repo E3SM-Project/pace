@@ -163,7 +163,7 @@ def expDetails(mexpid):
     myexp = 0
     myexp = db.session.query(Timingprofile).filter_by(expid = mexpid).all()[0]
     mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
-    myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()[0]
+    myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()
     ranks = db.session.query(ModelTiming.rank).filter_by(expid = mexpid)
     return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks)
 
@@ -331,7 +331,6 @@ def getRuntimeSvg(expid):
             if len(peQuery) > 0:
                 resultElement[key]["root_pe"] = peQuery[0].root_pe
                 resultElement[key]["tasks"] = peQuery[0].tasks -1
-                resultElement[key]["root_task_sum"] = resultElement[key]["tasks"] + resultElement[key]["root_pe"]
     except ValueError:
         return render_template("error.html"),404
     return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")

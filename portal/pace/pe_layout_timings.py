@@ -59,6 +59,9 @@ class pe_component(object):
         self.plot_patch = None
         self.fullstop = None
         self.values = valuesIn
+        if "tasks" in self.values.keys() and "root_pe" in self.values.keys():
+            self.root_task_sum = self.values["tasks"] + self.values["root_pe"]
+            #print(self.name+": "+str([self.values["root_pe"],self.root_task_sum]))
     def __str__(self):
         print self.name
     
@@ -120,7 +123,7 @@ def render(runtimeIn,opt_dict = None):
         node.color = next(opt_dict.get('color'))
         node.fullstop = opt_dict.get('fullstop')[ii]
         comp_data.append(node)
-        max_pe = np.amax([max_pe,node.values["root_task_sum"]])
+        max_pe = np.amax([max_pe,node.root_task_sum])
     ## Build figure
     fig = plt.figure(figsize=[16,10])
     ax  = fig.add_subplot(111)
@@ -133,27 +136,28 @@ def render(runtimeIn,opt_dict = None):
     layout = ''
     for cc in comp_data:
         bx = np.double(cc.values["root_pe"])/max_pe                       # box start X
-        bw = np.double(cc.values["root_task_sum"]-cc.values["root_pe"])/max_pe       # box width
+        bw = np.double(cc.root_task_sum-cc.values["root_pe"])/max_pe       # box width
         bh = cc.values[opt_dict.get('dtype')]/TOT.values[opt_dict.get('dtype')]              # box height
         ## To determine box start y value think of Tetris
         by = 0.0                                                     # box start Y
         for pt in y_pts:
-            if cc.values["root_pe"] < pt[1] and cc.values["root_task_sum"] > pt[0]:
+            if cc.values["root_pe"] < pt[1] and cc.root_task_sum > pt[0]:
                 by = np.amax([by,pt[2]])
         if not cc.fullstop:
-            y_pts.append([cc.values["root_pe"],cc.values["root_task_sum"],bh+by])
+            y_pts.append([cc.values["root_pe"],cc.root_task_sum,bh+by])
         else:
             y_pts.append([0,max_pe,bh+by])
         xtcks.append(cc.values["root_pe"])
-        xtcks.append(cc.values["root_task_sum"])
+        xtcks.append(cc.root_task_sum)
         ytcks.append(by+bh)
         cc.add2plot(ax,[bx,by,bw,bh])
         if max_pe>1e5:
             layout = "%s\n%s: (%6d,%6d)" %(layout,cc.name,cc.values["root_pe"],\
-                              cc.values["root_task_sum"])
+                              cc.root_task_sum)
         elif max_pe>1e4:
             layout = "%s\n%s: (%5d,%5d)" %(layout,cc.name,cc.values["root_pe"],\
-                              cc.values["root_task_sum"])
+                              cc.root_task_sum)
+        #print(cc.name+": "+str(bh)+" | values: "+ str(cc.values[opt_dict.get('dtype')])+" / "+str(TOT.values[opt_dict.get('dtype')]))
     ## clean up xtcks
     xtcks_tmp = np.unique(xtcks)
     xtcks = list()
