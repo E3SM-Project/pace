@@ -110,3 +110,4 @@ portal/start-gunicorn.sh
 portal/restart-server.sh
 
 extra/
+portal/pace/static/samples/*
