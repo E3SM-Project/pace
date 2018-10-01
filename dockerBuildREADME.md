@@ -24,3 +24,4 @@ docker run --name nameOfPaceContainer -p 80:80 -d --link pacedb:mysql pace
 
 **Note!** Your new pace instance only works when your database container is also on. Therefore the pace container always runs second when starting everything up.
 4. inside your pace-upload script, change the url variable to `http://localhost/upload`
+5. In your container, create the path `/pace/prod/portal/upload` if not already created
