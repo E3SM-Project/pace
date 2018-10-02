@@ -1,2 +1,3 @@
 export FLASK_ENV=development;
-python ./portal/dockerInit.py
+python ./portal/dockerInit.py&
+while [ 1 = 1 ]; do sleep 1;done
