@@ -165,7 +165,7 @@ def searchPage(searchQuery="*",isHomepage=False):
 
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
-    myexp = 0
+    myexp = None
     myexp = db.session.query(Timingprofile).filter_by(expid = mexpid).all()[0]
     mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
     myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()
