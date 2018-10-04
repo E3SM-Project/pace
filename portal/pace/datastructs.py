@@ -30,10 +30,14 @@ class Timingprofile(db.Model):
 	init_time = db.Column(DECIMAL(10,3,unsigned=True), nullable=False)
 	run_time = db.Column(DECIMAL(10,3,unsigned=True), nullable=False)
 	final_time = db.Column(DECIMAL(10,3,unsigned=True), nullable=False)
+	pe_layout_table = db.relationship('Pelayout', backref = 'timingprofile', lazy = True)
+	run_time_table = db.relationship('Runtime', backref = 'timingprofile', lazy = True)
+	model_timing_table = db.relationship('ModelTiming', backref = 'timingprofile', lazy = True)
+	
 
 class Pelayout(db.Model):
 	id = db.Column(INTEGER(unsigned=True), primary_key=True)
-	expid = db.Column(INTEGER(unsigned=True), nullable=False)
+	expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('timingprofile.expid'), nullable=False)
 	component = db.Column(db.String(25), nullable=False, index=True)
 	comp_pes = db.Column(INTEGER(unsigned=True), nullable=False)
 	root_pe = db.Column(INTEGER(unsigned=True), nullable=False)
@@ -44,7 +48,7 @@ class Pelayout(db.Model):
 
 class Runtime(db.Model):
 	id = db.Column(INTEGER(unsigned=True), primary_key=True)
-	expid = db.Column(INTEGER(unsigned=True), nullable=False)
+	expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('timingprofile.expid'), nullable=False)
 	component = db.Column(db.String(25), nullable=False)
 	seconds = db.Column(DECIMAL(10,3,unsigned=True), nullable=False)
 	model_day = db.Column(DECIMAL(10,3,unsigned=True), nullable=False)
@@ -53,6 +57,6 @@ class Runtime(db.Model):
 
 class ModelTiming(db.Model):
 	id = db.Column(INTEGER(unsigned=True), primary_key=True,autoincrement=True)
-	expid = db.Column(INTEGER(unsigned=True), nullable=False)
+	expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('timingprofile.expid'), nullable=False)
 	jsonVal = db.Column(MEDIUMTEXT, nullable=False)
 	rank = db.Column(db.String(10), nullable=False)

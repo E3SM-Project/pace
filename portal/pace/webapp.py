@@ -180,7 +180,7 @@ def expsAjax(pageNum):
 def searchBar(searchTerms,limit = False,matchAll = False):
     resultItems = []
     filteredItems = []
-    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","curr_date"]
+    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date"]
     termList = []
     if searchTerms == "*":
         queryStr = "select "+str(variableList).strip("[]").replace("'","")+" from timingprofile order by expid desc"
@@ -193,7 +193,10 @@ def searchBar(searchTerms,limit = False,matchAll = False):
         for item in resultItems:
             resultDict = {}
             for key in item.keys():
-                resultDict[key] = item[key]
+                if 'Decimal' in str(item[key]):
+                    resultDict[key] = str(item[key].precision)
+                else:
+                    resultDict[key] = str(item[key])
             filteredItems.append(resultDict)
 
     elif matchAll == "matchall":
@@ -220,7 +223,10 @@ def searchBar(searchTerms,limit = False,matchAll = False):
         for item in resultItems:
             resultDict = {}
             for key in item.keys():
-                resultDict[key] = item[key]
+                if 'Decimal' in str(item[key]):
+                    resultDict[key] = str(item[key].precision)
+                else:
+                    resultDict[key] = str(item[key])
             filteredItems.append(resultDict)
 
     else:
@@ -249,7 +255,10 @@ def searchBar(searchTerms,limit = False,matchAll = False):
                 if unique:
                     resultDict = {}
                     for key in element.keys():
-                        resultDict[key] = element[key]
+                        if 'Decimal' in str(element[key]):
+                            resultDict[key] = str(element[key].precision)
+                        else:
+                            resultDict[key] = str(element[key])
                     filteredItems.append(resultDict)
     #Grab the ranks based of of filteredItems:
     rankList = []
@@ -258,7 +267,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
         queryResults = db.engine.execute("select rank from model_timing where expid = "+str(item["expid"])).fetchall()
         for result in queryResults:
             itemRanks.append(result.rank)
-        rankList.append([itemRanks,[]])    
+        rankList.append([itemRanks,[]]) 
     return json.dumps([filteredItems,rankList])
 
 #Get a specific list of elements from timingprofile. Only specific elements are allowed, so users cannot grab everything.

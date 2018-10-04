@@ -67,15 +67,21 @@ def parseData():
 
 	# parse and store timing profile file in a database
 	exptag=[]
-	for i in range(len(allfile)):
-		print (allfile[i])
-		a,b=insertExperiment(allfile[i],readmefile[i],db)
-		if a is not 'duplicate':
-			insertTiming(timingfile[i],b,db)	
-			exptag.append(a)
-			print("-----------------Stored-in-Database-------------------")
+	try:
+		for i in range(len(allfile)):
+			print (allfile[i])
+			a=0
+			b=0
+			a,b=insertExperiment(allfile[i],readmefile[i],db)
+			if a is not 'duplicate':
+				insertTiming(timingfile[i],b,db)	
+				exptag.append(a)
+				print("-----------------Stored-in-Database-------------------")
 		db.session.commit()
-	
+	except AttributeError as e:
+		# remove data
+		removeFolder(tmp_updir)
+		return('Error: %s' % str(e))
 	# zip successfull experiments into folder experiments
 	zipFolder(exptag,fpath)
 	# remove data
@@ -274,7 +280,10 @@ def insertExperiment(filename,readmefile,db):
 	word=[]
 	for i in range(46,57):
 		word=lines[i].split()
-		fourtags.append(word[0])
+		if word[1]=='Run':
+			fourtags.append(word[0])
+		else:
+			fourtags.append(str(word[0])+'_COMM')
 		fourtags.append(word[3])
 		fourtags.append(word[5])
 		fourtags.append(word[7])	
@@ -307,18 +316,18 @@ def insertExperiment(filename,readmefile,db):
 	#insert pelayout
 	i=0
 	while i < len(twotags):
-		new_pelayout = Pelayout(expid=forexpid.expid,component=twotags[i],comp_pes=twotags[i+1],root_pe=twotags[i+2],tasks=twotags[i+3],threads=twotags[i+4],instances=twotags[i+5],stride=twotags[i+6])
+		new_pelayout = Pelayout(component=twotags[i],comp_pes=twotags[i+1],root_pe=twotags[i+2],tasks=twotags[i+3],threads=twotags[i+4],instances=twotags[i+5],stride=twotags[i+6],timingprofile=forexpid)
 		db.session.add(new_pelayout)	
 		i=i+7
 	#insert run time
 	i=0
 	while i < len(fourtags):
-		new_runtime = Runtime(expid=forexpid.expid,component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3])
+		new_runtime = Runtime(component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3],timingprofile=forexpid)
 		db.session.add(new_runtime)
 		i=i+4
 	
 	
-	return (onetags[1],forexpid.expid)
+	return (onetags[1],forexpid)
 
 
 def removeFolder(removeroot):
@@ -361,7 +370,7 @@ def insertTiming(mtFile,expID,db):
 				rankStr = underScore[len(underScore)-1]
 			#This is a file we want! Let's save it:
 			print(element.name)
-			new_modeltiming = ModelTiming(expid=expID,jsonVal=mt.parse(sourceFile.extractfile(element)),rank=rankStr)
+			new_modeltiming = ModelTiming(jsonVal=mt.parse(sourceFile.extractfile(element)),rank=rankStr, timingprofile=expID)
 			db.session.add(new_modeltiming)
 	
 	return
