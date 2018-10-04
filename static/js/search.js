@@ -20,7 +20,7 @@ var searchObj = {
             for(let i=0;i<element[0].length;i++){
                 if(element[0][i] == "stats" || element[0][i] == "0"){
                     for(let j=0;j<element[0].length;j++){
-                        if(!(element[0][j] == "stats" || element[0][j][0] == "0")){
+                        if(!(element[0][j] == "stats" || element[0][j] == "0")){
                             let temp = element[0][j];
                             element[0][j] = element[0][i];
                             element[0][i] = temp;
@@ -48,7 +48,7 @@ var searchObj = {
             "<td>"+element.run_length+"</td>"+
             "<td>"+element.model_throughput+"</td>"+
             "<td>"+element.mpi_tasks_per_node+"</td>"+
-            "<td>"+element.curr_date+"</td>";
+            "<td>"+element.exp_date+"</td>";
             let checkStr = "<td>";
             let checkMoreStr = "<div><div style='display:none' class='moreContainer'>";
             let foundMore = false;
