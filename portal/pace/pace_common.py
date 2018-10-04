@@ -94,7 +94,10 @@ def initDatabase():
 	elif os.path.isfile('/pace/dev3/.pacerc') and os.access("/pace/dev3/.pacerc", os.R_OK):
 		configFile = '/pace/dev3/.pacerc'
 
-	if configFile:
+	if not os.getenv("PACE_DOCKER_DB_INFO") == None:
+		print "Detected Docker instance! Getting config from environment variables..."
+		myuser,mypwd,mydb,myhost = os.getenv("PACE_DOCKER_DB_INFO").split(",")
+	elif configFile:
 		print "Reading configuration from " + configFile 
 		myuser,mypwd,mydb,myhost = readConfigFile(configFile)
 	else:

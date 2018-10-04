@@ -115,10 +115,15 @@ def summaryHtml(expID,rank,compare="",threads=""):
 def summaryQuery(expID,rank):
     resultNodes=""
     listIndex = 0
+    samplePath = "/pace/"
+    if os.getenv("PACE_DOCKER_INSTANCE") == "1":
+        samplePath+="portal/pace/"
+    else:
+        samplePath+="assets/"
     if expID == "-1":
-        resultNodes = mt.parse("/pace/assets/static/samples/model_timing.0000.new")
+        resultNodes = mt.parse(samplePath+"static/samples/model_timing.0000.new")
     elif expID == "-2":
-        resultNodes = mt.parse("/pace/assets/static/samples/model_timing_stats")
+        resultNodes = mt.parse(samplePath+"static/samples/model_timing_stats")
     else:
         resultNodes = db.engine.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
     if rank == 'stats':
@@ -160,10 +165,10 @@ def searchPage(searchQuery="*",isHomepage=False):
 
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
-    myexp = 0
+    myexp = None
     myexp = db.session.query(Timingprofile).filter_by(expid = mexpid).all()[0]
     mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
-    myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()[0]
+    myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()
     ranks = db.session.query(ModelTiming.rank).filter_by(expid = mexpid)
     return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks)
 
@@ -340,7 +345,6 @@ def getRuntimeSvg(expid):
             if len(peQuery) > 0:
                 resultElement[key]["root_pe"] = peQuery[0].root_pe
                 resultElement[key]["tasks"] = peQuery[0].tasks -1
-                resultElement[key]["root_task_sum"] = resultElement[key]["tasks"] + resultElement[key]["root_pe"]
     except ValueError:
         return render_template("error.html"),404
     return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")
