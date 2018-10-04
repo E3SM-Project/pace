@@ -67,21 +67,18 @@ def parseData():
 
 	# parse and store timing profile file in a database
 	exptag=[]
-	try:
-		for i in range(len(allfile)):
-			print (allfile[i])
-			a=0
-			b=0
-			a,b=insertExperiment(allfile[i],readmefile[i],db)
-			if a is not 'duplicate':
-				insertTiming(timingfile[i],b,db)	
-				exptag.append(a)
-				print("-----------------Stored-in-Database-------------------")
+	for i in range(len(allfile)):
+		a=0
+		b=0
+		a,b=insertExperiment(allfile[i],readmefile[i],db)
+		if a != 'duplicate':
+			insertTiming(timingfile[i],b,db)	
+			exptag.append(a)
+			print("-----------------Stored-in-Database-------------------")
+	try:	
 		db.session.commit()
-	except AttributeError as e:
-		# remove data
-		removeFolder(tmp_updir)
-		return('Error: %s' % str(e))
+	except:
+		db.session.rollback()
 	# zip successfull experiments into folder experiments
 	zipFolder(exptag,fpath)
 	# remove data
@@ -95,7 +92,6 @@ def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
     phraseIn = phraseIn.strip(filter)
     #Destroy spaces by default:
     phraseSplit = phraseIn.split(" ")
-    #print(phraseSplit)
     total=[""]
     currPhrase = 0
     onWord = False
@@ -104,17 +100,14 @@ def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
         if onWord or not phraseSplit[i] == "":
             if not onWord:
                 onWord = True
-                #print("On word")
                 if not subGroup or not firstPhrase:
                     total.append("")
             firstPhrase = False
             addWord = True
             #Ignore newlines:
             if phraseSplit[i]  == "":
-                #print("'"+phraseSplit[i] + "' | '" + phraseSplit[i+1]+"'")
                 onWord = False
                 addWord = False
-                #print("Off word")
                 if subGroup:
                     currPhrase+=1
             if addWord:
@@ -130,7 +123,6 @@ def tableParse(lineInput):
         splitValues = spaceConcat(item,True)
         tableColumn={}
         for i in range(len(names)):
-            #print "test: "+splitValues[i]
             tableColumn[names[i]] = splitValues[i].strip("(")
         resultList.append(tableColumn)
     return resultList
@@ -223,7 +215,6 @@ def insertExperiment(filename,readmefile,db):
 			flaginit=False
 			flagfinal=False
 			word=line.split(None,1)
-			#print(word[1])
 			if word[0]=='total':
 				newWord=word[1].split(":")
 				newWord1=newWord[1].split(" ")
@@ -316,18 +307,18 @@ def insertExperiment(filename,readmefile,db):
 	#insert pelayout
 	i=0
 	while i < len(twotags):
-		new_pelayout = Pelayout(component=twotags[i],comp_pes=twotags[i+1],root_pe=twotags[i+2],tasks=twotags[i+3],threads=twotags[i+4],instances=twotags[i+5],stride=twotags[i+6],timingprofile=forexpid)
+		new_pelayout = Pelayout(expid=forexpid.expid, component=twotags[i],comp_pes=twotags[i+1],root_pe=twotags[i+2],tasks=twotags[i+3],threads=twotags[i+4],instances=twotags[i+5],stride=twotags[i+6])
 		db.session.add(new_pelayout)	
 		i=i+7
 	#insert run time
 	i=0
 	while i < len(fourtags):
-		new_runtime = Runtime(component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3],timingprofile=forexpid)
+		new_runtime = Runtime(expid=forexpid.expid,component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3])
 		db.session.add(new_runtime)
 		i=i+4
 	
 	
-	return (onetags[1],forexpid)
+	return (onetags[1],forexpid.expid)
 
 
 def removeFolder(removeroot):
@@ -369,8 +360,7 @@ def insertTiming(mtFile,expID,db):
 			elif underScore[len(underScore)-1] == "stats":
 				rankStr = underScore[len(underScore)-1]
 			#This is a file we want! Let's save it:
-			print(element.name)
-			new_modeltiming = ModelTiming(jsonVal=mt.parse(sourceFile.extractfile(element)),rank=rankStr, timingprofile=expID)
+			new_modeltiming = ModelTiming(expid=expID, jsonVal=mt.parse(sourceFile.extractfile(element)),rank=rankStr)
 			db.session.add(new_modeltiming)
 	
 	return
