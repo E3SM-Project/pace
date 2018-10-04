@@ -36,5 +36,5 @@ app.secret_key = 'p\xcb\xd8\x81z\xa5)D\x14(\x8dJ\nvjdb\x82\x9a\x8dH\rg='
 # Circular import is okay in this case - see http://flask.pocoo.org/docs/patterns/packages/
 # import pace.webapp
 if __name__ == "__main__":
-	app.run(debug=True)
+	app.run()
 from webapp import *

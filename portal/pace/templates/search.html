@@ -74,7 +74,7 @@ homeSearchBar.onkeyup = evt=>{
       $.get(detectRootUrl()+"ajax/similarDistinct/"+homeSearchPredict.inputWords[homeSearchPredict.wordIndex],data=>homeSearchPredict.refreshKeywords(JSON.parse(data)));
 }
 homeSearchBar.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("hsb"),150);
-homeSearchPredict.pTextMenu.style.left="40%";
+homeSearchPredict.pTextMenu.style.left="30%";
 {%endif%}
 
 $(document).ready(function(){
