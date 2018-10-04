@@ -11,9 +11,11 @@
 
   <!-- Custom styles for this template -->
   <link rel="stylesheet" type="text/css" href="/static/css/pace.css" />
+  <link rel="stylesheet" type="text/css" href="/static/css/predictiveText.css" />
 
   <script src="/static/js/detectRootUrl.js"></script>
-  <script>var onMtPage = false;</script>
+  <script src="/static/js/predictiveSearch.js"></script>
+  <script></script>
   {% block topscripts %}
   {% endblock %}
   <title> {% block title %} Performance Analytics for Climate Experiments (PACE) {% endblock %} </title>
@@ -39,10 +41,14 @@
       <a class="nav-link dropdown-toggle" href="{{ request.script_root }}/users" id="dropdown02" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Users</a>
       <div class="dropdown-menu" aria-labelledby="dropdown02" data-distinct-type="user" data-url-Label="users"></div>
       </li>
+      <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="{{ request.script_root }}/users" id="dropdown02" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Benchmarks</a>
+      <div class="dropdown-menu" aria-labelledby="dropdown02" data-distinct-type="benchmark" data-url-Label="benchmarks"></div>
+      </li>
       <a href="/about" class="nav-link">About</a>
     </ul>
     <form class="form-inline my-2 my-lg-0">
-      <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" id="searchBar">
+      <span><input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" id="searchBar"></span>
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="searchButton">Search</button>
     </form>
     </div>
@@ -96,7 +102,7 @@
           $.get(detectRootUrl()+"ajax/getDistinct/"+dropdownElements[i].dataset.distinctType,data=>{
             let results = JSON.parse(data);
             results.forEach((element)=>{
-              dropdownElements[i].innerHTML+='<a class="dropdown-item" href="'+detectRootUrl()+dropdownElements[i].dataset.urlLabel+'/'+element+'/">'+element[0].toUpperCase()+element.substring(1)+'</a>';
+              dropdownElements[i].innerHTML+='<a class="dropdown-item" href="'+detectRootUrl()+dropdownElements[i].dataset.urlLabel+'/'+element+'/">'+(dropdownElements[i].dataset.urlLabel == "users"?element:element[0].toUpperCase()+element.substring(1))+'</a>';
             });
           });
         }
@@ -117,6 +123,20 @@
     searchButton.onclick = evt=>{
       searchEvt(evt);
     }
+
+    //predictive search + quick search functionality:
+    searchPredict = new predictiveSearch.element(searchBar,"sb");
+    searchBar.onkeydown = evt=>{
+    if(evt.key == "Enter" && searchPredict.allowEnter) searchEvt(evt);;
+      searchPredict.keydownListener(evt);
+    };
+    searchBar.onkeyup = evt=>{
+      searchPredict.keyupListener(evt);
+      if(searchBar.value!="")
+          $.get(detectRootUrl()+"ajax/similarDistinct/"+searchPredict.inputWords[searchPredict.wordIndex],data=>searchPredict.refreshKeywords(JSON.parse(data)));
+    }
+    searchBar.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("sb"),150);
+    searchPredict.pTextMenu.style.zIndex = 1001;
     </script>
   <footer class="footer">
     <div class="container">

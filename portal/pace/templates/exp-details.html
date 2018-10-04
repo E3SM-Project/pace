@@ -8,8 +8,7 @@
 <script>hljs.initHighlightingOnLoad();</script>
 {% endblock topcontent %}
 
-<h3> Experiment Details
-</h3>
+<h3> Experiment Details</h3>
 <!--<pre><code class="json" id="expdata">{{myjson|safe}}</code></pre>-->
 <pre><code id="expsummmary">
 Id: {{ exp.expid}}
@@ -24,12 +23,19 @@ Grid: {{exp.grid}}
 
 Runtime: {{ runtime.seconds }} seconds
 Pelayout: {{ pelayout }}
+
+Ranks:
+{%for rank in ranks%}<a href="/summary/{{expid}}/{{rank.rank}}">{{rank.rank}}</a>
+{%endfor%}
+
 <a href="/static/data/experiment-{{exp.lid}}.zip">Download Raw Data</a>
-
-<!--<a href="../file-download/exp.rawData.outputFile._id">Download Raw Data</a>-->
-
 </code></pre>
-
+<p style="text-align:center"><img id="runtimeImg" style="width:50%;height:50%"/></p>
+<script>
+var imgLink = detectRootUrl()+"svg/runtime/{{expid}}";
+runtimeImg.src=imgLink;
+expsummmary.innerHTML+="<a href='"+imgLink+"'>Link to Runtime Chart</a>"
+</script>
 
 {% endblock %}
 

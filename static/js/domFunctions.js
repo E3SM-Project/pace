@@ -48,6 +48,18 @@ window.onhashchange = function(event = undefined){
     if(document.getElementById(clickID)!=undefined && okToClick)
         document.getElementById(clickID).click();
 };
+//predictive search + quick search functionality:
+quickSearchPredict = new predictiveSearch.element(quickSearchBar,"qsb");
+quickSearchBar.onkeydown = evt=>{
+    quickSearchPredict.keydownListener(evt);
+    if(evt.key == "Enter" && quickSearchPredict.allowEnter) quickSearchObj.search(quickSearchBar.value);
+};
+quickSearchBar.onkeyup = evt=>{
+    quickSearchPredict.keyupListener(evt);
+    if(quickSearchBar.value!="")
+        $.get(detectRootUrl()+"ajax/similarDistinct/"+quickSearchPredict.inputWords[quickSearchPredict.wordIndex],data=>quickSearchPredict.refreshKeywords(JSON.parse(data)));
+}
+quickSearchBar.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("qsb"),150);
 
 var chartSettings = {
     type: 'horizontalBar',

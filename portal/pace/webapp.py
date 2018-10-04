@@ -26,6 +26,9 @@ from werkzeug.utils import secure_filename
 import os
 from datastructs import *
 
+#Runtime image generator: by donahue5 (Modified for use on PACE)
+import pe_layout_timings as runtimeSvg
+
 # Home page
 @app.route("/")
 def homePage():
@@ -161,7 +164,8 @@ def expDetails(mexpid):
     myexp = db.session.query(Timingprofile).filter_by(expid = mexpid).all()[0]
     mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
     myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()[0]
-    return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime)
+    ranks = db.session.query(ModelTiming.rank).filter_by(expid = mexpid)
+    return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks)
 
 EXPS_PER_RQ=20
 @app.route("/ajax/exps/<int:pageNum>")
@@ -272,10 +276,10 @@ def searchBar(searchTerms,limit = False,matchAll = False):
 
 #Get a specific list of elements from timingprofile. Only specific elements are allowed, so users cannot grab everything.
 @app.route("/ajax/getDistinct/<entry>")
-def getMachines(entry):
+def getDistinct(entry):
     queryList = []
     if entry in ["machine","user"]:
-        distQuery = db.engine.execute("select distinct "+entry+" from timingprofile").fetchall()
+        distQuery = db.engine.execute("select distinct "+entry+" from timingprofile order by "+entry).fetchall()
         for element in distQuery:
             queryList.append(element[entry])
     return json.dumps(queryList)
@@ -287,3 +291,56 @@ def platformsRedirect(platform):
 @app.route("/users/<user>/")
 def usersRedirect(user):
     return searchPage(user)
+
+#A function to compare two things in alphabetical order. If word1 should be earlier alphabetized, return true.
+def charCompare(word1,word2):
+    maxCount = None
+    if len(word1) > len(word2):
+        maxCount = len(word2)
+    else:
+        maxCount = len(word1)
+    for i in range(maxCount):
+        if word1[i] < word2[i]:
+            return True
+    return False
+#This is designed for the search bar on the website. It predicts what a user may be looking for based on where the dev specifies to search.
+@app.route("/ajax/similarDistinct/<keyword>")
+def searchPrediction(keyword):
+    #The keyword is designed to be a single word without any potential database loopholes:
+    keyword = keyword.replace("\\c","").replace(";","").replace(" ","")
+    #Grab elements based on these columns:
+    columnNames = ["user","machine","expid"]
+    resultWords = []
+    for column in columnNames:
+        distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '%%"+keyword+"%%' limit 20").fetchall()
+        for element in distQuery:
+            resultWords.append(str(element[column]))
+    #Sort them by similar name:
+    for i in range(len(resultWords)):
+        if keyword[0] == resultWords[i][0]:
+            for j in range(len(resultWords)):
+                print(j)
+                # or charCompare(resultWords[i],resultWords[j]
+                if not keyword[0] == resultWords[j][0]:
+                    temp = resultWords[j]
+                    resultWords[j] = resultWords[i]
+                    resultWords[i]=temp
+                    break
+    return json.dumps(resultWords)
+
+@app.route("/svg/runtime/<expid>")
+def getRuntimeSvg(expid):
+    resultElement = {}
+    try:
+        runtimeQuery = db.session.query(Runtime).filter_by(expid = int(expid)).all()
+        for element in runtimeQuery:
+            resultElement[element.component] = {"seconds":element.seconds,"model_years":element.model_years,"model_day":element.model_day}
+        for key in resultElement.keys():
+            peQuery = db.session.query(Pelayout.root_pe,Pelayout.tasks).filter(Pelayout.expid == int(expid),Pelayout.component.ilike("%"+key+"%")).all()
+            if len(peQuery) > 0:
+                resultElement[key]["root_pe"] = peQuery[0].root_pe
+                resultElement[key]["tasks"] = peQuery[0].tasks -1
+                resultElement[key]["root_task_sum"] = resultElement[key]["tasks"] + resultElement[key]["root_pe"]
+    except ValueError:
+        return render_template("error.html"),404
+    return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")
