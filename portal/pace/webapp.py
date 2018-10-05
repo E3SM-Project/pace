@@ -189,7 +189,7 @@ def expsAjax(pageNum):
 def searchBar(searchTerms,limit = False,matchAll = False):
     resultItems = []
     filteredItems = []
-    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date"]
+    variableList = ["user","expid","machine","compset", "res", "total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date"]
     termList = []
     if searchTerms == "*":
         queryStr = "select "+str(variableList).strip("[]").replace("'","")+" from timingprofile order by expid desc"
