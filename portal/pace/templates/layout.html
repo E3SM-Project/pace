@@ -34,20 +34,20 @@
       <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item dropdown">
-      <a class="nav-link dropdown-toggle" href="{{ request.script_root }}/platforms" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Platforms</a>
+      <a class="nav-link dropdown-toggle" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Platforms</a>
       <div class="dropdown-menu" aria-labelledby="dropdown01" data-distinct-type="machine" data-url-Label="platforms"></div>
       </li>
       <li class="nav-item dropdown">
-      <a class="nav-link dropdown-toggle" href="{{ request.script_root }}/users" id="dropdown02" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Users</a>
+      <a class="nav-link dropdown-toggle" id="dropdown02" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Users</a>
       <div class="dropdown-menu" aria-labelledby="dropdown02" data-distinct-type="user" data-url-Label="users"></div>
       </li>
       <li class="nav-item dropdown">
-      <a class="nav-link dropdown-toggle" href="{{ request.script_root }}/users" id="dropdown02" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Benchmarks</a>
+      <a class="nav-link dropdown-toggle" id="dropdown02" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Benchmarks</a>
       <div class="dropdown-menu" aria-labelledby="dropdown02"></div>
       </li>
       <a href="/about" class="nav-link">About</a>
     </ul>
-    <form class="form-inline my-2 my-lg-0">
+    <form class="form-inline my-2 my-lg-0" style="display:none">
       <span><input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" id="searchBar"></span>
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="searchButton">Search</button>
     </form>
@@ -109,8 +109,7 @@
         }
       }
     }
-
-    function searchEvt(evt){
+        function searchEvt(evt){
       if(evt)
         evt.preventDefault();
       if(searchBar.value!="")
@@ -126,6 +125,7 @@
     }
 
     //predictive search functionality:
+    //This search bar has been depricated, but it's here if you need to enable it:
     searchPredict = new predictiveSearch.element(searchBar,"sb");
     searchBar.onkeydown = evt=>{
     if(evt.key == "Enter" && searchPredict.allowEnter) searchEvt(evt);;
@@ -138,8 +138,6 @@
     }
     searchBar.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("sb"),150);
     searchPredict.pTextMenu.style.zIndex = 1001;
-
-
     </script>
   <footer class="footer">
     <div class="container">

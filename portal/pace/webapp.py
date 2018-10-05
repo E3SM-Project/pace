@@ -120,7 +120,7 @@ def summaryQuery(expID,rank):
         basePath+="portal/pace/"
     else:
         basePath+="assets/"
-    basePath+="static/samples"
+    basePath+="static/samples/"
     if expID == "-1":
         resultNodes = mt.parse(basePath+"model_timing.0000.new")
     elif expID == "-2":
@@ -158,11 +158,13 @@ def expsList():
 
 @app.route("/search/")
 @app.route("/search/<searchQuery>")
-def searchPage(searchQuery="*",isHomepage=False):
-    homePageStr = ""
-    if isHomepage:
-        homePageStr = "var homePage = true;"
-    return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';",homePageStr = homePageStr)
+@app.route("/search/<searchQuery>/<getDistinct>")
+def searchPage(searchQuery="*",isHomePage=False,getDistinct = ""):
+    homePageStr = False
+    getDistinctStr = ""
+    if getDistinct == "distinct" or getDistinct == True:
+        getDistinctStr="getDistinct = true;"
+    return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';",homePage = isHomePage,getDistinctStr= getDistinctStr)
 
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
@@ -190,7 +192,7 @@ def expsAjax(pageNum):
 def searchBar(searchTerms,limit = False,matchAll = False):
     resultItems = []
     filteredItems = []
-    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res"]
+    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res","timingprofile.case"]
     termList = []
     if searchTerms == "*":
         queryStr = "select "+str(variableList).strip("[]").replace("'","")+" from timingprofile order by expid desc"
@@ -283,11 +285,16 @@ def getDistinct(entry):
 
 @app.route("/platforms/<platform>/")
 def platformsRedirect(platform):
-    return searchPage(platform)
+    return searchPage("machine:"+platform,False,True)
 
 @app.route("/users/<user>/")
 def usersRedirect(user):
-    return searchPage(user)
+    return searchPage("user:"+user,False,True)
+
+@app.route("/benchmarks/<keyword>")
+def benchmarksRedirect(keyword):
+    splitStr = keyword.split(" ")
+    return searchPage("compset:"+splitStr[0]+" res:"+splitStr[1],False,True)
 
 #A function to compare two things in alphabetical order. If word1 should be earlier alphabetized, return true.
 def charCompare(word1,word2):
@@ -306,12 +313,15 @@ def searchPrediction(keyword):
     #The keyword is designed to be a single word without any potential database loopholes:
     keyword = keyword.replace("\\c","").replace(";","").replace(" ","")
     #Grab elements based on these columns:
-    columnNames = ["user","machine","expid","compset"]
+    columnNames = ["user","machine","expid","compset","timingprofile.case"]
     resultWords = []
     for column in columnNames:
+        colName = column
+        if "." in column:
+            colName = colName.split(".")[1]
         distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '"+keyword+"%%' limit 20").fetchall()
         for element in distQuery:
-            resultWords.append(str(element[column]))
+            resultWords.append(str(element[colName]))
     #Sort them by similar name:
     for i in range(len(resultWords)):
         if keyword[0] == resultWords[i][0]:

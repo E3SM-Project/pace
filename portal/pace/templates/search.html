@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block topscripts %}
-	<title> {%if homePageStr==""%}PACE - Experiments{%else%}PACE - Home{%endif%}</title>
+	<title> {%if homePage == false%}PACE - Experiments{%else%}PACE - Home{%endif%}</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.widgets.min.js"></script>
@@ -20,7 +20,7 @@
 {% endblock %}
 
 {% block content %}
-{%if homePageStr!=""%}
+{%if homePage%}
 <p style="text-align:center" id="homePageContent"><span id="homeSearchDiv"><input class="form-control" id="homeSearchBar" style="font-size:1em;height:60px;" placeholder="Keyword"/></span>
 <button class="btn-lg btn-info" style="height:3em;margin-top:2px;" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button><br>
 <input type="checkbox" id="matchModeCheck" style="margin-top:10px;margin-right:4px"/>Category Search</p>
@@ -40,10 +40,10 @@
 		<th>Machine</th>
 		<th>Compset</th>
 		<th>Res</th>
+		<th>Case</th>
 		<th>Total PEs</th>
 		<th>Run Length <br><span style="font-size:75%">(days)</span></th>
 		<th>Throughput <br><span style="font-size:75%">(sim_years/day)</span></th>
-		<th>MPI Tasks/Node</th>
 		<th>ExpDate</th>
 		<th>Summary Charts</th>
     </tr>
@@ -57,11 +57,11 @@
 {% block bottomscripts %}
 <script src="/static/js/search.js"></script>
 <script>
-var homePage = false;
 {{sq|safe}}
-{{homePageStr|safe}}
-
-function searchAndCheck(sq = searchQuery,matchMode = false){
+var getDistinct = false;
+{{getDistinctStr|safe}}
+//getDistinct should only be flagged to true when in a search page (not the home page), so the template assumes accordingly...
+function searchAndCheck(sq = searchQuery,matchMode = (getDistinct?true:false) ){
 	searchObj.search(sq,searchObj.limit,()=>{
 	if(searchObj.searchData.length == searchObj.limit){
 	 searchObj.limit*=2;
@@ -70,14 +70,13 @@ function searchAndCheck(sq = searchQuery,matchMode = false){
 	},matchMode);
 }
 
-{%if homePageStr !=""%}
+{%if homePage%}
 matchModeCheck.onclick = function(){
+	homeSearchBar.value="";
 	homeSearchBar.placeholder = (this.checked?"user:name machine:platform colname:value ...":"Keyword");
 	if(homeSearchBar.innerHTML.replace(" ","")!="")
 		searchAndCheck(homeSearchBar.value,matchModeCheck.checked);
 }
-searchBar.style.display = "none";
-searchButton.style.display = "none";
 
 //predictive search + home search functionality:
 homeSearchPredict = new predictiveSearch.element(homeSearchBar,"hsb");
