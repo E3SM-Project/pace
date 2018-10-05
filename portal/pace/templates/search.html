@@ -11,11 +11,11 @@
 
 {% block content %}
 {%if homePageStr!=""%}
-<p style="text-align:center" id="homePageContent"><span><input class="form-control" id="homeSearchBar" style="font-size:1.5em;text-align:center;height:60px;width:40%;margin-left:5%;display:inline-block;margin-right:5px;margin-top:2px;" placeholder="Keyword"/></span>
+<p style="text-align:center" id="homePageContent"><span><input class="form-control" id="homeSearchBar" style="font-size:1.5em;text-align:left;height:60px;width:40%;margin-left:5%;display:inline-block;margin-right:5px;margin-top:2px;" placeholder="Keyword"/></span>
 <button class="btn-lg btn-info" style="height:3em;margin-top:2px;" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button><br>
-<input type="checkbox" id="matchModeCheck" style="margin-right:4px"/>Category Search</p>
+<input type="checkbox" id="matchModeCheck" style="margin-top:10px;margin-right:4px"/>Category Search</p>
 {%else%}
-<h4> Experiments </h4>
+<h4>Experiments : </h4>
 {%endif%}
 <p style="text-align:right">
 	<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>Compare</button></a>
@@ -25,7 +25,17 @@
 <table id="expTable" class="table table-striped">
 <thead>
     <tr>
-        <th>ID</th><th>User</th><th>Machine</th><th>Total PEs</th><th>Run Length <span style="font-size:75%"> (days)</span></th><th>Throughput<span style="font-size:75%"> (simulated_years/day)</span></th><th>MPI Tasks/Node</th><th>Date</th><th>Summary Data</th>
+        <th>ID</th>
+		<th>User</th>
+		<th>Machine</th>
+		<th>Compset</th>
+		<th>Res</th>
+		<th>Total PEs</th>
+		<th>Run Length <br><span style="font-size:75%">(days)</span></th>
+		<th>Throughput <br><span style="font-size:75%">(sim_years/day)</span></th>
+		<th>MPI Tasks/Node</th>
+		<th>ExpDate</th>
+		<th>Summary Charts</th>
     </tr>
 </thead>
 <tbody id="searchBody"></tbody>
@@ -52,7 +62,7 @@ function searchAndCheck(sq = searchQuery,matchMode = false){
 
 {%if homePageStr !=""%}
 matchModeCheck.onclick = function(){
-	homeSearchBar.placeholder = (this.checked?"user:name machine:platform etc:etc":"Keyword");
+	homeSearchBar.placeholder = (this.checked?"user:name machine:platform colname:value ...":"Keyword");
 	if(homeSearchBar.innerHTML.replace(" ","")!="")
 		searchAndCheck(homeSearchBar.value,matchModeCheck.checked);
 }
