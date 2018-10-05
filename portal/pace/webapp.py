@@ -190,7 +190,7 @@ def expsAjax(pageNum):
 def searchBar(searchTerms,limit = False,matchAll = False):
     resultItems = []
     filteredItems = []
-    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date"]
+    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res"]
     termList = []
     if searchTerms == "*":
         queryStr = "select "+str(variableList).strip("[]").replace("'","")+" from timingprofile order by expid desc"
@@ -315,7 +315,7 @@ def searchPrediction(keyword):
     #The keyword is designed to be a single word without any potential database loopholes:
     keyword = keyword.replace("\\c","").replace(";","").replace(" ","")
     #Grab elements based on these columns:
-    columnNames = ["user","machine","expid"]
+    columnNames = ["user","machine","expid","compset"]
     resultWords = []
     for column in columnNames:
         distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '%%"+keyword+"%%' limit 20").fetchall()
@@ -344,8 +344,8 @@ def getRuntimeSvg(expid):
         for key in resultElement.keys():
             peQuery = db.session.query(Pelayout.root_pe,Pelayout.tasks).filter(Pelayout.expid == int(expid),Pelayout.component.ilike("%"+key+"%")).all()
             if len(peQuery) > 0:
-                resultElement[key]["root_pe"] = peQuery[0].root_pe
-                resultElement[key]["tasks"] = peQuery[0].tasks -1
+                resultElement[key]["root_pe"] = float(peQuery[0].root_pe)
+                resultElement[key]["tasks"] = float(peQuery[0].tasks) -1
     except ValueError:
         return render_template("error.html"),404
     return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")
