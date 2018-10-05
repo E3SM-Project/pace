@@ -28,18 +28,16 @@ th,td,thead{
 Id: {{ exp.expid}}
 User: {{exp.user}} 
 Machine: {{exp.machine}} 
-Total PEs: {{exp.total_pes_active}} 
-Run length: {{exp.run_length}} 
-Throughput: {{exp.model_throughput}}
-MPI tasks/node: {{exp.mpi_tasks_per_node}}
 Compset: {{exp.compset}} 
+Case: {{exp.case}}
 Res: {{exp.res}} 
-
 Runtime: {{ runtime[0].seconds }} seconds
-Pelayout: {{ pelayout }}
-Ranks:
-{%for rank in ranks%}<a href="/summary/{{expid}}/{{rank.rank}}">{{rank.rank}}</a>
-{%endfor%}
+Throughput: {{exp.model_throughput}} SYPD
+Total PEs: {{exp.total_pes_active}}
+Run length: {{exp.run_length}} 
+MPI tasks/node: {{exp.mpi_tasks_per_node}}
+Summary Charts: {% for rank in ranks -%}<a href="/summary/{{expid}}/{{rank.rank}}">{{rank.rank}}</a> &nbsp;
+{%- endfor %}
 
 <a href="/static/data/experiment-{{exp.lid}}.zip">Download Raw Data</a>
 </code></pre>
@@ -60,10 +58,11 @@ Ranks:
 </table>
 <img id="runtimeImg" style="width:50%;height:50%;display:inline-block;margin-top:-190px"/>
 </div>
+
 <script>
 var imgLink = detectRootUrl()+"svg/runtime/{{expid}}";
 runtimeImg.src=imgLink;
-expsummmary.innerHTML+="<a href='"+imgLink+"'>Link to Runtime Chart</a>"
+//expsummmary.innerHTML+="<a href='"+imgLink+"'>Link to Runtime Chart</a>"
 </script>
 
 {% endblock %}

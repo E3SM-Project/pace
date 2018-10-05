@@ -203,10 +203,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
         for item in resultItems:
             resultDict = {}
             for key in item.keys():
-                if 'Decimal' in str(item[key]):
-                    resultDict[key] = str(item[key].precision)
-                else:
-                    resultDict[key] = str(item[key])
+                resultDict[key] = str(item[key])
             filteredItems.append(resultDict)
 
     elif matchAll == "matchall":
@@ -233,10 +230,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
         for item in resultItems:
             resultDict = {}
             for key in item.keys():
-                if 'Decimal' in str(item[key]):
-                    resultDict[key] = str(item[key].precision)
-                else:
-                    resultDict[key] = str(item[key])
+                resultDict[key] = str(item[key])
             filteredItems.append(resultDict)
 
     else:
@@ -265,10 +259,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
                 if unique:
                     resultDict = {}
                     for key in element.keys():
-                        if 'Decimal' in str(element[key]):
-                            resultDict[key] = str(element[key].precision)
-                        else:
-                            resultDict[key] = str(element[key])
+                        resultDict[key] = str(element[key])
                     filteredItems.append(resultDict)
     #Grab the ranks based of of filteredItems:
     rankList = []
@@ -318,7 +309,7 @@ def searchPrediction(keyword):
     columnNames = ["user","machine","expid","compset"]
     resultWords = []
     for column in columnNames:
-        distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '%%"+keyword+"%%' limit 20").fetchall()
+        distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '"+keyword+"%%' limit 20").fetchall()
         for element in distQuery:
             resultWords.append(str(element[column]))
     #Sort them by similar name:
@@ -340,12 +331,13 @@ def getRuntimeSvg(expid):
     try:
         runtimeQuery = db.session.query(Runtime).filter_by(expid = int(expid)).all()
         for element in runtimeQuery:
-            resultElement[element.component] = {"seconds":element.seconds,"model_years":element.model_years,"model_day":element.model_day}
+            #These Decimal objects don't have "precision" values, while the ones in searchBar do... :/ [probably because of how these were queried]
+            resultElement[element.component] = {"seconds":float(element.seconds),"model_years":float(element.model_years),"model_day":float(element.model_day)}
         for key in resultElement.keys():
             peQuery = db.session.query(Pelayout.root_pe,Pelayout.tasks).filter(Pelayout.expid == int(expid),Pelayout.component.ilike("%"+key+"%")).all()
             if len(peQuery) > 0:
-                resultElement[key]["root_pe"] = float(peQuery[0].root_pe)
-                resultElement[key]["tasks"] = float(peQuery[0].tasks) -1
+                resultElement[key]["root_pe"] = peQuery[0].root_pe
+                resultElement[key]["tasks"] = peQuery[0].tasks -1
     except ValueError:
         return render_template("error.html"),404
     return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")

@@ -43,7 +43,7 @@
       </li>
       <li class="nav-item dropdown">
       <a class="nav-link dropdown-toggle" href="{{ request.script_root }}/users" id="dropdown02" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Benchmarks</a>
-      <div class="dropdown-menu" aria-labelledby="dropdown02" data-distinct-type="benchmark" data-url-Label="benchmarks"></div>
+      <div class="dropdown-menu" aria-labelledby="dropdown02"></div>
       </li>
       <a href="/about" class="nav-link">About</a>
     </ul>
@@ -57,7 +57,8 @@
   <main role="main" class="container">
     <div class="pace-main-content">
 	<br>
-    <center><h2> Performance Analytics for Climate Experiments (PACE)</h2></center>
+    <h2 style="text-align:center"> Performance Analytics for Climate Experiments (PACE)</h2>
+	<br>
 	<!-- <p style="border:1px solid darkgrey;border-radius:1px" /> -->
       {% block content %}
       {% endblock %}
@@ -124,7 +125,7 @@
       searchEvt(evt);
     }
 
-    //predictive search + quick search functionality:
+    //predictive search functionality:
     searchPredict = new predictiveSearch.element(searchBar,"sb");
     searchBar.onkeydown = evt=>{
     if(evt.key == "Enter" && searchPredict.allowEnter) searchEvt(evt);;
@@ -137,6 +138,8 @@
     }
     searchBar.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("sb"),150);
     searchPredict.pTextMenu.style.zIndex = 1001;
+
+
     </script>
   <footer class="footer">
     <div class="container">
