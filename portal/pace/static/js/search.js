@@ -44,17 +44,19 @@ var searchObj = {
             searchResult.innerHTML+="<td><a href='"+detectRootUrl()+"exp-details/"+element.expid+"' target='_blank' title='Click here for more details.'>"+element.expid+
             "</a></td><td>"+element.user+"</td>"+
             "<td>"+element.machine+"</td>"+
+            "<td>"+element.compset+"</td>"+
+            "<td>"+element.res+"</td>"+
+            "<td>"+element.case.substr(0,20)+(element.case.length > 20?"...":"")+"</td>"+
             "<td>"+element.total_pes_active+"</td>"+
             "<td>"+element.run_length+"</td>"+
             "<td>"+element.model_throughput+"</td>"+
-            "<td>"+element.mpi_tasks_per_node+"</td>"+
-            "<td>"+element.exp_date+"</td>";
+            "<td>"+(element.curr_date?element.curr_date:element.exp_date)+"</td>";
             let checkStr = "<td>";
             let checkMoreStr = "<div><div style='display:none' class='moreContainer'>";
             let foundMore = false;
             searchObj.rankData[index][0].forEach( rank=>{
                 outputStr= "<input type='checkbox' onchange='searchObj.scanChecks()' style='margin-right:3px'/><a href='"+detectRootUrl()+"summary/"+element.expid+"/"+rank+"' title='View this experiment.'><b>"+rank+"</b></a></br>"; 
-                if(rank == "stats" || rank[0] == "0")
+                if(rank == "stats" || rank == "0")
                     checkStr+=outputStr;
                 else {
                     checkMoreStr+=outputStr;

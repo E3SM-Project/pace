@@ -115,15 +115,16 @@ def summaryHtml(expID,rank,compare="",threads=""):
 def summaryQuery(expID,rank):
     resultNodes=""
     listIndex = 0
-    samplePath = "/pace/"
+    basePath = "/pace/"
     if os.getenv("PACE_DOCKER_INSTANCE") == "1":
-        samplePath+="portal/pace/"
+        basePath+="portal/pace/"
     else:
-        samplePath+="assets/"
+        basePath+="assets/"
+    basePath+="static/samples/"
     if expID == "-1":
-        resultNodes = mt.parse(samplePath+"static/samples/model_timing.0000.new")
+        resultNodes = mt.parse(basePath+"model_timing.0000.new")
     elif expID == "-2":
-        resultNodes = mt.parse(samplePath+"static/samples/model_timing_stats")
+        resultNodes = mt.parse(basePath+"model_timing_stats")
     else:
         resultNodes = db.engine.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
     if rank == 'stats':
@@ -157,11 +158,13 @@ def expsList():
 
 @app.route("/search/")
 @app.route("/search/<searchQuery>")
-def searchPage(searchQuery="*",isHomepage=False):
-    homePageStr = ""
-    if isHomepage:
-        homePageStr = "var homePage = true;"
-    return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';",homePageStr = homePageStr)
+@app.route("/search/<searchQuery>/<getDistinct>")
+def searchPage(searchQuery="*",isHomePage=False,getDistinct = ""):
+    homePageStr = False
+    getDistinctStr = ""
+    if getDistinct == "distinct" or getDistinct == True:
+        getDistinctStr="getDistinct = true;"
+    return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';",homePage = isHomePage,getDistinctStr= getDistinctStr)
 
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
@@ -189,7 +192,7 @@ def expsAjax(pageNum):
 def searchBar(searchTerms,limit = False,matchAll = False):
     resultItems = []
     filteredItems = []
-    variableList = ["user","expid","machine","compset", "res", "total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date"]
+    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res","timingprofile.case"]
     termList = []
     if searchTerms == "*":
         queryStr = "select "+str(variableList).strip("[]").replace("'","")+" from timingprofile order by expid desc"
@@ -202,10 +205,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
         for item in resultItems:
             resultDict = {}
             for key in item.keys():
-                if 'Decimal' in str(item[key]):
-                    resultDict[key] = str(item[key].precision)
-                else:
-                    resultDict[key] = str(item[key])
+                resultDict[key] = str(item[key])
             filteredItems.append(resultDict)
 
     elif matchAll == "matchall":
@@ -232,10 +232,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
         for item in resultItems:
             resultDict = {}
             for key in item.keys():
-                if 'Decimal' in str(item[key]):
-                    resultDict[key] = str(item[key].precision)
-                else:
-                    resultDict[key] = str(item[key])
+                resultDict[key] = str(item[key])
             filteredItems.append(resultDict)
 
     else:
@@ -264,10 +261,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
                 if unique:
                     resultDict = {}
                     for key in element.keys():
-                        if 'Decimal' in str(element[key]):
-                            resultDict[key] = str(element[key].precision)
-                        else:
-                            resultDict[key] = str(element[key])
+                        resultDict[key] = str(element[key])
                     filteredItems.append(resultDict)
     #Grab the ranks based of of filteredItems:
     rankList = []
@@ -291,11 +285,16 @@ def getDistinct(entry):
 
 @app.route("/platforms/<platform>/")
 def platformsRedirect(platform):
-    return searchPage(platform)
+    return searchPage("machine:"+platform,False,True)
 
 @app.route("/users/<user>/")
 def usersRedirect(user):
-    return searchPage(user)
+    return searchPage("user:"+user,False,True)
+
+@app.route("/benchmarks/<keyword>")
+def benchmarksRedirect(keyword):
+    splitStr = keyword.split(" ")
+    return searchPage("compset:"+splitStr[0]+" res:"+splitStr[1],False,True)
 
 #A function to compare two things in alphabetical order. If word1 should be earlier alphabetized, return true.
 def charCompare(word1,word2):
@@ -314,12 +313,15 @@ def searchPrediction(keyword):
     #The keyword is designed to be a single word without any potential database loopholes:
     keyword = keyword.replace("\\c","").replace(";","").replace(" ","")
     #Grab elements based on these columns:
-    columnNames = ["user","machine","expid"]
+    columnNames = ["user","machine","expid","compset","timingprofile.case"]
     resultWords = []
     for column in columnNames:
-        distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '%%"+keyword+"%%' limit 20").fetchall()
+        colName = column
+        if "." in column:
+            colName = colName.split(".")[1]
+        distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '"+keyword+"%%' limit 20").fetchall()
         for element in distQuery:
-            resultWords.append(str(element[column]))
+            resultWords.append(str(element[colName]))
     #Sort them by similar name:
     for i in range(len(resultWords)):
         if keyword[0] == resultWords[i][0]:
@@ -339,7 +341,8 @@ def getRuntimeSvg(expid):
     try:
         runtimeQuery = db.session.query(Runtime).filter_by(expid = int(expid)).all()
         for element in runtimeQuery:
-            resultElement[element.component] = {"seconds":element.seconds,"model_years":element.model_years,"model_day":element.model_day}
+            #These Decimal objects don't have "precision" values, while the ones in searchBar do... :/ [probably because of how these were queried]
+            resultElement[element.component] = {"seconds":float(element.seconds),"model_years":float(element.model_years),"model_day":float(element.model_day)}
         for key in resultElement.keys():
             peQuery = db.session.query(Pelayout.root_pe,Pelayout.tasks).filter(Pelayout.expid == int(expid),Pelayout.component.ilike("%"+key+"%")).all()
             if len(peQuery) > 0:
