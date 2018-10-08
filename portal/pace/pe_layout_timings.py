@@ -44,7 +44,7 @@ default_args = {
     'addlayout': True,
     }
 ## Do you have a block color preference?
-default_args['color'] = cm.rainbow(np.linspace(0,1,len(default_args['comps'])))
+default_args['color'] = ["#99ffcc","#33ff33","#FF0000","#0000B0","#0000FF","#66ccff","#00FFFF","#ff9900"]
 ###                       END Options                                       ###
 ###############################################################################
 ###############################################################################
@@ -176,7 +176,7 @@ def render(runtimeIn,opt_dict = None):
 
     #Save to a file object:
     fileObj = StringIO.StringIO()
-    plt.savefig(fileObj,dpi=400,bbox_inches='tight')
+    plt.savefig(fileObj,dpi=400,bbox_inches='tight',facecolor="#00000000")
     fileObj.seek(0)
     plt.show()
     plt.close()
