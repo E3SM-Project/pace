@@ -8,23 +8,35 @@
 <script>hljs.initHighlightingOnLoad();</script>
 
 <style>
-th,td,thead{
-    border:1px solid
+.runtimeTable th, .runtimeTable td{
+    border:1px solid;
 }
 .runtimeTable{
-    display:inline-block;
     background-color:#F0F0F0;
     font-family:monospace;
     color:#444;
-    margin-right:5px;
-    margin-top:50px
+}
+
+.inBlock{
+    display:inline-block;
+}
+#runtimeImg{
+    width:auto;
+    max-width:7in;
+    height:auto;
+    /*margin-top:-25%*/
 }
 </style>
 {% endblock topcontent %}
 
-<h3> Experiment Details</h3>
-<!--<pre><code class="json" id="expdata">{{myjson|safe}}</code></pre>-->
-<pre><code id="expsummmary">
+<h3 style="text-align:center">Experiment Details</h3>
+
+<table style="margin-left:11%">
+    <tbody>
+        <tr>
+        <td class="inBlock">
+            <!--Pre's take *everything literally, so everyting inside this pre is unformatted...-->
+            <pre style="width:auto"><code id="expsummary">
 Id: {{ exp.expid}}
 User: {{exp.user}} 
 Machine: {{exp.machine}} 
@@ -37,27 +49,32 @@ Total PEs: {{exp.total_pes_active}}
 Run length: {{exp.run_length}} 
 MPI tasks/node: {{exp.mpi_tasks_per_node}}
 Summary Charts: {% for rank in ranks -%}<a href="/summary/{{expid}}/{{rank.rank}}">{{rank.rank}}</a> &nbsp;
-{%- endfor %}
-
+            {%- endfor %}
 <a href="/static/data/experiment-{{exp.lid}}.zip">Download Raw Data</a>
-</code></pre>
-<div style="text-align:center">
-<table class="runtimeTable">
-    <thead>
-        <tr>
-        <th>Component</th><th>Run time(s)</th>
+            </code></pre>
+        </td>
+        <td class="inBlock">
+            <img id="runtimeImg"/>
+        </td>
+        <td class="inBlock">
+            <table class="runtimeTable">
+                <thead>
+                    <tr>
+                    <th>Component</th><th>Run time(s)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {%for element in runtime%}
+                <tr>
+                    <td>{{element.component}}</td><td>{{element.seconds}}</td>
+                </tr>
+                {%endfor%}
+                </tbody>
+            </table>
+        </td>
         </tr>
-    </thead>
-    <tbody>
-    {%for element in runtime%}
-    <tr>
-        <td>{{element.component}}</td><td>{{element.seconds}}</td>
-    </tr>
-    {%endfor%}
     </tbody>
 </table>
-<img id="runtimeImg" style="width:50%;height:50%;display:inline-block;margin-top:-190px"/>
-</div>
 
 <script>
 var imgLink = detectRootUrl()+"svg/runtime/{{expid}}";
