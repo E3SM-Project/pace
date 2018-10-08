@@ -16,7 +16,6 @@ RUN ["bash","docker/devUserAdd.sh"]
 RUN addgroup paceteam && usermod -aG paceteam root && usermod -aG paceteam devuser
 RUN chmod 775 -R /pace && chown root:paceteam -R /pace
 RUN chmod 775 -R /pace/.git && chown root:paceteam -R /pace/.git
-RUN rm docker/devUserAdd.sh
 #end dev-env
 
 #If you don't need git, uncomment this:

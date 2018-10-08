@@ -31,7 +31,7 @@
 	<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>Compare</button></a>
 	<a><button class="btn btn-primary btn-dark" id='searchViewBtn' disabled>View</button></a>
 </p>
-<!--style="border:1px solid lightgrey;border-radius:5px"-->
+<div style="overflow-x:scroll;width:100%">
 <table id="expTable" class="table table-striped">
 <thead>
     <tr>
@@ -50,6 +50,7 @@
 </thead>
 <tbody id="searchBody"></tbody>
 </table>
+</div>
 <p style="text-align:right;"><button class="btn btn-dark" id="moreBtn" onclick="searchAndCheck()">More Exps</button></p>
 <br>
 {% endblock %}

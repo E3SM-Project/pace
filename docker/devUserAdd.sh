@@ -1,2 +1,2 @@
-#This file is designed for docker; it's temporary, and is deleted after use in the Dockerfile.
+#This file is designed for docker. It creates the devuser with the password:1234
 echo -e "1234\n1234" | adduser devuser;
