@@ -228,6 +228,8 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
             syntax = element.split(":")
             if syntax[0] in variableList:
                 strList.append(syntax[0]+' like "%%'+syntax[1]+'%%"')
+            elif syntax[0] == "case":
+                strList.append('timingprofile.case like "%%'+syntax[1]+'%%"')
         compiledString = "select " + str(variableList).strip("[]").replace("'","") + " from timingprofile where "
         for i in range(len(strList)):
             compiledString+=strList[i]
