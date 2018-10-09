@@ -336,8 +336,8 @@ def zipFolder(exptag,fpath):
 		root=fpath
 		for path, subdirs, files in os.walk(root):
 			for name in subdirs:
-				if name.startswith(exptag[i]):
-					shutil.make_archive(os.path.join(newroot,'experiment-'+exptag[i]),'zip',os.path.join(path, name))
+				if name.startswith('CaseDocs.'+str(exptag[i])):
+					shutil.make_archive(os.path.join(newroot,'experiment-'+exptag[i]),'zip',path)
 	return
 
 def insertTiming(mtFile,expID,db):
