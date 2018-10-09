@@ -44,7 +44,7 @@ default_args = {
     'addlayout': True,
     }
 ## Do you have a block color preference?
-default_args['color'] = ["#99ffcc","#33ff33","#FF0000","#0000B0","#0000FF","#66ccff","#00FFFF","#ff9900"]
+default_args['color'] = ["#00FFFF","#00ff40","#FF0000","#0000B0","#0000FF80","#66ccff","#FF99CC","#ff9900"]
 ###                       END Options                                       ###
 ###############################################################################
 ###############################################################################
@@ -127,7 +127,7 @@ def render(runtimeIn,opt_dict = None):
     ## Build figure
     fig = plt.figure(figsize=[16,10])
     ax  = fig.add_subplot(111)
-    ax.add_artist(patches.Rectangle((0,0),1.0,1.0,fill=False,hatch='//'))
+    ax.add_artist(patches.Rectangle((0,0),1.0,1.0,fill=False))
     ## Each component is built as a rectangle patch with
     ## width=pe_layout and height=runtime
     y_pts = [[-1,0,0]]
