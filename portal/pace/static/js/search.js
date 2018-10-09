@@ -7,7 +7,7 @@ var searchObj = {
     lastRankIndex:[0,0],
     afterFunctions:[],
     search:function(searchStr,limit = this.limit,afterFunc,matchAll = false,orderBy,ascDsc=false){
-        console.log("HI SARAAAAT!");
+        console.log("HI SARAAAAT!"); //This is VERY important part of the function.
         searchBody.innerHTML="";
         if(afterFunc)
             this.afterFunctions.push(afterFunc);
@@ -85,6 +85,7 @@ var searchObj = {
         }
         });
     },
+    //Scans all checkboxes to turn on the comparison and view buttons accordingly.
     scanChecks:function(){
         let searchItems = document.getElementsByClassName("searchItem");
         for(let i=0;i<this.searchData.length;i++){
@@ -163,7 +164,7 @@ var searchObj = {
         if(!tf) searchViewBtn.parentElement.href = "";
         searchViewBtn.className = (tf?"btn btn-primary btn-dark":"btn btn-primary btn-success");
     },
-    /*
+/*
 The table values are right here so they don't have to be repeated.
 Index definitions:
 0: Display name
