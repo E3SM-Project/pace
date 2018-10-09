@@ -6,12 +6,12 @@ var searchObj = {
     rankData:[],
     lastRankIndex:[0,0],
     afterFunctions:[],
-    search:function(searchStr,limit = this.limit,afterFunc,matchAll = false){
+    search:function(searchStr,limit = this.limit,afterFunc,matchAll = false,orderBy,ascDsc=false){
         console.log("HI SARAAAAT!");
         searchBody.innerHTML="";
         if(afterFunc)
             this.afterFunctions.push(afterFunc);
-        $.get(detectRootUrl()+"ajax/search/"+searchStr.replace(" ","+")+"/"+limit+(matchAll?"/matchall":""),(data)=>{
+        $.get(detectRootUrl()+"ajax/search/"+searchStr.replace(" ","+")+"/"+limit+(matchAll?"/matchall":"/false")+(orderBy?"/"+orderBy+"/"+(ascDsc?"asc":"desc"):""),(data)=>{
         let resultData = JSON.parse(data)
         this.searchData = resultData[0];
         this.rankData = resultData[1];
@@ -41,16 +41,21 @@ var searchObj = {
             let searchResult = document.createElement("tr");
             searchResult.className = "searchItem";
             searchResult.value = index;
-            searchResult.innerHTML+="<td><a href='"+detectRootUrl()+"exp-details/"+element.expid+"' target='_blank' title='Click here for more details.'>"+element.expid+
-            "</a></td><td>"+element.user+"</td>"+
-            "<td>"+element.machine+"</td>"+
-            "<td>"+element.compset+"</td>"+
-            "<td>"+element.res+"</td>"+
-            "<td>"+element.case.substr(0,20)+(element.case.length > 20?"...":"")+"</td>"+
-            "<td>"+element.total_pes_active+"</td>"+
-            "<td>"+element.run_length+"</td>"+
-            "<td>"+element.model_throughput+"</td>"+
-            "<td>"+(element.curr_date?element.curr_date:element.exp_date)+"</td>";
+            this.expVars.forEach(val=>{
+                if(val[2]!==false){
+                    switch(val[1]){
+                        case "expid":
+                        searchResult.innerHTML+="<td><a href='"+detectRootUrl()+"exp-details/"+element.expid+"' target='_blank' title='Click here for more details.'>"+element.expid+"</a></td>";
+                        break;
+                        case "case": //XD
+                        case "compset":
+                        searchResult.innerHTML+="<td>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</td>";
+                        break;
+                        default:
+                        searchResult.innerHTML+="<td>"+element[val[1]]+"</td>";
+                    }
+                }
+            });
             let checkStr = "<td>";
             let checkMoreStr = "<div><div style='display:none' class='moreContainer'>";
             let foundMore = false;
@@ -157,5 +162,25 @@ var searchObj = {
         searchViewBtn.disabled = tf;
         if(!tf) searchViewBtn.parentElement.href = "";
         searchViewBtn.className = (tf?"btn btn-primary btn-dark":"btn btn-primary btn-success");
-    }
+    },
+    /*
+The table values are right here so they don't have to be repeated.
+Index definitions:
+0: Display name
+1: internal name
+2: display this value (true by default)
+3: additional html (can be left blank)
+*/
+    expVars:[
+    	["ID","expid"],
+    	["User","user"],
+    	["Machine","machine"],
+    	["Compset","compset"],
+    	["Res","res"],
+    	["Case","case"],
+    	["Total PEs","total_pes_active"],
+    	["Run Length","run_length",true,`<br><span style="font-size:75%">(days)</span>`],
+    	["Throughput","model_throughput",true,`<br><span style="font-size:75%">(sim_years/day)</span>`],
+    	["ExpDate","exp_date"]
+    ],
 }

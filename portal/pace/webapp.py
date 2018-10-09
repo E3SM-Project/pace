@@ -189,13 +189,23 @@ def expsAjax(pageNum):
 @app.route("/ajax/search/<searchTerms>")
 @app.route("/ajax/search/<searchTerms>/<limit>")
 @app.route("/ajax/search/<searchTerms>/<limit>/<matchAll>")
-def searchBar(searchTerms,limit = False,matchAll = False):
+@app.route("/ajax/search/<searchTerms>/<limit>/<matchAll>/<orderBy>")
+@app.route("/ajax/search/<searchTerms>/<limit>/<matchAll>/<orderBy>/<ascDsc>")
+def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc="desc"):
     resultItems = []
     filteredItems = []
     variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res","timingprofile.case"]
+    #This should be an easy way to determine if something's in the list
+    if orderBy == "case":
+        orderBy = "timingprofile.case"
+    elif orderBy not in variableList:
+        orderBy = "expid"
+    #Only asc and desc are allowed:
+    if ascDsc not in ["asc","desc"]:
+        ascDsc = "desc"
     termList = []
     if searchTerms == "*":
-        queryStr = "select "+str(variableList).strip("[]").replace("'","")+" from timingprofile order by expid desc"
+        queryStr = "select "+str(variableList).strip("[]").replace("'","")+" from timingprofile order by "+orderBy+" "+ascDsc
         if limit:
             queryStr+=" limit "+limit
         allResults = db.engine.execute(queryStr).fetchall()
@@ -223,7 +233,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
             compiledString+=strList[i]
             if not i==len(strList) - 1:
                 compiledString+=" and "
-        compiledString+=" order by expid desc limit "+limit+";"
+        compiledString+=" order by "+orderBy+" "+ascDsc+" limit "+limit+";"
         #Copy/paste from above:
         allResults = db.engine.execute(compiledString).fetchall()
         for result in allResults:
@@ -246,7 +256,7 @@ def searchBar(searchTerms,limit = False,matchAll = False):
                     queryStr+=" or "+word+" like "
                 queryStr+='"%%'+term+'%%"'
                 firstValue = False
-            queryStr+=" order by expid desc"
+            queryStr+=" order by "+orderBy+" "+ascDsc
             if limit:
                 queryStr+=" limit "+limit
             resultItems.append(db.engine.execute(queryStr).fetchall())
@@ -295,18 +305,6 @@ def usersRedirect(user):
 def benchmarksRedirect(keyword):
     splitStr = keyword.split(" ")
     return searchPage("compset:"+splitStr[0]+" res:"+splitStr[1],False,True)
-
-#A function to compare two things in alphabetical order. If word1 should be earlier alphabetized, return true.
-def charCompare(word1,word2):
-    maxCount = None
-    if len(word1) > len(word2):
-        maxCount = len(word2)
-    else:
-        maxCount = len(word1)
-    for i in range(maxCount):
-        if word1[i] < word2[i]:
-            return True
-    return False
 #This is designed for the search bar on the website. It predicts what a user may be looking for based on where the dev specifies to search.
 @app.route("/ajax/similarDistinct/<keyword>")
 def searchPrediction(keyword):
