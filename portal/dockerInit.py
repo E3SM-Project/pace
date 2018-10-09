@@ -1,3 +1,4 @@
+#This file was created because of weird scoping + circular-import problems when using __init__.py in a container.
 from pace.__init__ import *
 import os
 if __name__ == "__main__":

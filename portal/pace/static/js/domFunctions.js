@@ -128,6 +128,7 @@ var chartSettings = {
 }
 
 var resultChart = new Chart(chartTag, chartSettings);
+
 //You can't directly define specific variables for some reason when one is highlighted by chart.js, so here's a quick fix:
 chartTag.onmousemove = function(event){
     let results = resultChart.getElementAtEvent(event);
@@ -252,6 +253,7 @@ var dmObj={
     bgcolor:[[255,255,255],[25,25,25]],
     footColor:[[245,245,245],[17,17,17]],
     textColor:[[0,0,0],[100,100,100]],
+    //Turn dark mode on and off (complete with a smooth transition)
     toggle:function(tf){
         this.on = tf;
         //Change cookies:
@@ -295,6 +297,7 @@ var dmObj={
         });
 
     },
+    //Check to see what mode the user was on last time the page loaded.
     checkCookies:function(){
         let cookies = document.cookie.split(";");
         let cookieRegex = /darkMode/;
@@ -317,6 +320,7 @@ function resizeChart(dataSetCount = resultChart.data.datasets[0].data.length){
     setTimeout(()=>dataInfo.style.height = (parseFloat(dataInfo.style.height.replace("px","")) +1)+"px",10);
 }
 
+//Zoom in and out of the chart through a nifty shortcut.
 dataInfo.onwheel = function(evt){
     if(evt.altKey){
         evt.preventDefault();

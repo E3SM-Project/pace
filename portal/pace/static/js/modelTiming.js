@@ -453,6 +453,7 @@ var comparisonMode = {
             return compiledResult;
         }
     },
+    //This is different from the regular viewing mode. It creates a custom modelTiming object in order to display multiples at once.
     viewChart:function(id){
         childrenTemp = [];
         expNames = [];
@@ -518,16 +519,17 @@ var comparisonMode = {
             comparisonMode.finish();
         }
         else{
-        backButton.style.display="none";
-        this.on = true;
-        this.exp.view();
-        threadSelect.style.display = "none";
-        expSelect.style.display = "none";
-        summaryButton.click();
-        compareButton.innerHTML = "End Comparison";
-        compareButton.onclick = ()=>comparisonMode.finish();
+            backButton.style.display="none";
+            this.on = true;
+            this.exp.view();
+            threadSelect.style.display = "none";
+            expSelect.style.display = "none";
+            summaryButton.click();
+            compareButton.innerHTML = "End Comparison";
+            compareButton.onclick = ()=>comparisonMode.finish();
         }
     },
+    //Close comparison mode and go back to the regular view.
     finish:function(){
         backButton.style.display="";
         this.on = false;

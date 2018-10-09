@@ -107,10 +107,9 @@ def summaryHtml(expID,rank,compare="",threads=""):
         else:
             threadStr = threads
         extraStr+="threadList = "+json.dumps(threadStr.split(","))+";"
-            
-
     return render_template("modelTiming.html",exp = "var expData = ["+resultString+"];"+extraStr)
 
+#A rest-like API that retrives a model-timing tree in JSON from the database
 @app.route("/summaryQuery/<expID>/<rank>/",methods=["GET"])
 def summaryQuery(expID,rank):
     resultNodes=""
@@ -148,7 +147,8 @@ def summaryQuery(expID,rank):
         resultNodes = "["+json.dumps(newJson)+"]"
     return "["+resultNodes+","+json.dumps(mt.valueList[listIndex])+",\""+expID+"\",\""+rank+"\"]"
 
-@app.route("/exps")
+#Depcricated version of the search page
+"""@app.route("/exps")
 def expsList():
     myexps = []
     # initDatabase()
@@ -156,15 +156,6 @@ def expsList():
     # myexps = Timingprofile.query.order_by(Timingprofile.expid.asc()).limit(25)
     return render_template('exps.html', explist = myexps)
 
-@app.route("/search/")
-@app.route("/search/<searchQuery>")
-@app.route("/search/<searchQuery>/<getDistinct>")
-def searchPage(searchQuery="*",isHomePage=False,getDistinct = ""):
-    homePageStr = False
-    getDistinctStr = ""
-    if getDistinct == "distinct" or getDistinct == True:
-        getDistinctStr="getDistinct = true;"
-    return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';",homePage = isHomePage,getDistinctStr= getDistinctStr)
 
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
@@ -184,8 +175,20 @@ def expsAjax(pageNum):
     for exp in myexps:
 	# var row = [o.expid,o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.grid];
         pruned_data["data"].append({"expid": exp.expid, "user": exp.user, "machine": exp.machine, "total_pes_active": exp.total_pes_active, "run_length": exp.run_length, "model_throughput": exp.model_throughput, "mpi_tasks_per_node": str(exp.mpi_tasks_per_node), "compset": exp.compset, "grid": exp.grid})
-    return make_response(json.dumps(pruned_data))
+    return make_response(json.dumps(pruned_data))"""
 
+#The search page! This is the primary navigation page for the site. It changes depending on where the user is on the site.
+@app.route("/search/")
+@app.route("/search/<searchQuery>")
+@app.route("/search/<searchQuery>/<getDistinct>")
+def searchPage(searchQuery="*",isHomePage=False,getDistinct = ""):
+    homePageStr = False
+    getDistinctStr = ""
+    if getDistinct == "distinct" or getDistinct == True:
+        getDistinctStr="getDistinct = true;"
+    return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';",homePage = isHomePage,getDistinctStr= getDistinctStr)
+
+#This is a rest-like API that gives information about queried experiments from the timingprofile table.
 @app.route("/ajax/search/<searchTerms>")
 @app.route("/ajax/search/<searchTerms>/<limit>")
 @app.route("/ajax/search/<searchTerms>/<limit>/<matchAll>")
@@ -248,6 +251,7 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
             filteredItems.append(resultDict)
 
     else:
+        #A regular search (no matchall)
         for word in searchTerms.split("+"):
             termList.append(word.replace(";","").replace("\\c",""))
         for word in variableList:
@@ -295,6 +299,7 @@ def getDistinct(entry):
             queryList.append(element[entry])
     return json.dumps(queryList)
 
+#These three redirect to the search page with their respective category.
 @app.route("/platforms/<platform>/")
 def platformsRedirect(platform):
     return searchPage("machine:"+platform,False,True)
@@ -307,6 +312,8 @@ def usersRedirect(user):
 def benchmarksRedirect(keyword):
     splitStr = keyword.split(" ")
     return searchPage("compset:"+splitStr[0]+" res:"+splitStr[1],False,True)
+
+
 #This is designed for the search bar on the website. It predicts what a user may be looking for based on where the dev specifies to search.
 @app.route("/ajax/similarDistinct/<keyword>")
 def searchPrediction(keyword):
@@ -335,6 +342,7 @@ def searchPrediction(keyword):
                     break
     return json.dumps(resultWords)
 
+#This generates an svg graph of runtime information. It makes use of an algorhythm created by donahue5 (modified to work with this project)
 @app.route("/svg/runtime/<expid>")
 def getRuntimeSvg(expid):
     resultElement = {}
