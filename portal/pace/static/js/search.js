@@ -30,8 +30,8 @@ var searchObj = {
             });
             //Re-compile:
             searchStr = "";
-            elementList.forEach(element=>{
-                searchStr+=element.join(":")+" ";
+            elementList.forEach( (element,index)=>{
+                searchStr+=(index>0?" ":"")+element.join(":");
             });
         }
         $.get(detectRootUrl()+"ajax/search/"+searchStr.replace(" ","+")+"/"+limit+(matchAll?"/matchall":"/false")+(orderBy?"/"+orderBy+"/"+(ascDsc?"asc":"desc"):""),(data)=>{
