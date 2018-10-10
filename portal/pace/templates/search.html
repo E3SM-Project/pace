@@ -34,16 +34,20 @@
 {% block content %}
 {%if homePage%}
 {# If this is the homepage, the paragraph starts here, otherwise, it starts elsewhere...#}
-<p style="text-align:center" id="homePageContent"><span id="homeSearchDiv"><input class="form-control" id="homeSearchBar" style="font-size:1em;height:60px;" placeholder="Keyword"/></span>
-<button class="btn-lg btn-info" style="height:3em;margin-top:2px;" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button><br>
-<input type="checkbox" id="matchModeCheck" style="margin-top:10px;margin-right:4px"/>Category Search
-<span style="display:inline-block;margin-right:25px">
-	<button id='catRefButton' class="btn btn-default" onclick='$("#catReference").slideToggle(250)' style='display:none'>Reference</button>
-	<span id='catReference'></span>
-</span>
+<p style="text-align:center" id="homePageContent">
+	<span id="homeSearchDiv">
+	<input id="searchLink" readonly class="form-control" style="border-radius:5px;font-family:monospace;width:75%;margin-left:13%" placeholder="Link to your search will appear here" onmousedown="this.select()" value=""/>
+	<input class="form-control" id="homeSearchBar" style="font-size:1em;height:60px;" placeholder="Keyword"/>
+	</span>
+	<button class="btn-lg btn-info" style="height:3em;margin-top:2px;" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button><br>
+	<input type="checkbox" id="matchModeCheck" style="margin-top:10px;margin-right:4px"/>Category Search
+	<span style="display:inline-block;margin-right:25px">
+		<button id='catRefButton' class="btn btn-default" onclick='$("#catReference").slideToggle(250)' style='display:none'>Reference</button>
+		<span id='catReference'></span>
+	</span>
 {%else%}
 {# Paragraph starts here if it's just a regular search page #}
-<h4>Experiments : </h4>
+	<h4>Experiments : </h4>
 <p style="text-align:center">
 {%endif%}
 		<select id="orderBySelect" onchange="searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,matchModeCheck.checked,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)">
@@ -82,6 +86,7 @@ function searchAndCheck(sq = searchQuery,matchMode = (getDistinct?true:false) ){
 	}
 	else moreBtn.style.display = "none";
 	},matchMode,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked);
+	searchLink.value = sq == "*"?"":detectRootUrl()+"search/"+sq+(matchMode?"/distinct":"");
 }
 
 {%if homePage%}
@@ -112,14 +117,14 @@ homeSearchBar.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("hsb"),150);
 
 //Generate the refernece table:
 searchObj.expVars.forEach( (element,index)=>{
-	catReference.innerHTML+=(index > 0?"<br>":"")+"<b>"+element[0]+"</b> = "+element[1];
+	catReference.innerHTML+=(index > 0?"<br>":"")+"<b>"+element[0]+"</b> = "+(element[2]?element[2]:element[1]);
 });
 {%endif%}
 //Generate the table head:
 var tHead = expTable.getElementsByTagName("thead")[0].children[0];
 searchObj.expVars.forEach(element=>{
-	if(element[2] === undefined || element[2] === true)
-		tHead.innerHTML+="<th>"+element[0]+(element[3]!=undefined?element[3]:"")+"</th>";
+	if(element[3] === undefined || element[3] === true)
+		tHead.innerHTML+="<th>"+element[0]+(element[4]!=undefined?element[4]:"")+"</th>";
 });
 tHead.innerHTML+="<th>Summary Charts</th>";
 delete tHead;

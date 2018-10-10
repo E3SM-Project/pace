@@ -1,11 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
 {% block topcontent %}
-<!--<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/default.min.css">-->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-<!--<script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/highlight.min.js"></script>-->
-<script>hljs.initHighlightingOnLoad();</script>
 
 <style>
 .runtimeTable th, .runtimeTable td{
@@ -36,14 +31,14 @@
         <tr>
         <td class="inBlock">
             <!--Pre's take *everything literally, so everyting inside this pre is unformatted...-->
-            <pre style="width:auto"><code id="expsummary">
-Id: {{ exp.expid}}
+            <pre style="width:auto;background-color:#EEE;border-radius:10px"><code id="expsummary">
+Id: {{exp.expid}}
 User: {{exp.user}} 
 Machine: {{exp.machine}} 
 Compset: {{exp.compset}} 
 Case: {{exp.case}}
 Res: {{exp.res}} 
-Runtime: {{ runtime[0].seconds }} seconds
+Runtime: {{runtime[0].seconds}} seconds
 Throughput: {{exp.model_throughput}} SYPD
 Total PEs: {{exp.total_pes_active}}
 Run length: {{exp.run_length}} 
@@ -79,7 +74,16 @@ Summary Charts: {% for rank in ranks -%}<a href="/summary/{{expid}}/{{rank.rank}
 <script>
 var imgLink = detectRootUrl()+"svg/runtime/{{expid}}";
 runtimeImg.src=imgLink;
-//expsummmary.innerHTML+="<a href='"+imgLink+"'>Link to Runtime Chart</a>"
+
+//Format the expsummary!
+{
+    let lines = expsummary.innerHTML.split("\n");
+    expsummary.innerHTML="";
+    lines.forEach(element=>{
+        elSplit = element.split(":");
+        expsummary.innerHTML+="<span style='color:crimson'>"+elSplit[0]+""+(elSplit[1]?": </span><b>"+elSplit[1]+"</b>\n":"</span>");
+    });
+}
 </script>
 
 {% endblock %}
