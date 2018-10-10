@@ -330,3 +330,17 @@ dataInfo.onwheel = function(evt){
         resizeChart(resizeChartVal);
     }
 }
+
+//Open and close the meta-info box
+function metaOpenClose(openClose=false,user,machine,expid){
+    if(user && machine && expid){
+        let outStr = "User: <a href='"+detectRootUrl()+"users/"+user+"'>"+user+"</a> Machine: <a href='"+detectRootUrl()+"platforms/"+machine+"'>"+machine+"</a> (<a href='"+detectRootUrl()+"exp-details/"+expid+"'>Learn More</a>)";
+        $(metaInfoTxt.parentElement).slideUp(200);
+        setTimeout(()=>metaInfoTxt.innerHTML = outStr,metaInfoTxt.innerHTML == ""?0:200);
+        $(metaInfoTxt.parentElement).slideDown(200);
+    }
+    if(openClose)
+        $(metaInfoTxt.parentElement).slideDown(200);
+    else
+        $(metaInfoTxt.parentElement).slideUp(200);
+}

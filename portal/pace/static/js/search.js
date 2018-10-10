@@ -7,7 +7,7 @@ var searchObj = {
     lastRankIndex:[0,0],
     afterFunctions:[],
     search:function(searchStr,limit = this.limit,afterFunc,matchAll = false,orderBy,ascDsc=false){
-        console.log("HI SARAAAAT!"); //This is VERY important part of the function.
+        console.log("%cHI SARAAAAT!","font-size:125%"); //This is VERY important part of the function.
         searchBody.innerHTML="";
         if(afterFunc)
             this.afterFunctions.push(afterFunc);
@@ -47,12 +47,13 @@ var searchObj = {
                         case "expid":
                         searchResult.innerHTML+="<td><a href='"+detectRootUrl()+"exp-details/"+element.expid+"' target='_blank' title='Click here for more details.'>"+element.expid+"</a></td>";
                         break;
-                        case "case": //XD
                         case "compset":
-                        searchResult.innerHTML+="<td>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</td>";
+                        case "user":
+                        case "machine":
+                        searchResult.innerHTML+="<td><a href='"+detectRootUrl()+"search/"+val[1]+":"+element[val[1]]+"/distinct'>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</a></td>";
                         break;
                         default:
-                        searchResult.innerHTML+="<td>"+element[val[1]]+"</td>";
+                        searchResult.innerHTML+="<td>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</td>";
                     }
                 }
             });
@@ -164,14 +165,12 @@ var searchObj = {
         if(!tf) searchViewBtn.parentElement.href = "";
         searchViewBtn.className = (tf?"btn btn-primary btn-dark":"btn btn-primary btn-success");
     },
-/*
-The table values are right here so they don't have to be repeated.
+/*The table values are right here so they don't have to be repeated.
 Index definitions:
 0: Display name
 1: internal name
 2: display this value (true by default)
-3: additional html (can be left blank)
-*/
+3: additional html (can be left blank)*/
     expVars:[
     	["ID","expid"],
     	["User","user"],
