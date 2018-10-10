@@ -185,13 +185,19 @@ def expsAjax(pageNum):
 #The search page! This is the primary navigation page for the site. It changes depending on where the user is on the site.
 @app.route("/search/")
 @app.route("/search/<searchQuery>")
-@app.route("/search/<searchQuery>/<getDistinct>")
-def searchPage(searchQuery="*",isHomePage=False,getDistinct = ""):
+@app.route("/search/<searchQuery>/<advSearch>")
+def searchPage(searchQuery="*",isHomePage=False,advSearch = ""):
     homePageStr = False
     getDistinctStr = ""
-    if getDistinct == "distinct" or getDistinct == True:
+    if getDistinct == "advsearch" or advSearch == True:
         getDistinctStr="getDistinct = true;"
     return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';",homePage = isHomePage,getDistinctStr= getDistinctStr)
+
+#A redirect to /search/<searchQuery>/advsearch
+@app.route("/advsearch/<searchQuery>")
+def advSearch(searchQuery):
+    return searchPage(searchQuery,False,True)
+
 
 #This is a rest-like API that gives information about queried experiments from the timingprofile table.
 @app.route("/ajax/search/<searchTerms>")
