@@ -114,6 +114,8 @@ def summaryHtml(expID,rank,compare="",threads=""):
 def summaryQuery(expID,rank):
     resultNodes=""
     listIndex = 0
+    expUser = "N/A"
+    expMachine="N/A"
     basePath = "/pace/"
     if os.getenv("PACE_DOCKER_INSTANCE") == "1":
         basePath+="portal/pace/"
@@ -125,11 +127,15 @@ def summaryQuery(expID,rank):
     elif expID == "-2":
         resultNodes = mt.parse(basePath+"model_timing_stats")
     else:
-        resultNodes = db.engine.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
+        resultNodes = json.loads(db.engine.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal)
+        #Get user and machine information:
+        tpData = db.session.query(Timingprofile.user,Timingprofile.machine).filter_by(expid = expID).all()
+        expUser,expMachine = tpData[0].user,tpData[0].machine
+
     if rank == 'stats':
         listIndex = 1
         #Grab processes > 1 second:
-        nodeTemp = json.loads(resultNodes)
+        nodeTemp = resultNodes
         newJson = []
         for node in nodeTemp[0]:
             if node["values"]["wallmax"] > 0:
@@ -144,18 +150,8 @@ def summaryQuery(expID,rank):
         #Grab the top twenty nodes:
         while not len(newJson) == 50:
             newJson.pop()
-        resultNodes = "["+json.dumps(newJson)+"]"
-    return "["+resultNodes+","+json.dumps(mt.valueList[listIndex])+",\""+expID+"\",\""+rank+"\"]"
-
-#Depcricated version of the search page
-"""@app.route("/exps")
-def expsList():
-    myexps = []
-    # initDatabase()
-    myexps = db.session.query(Timingprofile).order_by(Timingprofile.expid.desc()).limit(20)
-    # myexps = Timingprofile.query.order_by(Timingprofile.expid.asc()).limit(25)
-    return render_template('exps.html', explist = myexps)
-
+        resultNodes = [newJson]
+    return json.dumps({"obj":resultNodes,"varNames":mt.valueList[listIndex],"meta":{"expid":expID,"rank":rank,"user":expUser,"machine":expMachine} })
 
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
@@ -165,6 +161,15 @@ def expDetails(mexpid):
     myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()
     ranks = db.session.query(ModelTiming.rank).filter_by(expid = mexpid)
     return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks)
+
+#Depcricated version of the search page
+"""@app.route("/exps")
+def expsList():
+    myexps = []
+    # initDatabase()
+    myexps = db.session.query(Timingprofile).order_by(Timingprofile.expid.desc()).limit(20)
+    # myexps = Timingprofile.query.order_by(Timingprofile.expid.asc()).limit(25)
+    return render_template('exps.html', explist = myexps)
 
 EXPS_PER_RQ=20
 @app.route("/ajax/exps/<int:pageNum>")

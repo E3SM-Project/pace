@@ -22,9 +22,8 @@
                 <select id="threadSelect"></select>
                 <button id="compareButton" onclick="compDivObj.toggle()">Compare</button>
                 <span class="checkboxRow"><input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked/>Stacked bars <input id="dmCheck" type="checkbox" onclick="dmObj.toggle(this.checked)"/>Dark Mode</span>
-                <span id="quickSearchContainer">
-                    <input type="text" id="quickSearchBar" placeholder="Quick Search"/>
-                </span>
+                <span id="quickSearchContainer"><input type="text" id="quickSearchBar" placeholder="Quick Search"/></span>
+                <span style="text-align:center;background-color:lightgray;border-radius:20px;display:none"><span id="metaInfoTxt" style="margin:20px"></span></span>
             </div>
             <div id="dataInfo"><div id="chartResizeContainer"><canvas id="chartTag"></canvas></div></div>
             <div id="dataList">
