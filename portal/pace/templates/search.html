@@ -36,7 +36,7 @@
 {# If this is the homepage, the paragraph starts here, otherwise, it starts elsewhere...#}
 <p style="text-align:center" id="homePageContent">
 	<span id="homeSearchDiv">
-	<input id="searchLink" readonly class="form-control" style="border-radius:5px;font-family:monospace;width:75%;margin-left:13%" placeholder="Link to your search will appear here" onmousedown="this.select()" value=""/>
+	<input id="searchLink" readonly class="form-control" style="border-radius:5px;font-family:monospace;width:75%;margin-left:13%" placeholder="Link to your search will appear here" value=""/>
 	<input class="form-control" id="homeSearchBar" style="font-size:1em;height:60px;" placeholder="Keyword"/>
 	</span>
 	<button class="btn-lg btn-info" style="height:3em;margin-top:2px;" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button><br>
@@ -86,7 +86,7 @@ function searchAndCheck(sq = searchQuery,matchMode = (getDistinct?true:false) ){
 	}
 	else moreBtn.style.display = "none";
 	},matchMode,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked);
-	searchLink.value = sq == "*"?"":detectRootUrl()+"search/"+sq+(matchMode?"/distinct":"");
+	searchLink.value = sq == "*"?"":detectRootUrl()+(matchMode?"advsearch/":"search/")+sq;
 }
 
 {%if homePage%}
