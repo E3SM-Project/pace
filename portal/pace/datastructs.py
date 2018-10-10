@@ -30,6 +30,7 @@ class Timingprofile(db.Model):
 	init_time = db.Column(DECIMAL(10,3,unsigned=True), nullable=False)
 	run_time = db.Column(DECIMAL(20,3,unsigned=True), nullable=False)
 	final_time = db.Column(DECIMAL(10,3,unsigned=True), nullable=False)
+	version = db.Column(db.String(100),nullable=False)
 	
 
 class Pelayout(db.Model):

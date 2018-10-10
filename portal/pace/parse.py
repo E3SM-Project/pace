@@ -17,11 +17,11 @@ import io
 
 def parseData():
 	# start main
-	#first unzip uploaded file
-	#db.create_all()
+	# upload directory
 	tmp_updir='/pace/prod/portal/upload/'
 	try:	
 		fpath=tmp_updir
+		# Extract aggregated zip files
 		zip_ref=zipfile.ZipFile(tmp_updir+'experiments.zip','r')
 		zip_ref.extractall(fpath)
 		zip_ref.close
@@ -32,24 +32,29 @@ def parseData():
 			dic.append(os.path.join(fpath,i))
 
 
-		# untar all tar files
+		# untar, if tar file exists
 		for i in range(len(dic)):
 			if dic[i].endswith('.tar.gz'):
 				tar = tarfile.open(dic[i])
 				tar.extractall()
 				tar.close()
 
-		# store path of all directories
+		# store path of all directorie
 		dic1=[]
 		for i in os.listdir(fpath):
 			if i !='parse.py' and i!='upload' and i!='experiments.zip':	
 				dic1.append(i)
 
 
-		# go through all directories and store timing profile file only
+		# "e3sm_timing." file list		
 		allfile=[]
+		# "timing." file list
 		timingfile=[]
+		# "README.case." file list
 		readmefile=[]
+		# "GIT_DESCRIBE." file list
+		gitdescribefile=[]
+		# go through all directories and grab certain files for parsing		
 		for i in range(len(dic1)):
 			root=os.path.join(fpath,dic1[i])
 			for path, subdirs, files in os.walk(root):
@@ -60,34 +65,46 @@ def parseData():
 						allfile.append(os.path.join(path, name))
 					if name.startswith("README.case."):
 						readmefile.append(os.path.join(path, name))
+					if name.startswith("GIT_DESCRIBE."):
+						gitdescribefile.append(os.path.join(path, name))
 	except IOError as e:
 		return('Error: %s' % e.strerror)
 	except OSError as e:
 		return('Error: %s' % e.strerror)
-
-	# parse and store timing profile file in a database
+	
+	# list of lid from experiments
 	exptag=[]
+	exptaguser=[]
+	exptagid=[]
+	# parse and store timing profile file in a database
 	for i in range(len(allfile)):
-		a=0
-		b=0
-		a,b=insertExperiment(allfile[i],readmefile[i],db)
-		if a != 'duplicate':
-			insertTiming(timingfile[i],b,db)	
-			exptag.append(a)
+		# to store lid after parsing, or is 'duplicate' 
+		lid=0
+		# to store expid after parsing
+		duplicateExp=False
+		# parse  'e3sm_timing.' and 'README.case.', returns lid,expid for unique experiments else 'duplicate,0'
+		lid,expuser,expid,duplicateExp=insertExperiment(allfile[i],readmefile[i],timingfile[i],gitdescribefile[i],db)
+		
+		if duplicateExp == False:
+			# append lid to list 
+			exptag.append(lid)
+			exptaguser.append(expuser)
+			exptagid.append(expid)
 			print("-----------------Stored-in-Database-------------------")
+	# try commit if not, flush 
 	try:	
 		db.session.commit()
 	except:
 		db.session.rollback()
 	# zip successfull experiments into folder experiments
-	zipFolder(exptag,fpath)
-	# remove data
+	zipFolder(exptag,exptaguser,exptagid,fpath)
+	# remove uploaded experiments
 	removeFolder(tmp_updir)
 	
 
 	return('File Upload and Stored in Database Success')
 
-
+# 
 def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
     phraseIn = phraseIn.strip(filter)
     #Destroy spaces by default:
@@ -169,7 +186,16 @@ def parseReadme(fileIn):
 			break	
 	return resultElement
 
-def insertExperiment(filename,readmefile,db):
+def parseGitfile(gitfile):
+	parsefile = gzip.open(gitfile,'rb')
+	version = 0
+	for line in parsefile:
+		version = line.strip('\n')
+		break
+	parsefile.close()
+	return version
+
+def insertExperiment(filename,readmefile,timingfile,gitfile,db):
 	if filename.endswith('.gz'):
 		parseFile=gzip.open(filename,'rb')
 	else:
@@ -256,7 +282,7 @@ def insertExperiment(filename,readmefile,db):
 	parseFile.close()
 	duplicateFlag = checkDuplicateExp(onetags[0],onetags[1],onetags[5])
 	if duplicateFlag is True:
-		return ('duplicate',0)
+		return (onetags[1],onetags[5],0,True)
 	tablelist=[]
 	
 	if filename.endswith('.gz'):
@@ -297,7 +323,8 @@ def insertExperiment(filename,readmefile,db):
 	readmefile=gzip.open(readmefile,'rb')
 	readmeparse = parseReadme(readmefile)
 	readmefile.close()
-	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],exp_date=changeDateTime(onetags[6]),long_res=onetags[7],res=readmeparse['res'],compset=readmeparse['compset'],long_compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5],init_time=threetags[6],run_time=threetags[7],final_time=threetags[8])
+	expversion = parseGitfile(gitfile)
+	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],exp_date=changeDateTime(onetags[6]),long_res=onetags[7],res=readmeparse['res'],compset=readmeparse['compset'],long_compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5],init_time=threetags[6],run_time=threetags[7],final_time=threetags[8],version = expversion)
 	db.session.add(new_experiment)
 
 	# table has to have a same experiment id
@@ -316,9 +343,9 @@ def insertExperiment(filename,readmefile,db):
 		new_runtime = Runtime(expid=forexpid.expid,component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3])
 		db.session.add(new_runtime)
 		i=i+4
-	
-	
-	return (onetags[1],forexpid.expid)
+
+	insertTiming(timingfile,forexpid.expid,db)
+	return (onetags[1],onetags[5],forexpid.expid,False)
 
 
 def removeFolder(removeroot):
@@ -330,14 +357,14 @@ def removeFolder(removeroot):
 	
 	return
 
-def zipFolder(exptag,fpath):
+def zipFolder(exptag,exptaguser,exptagid,fpath):
 	newroot='/pace/assets/static/data/'	
 	for i in range(len(exptag)):
 		root=fpath
 		for path, subdirs, files in os.walk(root):
 			for name in subdirs:
 				if name.startswith('CaseDocs.'+str(exptag[i])):
-					shutil.make_archive(os.path.join(newroot,'experiment-'+exptag[i]),'zip',path)
+					shutil.make_archive(os.path.join(newroot,'exp-'+exptaguser[i]+'-'+str(exptagid[i])),'zip',path)
 	return
 
 def insertTiming(mtFile,expID,db):
