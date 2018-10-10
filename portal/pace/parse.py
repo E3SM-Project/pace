@@ -358,14 +358,28 @@ def removeFolder(removeroot):
 	return
 
 def zipFolder(exptag,exptaguser,exptagid,fpath):
-	newroot='/pace/assets/static/data/'	
+	newroot='/pace/assets/static/data/'
+	expname=0	
 	for i in range(len(exptag)):
 		root=fpath
 		for path, subdirs, files in os.walk(root):
 			for name in subdirs:
 				if name.startswith('CaseDocs.'+str(exptag[i])):
-					shutil.make_archive(os.path.join(newroot,'exp-'+exptaguser[i]+'-'+str(exptagid[i])),'zip',path)
+					expname = 'exp-'+exptaguser[i]+'-'+str(exptagid[i])
+					shutil.make_archive(os.path.join(newroot,expname),'zip',path)
+					uploadMinio(newroot,expname)
 	return
+
+def uploadMinio(newroot,expname):
+	from minio import Minio
+	from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
+	myAkey,mySkey, myMiniourl = getMiniokey()
+	# Initialize minioClient with an endpoint and access/secret keys.
+	minioClient = Minio(myMiniourl,access_key=myAkey,secret_key=mySkey,secure=True)
+	try:
+		minioClient.fput_object('e3sm', expname+'.zip', os.path.join(newroot,expname)+'.zip')
+	except ResponseError as err:     
+		print(err)
 
 def insertTiming(mtFile,expID,db):
 	sourceFile = tarfile.open(mtFile)
