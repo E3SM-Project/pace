@@ -44,6 +44,7 @@ default_args = {
     'addlayout': True,
     }
 ## Do you have a block color preference?
+# default_args['color'] = cm.rainbow(np.linspace(0,1,len(default_args['comps'])))
 default_args['color'] = ["#00FFFF","#00ff40","#FF0000","#0000B0","#0000FF80","#66ccff","#FF99CC","#ff9900"]
 ###                       END Options                                       ###
 ###############################################################################

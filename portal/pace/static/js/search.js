@@ -7,7 +7,7 @@ var searchObj = {
     lastRankIndex:[0,0],
     afterFunctions:[],
     search:function(searchStr,limit = this.limit,afterFunc,matchAll = false,orderBy,ascDsc=false){
-        console.log("%cHI SARAAAAT!","font-size:125%"); //This is VERY important part of the function.
+        console.log("%cHELLOOO!!","font-size:125%"); //This is VERY important part of the function.
         searchBody.innerHTML="";
         if(afterFunc)
             this.afterFunctions.push(afterFunc);
