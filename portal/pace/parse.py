@@ -282,7 +282,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db):
 	parseFile.close()
 	duplicateFlag = checkDuplicateExp(onetags[0],onetags[1],onetags[5])
 	if duplicateFlag is True:
-		return (onetags[1],onetags[5],0,True)
+		return (onetags[1],onetags[5],0,True) # return(lid,user,expid,duplicateExp)
 	tablelist=[]
 	
 	if filename.endswith('.gz'):
@@ -324,7 +324,13 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db):
 	readmeparse = parseReadme(readmefile)
 	readmefile.close()
 	expversion = parseGitfile(gitfile)
-	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],user=onetags[5],exp_date=changeDateTime(onetags[6]),long_res=onetags[7],res=readmeparse['res'],compset=readmeparse['compset'],long_compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],actual_ocn_init_wait_time=threetags[5],init_time=threetags[6],run_time=threetags[7],final_time=threetags[8],version = expversion)
+	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],
+					user=onetags[5],exp_date=changeDateTime(onetags[6]),long_res=onetags[7],res=readmeparse['res'],
+					compset=readmeparse['compset'],long_compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],
+					run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],
+					pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],
+					actual_ocn_init_wait_time=threetags[5],init_time=threetags[6],run_time=threetags[7],
+					final_time=threetags[8],version = expversion)
 	db.session.add(new_experiment)
 
 	# table has to have a same experiment id
@@ -345,7 +351,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db):
 		i=i+4
 
 	insertTiming(timingfile,forexpid.expid,db)
-	return (onetags[1],onetags[5],forexpid.expid,False)
+	return (onetags[1],onetags[5],forexpid.expid,False) # return(lid,user,expid,duplicateExp)
 
 
 def removeFolder(removeroot):
