@@ -12,7 +12,7 @@ from datetime import datetime
 
 
 # server connection url
-url = "https://pace.ornl.gov/dev1/upload"
+url = "https://pace.ornl.gov/upload"
 
 # argumented parser
 def parseArguments(): 
