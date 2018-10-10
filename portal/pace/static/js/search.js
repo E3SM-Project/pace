@@ -11,6 +11,29 @@ var searchObj = {
         searchBody.innerHTML="";
         if(afterFunc)
             this.afterFunctions.push(afterFunc);
+        //compile short names before searching:
+        if(matchAll){
+            let termArray = searchStr.split(" ");
+            let elementList = [];
+            termArray.forEach(element=>{
+                elementList.push(element.split(":"));
+            });
+            delete termArray;
+            //Scan through all element shortcuts:
+            searchObj.expVars.forEach(expVar=>{
+                if(expVar[2]){
+                    elementList.forEach(element=>{
+                        if(element[0] == expVar[2])
+                            element[0] = expVar[1];
+                    });
+                }
+            });
+            //Re-compile:
+            searchStr = "";
+            elementList.forEach(element=>{
+                searchStr+=element.join(":")+" ";
+            });
+        }
         $.get(detectRootUrl()+"ajax/search/"+searchStr.replace(" ","+")+"/"+limit+(matchAll?"/matchall":"/false")+(orderBy?"/"+orderBy+"/"+(ascDsc?"asc":"desc"):""),(data)=>{
         let resultData = JSON.parse(data)
         this.searchData = resultData[0];
@@ -42,7 +65,7 @@ var searchObj = {
             searchResult.className = "searchItem";
             searchResult.value = index;
             this.expVars.forEach(val=>{
-                if(val[2]!==false){
+                if(val[3]!==false){
                     switch(val[1]){
                         case "expid":
                         searchResult.innerHTML+="<td><a href='"+detectRootUrl()+"exp-details/"+element.expid+"' target='_blank' title='Click here for more details.'>"+element.expid+"</a></td>";
@@ -169,8 +192,9 @@ var searchObj = {
 Index definitions:
 0: Display name
 1: internal name
-2: display this value (true by default)
-3: additional html (can be left blank)*/
+2: short name
+3: display this value (true by default)
+4: additional html (can be left blank)*/
     expVars:[
     	["ID","expid"],
     	["User","user"],
@@ -178,9 +202,9 @@ Index definitions:
     	["Compset","compset"],
     	["Res","res"],
     	["Case","case"],
-    	["Total PEs","total_pes_active"],
-    	["Run Length","run_length",true,`<br><span style="font-size:75%">(days)</span>`],
-    	["Throughput","model_throughput",true,`<br><span style="font-size:75%">(sim_years/day)</span>`],
-    	["ExpDate","exp_date"]
+    	["Total PEs","total_pes_active","pes"],
+    	["Run Length","run_length","run",true,`<br><span style="font-size:75%">(days)</span>`],
+    	["Throughput","model_throughput","through",true,`<br><span style="font-size:75%">(sim_years/day)</span>`],
+    	["ExpDate","exp_date","date"]
     ],
 }
