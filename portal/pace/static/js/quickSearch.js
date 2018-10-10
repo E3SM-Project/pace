@@ -11,7 +11,7 @@ var quickSearchObj = {
     doComparison:false,
     searchDataSelected:0,
     search:function(searchStr,limit = 20){
-        console.log("%cHI SARAAAAT!","font-size:125%"); //This is VERY important part of the function.
+        console.log("%cHELLOOO!!","font-size:125%"); //This is VERY important part of the function.
         if(searchStr == ""){
             if(document.getElementsByClassName("searchMenu").length > 0)
                 document.getElementsByClassName("searchMenu")[0].style.display = "none";
