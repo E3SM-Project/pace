@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+# imports
 import argparse
 import requests
 import sys
@@ -10,29 +11,19 @@ import getpass
 from datetime import datetime
 
 
-# use this url after merge to master
-url = "https://pace.ornl.gov/upload"
+# server connection url
+url = "https://pace.ornl.gov/dev1/upload"
 
 # argumented parser
 def parseArguments(): 
 	parser = argparse.ArgumentParser(description="PACE upload tool.")
+	# Argument parser for E3SM experiments
 	parser.add_argument('--exp-dir','-ed', action='store', dest='source', help="Root directory containing experiment(s) results. Handles multiple experiment directories under root", required=True)
 	parser.add_argument('--application', '-a', help="Application name", default='e3sm', choices=['e3sm','fusion'])
 	args = parser.parse_args()
-	# print args
 	return args
 
-# zips all files in the list
-def createOutputZip(zfname, filelist):
-	zf = zipfile.ZipFile("%s.zip" % (zfname), "w", zipfile.ZIP_DEFLATED)
-	for f in filelist:
-		arcname = zfname + "/" + f
-		print "Adding file: %s to archive: %s.zip" % (arcname, zfname)
-		zf.write(f,arcname)
-	zf.close()
-	return
-
-# zips given directory path
+# Aggregate into zip for given directory path
 def zipSubdir(zfname, path):
 	zf = zipfile.ZipFile("%s.zip" % (zfname), "w", zipfile.ZIP_DEFLATED)
 	abs_src = os.path.abspath(path)
@@ -40,13 +31,13 @@ def zipSubdir(zfname, path):
 		for file in files:
 			absname = os.path.abspath(os.path.join(root, file))
 			arcname = zfname + "/" + absname[len(abs_src) + 1:]
-			#print "Adding file: %s to archive: %s.zip" % (arcname, zfname)
 			zf.write(absname,arcname)
 	zf.close()
 	return
 
 # upload experiment files
 def uploadExp(uploadfile):
+	# error check empty file
 	if(os.path.exists(uploadfile)):
 		if(os.stat(uploadfile).st_size!=0):
 			# open zip to be uploaded
@@ -67,10 +58,13 @@ def uploadExp(uploadfile):
 
 # validate E3SM experiment
 def isValidE3SMexp(expfile):
+	# validation flag
 	timefile = False
 	etimefile = False
 	completeexp = False
+	# creation of temporary file 
 	tmpfile = 'pace-exps-' + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+	# lists to store complete experiment paths	
 	explist = []
 	# iterate to check for timing files
 	for path, subdirs, files in os.walk(expfile):
@@ -79,17 +73,18 @@ def isValidE3SMexp(expfile):
 			if name.startswith("timing."):			
 				timefile=True
 			if name.startswith("e3sm_timing."):
-				etimefile=True
-			if etimefile == True and timefile == True:
+				etimefile=True	
+			if etimefile == True and timefile == True :
 				completeexp=True
 				explist.append(path)
 				etimefile = False
 				timefile = False
 		
 	# for complete experiments 
+
 	if completeexp == True:
 		i=0
-		# copy them into temporary folder
+		# make sure temporary folder does not exists and copy them into temporary folder
 		if (os.path.exists(tmpfile)):
 			distutils.dir_util.remove_tree(tmpfile)
 		for f in explist:
@@ -105,6 +100,7 @@ def isValidFusionExp(expfile):
 
 # main 
 def main():
+	# parse argument
 	result=parseArguments()
 	zfname = 'experiments'
 	expfile = result.source
