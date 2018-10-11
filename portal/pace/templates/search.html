@@ -12,7 +12,7 @@
 		font-size:1.5em;
 		text-align:left;
 		height:60px;
-		width:40%;
+		width:35%;
 		margin-left:5%;
 		display:inline-block;
 		margin-right:5px;
@@ -103,7 +103,7 @@ matchModeCheck.onclick = function(){
 homeSearchPredict = new predictiveSearch.element(homeSearchBar,"hsb");
 homeSearchBar.onkeydown = evt=>{
 	if(evt.key == "Enter" && homeSearchPredict.allowEnter){
-		searchObj.limit = 20;
+		searchObj.limit = 10;
 		if(homeSearchBar.value!='') searchAndCheck(homeSearchBar.value,matchModeCheck.checked);
 	}
 	homeSearchPredict.keydownListener(evt);
