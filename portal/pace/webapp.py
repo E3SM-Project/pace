@@ -114,8 +114,8 @@ def summaryHtml(expID,rank,compare="",threads=""):
 def summaryQuery(expID,rank):
     resultNodes=""
     listIndex = 0
-    expUser = "N/A"
-    expMachine="N/A"
+    compset = "N/A"
+    res="N/A"
     basePath = "/pace/"
     if os.getenv("PACE_DOCKER_INSTANCE") == "1":
         basePath+="portal/pace/"
@@ -129,8 +129,8 @@ def summaryQuery(expID,rank):
     else:
         resultNodes = json.loads(db.engine.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal)
         #Get user and machine information:
-        tpData = db.session.query(Timingprofile.user,Timingprofile.machine).filter_by(expid = expID).all()
-        expUser,expMachine = tpData[0].user,tpData[0].machine
+        tpData = db.session.query(Timingprofile.compset,Timingprofile.res).filter_by(expid = expID).all()
+        compset,res = tpData[0].compset,tpData[0].res
 
     if rank == 'stats':
         listIndex = 1
@@ -151,7 +151,7 @@ def summaryQuery(expID,rank):
         while not len(newJson) == 50:
             newJson.pop()
         resultNodes = [newJson]
-    return json.dumps({"obj":resultNodes,"varNames":mt.valueList[listIndex],"meta":{"expid":expID,"rank":rank,"user":expUser,"machine":expMachine} })
+    return json.dumps({"obj":resultNodes,"varNames":mt.valueList[listIndex],"meta":{"expid":expID,"rank":rank,"compset":compset,"res":res} })
 
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
@@ -331,26 +331,26 @@ def searchPrediction(keyword):
     #The keyword is designed to be a single word without any potential database loopholes:
     keyword = keyword.replace("\\c","").replace(";","").replace(" ","")
     #Grab elements based on these columns:
-    columnNames = ["user","machine","expid","compset","timingprofile.case"]
+    columnNames = ["user","machine","expid","compset","res","timingprofile.case"]
     resultWords = []
     for column in columnNames:
         colName = column
         if "." in column:
             colName = colName.split(".")[1]
-        distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '"+keyword+"%%' limit 20").fetchall()
+        distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '%%"+keyword+"%%' limit 10").fetchall()
         for element in distQuery:
             resultWords.append(str(element[colName]))
     #Sort them by similar name:
-    for i in range(len(resultWords)):
-        if keyword[0] == resultWords[i][0]:
-            for j in range(len(resultWords)):
-                print(j)
-                # or charCompare(resultWords[i],resultWords[j]
-                if not keyword[0] == resultWords[j][0]:
-                    temp = resultWords[j]
-                    resultWords[j] = resultWords[i]
-                    resultWords[i]=temp
-                    break
+    # for i in range(len(resultWords)):
+    #     if keyword[0] == resultWords[i][0]:
+    #         for j in range(len(resultWords)):
+    #             print(j)
+    #             # or charCompare(resultWords[i],resultWords[j]
+    #             if not keyword[0] == resultWords[j][0]:
+    #                 temp = resultWords[j]
+    #                 resultWords[j] = resultWords[i]
+    #                 resultWords[i]=temp
+    #                 break
     return json.dumps(resultWords)
 
 #This generates an svg graph of runtime information. It makes use of an algorhythm created by donahue5 (modified to work with this project)

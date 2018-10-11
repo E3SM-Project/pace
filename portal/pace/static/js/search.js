@@ -68,15 +68,15 @@ var searchObj = {
                 if(val[3]!==false){
                     switch(val[1]){
                         case "expid":
-                        searchResult.innerHTML+="<td><a href='"+detectRootUrl()+"exp-details/"+element.expid+"' target='_blank' title='Click here for more details.'>"+element.expid+"</a></td>";
+                        searchResult.innerHTML+="<td onclick='searchObj.expDetails("+element.expid+")'><a href='"+detectRootUrl()+"exp-details/"+element.expid+"' target='_blank' title='Click here for more details.'>"+element.expid+"</a></td>";
                         break;
                         case "compset":
                         case "user":
                         case "machine":
-                        searchResult.innerHTML+="<td><a href='"+detectRootUrl()+"search/"+val[1]+":"+element[val[1]]+"/distinct'>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</a></td>";
+                        searchResult.innerHTML+="<td onclick='searchObj.expDetails("+element.expid+")'><a href='"+detectRootUrl()+"advsearch/"+val[1]+":"+element[val[1]]+"'>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</a></td>";
                         break;
                         default:
-                        searchResult.innerHTML+="<td>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</td>";
+                        searchResult.innerHTML+="<td onclick='searchObj.expDetails("+element.expid+")'>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</td>";
                     }
                 }
             });
@@ -187,6 +187,9 @@ var searchObj = {
         searchViewBtn.disabled = tf;
         if(!tf) searchViewBtn.parentElement.href = "";
         searchViewBtn.className = (tf?"btn btn-primary btn-dark":"btn btn-primary btn-success");
+    },
+    expDetails:(expid)=>{
+        location.assign(detectRootUrl()+"exp-details/"+expid);
     },
 /*The table values are right here so they don't have to be repeated.
 Index definitions:
