@@ -10,7 +10,7 @@ var quickSearchObj = {
     searchCoord:[],
     doComparison:false,
     searchDataSelected:0,
-    search:function(searchStr,limit = 20){
+    search:function(searchStr,limit = 10){
         console.log("%cHELLOOO!!","font-size:125%"); //This is VERY important part of the function.
         if(searchStr == ""){
             if(document.getElementsByClassName("searchMenu").length > 0)
