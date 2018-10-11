@@ -12,7 +12,7 @@
 		font-size:1.5em;
 		text-align:left;
 		height:60px;
-		width:40%;
+		width:35%;
 		margin-left:5%;
 		display:inline-block;
 		margin-right:5px;
@@ -36,11 +36,11 @@
 {# If this is the homepage, the paragraph starts here, otherwise, it starts elsewhere...#}
 <p style="text-align:center" id="homePageContent">
 	<span id="homeSearchDiv">
-	<input id="searchLink" readonly class="form-control" style="border-radius:5px;font-family:monospace;width:75%;margin-left:13%" placeholder="Link to your search will appear here" value=""/>
-	<input class="form-control" id="homeSearchBar" style="font-size:1em;height:60px;" placeholder="Keyword"/>
+	<input id="searchLink" readonly class="form-control" style="border-radius:5px;font-family:monospace;width:100%;height:30px;margin-bottom:5px;" placeholder="Search results link for sharing..." value=""/>
+	<input class="form-control" id="homeSearchBar" style="font-size:1em;height:50px;" placeholder="Keyword"/>
 	</span>
-	<button class="btn-lg btn-info" style="height:3em;margin-top:2px;" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button><br>
-	<input type="checkbox" id="matchModeCheck" style="margin-top:10px;margin-right:4px"/>Category Search
+	<button class="btn-lg btn-info" style="height:48px;" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button><br>
+	<input type="checkbox" id="matchModeCheck" style="margin-top:10px;margin-right:4px"/>Advanced Search
 	<span style="display:inline-block;margin-right:25px">
 		<button id='catRefButton' class="btn btn-default" onclick='$("#catReference").slideToggle(250)' style='display:none'>Reference</button>
 		<span id='catReference'></span>
@@ -51,7 +51,7 @@
 <p style="text-align:center">
 {%endif%}
 		<select id="orderBySelect" onchange="searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,matchModeCheck.checked,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)">
-			<option value="exp_date" selected>Order by...</option>
+			<option value="exp_date" selected>Sort by</option>
 		</select>
 		<span style="margin-right:5px"></span><input type="checkbox" id="ascCheck" onclick="ascDescToggle()">Ascending
 {# Paragraph for home/search page ends here (One tag for ending two possible paragraphs...) #}
@@ -103,7 +103,7 @@ matchModeCheck.onclick = function(){
 homeSearchPredict = new predictiveSearch.element(homeSearchBar,"hsb");
 homeSearchBar.onkeydown = evt=>{
 	if(evt.key == "Enter" && homeSearchPredict.allowEnter){
-		searchObj.limit = 20;
+		searchObj.limit = 10;
 		if(homeSearchBar.value!='') searchAndCheck(homeSearchBar.value,matchModeCheck.checked);
 	}
 	homeSearchPredict.keydownListener(evt);

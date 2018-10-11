@@ -1,7 +1,7 @@
 //Author: Zachary Mitchell
 //Purpose: The logic for the search page. This is a heavy modification of quickSearch.js designed for full screen usage.
 var searchObj = {
-    limit:20,
+    limit:10,
     searchData:[],
     rankData:[],
     lastRankIndex:[0,0],
