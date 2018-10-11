@@ -57,7 +57,8 @@
 		<select id="orderBySelect" onchange="searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,matchModeCheck.checked,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)">
 			<option value="exp_date" selected>Sort by</option>
 		</select>
-		<span style="margin-right:5px"></span><input type="checkbox" id="ascCheck" onclick="ascDescToggle()">Ascending
+		<label class="radio-inline"><input type="radio" id="ascCheck" name="sortOrder" onclick="sortOrderToggle()" > Ascending</label>
+		<label class="radio-inline"><input type="radio" id="descCheck" name="sortOrder" onclick="sortOrderToggle()" > Descending</label>
 {# Paragraph for home/search page ends here (One tag for ending two possible paragraphs...) #}
 </p>
 <p style="text-align:right">
@@ -138,7 +139,7 @@ searchObj.expVars.forEach(element=>{
 	orderBySelect.innerHTML+="<option value='"+element[1]+"'>"+element[0]+"</option>";
 });
 
-function ascDescToggle(){
+function sortOrderToggle(){
 	searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,matchModeCheck.checked,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)
 }
 
