@@ -11,29 +11,48 @@
 <!--Author: Zachary Mitchell
     Purpose: View your prevsiously parsed model_timing files in style!
     Summarize any scope of timeNodes with sum or averages, and with any value you want! (Wallclock, min/max, etc)-->
-        <div id="mtMain">
-            <span id="nodeId"></span>
-            <div>
+    <div id="mtMain">
+        <!--This is the custom highlighter for the model timing graph-->
+        <span id="nodeId"></span>
+        <p style="text-align:right">
+            <span id="quickSearchContainer">
+                <input type="text" id="quickSearchBar" placeholder="Quick Search"/>
+            </span>
+        </p>
+        <table id="mtOptions">
+            <tbody>
+            <tr>
+            <td>
                 <select id="valueName" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )"></select>
                 <select id="mode" class="unused" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )">
                     <option value="sum" selected>Sum</option>
                     <option value="avg">Average</option>
-                </select>
+                </select><br>
                 <select id="threadSelect"></select>
+            </td>
+            <td class="checkboxRow">
+                <input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked/>Stacked bars<br>
+                <input id="dmCheck" type="checkbox" onclick="dmObj.toggle(this.checked)"/>Dark Mode
+            </td>
+            <td>
                 <button id="compareButton" onclick="compDivObj.toggle()">Compare</button>
-                <span class="checkboxRow"><input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked/>Stacked bars <input id="dmCheck" type="checkbox" onclick="dmObj.toggle(this.checked)"/>Dark Mode</span>
-                <span id="quickSearchContainer"><input type="text" id="quickSearchBar" placeholder="Quick Search"/></span>
-                <span style="text-align:center;background-color:lightgray;border-radius:20px;display:none"><span id="metaInfoTxt" style="margin:20px"></span></span>
-            </div>
-            <div id="dataInfo"><div id="chartResizeContainer"><canvas id="chartTag"></canvas></div></div>
-            <div id="dataList">
-                <select id="expSelect" onchange="switchExperiment()"></select>
-                <br>
-                <button id="summaryButton">Summary</button><div id="listContent"></div>
-            </div>
-            <button id="backButton"><-Back</button>
-            <div id="zoomDiv"><button onclick="resizeChartVal=(resizeChartVal <=1?1:resizeChartVal-25);resizeChart(resizeChartVal)">-</button><button onclick="resizeChartVal+=25;resizeChart(resizeChartVal)">+</button></div>
+                <button onclick="toggleDlLock()">Lock/Unlock Process list</button>
+            </td>
+            </tr>
+            </tbody>
+        </table>
+        <p style="text-align:center;"><span id="metaInfoContainer"><span id="metaInfoTxt" style="margin:20px"></span></span></p>
+        <div id="dataInfo"><div id="chartResizeContainer"><canvas id="chartTag"></canvas></div></div>
+        <div style="position:absolute;width: 2em;z-index:3;left:0;background-color:rgb(230,230,230)" id="dlDisplayButton" onclick="dlSlide()"></div>
+        <div id="dataList">
+            <select id="expSelect" onchange="switchExperiment()"></select>
+            <br>
+            <button id="summaryButton">Summary</button>
+            <div id="listContent"></div>
         </div>
+        <button id="backButton"><-Back</button>
+        <div id="zoomDiv"><button onclick="resizeChartVal=(resizeChartVal <=1?1:resizeChartVal-25);resizeChart(resizeChartVal)">-</button><button onclick="resizeChartVal+=25;resizeChart(resizeChartVal)">+</button></div>
+    </div>
     <div id="compareSelectDiv">
     <h2>Select the threads you wish to compare.</h2><br>
     <p><button onclick='compDivObj.makeExp()'>Add</button></p>
@@ -49,7 +68,8 @@
 	<script src="/static/js/domFunctions.js"></script>
 	<script src="/static/js/modelTiming.js"></script>
 	<script src="/static/js/paceLoadScreen.js"></script>
-	<script>//Fire up the summary:
+	<script>
+    //Fire up the summary:
     /*$(document).ajaxError(()=>{
         if(expGetFunc.length > 0){
             alert("Could not find this experiment");
@@ -62,8 +82,13 @@
         var compare = undefined;
         var threadList = undefined;
         var onMtPage = true;
-        {{exp|safe}}
+        var expData = [['1','0'],['255','0']];
         dataInfo.style.height = (window.innerHeight*.8)+"px";
+        //safari for IOS is kindof weird with the background colors for dataList, so here's something to change it:
+        dataList.style.backgroundColor="white";
+        //Change the footer to fixed due to weird happenings on mobile:
+        document.getElementsByClassName("footer")[0].style.position="fixed";
+        document.getElementsByClassName("footer")[0].style.zIndex = "-1";
         dmObj.toggle(dmObj.checkCookies());
         dmCheck.checked = dmObj.checkCookies();
 		animate();
@@ -91,11 +116,13 @@
                         comparisonMode.new(resultList);
                         comparisonMode.start();
                     }
+                    dlDisplayButton.style.height = dataList.style.height;
                 });
                 }
             }
         }
 		else getExperiment(-1,"0000");
         window.onresize();
-	});</script>
+	});
+    </script>
 {% endblock %}

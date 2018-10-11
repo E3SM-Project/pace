@@ -1,27 +1,30 @@
 #dataInfo{
     border:.01in solid;
     position: absolute;
-    left:20.5%;
+    left:21%;
     width:78%;
     background-image:url(/static/img/ornlLeaf.svg); 
     background-position: center;
     background-repeat: no-repeat;
     background-size: auto;
-    overflow: scroll;
+    overflow-y: scroll;
 }
 #dataList{
     overflow: scroll;
-    width:20%;
+    width:18em;
     position: absolute;
-    resize:vertical;
-    left:0px;
+    resize:none;
+    left:2em;
+    background-color:white;
+    z-index: 2;
 }
 ul{
     list-style-type: none;
 }
 #backButton{
     position: absolute;
-    left:20.5%;
+    left:21%;
+    z-index: 0;
 }
 #zoomDiv{
     position: absolute;
@@ -47,7 +50,7 @@ ul{
     border-radius:10px;
     font-family:arial;
     text-align:center;
-    overflow:scroll;
+    overflow-y:scroll;
 }
 .compareDiv{
     width:10em;
@@ -62,4 +65,15 @@ ul{
     position:absolute;
     background-color:lightgray;
     border-radius:5px;
+}
+
+#mtOptions tr td{
+    display:inline-block;
+}
+
+#metaInfoContainer{
+    text-align:center;
+    background-color:lightgray;
+    border-radius:20px;
+    display:none
 }
