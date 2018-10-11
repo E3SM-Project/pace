@@ -1,13 +1,23 @@
 //Author: Zachary Mitchell
 //Purpose: This file holds all of DOM functions in modelTiming.html (It got rather large XP)
 var triggerResize;
+var dlLock = true; //Locks dataList in place. If it slides back, so will dataInfo
+var dlShow = true;
 //adjust the size of the dataList to reflect the graph's height:
 window.onresize = function(){
-        if(typeof(paceLoadResize)!=undefined && document.getElementsByClassName("loadScreen").length!=0)
-            paceLoadResize();
-        dataList.style.height = dataList.style.height;
-        clearTimeout(triggerResize);
-        triggerResize=setTimeout(()=>dataList.style.height = dataInfo.style.height,10)
+    if(typeof(paceLoadResize)!=undefined && document.getElementsByClassName("loadScreen").length!=0)
+        paceLoadResize();
+    dataList.style.height = dataList.style.height;
+    dlDisplayButton.style.height = dataList.style.height;
+    clearTimeout(triggerResize);
+    triggerResize=setTimeout(()=>dataList.style.height = dataInfo.style.height,10)
+
+    //Normally, 1 em = 16px, but 13 seems to work better for this scenario :P (See: https://kyleschaeffer.com/development/css-font-size-em-vs-px-vs-pt-vs/)
+    if(dlLock){
+        dataList.style.width = (window.innerWidth * .2) / 13 + "em";
+        if(window.innerWidth < 700)
+            toggleDlLock(false);
+    }
 }
 backButton.onclick = function(){
     if(currExp.currentEntry.parent!=undefined){
@@ -15,6 +25,24 @@ backButton.onclick = function(){
             summaryButton.click();
         else document.getElementById(currExp.currentEntry.parent.name).click();
     }
+}
+
+//The following is functionality for dataList to slide in and out:
+function dlSlide(listFB = !dlShow,infoFB){
+    if(infoFB === undefined)
+        infoFB = dlLock && listFB?true:false;
+    $(dataList).animate((listFB?{left:"2em",width: (dlLock? (window.innerWidth * .2) / 13 + "em":"18em" ) }:{left:"-22em",width:"18em"}),250);
+    dataList.style.resize = (dlLock?"none":"horizontal");
+    dlShow = listFB;
+
+    
+    $(dataInfo).animate((infoFB?{left:"21%",width:"78%"}:{left:"1%",width:"99%"} ),250);
+    $(backButton).animate((infoFB?{left:"21%"}:{left:"1%"} ),250);
+}
+
+function toggleDlLock(tf = !dlLock){
+    dlLock = tf;
+    dlSlide(true,dlLock);
 }
 
 summaryButton.onclick=function(){
@@ -267,13 +295,15 @@ var dmObj={
                     dmObj.percentage+=4;
                 else dmObj.percentage-=4;
                 //Body Colors:
-                this.colorElements([[document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar]],"backgroundColor",this.bgcolor);
+                this.colorElements([[document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar,dataList]],"backgroundColor",this.bgcolor);
                 this.colorElements([[document.getElementsByClassName("footer")[0]]],"backgroundColor",this.footColor);
                 //textColor
                 this.colorElements([[listContent,quickSearchBar],
                 document.getElementsByTagName("h2"),
                 document.getElementsByClassName("checkboxRow"),
                 document.getElementsByClassName("searchItem")],"color",this.textColor);
+                //DataList button
+                this.colorElements([[dlDisplayButton]],"backgroundColor",[[230,230,230],[50,50,50]]);
             }
             else clearInterval(dmObj.interval);
         },17)
