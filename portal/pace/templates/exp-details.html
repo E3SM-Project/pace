@@ -38,14 +38,20 @@ Machine: {{exp.machine}}
 Compset: {{exp.compset}} 
 Case: {{exp.case}}
 Res: {{exp.res}} 
-Runtime: {{runtime[0].seconds}} seconds
+Run_time: {{ exp.run_time }} sec
+Init time: {{ exp.init_time }} sec
+Final_time: {{ exp.final_time }} sec
 Throughput: {{exp.model_throughput}} SYPD
 Total PEs: {{exp.total_pes_active}}
-Run length: {{exp.run_length}} 
+Model cost: {{exp.model_cost}} pe-hrs/simulated_year
+
+Run length: {{exp.run_length}} days
+Stop_n: {{exp.stop_n}}
+Stop Option: {{ exp.stop_option}}
 MPI tasks/node: {{exp.mpi_tasks_per_node}}
 Summary Charts: {% for rank in ranks -%}<a href="/summary/{{expid}}/{{rank.rank}}">{{rank.rank}}</a> &nbsp;
             {%- endfor %}
-<a href="/static/data/experiment-{{exp.lid}}.zip">Download Raw Data</a>
+<a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
             </code></pre>
         </td>
         <td class="inBlock">
