@@ -31,19 +31,21 @@
         <tr>
         <td class="inBlock">
             <!--Pre's take *everything literally, so everyting inside this pre is unformatted...-->
-            <pre style="width:auto;background-color:#EEE;border-radius:10px"><code id="expsummary">
+            <pre style="width:auto;background-color:#EEE;border-radius:5px"><code id="expsummary">
 Id: {{exp.expid}}
 User: {{exp.user}} 
 Machine: {{exp.machine}} 
 Compset: {{exp.compset}} 
 Case: {{exp.case}}
 Res: {{exp.res}} 
+Version: {{exp.version}}
+
 Run_time: {{ exp.run_time }} sec
 Init time: {{ exp.init_time }} sec
 Final_time: {{ exp.final_time }} sec
 Throughput: {{exp.model_throughput}} SYPD
 Total PEs: {{exp.total_pes_active}}
-Model cost: {{exp.model_cost}} pe-hrs/simulated_year
+Model cost: {{exp.model_cost}} pe-hrs/sim_year
 
 Run length: {{exp.run_length}} days
 Stop_n: {{exp.stop_n}}
