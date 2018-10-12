@@ -19,6 +19,9 @@ def parseData():
 	# start main
 	# upload directory
 	tmp_updir='/pace/prod/portal/upload/'
+	old_stdout = sys.stdout
+	log_file = open('message.log','w')
+	sys.stdout = log_file
 	try:	
 		fpath=tmp_updir
 		# Extract aggregated zip files
@@ -84,6 +87,8 @@ def parseData():
 		db.session.rollback()
 	# remove uploaded experiments
 	removeFolder(tmp_updir)
+	sys.stdout = old_stdout
+	log_file.close()
 	if isSuccess == True:
 		return('File Upload and Stored in Database Success')
 	else:
