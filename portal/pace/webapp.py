@@ -208,7 +208,7 @@ def advSearch(searchQuery):
 def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc="desc"):
     resultItems = []
     filteredItems = []
-    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res","timingprofile.case"]
+    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res","timingprofile.case","init_time"]
     #This should be an easy way to determine if something's in the list
     if orderBy == "case":
         orderBy = "timingprofile.case"
