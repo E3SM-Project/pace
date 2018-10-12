@@ -80,11 +80,7 @@ def parseData():
 		# insert experiments for given files
 		isSuccess=insertExperiment(allfile[i],readmefile[i],timingfile[i],gitdescribefile[i],db,fpath)
 		
-	# try commit if not, flush 
-	try:	
-		db.session.commit()
-	except:
-		db.session.rollback()
+	
 	# remove uploaded experiments
 	removeFolder(tmp_updir)
 	sys.stdout = old_stdout
@@ -372,7 +368,12 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 	# insert modelTiming
 	insertTiming(timingfile,forexpid.expid,db)
 	# store raw data (In server and Minio)
-	zipFolder(forexpid.lid,forexpid.user,forexpid.expid,fpath)	
+	zipFolder(forexpid.lid,forexpid.user,forexpid.expid,fpath)
+	# try commit if not, flush 
+	try:	
+		db.session.commit()
+	except:
+		db.session.rollback()	
 	return (True) 
 
 
