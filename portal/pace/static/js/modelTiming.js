@@ -40,7 +40,7 @@ function addressTable(vals=undefined,jsonArray=false,srcExp,thread = -1){
 }
 
 //This holds a single experiment. The goal is to be able to compare multiples, so they are compartmentelized here.
-function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "0",user="N/A", machine="N/A"){
+function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "0",compset="N/A", res="N/A"){
     this.name = name;
     this.rank = rank;
     this.timeNodes = timeNodes;
@@ -54,8 +54,8 @@ function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "0",
     this.threadSelectInner = "";
     this.valueSelectInner = this.rank == "stats"?"<option value='wallmin/wallmax'>wallMin / wallMax</option>":"<option value='nodes'>processes</option><option value='min/max'>Min / Max</option>";
     this.valueNames = valueNames;
-    this.user = user;
-    this.machine = machine;
+    this.compset = compset;
+    this.res = res;
 
     //Construct:
     this.timeNodes.forEach((thread,i)=>{
@@ -84,7 +84,7 @@ function getExperiment(expSrc,extSrc,funcPush = expDownloadDefault){
         if(status == "success"){
             let results = JSON.parse(data);
             // console.log(results);
-            expList.push(new experiment(results.obj,results.varNames,results.meta.expid,results.meta.rank,results.meta.user,results.meta.machine));
+            expList.push(new experiment(results.obj,results.varNames,results.meta.expid,results.meta.rank,results.meta.compset,results.meta.res));
         }
         expGetCount--;
         if(expGetCount == 0){
@@ -99,7 +99,7 @@ function expDownloadDefault(){
     updateExpSelect();
     animate(false);
     currExp.view();
-    metaOpenClose(true,currExp.user,currExp.machine,currExp.name);
+    metaOpenClose(true,currExp.compset,currExp.res,currExp.name);
     if(window.location.hash==""  || expList.length > 1)
         summaryButton.click();
     else window.onhashchange();
@@ -113,7 +113,7 @@ function switchExperiment(index = expSelect.selectedIndex){
         summaryButton.click();
     else changeGraph( (currExp.currentEntry.children.length == 0?{children:currExp.currentEntry}:currExp.currentEntry) );
     resultChart.options.title.text=currExp.name +": "+currExp.rank+ " (Thread "+currExp.currThread+")";
-    metaOpenClose(true,currExp.user,currExp.machine,currExp.name);
+    metaOpenClose(true,currExp.compset,currExp.res,currExp.name);
 }
 
 //This creates an HTML list that directly associates with the address table (which in-turn addresses to the original json file). When a tag is clicked, the other lists witihin it are collapsed.

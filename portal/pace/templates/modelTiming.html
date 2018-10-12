@@ -86,6 +86,13 @@
         dataInfo.style.height = (window.innerHeight*.8)+"px";
         //safari for IOS is kindof weird with the background colors for dataList, so here's something to change it:
         dataList.style.backgroundColor="white";
+        //This time, google chrome is the special snowflake; rendering width and other alignments differ from every other browser:
+        if(isChrome){
+            dataInfo.style.left = "22%";
+            dataInfo.style.width= "77%";
+            backButton.style.left = "22%";
+        }
+
         //Change the footer to fixed due to weird happenings on mobile:
         document.getElementsByClassName("footer")[0].style.position="fixed";
         document.getElementsByClassName("footer")[0].style.zIndex = "-1";

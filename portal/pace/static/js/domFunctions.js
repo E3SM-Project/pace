@@ -1,5 +1,6 @@
 //Author: Zachary Mitchell
 //Purpose: This file holds all of DOM functions in modelTiming.html (It got rather large XP)
+var isChrome = /Chrome/.test(navigator.appVersion);
 var triggerResize;
 var dlLock = true; //Locks dataList in place. If it slides back, so will dataInfo
 var dlShow = true;
@@ -15,8 +16,10 @@ window.onresize = function(){
     //Normally, 1 em = 16px, but 13 seems to work better for this scenario :P (See: https://kyleschaeffer.com/development/css-font-size-em-vs-px-vs-pt-vs/)
     if(dlLock){
         dataList.style.width = (window.innerWidth * .2) / 13 + "em";
-        if(window.innerWidth < 700)
+        if(window.innerWidth < 700){
             toggleDlLock(false);
+            dlSlide(false);
+        }
     }
 }
 backButton.onclick = function(){
@@ -35,9 +38,9 @@ function dlSlide(listFB = !dlShow,infoFB){
     dataList.style.resize = (dlLock?"none":"horizontal");
     dlShow = listFB;
 
-    
-    $(dataInfo).animate((infoFB?{left:"21%",width:"78%"}:{left:"1%",width:"99%"} ),250);
-    $(backButton).animate((infoFB?{left:"21%"}:{left:"1%"} ),250);
+    let leftValue = isChrome?"22%":"27%";
+    $(dataInfo).animate((infoFB?{left:leftValue,width:isChrome?"77%":"75%"}:{left:"2%",width:"99%"} ),250);
+    $(backButton).animate((infoFB?{left:leftValue}:{left:"2%"} ),250);
 }
 
 function toggleDlLock(tf = !dlLock){
@@ -362,9 +365,9 @@ dataInfo.onwheel = function(evt){
 }
 
 //Open and close the meta-info box
-function metaOpenClose(openClose=false,user,machine,expid){
-    if(user && machine && expid){
-        let outStr = "User: <a href='"+detectRootUrl()+"users/"+user+"'>"+user+"</a> Machine: <a href='"+detectRootUrl()+"platforms/"+machine+"'>"+machine+"</a> (<a href='"+detectRootUrl()+"exp-details/"+expid+"'>Learn More</a>)";
+function metaOpenClose(openClose=false,compset,res,expid){
+    if(compset && res && expid){
+        let outStr = "Compset: <a href='"+detectRootUrl()+"advsearch/compset:"+compset+"'>"+compset+"</a> Res: <a href='"+detectRootUrl()+"advsearch/res:"+res+"'>"+res+"</a> (<a href='"+detectRootUrl()+"exp-details/"+expid+"'>Learn More</a>)";
         $(metaInfoTxt.parentElement).slideUp(200);
         setTimeout(()=>metaInfoTxt.innerHTML = outStr,metaInfoTxt.innerHTML == ""?0:200);
         $(metaInfoTxt.parentElement).slideDown(200);

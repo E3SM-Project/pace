@@ -1,8 +1,8 @@
 #dataInfo{
     border:.01in solid;
     position: absolute;
-    left:21%;
-    width:78%;
+    left:27%;
+    width:75%;
     background-image:url(/static/img/ornlLeaf.svg); 
     background-position: center;
     background-repeat: no-repeat;
@@ -11,6 +11,7 @@
 }
 #dataList{
     overflow: scroll;
+    -webkit-overflow-scrolling:touch;
     width:18em;
     position: absolute;
     resize:none;
@@ -23,12 +24,12 @@ ul{
 }
 #backButton{
     position: absolute;
-    left:21%;
+    left:27%;
     z-index: 0;
 }
 #zoomDiv{
     position: absolute;
-    left:94%;
+    left:96%;
 }
 #mtMain{
     font-family: monospace;
