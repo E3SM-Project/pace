@@ -32,37 +32,53 @@
 		background-color:#C9D7E8;
 		// background-color:#FFA07A;
 	}
+	#homePageContent tbody tr td{
+		display:inline-block;
+	}
+	#homePageContent{
+		width:50em;
+		margin-left:25%;
+	}
+
+	@media screen and (max-width: 1060px){
+		#homePageContent{
+			width:95%;
+			margin-left:5%;
+		}
+		.searchElements{
+			width:100%;
+		}
+	}
     </style>
 {% endblock %}
 
 {% block content %}
-{%if homePage%}
-{# If this is the homepage, the paragraph starts here, otherwise, it starts elsewhere...#}
-<p style="text-align:center;margin-bottom:5px" id="homePageContent">
-	<span id="homeSearchDiv">
-	<input id="searchLink" readonly class="form-control" style="border-radius:5px;font-family:monospace;width:100%;height:30px;margin-bottom:5px;" placeholder="Search results link for sharing..." value=""/>
-	<input class="form-control" id="homeSearchBar" style="font-size:1em;height:50px;" placeholder="Keyword"/>
-	</span>
-	<button class="btn-lg btn-info" style="height:48px;" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button><br>
-{%else%}
-{# Paragraph starts here if it's just a regular search page #}
-	<h4>Experiments : </h4>
-{%endif%}
-	<div style="text-align:center;">
-		<select id="orderBySelect" onchange="searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,matchModeCheck.checked,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)">
-			<option value="exp_date" selected>Sort by</option>
-		</select>
-		<label class="radio-inline"><input type="radio" id="ascCheck" name="sortOrder" onclick="sortOrderToggle()" > Ascending</label>
-		<label class="radio-inline"><input type="radio" id="descCheck" name="sortOrder" onclick="sortOrderToggle()" > Descending</label>
-		&nbsp; &nbsp;
-		<label class="radio-inline"><input type="checkbox" id="matchModeCheck"/> Advanced Search</label>
-		<span style="display:inline-block;margin-left:25px">
-		<!--<button id='catRefButton' class="btn btn-default" onclick='$("#catReference").slideToggle(250)' style='display:none'>Reference</button>-->
-		<span id='catReference'></span>
-	</span>
-	</div>
+<table id="homePageContent">
+	<tbody>
+		<tr><td class='searchElements' style="width:85%"><input id="searchLink" readonly class="form-control" style="border-radius:5px;font-family:monospace;height:30px;margin-bottom:5px;" placeholder="Search results link for sharing..." value=""/></td></tr>
+		<tr>
+			<td class='searchElements' style="width:85%"><input class="form-control" id="homeSearchBar" style="font-size:1em;height:50px;" placeholder="Keyword"/></td>
+			<td><button class="btn-lg btn-info" style="height:48px;" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button></td>
+		</tr>
 
-{# Paragraph for home/search page ends here (One tag for ending two possible paragraphs...) #}
+		<tr>
+			<td>
+				<select id="orderBySelect" onchange="searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,matchModeCheck.checked,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)">
+					<option value="exp_date" selected>Sort by</option>
+				</select>
+			</td>
+			<td>
+				<label class="radio-inline"><input type="radio" id="ascCheck" name="sortOrder" onclick="sortOrderToggle()" > Ascending</label>
+				<label class="radio-inline"><input type="radio" id="descCheck" name="sortOrder" onclick="sortOrderToggle()" > Descending</label>
+			</td>
+
+			<td><label class="radio-inline"><input type="checkbox" id="matchModeCheck"/> Advanced Search</label></td>
+			<!--<td><button id='catRefButton' class="btn btn-default" onclick='$("#catReference").slideToggle(250)' style='display:none'>Reference</button></td>-->
+			<td><span id='catReference'></span></td>
+		</tr>
+
+	</tbody>
+</table>
 <p style="text-align:right">
 	<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>Compare</button></a>
 	<a><button class="btn btn-primary btn-dark" id='searchViewBtn' disabled>View</button></a>
@@ -96,14 +112,13 @@ function searchAndCheck(sq = searchQuery,matchMode = (getDistinct?true:false) ){
 	searchLink.value = sq == "*"?"":detectRootUrl()+(matchMode?"advsearch/":"search/")+sq;
 }
 
-{%if homePage%}
 matchModeCheck.onclick = function(){
 	homeSearchBar.value="";
 	homeSearchBar.placeholder = (this.checked?"user:name machine:platform colname:value ...":"Keyword");
 	if(homeSearchBar.innerHTML.replace(" ","")!="")
 		searchAndCheck(homeSearchBar.value,matchModeCheck.checked);
-	catRefButton.style.display = (catRefButton.style.display == "none"?"":"none");
-	catReference.style.display = "none";
+	//catRefButton.style.display = (catRefButton.style.display == "none"?"":"none");
+	//catReference.style.display = "none";
 }
 
 //predictive search + home search functionality:
@@ -126,7 +141,7 @@ homeSearchBar.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("hsb"),150);
 searchObj.expVars.forEach( (element,index)=>{
 	catReference.innerHTML+=(index > 0?"<br>":"")+"<b>"+element[0]+"</b> = "+(element[2]?element[2]:element[1]);
 });
-{%endif%}
+
 //Generate the table head:
 var tHead = expTable.getElementsByTagName("thead")[0].children[0];
 searchObj.expVars.forEach(element=>{
