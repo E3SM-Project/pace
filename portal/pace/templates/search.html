@@ -40,13 +40,21 @@
 		margin-left:25%;
 	}
 
+	.homePageBottomHalf td{
+		margin-right:2em;
+	}
+
+	#advSearchContainer{
+		margin-left:10em;
+	}
+
 	@media screen and (max-width: 1060px){
 		#homePageContent{
 			width:95%;
 			margin-left:5%;
 		}
-		.searchElements{
-			width:100%;
+		#advSearchContainer{
+		margin-left:1%;
 		}
 	}
     </style>
@@ -55,13 +63,12 @@
 {% block content %}
 <table id="homePageContent">
 	<tbody>
-		<tr><td class='searchElements' style="width:85%"><input id="searchLink" readonly class="form-control" style="border-radius:5px;font-family:monospace;height:30px;margin-bottom:5px;" placeholder="Search results link for sharing..." value=""/></td></tr>
-		<tr>
-			<td class='searchElements' style="width:85%"><input class="form-control" id="homeSearchBar" style="font-size:1em;height:50px;" placeholder="Keyword"/></td>
-			<td><button class="btn-lg btn-info" style="height:48px;" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button></td>
+		<tr><td style="width:85%"><input id="searchLink" readonly class="form-control" style="border-radius:5px;font-family:monospace;height:30px;margin-bottom:5px;" placeholder="Search results link for sharing..." value=""/></td></tr>
+		<tr style="display:flex">
+			<td style="width:85%"><input class="form-control" id="homeSearchBar" style="font-size:1.5em;height:50px;" placeholder="Keyword"/></td>
+			<td><button class="btn-lg btn-info" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button></td>
 		</tr>
-
-		<tr>
+		<tr class="homePageBottomHalf">
 			<td>
 				<select id="orderBySelect" onchange="searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,matchModeCheck.checked,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)">
 					<option value="exp_date" selected>Sort by</option>
@@ -72,7 +79,7 @@
 				<label class="radio-inline"><input type="radio" id="descCheck" name="sortOrder" onclick="sortOrderToggle()" > Descending</label>
 			</td>
 
-			<td><label class="radio-inline"><input type="checkbox" id="matchModeCheck"/> Advanced Search</label></td>
+			<td id="advSearchContainer"><label class="radio-inline"><input type="checkbox" id="matchModeCheck"/> Advanced Search</label></td>
 			<!--<td><button id='catRefButton' class="btn btn-default" onclick='$("#catReference").slideToggle(250)' style='display:none'>Reference</button></td>-->
 			<td><span id='catReference'></span></td>
 		</tr>
@@ -101,6 +108,14 @@
 {{sq|safe}}
 var getDistinct = false;
 {{getDistinctStr|safe}}
+
+window.onresize = ()=>{
+	if(window.innerWidth < 1060)
+		document.getElementsByClassName("pTextMenu")[1].style.width = "76%";
+	else if(window.innerWidth > 1060)
+		document.getElementsByClassName("pTextMenu")[1].style.width="42em";
+}
+
 //getDistinct should only be flagged to true when in a search page (not the home page), so the template assumes accordingly...
 function searchAndCheck(sq = searchQuery,matchMode = (getDistinct?true:false) ){
 	searchObj.search(sq,searchObj.limit,()=>{
@@ -161,6 +176,7 @@ function sortOrderToggle(){
 }
 
 $(document).ready(function(){
+window.onresize();
 searchAndCheck();
 /*$("#expTable").tablesorter({
 	widthFixed: false

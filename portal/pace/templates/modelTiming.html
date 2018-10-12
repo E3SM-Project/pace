@@ -15,9 +15,7 @@
         <!--This is the custom highlighter for the model timing graph-->
         <span id="nodeId"></span>
         <p style="text-align:right">
-            <span id="quickSearchContainer">
-                <input type="text" id="quickSearchBar" placeholder="Quick Search"/>
-            </span>
+            
         </p>
         <table id="mtOptions">
             <tbody>
@@ -37,6 +35,11 @@
             <td>
                 <button id="compareButton" onclick="compDivObj.toggle()">Compare</button>
                 <button onclick="toggleDlLock()">Lock/Unlock Process list</button>
+            </td>
+            <td>
+                <span id="quickSearchContainer">
+                <input type="text" id="quickSearchBar" placeholder="Quick Search"/>
+                </span>
             </td>
             </tr>
             </tbody>
@@ -82,7 +85,7 @@
         var compare = undefined;
         var threadList = undefined;
         var onMtPage = true;
-        var expData = [['1','0'],['255','0']];
+        {{exp|safe}}
         dataInfo.style.height = (window.innerHeight*.8)+"px";
         //safari for IOS is kindof weird with the background colors for dataList, so here's something to change it:
         dataList.style.backgroundColor="white";
@@ -92,6 +95,8 @@
             dataInfo.style.width= "77%";
             backButton.style.left = "22%";
         }
+        quickSearchContainer.children[0].style.width="15em";
+        quickSearchContainer.getElementsByClassName("pTextMenu")[0].style.width="15em";
 
         //Change the footer to fixed due to weird happenings on mobile:
         document.getElementsByClassName("footer")[0].style.position="fixed";

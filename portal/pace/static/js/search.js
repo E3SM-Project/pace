@@ -207,7 +207,8 @@ Index definitions:
     	["Case","case"],
     	["Total PEs","total_pes_active","pes"],
     	["Run Length","run_length","run",true,`<br><span style="font-size:75%">(days)</span>`],
-    	["Throughput","model_throughput","through",true,`<br><span style="font-size:75%">(sim_years/day)</span>`],
+        ["Throughput","model_throughput","through",true,`<br><span style="font-size:75%">(sim_years/day)</span>`],
+        ["Init time","init_time"],
     	["ExpDate","exp_date","date"]
     ],
 }
