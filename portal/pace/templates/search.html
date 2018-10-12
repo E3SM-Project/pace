@@ -28,41 +28,48 @@
 		background-color:white;
 		margin-left:-50px;
 	}
+	.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+		background-color:#C9D7E8;
+		// background-color:#FFA07A;
+	}
     </style>
 {% endblock %}
 
 {% block content %}
 {%if homePage%}
 {# If this is the homepage, the paragraph starts here, otherwise, it starts elsewhere...#}
-<p style="text-align:center" id="homePageContent">
+<p style="text-align:center;margin-bottom:5px" id="homePageContent">
 	<span id="homeSearchDiv">
 	<input id="searchLink" readonly class="form-control" style="border-radius:5px;font-family:monospace;width:100%;height:30px;margin-bottom:5px;" placeholder="Search results link for sharing..." value=""/>
 	<input class="form-control" id="homeSearchBar" style="font-size:1em;height:50px;" placeholder="Keyword"/>
 	</span>
 	<button class="btn-lg btn-info" style="height:48px;" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button><br>
-	<input type="checkbox" id="matchModeCheck" style="margin-top:10px;margin-right:4px"/>Advanced Search
-	<span style="display:inline-block;margin-right:25px">
-		<button id='catRefButton' class="btn btn-default" onclick='$("#catReference").slideToggle(250)' style='display:none'>Reference</button>
-		<span id='catReference'></span>
-	</span>
 {%else%}
 {# Paragraph starts here if it's just a regular search page #}
 	<h4>Experiments : </h4>
-<p style="text-align:center">
 {%endif%}
+	<div style="text-align:center;">
 		<select id="orderBySelect" onchange="searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,matchModeCheck.checked,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)">
 			<option value="exp_date" selected>Sort by</option>
 		</select>
-		<span style="margin-right:5px"></span><input type="checkbox" id="ascCheck" onclick="ascDescToggle()">Ascending
+		<label class="radio-inline"><input type="radio" id="ascCheck" name="sortOrder" onclick="sortOrderToggle()" > Ascending</label>
+		<label class="radio-inline"><input type="radio" id="descCheck" name="sortOrder" onclick="sortOrderToggle()" > Descending</label>
+		&nbsp; &nbsp;
+		<label class="radio-inline"><input type="checkbox" id="matchModeCheck"/> Advanced Search</label>
+		<span style="display:inline-block;margin-left:25px">
+		<!--<button id='catRefButton' class="btn btn-default" onclick='$("#catReference").slideToggle(250)' style='display:none'>Reference</button>-->
+		<span id='catReference'></span>
+	</span>
+	</div>
+
 {# Paragraph for home/search page ends here (One tag for ending two possible paragraphs...) #}
-</p>
 <p style="text-align:right">
 	<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>Compare</button></a>
 	<a><button class="btn btn-primary btn-dark" id='searchViewBtn' disabled>View</button></a>
 </p>
-<div style="overflow-x:scroll;width:100%">
-<table id="expTable" class="table table-striped">
-<thead>
+<div class="table-responsive-lg">
+<table id="expTable" class="table table-sm table-hover table table-striped">
+<thead class="thead-light">
     <tr></tr>
 </thead>
 <tbody id="searchBody"></tbody>
@@ -134,7 +141,7 @@ searchObj.expVars.forEach(element=>{
 	orderBySelect.innerHTML+="<option value='"+element[1]+"'>"+element[0]+"</option>";
 });
 
-function ascDescToggle(){
+function sortOrderToggle(){
 	searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,matchModeCheck.checked,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)
 }
 
