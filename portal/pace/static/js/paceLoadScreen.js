@@ -38,6 +38,7 @@ lsFade.innerHTML=`
   top:0px;
   animation: fadeIn .3s;
   background-color:white;
+  z-index:10;
 }
 @keyframes fadeIn{
     from{opacity:0;}
