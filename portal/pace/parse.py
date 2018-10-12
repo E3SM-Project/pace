@@ -177,7 +177,10 @@ def parseReadme(fileIn):
 	return resultElement
 
 def parseModelVersion(gitfile):
-	parsefile = gzip.open(gitfile,'rb')
+	if gitfile.endswith('.gz'):
+		parsefile = gzip.open(gitfile,'rb')
+	else:
+		parsefile = open(gitfile, 'rb')
 	version = 0
 	for line in parsefile:
 		version = line.strip('\n')
