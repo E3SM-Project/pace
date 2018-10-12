@@ -337,7 +337,7 @@ def searchPrediction(keyword):
         colName = column
         if "." in column:
             colName = colName.split(".")[1]
-        distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '%%"+keyword+"%%' limit 10").fetchall()
+        distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '"+keyword+"%%' limit 10").fetchall()
         for element in distQuery:
             resultWords.append(str(element[colName]))
     #Sort them by similar name:
