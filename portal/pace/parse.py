@@ -72,37 +72,22 @@ def parseData():
 	except OSError as e:
 		return('Error: %s' % e.strerror)
 	
-	# list of lid from experiments
-	exptag=[]
-	exptaguser=[]
-	exptagid=[]
 	# parse and store timing profile file in a database
 	for i in range(len(allfile)):
-		# to store lid after parsing, or is 'duplicate' 
-		lid=0
-		# to store expid after parsing
-		duplicateExp=False
-		# parse  'e3sm_timing.' and 'README.case.', returns lid,expid for unique experiments else 'duplicate,0'
-		lid,expuser,expid,duplicateExp=insertExperiment(allfile[i],readmefile[i],timingfile[i],gitdescribefile[i],db)
+		# insert experiments for given files
+		isSuccess=insertExperiment(allfile[i],readmefile[i],timingfile[i],gitdescribefile[i],db,fpath)
 		
-		if duplicateExp == False:
-			# append lid to list 
-			exptag.append(lid)
-			exptaguser.append(expuser)
-			exptagid.append(expid)
-			print("-----------------Stored-in-Database-------------------")
 	# try commit if not, flush 
 	try:	
 		db.session.commit()
 	except:
 		db.session.rollback()
-	# zip successfull experiments into folder experiments
-	zipFolder(exptag,exptaguser,exptagid,fpath)
 	# remove uploaded experiments
 	removeFolder(tmp_updir)
-	
-
-	return('File Upload and Stored in Database Success')
+	if isSuccess == True:
+		return('File Upload and Stored in Database Success')
+	else:
+		return('Error: Check message.log')
 
 # 
 def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
@@ -186,7 +171,7 @@ def parseReadme(fileIn):
 			break	
 	return resultElement
 
-def parseGitfile(gitfile):
+def parseModelVersion(gitfile):
 	parsefile = gzip.open(gitfile,'rb')
 	version = 0
 	for line in parsefile:
@@ -195,48 +180,46 @@ def parseGitfile(gitfile):
 	parsefile.close()
 	return version
 
-def insertExperiment(filename,readmefile,timingfile,gitfile,db):
+def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 	if filename.endswith('.gz'):
 		parseFile=gzip.open(filename,'rb')
 	else:
 		parseFile=open(filename,'rb')	
-	onetags=[]
-	twotags=[]
-	threetags=[]
-	fourtags=[]
-	timeProfileFlag=0
+	timingProfileInfo={}
+	componentTable=[]
+	runTimeTable=[]
 	duplicateFlag=False
 	word=''
 	for line in parseFile:
 		if line!='\n':
-			if timeProfileFlag==0:		
+			if len(timingProfileInfo)<12:		
 				word=line.split(None,3)
 				if word[0]=='Case':
-					onetags.append(word[2])
+					timingProfileInfo['case']=word[2]
 				elif word[0]=='LID':
-					onetags.append(word[2])
+					timingProfileInfo['lid']=word[2]
 				elif word[0]=='Machine':
-					onetags.append(word[2])
+					timingProfileInfo['machine']=word[2]
 				elif word[0]=='Caseroot':
-					onetags.append(word[2])
+					timingProfileInfo['caseroot']=word[2]
 				elif word[0]=='Timeroot':
-					onetags.append(word[2])
+					timingProfileInfo['timeroot']=word[2]
 				elif word[0]=='User':
-					onetags.append(word[2])
+					timingProfileInfo['user']=word[2]
 				elif word[0]=='Curr':
-					onetags.append(word[3])
+					timingProfileInfo['curr']=word[3]
 				elif word[0]=='grid':
-					onetags.append(word[2])
+					timingProfileInfo['long_res']=word[2]
 				elif word[0]=='compset':
-					onetags.append(word[2])
+					timingProfileInfo['long_compset']=word[2]
 				elif word[0]=='stop_option':
-					onetags.append(word[2])
-					newWord=word[3].split(" ")
-					onetags.append(newWord[2])			
+					timingProfileInfo['stop_option']=word[2]
+					newWord=word[3].split(" ")	
+					timingProfileInfo['stop_n']=newWord[2]		
 				elif word[0]=='run_length':
 					newWord=word[3].split(" ")
-					onetags.append(word[2])
-					timeProfileFlag=1
+					timingProfileInfo['run_length']=word[2]
+				
 			flagrun=False
 			flaginit=False
 			flagfinal=False
@@ -244,45 +227,47 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db):
 			if word[0]=='total':
 				newWord=word[1].split(":")
 				newWord1=newWord[1].split(" ")
-				threetags.append(newWord1[1])
+				timingProfileInfo['total_pes']=newWord1[1]
 			elif word[0]=='mpi':
 				newWord=word[1].split(":")
 				newWord1=newWord[1].split(" ")
-				threetags.append(newWord1[1])
+				timingProfileInfo['mpi_task']=newWord1[1]
 			elif word[0]=='pe':
 				newWord=word[1].split(":")
 				newWord1=newWord[1].split(" ")
-				threetags.append(newWord1[1])
+				timingProfileInfo['pe_count']=newWord1[1]
 			elif word[0]=='Model':
 				newWord=word[1].split(":")
 				newWord1=newWord[1].split()
-				threetags.append(newWord1[0])
+				if 'model_cost' in timingProfileInfo.keys():
+					timingProfileInfo['model_throughput']=newWord1[0]
+				else:
+					timingProfileInfo['model_cost']=newWord1[0]
 			elif word[0]=='Actual':
 				newWord=word[1].split(":")
 				newWord1=newWord[1].split()
-				threetags.append(newWord1[0])
-				timeProfileFlag+=1
+				timingProfileInfo['actual_ocn']=newWord1[0]
 			elif word[0]=='Init' and flaginit == False:
 				newWord=word[1].split(":")
 				newWord1=newWord[1].split()
-				threetags.append(newWord1[0])
+				timingProfileInfo['init_time']=newWord1[0]
 				flaginit = True
 			elif word[0]=='Run' and flagrun == False:
 				newWord=word[1].split(":")
 				newWord1=newWord[1].split()
-				threetags.append(newWord1[0])
+				timingProfileInfo['run_time']=newWord1[0]
 				flagrun = True
 			elif word[0]=='Final' and flagfinal == False:
 				newWord=word[1].split(":")
 				newWord1=newWord[1].split()
-				threetags.append(newWord1[0])
+				timingProfileInfo['final_time']=newWord1[0]
 				flagfinal = True
-			elif timeProfileFlag>=2:
+			elif len(timingProfileInfo)>=20:
 				break
 	parseFile.close()
-	duplicateFlag = checkDuplicateExp(onetags[0],onetags[1],onetags[5])
+	duplicateFlag = checkDuplicateExp(timingProfileInfo['case'],timingProfileInfo['lid'],timingProfileInfo['user'])
 	if duplicateFlag is True:
-		return (onetags[1],onetags[5],0,True) # return(lid,user,expid,duplicateExp)
+		return (True) # This skips this experiment and moves to next
 	tablelist=[]
 	
 	if filename.endswith('.gz'):
@@ -298,60 +283,89 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db):
 	for i in range(46,57):
 		word=lines[i].split()
 		if word[1]=='Run':
-			fourtags.append(word[0])
+			runTimeTable.append(word[0])
 		else:
-			fourtags.append(str(word[0])+'_COMM')
-		fourtags.append(word[3])
-		fourtags.append(word[5])
-		fourtags.append(word[7])	
+			runTimeTable.append(str(word[0])+'_COMM')
+		runTimeTable.append(word[3])
+		runTimeTable.append(word[5])
+		runTimeTable.append(word[7])	
 
 	for i in range(9):
 		tmpthread1=resultlist[i]['component']
 		change1=tmpthread1.split(" ")
-		twotags.append(change1[0])
-		twotags.append(resultlist[i]['comp_pes'])
-		twotags.append(resultlist[i]['root_pe'])
-		twotags.append(resultlist[i]['tasks'])
+		componentTable.append(change1[0])
+		componentTable.append(resultlist[i]['comp_pes'])
+		componentTable.append(resultlist[i]['root_pe'])
+		componentTable.append(resultlist[i]['tasks'])
 		tmpthread=resultlist[i]['threads']
 		change=tmpthread.split(" ")
-		twotags.append(change[1])
-		twotags.append(resultlist[i]['instances'])
-		twotags.append(resultlist[i]['stride'])
+		componentTable.append(change[1])
+		componentTable.append(resultlist[i]['instances'])
+		componentTable.append(resultlist[i]['stride'])
 		
 	parseFile.close()
 	
 	readmefile=gzip.open(readmefile,'rb')
 	readmeparse = parseReadme(readmefile)
 	readmefile.close()
-	expversion = parseGitfile(gitfile)
-	new_experiment = Timingprofile(case=onetags[0],lid=onetags[1],machine=onetags[2],caseroot=onetags[3],timeroot=onetags[4],
-					user=onetags[5],exp_date=changeDateTime(onetags[6]),long_res=onetags[7],res=readmeparse['res'],
-					compset=readmeparse['compset'],long_compset=onetags[8],stop_option=onetags[9],stop_n=onetags[10],
-					run_length=onetags[11],total_pes_active=threetags[0],mpi_tasks_per_node=threetags[1],
-					pe_count_for_cost_estimate=threetags[2],model_cost=threetags[3],model_throughput=threetags[4],
-					actual_ocn_init_wait_time=threetags[5],init_time=threetags[6],run_time=threetags[7],
-					final_time=threetags[8],version = expversion)
+	expversion = parseModelVersion(gitfile)
+	new_experiment = Timingprofile(case=timingProfileInfo['case'],
+					lid=timingProfileInfo['lid'],
+					machine=timingProfileInfo['machine'],
+					caseroot=timingProfileInfo['caseroot'],
+					timeroot=timingProfileInfo['timeroot'],
+					user=timingProfileInfo['user'],
+					exp_date=changeDateTime(timingProfileInfo['curr']),
+					long_res=timingProfileInfo['long_res'],
+					res=readmeparse['res'],
+					compset=readmeparse['compset'],
+					long_compset=timingProfileInfo['long_compset'],
+					stop_option=timingProfileInfo['stop_option'],
+					stop_n=timingProfileInfo['stop_n'],
+					run_length=timingProfileInfo['run_length'],
+					total_pes_active=timingProfileInfo['total_pes'],
+					mpi_tasks_per_node=timingProfileInfo['mpi_task'],
+					pe_count_for_cost_estimate=timingProfileInfo['pe_count'],
+					model_cost=timingProfileInfo['model_cost'],
+					model_throughput=timingProfileInfo['model_throughput'],
+					actual_ocn_init_wait_time=timingProfileInfo['actual_ocn'],
+					init_time=timingProfileInfo['init_time'],
+					run_time=timingProfileInfo['run_time'],
+					final_time=timingProfileInfo['final_time'],
+					version = expversion)
 	db.session.add(new_experiment)
 
 	# table has to have a same experiment id
-	
 	forexpid = Timingprofile.query.order_by(Timingprofile.expid.desc()).first()
 
 	#insert pelayout
 	i=0
-	while i < len(twotags):
-		new_pelayout = Pelayout(expid=forexpid.expid, component=twotags[i],comp_pes=twotags[i+1],root_pe=twotags[i+2],tasks=twotags[i+3],threads=twotags[i+4],instances=twotags[i+5],stride=twotags[i+6])
+	while i < len(componentTable):
+		new_pelayout = Pelayout(expid=forexpid.expid,
+					component=componentTable[i],
+					comp_pes=componentTable[i+1],
+					root_pe=componentTable[i+2],
+					tasks=componentTable[i+3],
+					threads=componentTable[i+4],
+					instances=componentTable[i+5],
+					stride=componentTable[i+6])
 		db.session.add(new_pelayout)	
 		i=i+7
 	#insert run time
 	i=0
-	while i < len(fourtags):
-		new_runtime = Runtime(expid=forexpid.expid,component=fourtags[i],seconds=fourtags[i+1],model_day=fourtags[i+2],model_years=fourtags[i+3])
+	while i < len(runTimeTable):
+		new_runtime = Runtime(expid=forexpid.expid,
+					component=runTimeTable[i],
+					seconds=runTimeTable[i+1],
+					model_day=runTimeTable[i+2],
+					model_years=runTimeTable[i+3])
 		db.session.add(new_runtime)
 		i=i+4
-
+	# insert modelTiming
 	insertTiming(timingfile,forexpid.expid,db)
-	return (onetags[1],onetags[5],forexpid.expid,False) # return(lid,user,expid,duplicateExp)
+	# store raw data (In server and Minio)
+	zipFolder(forexpid.lid,forexpid.user,forexpid.expid,fpath)	
+	return (True) 
 
 
 def removeFolder(removeroot):
@@ -366,14 +380,13 @@ def removeFolder(removeroot):
 def zipFolder(exptag,exptaguser,exptagid,fpath):
 	newroot='/pace/assets/static/data/'
 	expname=0	
-	for i in range(len(exptag)):
-		root=fpath
-		for path, subdirs, files in os.walk(root):
-			for name in subdirs:
-				if name.startswith('CaseDocs.'+str(exptag[i])):
-					expname = 'exp-'+exptaguser[i]+'-'+str(exptagid[i])
-					shutil.make_archive(os.path.join(newroot,expname),'zip',path)
-					uploadMinio(newroot,expname)
+	root=fpath
+	for path, subdirs, files in os.walk(root):
+		for name in subdirs:
+			if name.startswith('CaseDocs.'+str(exptag)):
+				expname = 'exp-'+exptaguser+'-'+str(exptagid)
+				shutil.make_archive(os.path.join(newroot,expname),'zip',path)
+				uploadMinio(newroot,expname)
 	return
 
 def uploadMinio(newroot,expname):

@@ -81,9 +81,9 @@ def getMiniokey():
 
 	parser = RawConfigParser()
 	parser.read(configFile)
-	myAkey = parser.get('E3SM','minio_access_key')
-	mySkey = parser.get('E3SM','minio_secret_key')
-	myMiniourl = parser.get('E3SM','minio_url')
+	myAkey = parser.get('MINIO','minio_access_key')
+	mySkey = parser.get('MINIO','minio_secret_key')
+	myMiniourl = parser.get('MINIO','minio_url')
 	return myAkey, mySkey, myMiniourl
 
 def readConfigFile(configFile):
