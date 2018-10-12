@@ -73,12 +73,12 @@ def isValidE3SMexp(expfile):
 		for name in files:
 			# experiment is incomplete when there are no file containing "timing.*" and "e3sm_timing.*"			
 			if name.startswith("timing."):			
-				timefile=True
+				modeltimefile=True
 			if name.startswith("e3sm_timing."):
-				etimefile=True
+				e3smtimefile=True
 			if name.startswith("GIT_DESCRIBE."):
-				gtimefile=True	
-			if etimefile == True and timefile == True and gtimefile == True:
+				gitverfile=True	
+			if e3smtimefile == True and modeltimefile == True and gitverfile == True:
 				completeexp=True
 				explist.append(path)
 				etimefile = False
