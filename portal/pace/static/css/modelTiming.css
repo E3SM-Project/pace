@@ -78,3 +78,7 @@ ul{
     border-radius:20px;
     display:none
 }
+
+#quickSearchContainer{
+    text-align: left;
+}
