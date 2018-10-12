@@ -60,9 +60,9 @@ def uploadExp(uploadfile):
 # validate E3SM experiment
 def isValidE3SMexp(expfile):
 	# validation flag
-	timefile = False
-	etimefile = False
-	gtimefile = False
+	modeltimefile = False
+	e3smtimefile = False
+	gitverfile = False
 	completeexp = False
 	# creation of temporary file 
 	tmpfile = 'pace-exps-' + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
