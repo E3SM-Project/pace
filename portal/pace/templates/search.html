@@ -45,7 +45,7 @@
 	}
 
 	#advSearchContainer{
-		margin-left:10em;
+		margin-left:8em;
 	}
 
 	@media screen and (max-width: 1060px){
@@ -70,7 +70,7 @@
 		</tr>
 		<tr class="homePageBottomHalf">
 			<td>
-				<select id="orderBySelect" onchange="searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,matchModeCheck.checked,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)">
+				<select class="custom-select" style="margin-top:1%;" id="orderBySelect" onchange="searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,matchModeCheck.checked,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)">
 					<option value="exp_date" selected>Sort by</option>
 				</select>
 			</td>
@@ -79,9 +79,14 @@
 				<label class="radio-inline"><input type="radio" id="descCheck" name="sortOrder" onclick="sortOrderToggle()" > Descending</label>
 			</td>
 
-			<td id="advSearchContainer"><label class="radio-inline"><input type="checkbox" id="matchModeCheck"/> Advanced Search</label></td>
-			<!--<td><button id='catRefButton' class="btn btn-default" onclick='$("#catReference").slideToggle(250)' style='display:none'>Reference</button></td>-->
+			<td id="advSearchContainer">
+			<div class="form-check form-check-inline">
+			<input type="checkbox" class="form-check-input" id="matchModeCheck"> 
+			<label class="form-check-label" for="matchModeCheck"> Advanced Search</label></td>
+			</div>
+			</td>
 			<td><span id='catReference'></span></td>
+			<!--<td><button id='catRefButton' class="btn btn-default" onclick='$("#catReference").slideToggle(250)' style='display:none'>Reference</button></td>-->
 		</tr>
 
 	</tbody>
