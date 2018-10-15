@@ -160,7 +160,10 @@ def expDetails(mexpid):
     mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
     myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()
     ranks = db.session.query(ModelTiming.rank).filter_by(expid = mexpid)
-    return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks)
+    colorDict = {}
+    for i in range(len(runtimeSvg.default_args['comps'])):
+        colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
+    return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks,chartColors = json.dumps(colorDict))
 
 #Depcricated version of the search page
 """@app.route("/exps")

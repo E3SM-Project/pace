@@ -63,13 +63,13 @@ Summary Charts: {% for rank in ranks -%}<a href="/summary/{{expid}}/{{rank.rank}
             <table class="runtimeTable">
                 <thead>
                     <tr>
-                    <th>Component</th><th>Run time(s)</th>
+                    <th>Color</th><th>Component</th><th>Run time(s)</th>
                     </tr>
                 </thead>
                 <tbody>
                 {%for element in runtime%}
                 <tr>
-                    <td>{{element.component}}</td><td>{{element.seconds}}</td>
+                    <td class='colorElement'></td><td class='elementName'>{{element.component}}</td><td>{{element.seconds}}</td>
                 </tr>
                 {%endfor%}
                 </tbody>
@@ -91,6 +91,14 @@ runtimeImg.src=imgLink;
         elSplit = element.split(":");
         expsummary.innerHTML+="<span style='color:crimson'>"+elSplit[0]+""+(elSplit[1]?":</span><b>"+elSplit[1]+"</b>\n":"</span>");
     });
+}
+
+var chartColors = JSON.parse(`{{chartColors|safe}}`);
+var colorLegend = document.getElementsByClassName("colorElement");
+var elNames = document.getElementsByClassName("elementName");
+for(var i = 0;i<colorLegend.length;i++){
+    if(chartColors[elNames[i].innerHTML])
+        colorLegend[i].style.backgroundColor = chartColors[elNames[i].innerHTML];
 }
 </script>
 

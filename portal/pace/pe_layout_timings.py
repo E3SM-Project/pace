@@ -66,7 +66,7 @@ class pe_component(object):
     def __str__(self):
         print self.name
     
-    def add2plot(self,ax,bdims):
+    def add2plot(self,ax,bdims,displayLabel):
         self.plot_patch = patches.Rectangle(bdims[0:2], bdims[2],bdims[3],color=self.color)
         self.plot_patch.set_clip_on(False)
         ax.add_artist(self.plot_patch)
@@ -74,8 +74,8 @@ class pe_component(object):
             rx, ry = self.plot_patch.get_xy()
             cx = rx + self.plot_patch.get_width()/2.0
             cy = ry + self.plot_patch.get_height()/2.0
-            ax.annotate(self.name, (cx, cy), color='k', weight='bold', 
-                    fontsize=26, ha='center', va='center')
+            if displayLabel:
+                ax.annotate(self.name, (cx, cy), color='k', weight='bold',fontsize=26, ha='center', va='center')
 ###############################################################################
 def check_defaults(arg):
     # Pass a dictionary of all the arguments.  If any will cause an error then
@@ -140,7 +140,8 @@ def render(runtimeIn,opt_dict = None):
         bw = np.double(cc.root_task_sum-cc.values["root_pe"])/max_pe       # box width
         bh = cc.values[opt_dict.get('dtype')]/TOT.values[opt_dict.get('dtype')]              # box height
         ## To determine box start y value think of Tetris
-        by = 0.0                                                     # box start Y
+        by = 0.0                                      # box start Y
+
         for pt in y_pts:
             if cc.values["root_pe"] < pt[1] and cc.root_task_sum > pt[0]:
                 by = np.amax([by,pt[2]])
@@ -151,7 +152,13 @@ def render(runtimeIn,opt_dict = None):
         xtcks.append(cc.values["root_pe"])
         xtcks.append(cc.root_task_sum)
         ytcks.append(by+bh)
-        cc.add2plot(ax,[bx,by,bw,bh])
+
+        #bdims[0:2], bdims[2],bdims[3]
+        #patches.Rectangle([bx,by],bw,bh).get_height()
+        displayLabel = True
+        if cc.values["seconds"] < (TOT.values["seconds"] * 0.01):
+            displayLabel = False
+        cc.add2plot(ax,[bx,by,bw,bh],displayLabel)
         if max_pe>1e5:
             layout = "%s\n%s: (%6d,%6d)" %(layout,cc.name,cc.values["root_pe"],\
                               cc.root_task_sum)
