@@ -8,6 +8,7 @@
     background-repeat: no-repeat;
     background-size: auto;
     overflow-y: scroll;
+    -webkit-overflow-scrolling:touch;
 }
 #dataList{
     overflow: scroll;
@@ -81,4 +82,12 @@ ul{
 
 #quickSearchContainer{
     text-align: left;
+}
+
+#dlDisplayButton{
+    position:absolute;
+    width: 2em;
+    z-index:3;
+    left:0;
+    background-color:rgb(230,230,230)
 }

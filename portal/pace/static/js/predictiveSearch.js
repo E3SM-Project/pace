@@ -21,57 +21,62 @@ var predictiveSearch = {
         this.inputWords = [];
         this.wordIndex = 0;
         this.lastKeyPressed = "";
+        this.enabled = true;
         //Event Listeners:
         this.keydownListener = evt=>{
-            if(this.targetIn.value == "")
-                this.pTextMenu.style.display="none";
-
-            if(evt.key == "ArrowDown" || evt.key == "ArrowUp"|| evt.key == "Tab" || (evt.key == "Enter" && !this.allowEnter) ){
-                evt.preventDefault();
-            }
-            //This didn't look organized as a regular if statement XP
-            //Apply the predictive text depending on your key, also remove the searchDiv:
-            switch(evt.key){
-                case "Tab":
-                    if(this.highlightIndex === undefined)
-                        this.highlightIndex = 0;
-                case "Enter":
-                    if(this.targetIn.value!="" && this.pTextMenu.style.display!="none")
-                        this.applyText();
-                    this.allowEnter = true;
-                case "Escape":
-                case " ":
-                this.pTextMenu.style.display="none";
-            }
-            if( (evt.key == "ArrowDown" || evt.key == "ArrowUp") && this.pTextMenu.style.display!="none" && this.ptmValues.length > 0){
-                this.allowEnter = false;
-                this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "";
-                this.highlightIndex = (evt.key == "ArrowDown"? this.highlightIndex+1:this.highlightIndex-1);
-                if(this.highlightIndex == this.ptmValues.length)
-                    this.highlightIndex--;
-                else if(this.highlightIndex < 0)
-                    this.highlightIndex++;
-                this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "lightgray";
+            if (this.enabled){
+                if(this.targetIn.value == "")
+                    this.pTextMenu.style.display="none";
+    
+                if(evt.key == "ArrowDown" || evt.key == "ArrowUp"|| evt.key == "Tab" || (evt.key == "Enter" && !this.allowEnter) ){
+                    evt.preventDefault();
+                }
+                //This didn't look organized as a regular if statement XP
+                //Apply the predictive text depending on your key, also remove the searchDiv:
+                switch(evt.key){
+                    case "Tab":
+                        if(this.highlightIndex === undefined)
+                            this.highlightIndex = 0;
+                    case "Enter":
+                        if(this.targetIn.value!="" && this.pTextMenu.style.display!="none")
+                            this.applyText();
+                        this.allowEnter = true;
+                    case "Escape":
+                    case " ":
+                    this.pTextMenu.style.display="none";
+                }
+                if( (evt.key == "ArrowDown" || evt.key == "ArrowUp") && this.pTextMenu.style.display!="none" && this.ptmValues.length > 0){
+                    this.allowEnter = false;
+                    this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "";
+                    this.highlightIndex = (evt.key == "ArrowDown"? this.highlightIndex+1:this.highlightIndex-1);
+                    if(this.highlightIndex == this.ptmValues.length)
+                        this.highlightIndex--;
+                    else if(this.highlightIndex < 0)
+                        this.highlightIndex++;
+                    this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "lightgray";
+                }
             }
         };
         this.keyupListener = evt=>{
-            this.lastKeyPressed = evt.key;
-            //Proccess all words, and detect which word the cursor is on:
-            //This wound up being here instead of keydown because of an accuracy glitch: on the keydown, it wouldn't show the latest index being used. This was cruicial for detecting which word the user is on.
-            this.inputWords = this.targetIn.value.split(" ");
-            //Go through each word to figure out where the user is
-            let totalStr = 0;
-            this.wordIndex = 0;
-            while(totalStr< this.targetIn.selectionStart){
-                totalStr+=this.inputWords[this.wordIndex].length+1;
-                if(totalStr< this.targetIn.selectionStart)
+            if(this.enabled){
+                this.lastKeyPressed = evt.key;
+                //Proccess all words, and detect which word the cursor is on:
+                //This wound up being here instead of keydown because of an accuracy glitch: on the keydown, it wouldn't show the latest index being used. This was cruicial for detecting which word the user is on.
+                this.inputWords = this.targetIn.value.split(" ");
+                //Go through each word to figure out where the user is
+                let totalStr = 0;
+                this.wordIndex = 0;
+                while(totalStr< this.targetIn.selectionStart){
+                    totalStr+=this.inputWords[this.wordIndex].length+1;
+                    if(totalStr< this.targetIn.selectionStart)
+                        this.wordIndex++;
+                }
+                if(this.targetIn.value[totalStr] == " "){
                     this.wordIndex++;
+                }
+                // console.log("word: "+this.inputWords[this.wordIndex]);
+                // console.log(this.targetIn.selectionStart);
             }
-            if(this.targetIn.value[totalStr] == " "){
-                this.wordIndex++;
-            }
-            // console.log("word: "+this.inputWords[this.wordIndex]);
-            // console.log(this.targetIn.selectionStart);
         }
         this.refreshKeywords = wordArray=>{
             this.ptmValues = wordArray;
