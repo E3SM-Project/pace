@@ -188,7 +188,6 @@ def expsAjax(pageNum):
 #The search page! This is the primary navigation page for the site. It changes depending on where the user is on the site.
 @app.route("/search/")
 @app.route("/search/<searchQuery>")
-@app.route("/search/<searchQuery>/<advSearch>")
 def searchPage(searchQuery="*",isHomePage=False,advSearch = ""):
     homePageStr = False
     getDistinctStr = ""

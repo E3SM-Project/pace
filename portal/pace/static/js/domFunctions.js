@@ -19,6 +19,7 @@ window.onresize = function(){
         if(window.innerWidth < 700){
             toggleDlLock(false);
             dlSlide(false);
+            listLockButton.children[0].src= "/static/img/" + (dlLock?"lock.svg":"unlock.svg");
         }
     }
 }
@@ -46,6 +47,11 @@ function dlSlide(listFB = !dlShow,infoFB){
 function toggleDlLock(tf = !dlLock){
     dlLock = tf;
     dlSlide(true,dlLock);
+}
+
+listLockButton.onclick = ()=>{
+    toggleDlLock();
+    listLockButton.children[0].src= "/static/img/" + (dlLock?"lock.svg":"unlock.svg");
 }
 
 summaryButton.onclick=function(){
@@ -367,7 +373,7 @@ dataInfo.onwheel = function(evt){
 //Open and close the meta-info box
 function metaOpenClose(openClose=false,compset,res,expid){
     if(compset && res && expid){
-        let outStr = "Compset: <a href='"+detectRootUrl()+"advsearch/compset:"+compset+"'>"+compset+"</a> Res: <a href='"+detectRootUrl()+"advsearch/res:"+res+"'>"+res+"</a> (<a href='"+detectRootUrl()+"exp-details/"+expid+"'>Learn More</a>)";
+        let outStr = "Compset: <a href='"+detectRootUrl()+"advsearch/compset:"+compset+"'>"+compset+"</a> Res: <a href='"+detectRootUrl()+"advsearch/res:"+res+"'>"+res+"</a> (<a href='"+detectRootUrl()+"exp-details/"+expid+"'>Details</a>)";
         $(metaInfoTxt.parentElement).slideUp(200);
         setTimeout(()=>metaInfoTxt.innerHTML = outStr,metaInfoTxt.innerHTML == ""?0:200);
         $(metaInfoTxt.parentElement).slideDown(200);
