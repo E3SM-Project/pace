@@ -4,6 +4,10 @@ var isChrome = /Chrome/.test(navigator.appVersion);
 var triggerResize;
 var dlLock = true; //Locks dataList in place. If it slides back, so will dataInfo
 var dlShow = true;
+//These are for data list event listeners:
+var dlMouseDown = false;
+var dlCurrWidth = dataList.style.width;
+
 //adjust the size of the dataList to reflect the graph's height:
 window.onresize = function(){
     if(typeof(paceLoadResize)!=undefined && document.getElementsByClassName("loadScreen").length!=0)
@@ -31,12 +35,27 @@ backButton.onclick = function(){
     }
 }
 
+dataList.onmousedown = function(){
+    dlMouseDown = true;
+}
+dataList.onmouseup = function(){
+    dlMouseDown = false
+}
+
+dataList.onmousemove = function(){
+    if(dlLock && dlMouseDown && dataList.style.width !=dlCurrWidth){
+        dlCurrWidth = dataList.style.width;
+        dataInfo.style.width = (window.innerWidth - dataList.style.width.replace("px","")*1) + "px";
+        dataInfo.style.left = ((dataList.style.width.replace("px","")*1) + 30) + "px";
+        backButton.style.left = ((dataList.style.width.replace("px","")*1) + 30) + "px";
+    }
+}
+
 //The following is functionality for dataList to slide in and out:
 function dlSlide(listFB = !dlShow,infoFB){
     if(infoFB === undefined)
         infoFB = dlLock && listFB?true:false;
     $(dataList).animate((listFB?{left:"2em",width: (dlLock? (window.innerWidth * .2) / 13 + "em":"18em" ) }:{left:"-22em",width:"18em"}),250);
-    dataList.style.resize = (dlLock?"none":"horizontal");
     dlShow = listFB;
 
     let leftValue = isChrome?"22%":"27%";
