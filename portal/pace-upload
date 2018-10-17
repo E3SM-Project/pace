@@ -76,14 +76,12 @@ def isValidE3SMexp(expfile):
 				modeltimefile=True
 			if name.startswith("e3sm_timing."):
 				e3smtimefile=True
-			if name.startswith("GIT_DESCRIBE."):
-				gitverfile=True	
-			if e3smtimefile == True and modeltimefile == True and gitverfile == True:
+			if e3smtimefile == True and modeltimefile == True:
 				completeexp=True
 				explist.append(path)
-				etimefile = False
-				timefile = False
-				gtimefile = False
+				e3smtimefile = False
+				modeltimefile = False
+				
 		
 	# for complete experiments 
 
