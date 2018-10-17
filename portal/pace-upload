@@ -19,10 +19,10 @@ from urlparse import urljoin
 GITHUB_API = 'https://api.github.com'
 
 # server connection url
-uploadurl = "https://pace.ornl.gov/upload"
+uploadurl = "https://pace.ornl.gov/dev1/upload"
 
 # authenticuser url
-authurl = "https://pace.ornl.gov/userauthentication"
+authurl = "https://pace.ornl.gov/dev1/userauthentication"
 
 # argumented parser
 def parseArguments(): 
