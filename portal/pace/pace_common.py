@@ -60,6 +60,10 @@ def getPACEVer(lastVer):
 
 def getMiniokey():
 	configFile = None
+	myAkey = None
+	mySkey = None
+	myMiniourl = None
+
 	if os.path.isfile('.pacerc'):
 		configFile = '.pacerc'
 	elif os.path.isfile(os.environ['HOME'] + '/.pacerc'):
@@ -73,17 +77,22 @@ def getMiniokey():
 	elif os.path.isfile('/pace/dev3/.pacerc') and os.access("/pace/dev3/.pacerc", os.R_OK):
 		configFile = '/pace/dev3/.pacerc'
 
-	filePerms = oct(os.stat(configFile)[ST_MODE])
-	if filePerms != '0100600':
-		print bcolors.WARNING + "Config file permissions should be set to read, write for owner only" 
-		print "Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC
-		# print filePerms
+	#Docker instance:
+	if os.getenv("PACE_MINO_INFO") == None:
+		myAkey,mySkey,myMiniourl = os.getenv("PACE_MINIO_INFO").split(",")
+	#Everything else:
+	else:
+		filePerms = oct(os.stat(configFile)[ST_MODE])
+		if filePerms != '0100600':
+			print bcolors.WARNING + "Config file permissions should be set to read, write for owner only" 
+			print "Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC
+			# print filePerms
+			parser = RawConfigParser()
+			parser.read(configFile)
+			myAkey = parser.get('MINIO','minio_access_key')
+			mySkey = parser.get('MINIO','minio_secret_key')
+			myMiniourl = parser.get('MINIO','minio_url')
 
-	parser = RawConfigParser()
-	parser.read(configFile)
-	myAkey = parser.get('MINIO','minio_access_key')
-	mySkey = parser.get('MINIO','minio_secret_key')
-	myMiniourl = parser.get('MINIO','minio_url')
 	return myAkey, mySkey, myMiniourl
 
 def readConfigFile(configFile):
