@@ -78,7 +78,7 @@ def getMiniokey():
 		configFile = '/pace/dev3/.pacerc'
 
 	#Docker instance:
-	if os.getenv("PACE_MINO_INFO") == None:
+	if not os.getenv("PACE_MINIO_INFO") == None:
 		myAkey,mySkey,myMiniourl = os.getenv("PACE_MINIO_INFO").split(",")
 	#Everything else:
 	else:

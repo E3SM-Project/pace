@@ -8,7 +8,7 @@ RUN pip install --trusted-host pypi.python.org -r docker/pipRequirements.txt
 EXPOSE 80
 ENV PACE_DOCKER_INSTANCE=1
 ENV PACE_DOCKER_DB_INFO="root,1234,pace,pacedb"
-ENV PACE_MINO_INFO = "minioftw,1234,minioContainer"
+ENV PACE_MINIO_INFO="minioftw,12345678,paceminio:9000"
 
 #If you want a developer enviroment, uncomment these commands:
 ENV PACE_DEV=1
