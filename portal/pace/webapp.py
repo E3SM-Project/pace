@@ -129,7 +129,7 @@ def summaryQuery(expID,rank):
     else:
         resultNodes = json.loads(db.engine.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal)
         #Get user and machine information:
-        tpData = db.session.query(Timingprofile.compset,Timingprofile.res).filter_by(expid = expID).all()
+        tpData = db.engine.execute("select compset,res from timingprofile where expid = "+expID).fetchall()
         compset,res = tpData[0].compset,tpData[0].res
 
     if rank == 'stats':
@@ -160,6 +160,7 @@ def expDetails(mexpid):
     mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
     myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()
     ranks = db.session.query(ModelTiming.rank).filter_by(expid = mexpid)
+    db.session.close()
     colorDict = {}
     for i in range(len(runtimeSvg.default_args['comps'])):
         colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
@@ -360,12 +361,13 @@ def searchPrediction(keyword):
 def getRuntimeSvg(expid):
     resultElement = {}
     try:
-        runtimeQuery = db.session.query(Runtime).filter_by(expid = int(expid)).all()
+        #Complexity for the expid was added on purpose so that the program wouldn't run if it wasn't a number...
+        runtimeQuery = db.engine.execute("select * from runtime where expid = "+str(int(expid))).fetchall()
         for element in runtimeQuery:
             #These Decimal objects don't have "precision" values, while the ones in searchBar do... :/ [probably because of how these were queried]
             resultElement[element.component] = {"seconds":float(element.seconds),"model_years":float(element.model_years),"model_day":float(element.model_day)}
         for key in resultElement.keys():
-            peQuery = db.session.query(Pelayout.root_pe,Pelayout.tasks).filter(Pelayout.expid == int(expid),Pelayout.component.ilike("%"+key+"%")).all()
+            peQuery = db.engine.execute("select root_pe,tasks from pelayout where expid = "+expid+" and component like '%%"+key+"%%'").fetchall()
             if len(peQuery) > 0:
                 resultElement[key]["root_pe"] = peQuery[0].root_pe
                 resultElement[key]["tasks"] = peQuery[0].tasks -1

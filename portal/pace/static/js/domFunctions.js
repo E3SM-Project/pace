@@ -178,7 +178,9 @@ var chartSettings = {
         },
         scales: {
             yAxes: [{stacked:true}],
-            xAxes:[{stacked:true}]
+            xAxes:[
+                {stacked:true,position:"top"},
+            ]
         }
     }
 }
