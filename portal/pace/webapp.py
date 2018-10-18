@@ -60,7 +60,7 @@ def upload_file():
 def userauthentication():
 	if request.method == 'POST':
 		username = request.form['user']
-		searchuser = Authenticuser.query.filter_by(user=username).first()
+		searchuser = Authusers.query.filter_by(user=username).first()
 		if searchuser is None:
 			return ("invaliduser")
 		else:

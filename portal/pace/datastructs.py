@@ -59,6 +59,6 @@ class ModelTiming(db.Model):
 	jsonVal = db.Column(MEDIUMTEXT, nullable=False)
 	rank = db.Column(db.String(10), nullable=False)
 
-class Authenticuser(db.Model):
+class Authusers(db.Model):
 	id = db.Column(INTEGER(unsigned=True), primary_key=True,autoincrement=True)
 	user = db.Column(db.String(50))
