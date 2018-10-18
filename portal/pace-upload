@@ -174,15 +174,15 @@ def createtoken():
 def readconfigfile(configFile):
 	parser = RawConfigParser()
 	parser.read(configFile)
-	myUser = parser.get('USERINFO','username')
-	myToken = parser.get('USERINFO','token')
+	myUser = parser.get('GITHUB','username')
+	myToken = parser.get('GITHUB','token')
 	return (myUser,myToken)
 
 def createconfigfile(user,token):
 	parser = RawConfigParser()
-	parser.add_section('USERINFO')
-	parser.set('USERINFO','username',user)
-	parser.set('USERINFO','token',token)
+	parser.add_section('GITHUB')
+	parser.set('GITHUB','username',user)
+	parser.set('GITHUB','token',token)
 	filename=open('.pacecc','w')
 	parser.write(filename)
 	return
