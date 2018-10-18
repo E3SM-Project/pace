@@ -56,8 +56,8 @@ def upload_file():
 			return ('Error Uploading file, Try again')
 	return render_template('upload.html')
 
-@app.route("/userauthentication", methods=['GET','POST'])
-def userauthentication():
+@app.route("/userauth", methods=['GET','POST'])
+def userauth():
 	if request.method == 'POST':
 		username = request.form['user']
 		searchuser = Authusers.query.filter_by(user=username).first()

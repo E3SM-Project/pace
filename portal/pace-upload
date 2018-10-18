@@ -22,7 +22,7 @@ GITHUB_API = 'https://api.github.com'
 uploadurl = "https://pace.ornl.gov/upload"
 
 # authenticuser url
-authurl = "https://pace.ornl.gov/userauthentication"
+authurl = "https://pace.ornl.gov/userauth"
 
 # argumented parser
 def parseArguments(): 
@@ -116,8 +116,8 @@ def isValidFusionExp(expfile):
 
 def getGitToken():
 	configFile = None
-	if os.path.isfile('.gituserinforc'):
-		configFile = '.gituserinforc'
+	if os.path.isfile('.pacecc'):
+		configFile = '.pacecc'
 		user,token = readconfigfile(configFile)
 	else:
 		user,token = createtoken()
@@ -128,18 +128,19 @@ def authenticateUser(user):
 	data = {'user':user}
 	r = requests.post(authurl,data=data)
 	if r.text == "validuser":
+		print ("Welcome "+str(user))
 		return (True)
 	else:
 		print ("ERROR: User NOT AUTHORIZED")
 		return (False)
 
-def gitauthenticate(token):
+def gitAuthenticate(token):
 	try:
 		headers = {'Authorization': 'token ' + token}
 		login = requests.get('https://api.github.com/user', headers=headers)
 		user = login.json()['login']
 	except KeyError:
-		print 'ERROR: Invalid Token'
+		print 'ERROR: Github authentication failed, Invalid Token.'
 		exit()
 	validUser = authenticateUser(user)
 	return (validUser)
@@ -182,13 +183,13 @@ def createconfigfile(user,token):
 	parser.add_section('USERINFO')
 	parser.set('USERINFO','username',user)
 	parser.set('USERINFO','token',token)
-	filename=open('.gituserinforc','w')
+	filename=open('.pacecc','w')
 	parser.write(filename)
 	return
 
 def userAuth():
 	token = getGitToken()
-	isSuccess = gitauthenticate(token)
+	isSuccess = gitAuthenticate(token)
 	if isSuccess == True:
 		return
 	else:
