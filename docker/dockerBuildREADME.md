@@ -21,6 +21,7 @@ docker pull minio/minio
 docker run --name pacedb -d -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DATABASE=pace mariadb
 #Launch a minio instance:
 docker run --name paceminio -e MINIO_ACCESS_KEY=accessKey -e MINIO_SECRET_KEY=secretKey -v /path/to/config:/root/.minio -v /path/to/data:/data minio/minio server /data
+#The -v flags are optional if this instance is temporary; it links paths on the host system to ones in the container. Therefore, if you don't use these flags, any data after delection of a container will be lost.
 
 #You can now create your conatiner through the following command:
 docker run --name nameOfPaceContainer -p 80:80 -d --link pacedb:mysql --link paceminio:minio/minio -e PACE_DOCKER_DB_INFO="root,dbPasswordHere,dbNameHere,dbAddressHere" -e PACE_MINIO_INFO="accessKey,secretKey,url" pace
