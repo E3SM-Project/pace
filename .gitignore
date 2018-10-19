@@ -111,3 +111,5 @@ portal/restart-server.sh
 
 extra/
 portal/pace/static/samples/*
+
+docker/rc/.pacerc
