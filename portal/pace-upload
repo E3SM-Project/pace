@@ -24,6 +24,16 @@ uploadurl = "https://pace.ornl.gov/upload"
 # authenticuser url
 authurl = "https://pace.ornl.gov/userauth"
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 # argumented parser
 def parseArguments(): 
 	parser = argparse.ArgumentParser(description="PACE upload tool.")
@@ -128,10 +138,10 @@ def authenticateUser(user):
 	data = {'user':user}
 	r = requests.post(authurl,data=data)
 	if r.text == "validuser":
-		print ("Welcome "+str(user))
+		print (bcolors.OKGREEN +" * * * * * * * Welcome to PACE "+str(user)+" * * * * * * *"+ bcolors.ENDC)
 		return (True)
 	else:
-		print ("ERROR: User NOT AUTHORIZED")
+		print (bcolors.FAIL+"ERROR: User NOT AUTHORIZED"+bcolors.ENDC)
 		return (False)
 
 def gitAuthenticate(token):
@@ -140,7 +150,7 @@ def gitAuthenticate(token):
 		login = requests.get('https://api.github.com/user', headers=headers)
 		user = login.json()['login']
 	except KeyError:
-		print 'ERROR: Github authentication failed, Invalid Token.'
+		print bcolors.FAIL+'ERROR: Github authentication failed, Invalid Token.'+bcolors.ENDC
 		exit()
 	validUser = authenticateUser(user)
 	return (validUser)
@@ -148,9 +158,9 @@ def gitAuthenticate(token):
 def createtoken():
 	#User Input
 	
-    	username = raw_input('Github username: ')
-    	password = getpass.getpass('Github password: ')
-    	note = raw_input('Note (optional): ')
+    	username = raw_input(bcolors.BOLD + 'Github username: '+ bcolors.ENDC)
+    	password = getpass.getpass(bcolors.BOLD + 'Github password: '+ bcolors.ENDC)
+    	note = raw_input(bcolors.BOLD + 'Note (optional): '+bcolors.ENDC)
     	url = urljoin(GITHUB_API, 'authorizations')
     	payload = {}
     	if note is None:
@@ -166,7 +176,7 @@ def createtoken():
     	j = json.loads(res.text)
 	if res.status_code >= 400:
 		msg = j.get('message','UNDEFINED ERROR (no error description from server)')
-		print 'ERROR: %s' % msg
+		print bcolors.FAIL + 'ERROR: %s' % msg + bcolors.ENDC
 		exit()
 	token = j['token']
 	return (username,token)
@@ -199,6 +209,7 @@ def userAuth():
 def main():
 	# parse argument
 	userAuth()
+	exit()
 	result=parseArguments()
 	zfname = 'experiments'
 	expfile = result.source
