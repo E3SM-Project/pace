@@ -86,7 +86,7 @@ def parseData():
 	sys.stdout = old_stdout
 	log_file.close()
 	if isSuccess == True:
-		return('File Upload and Stored in Database Success')
+		return('success')
 	else:
 		return('Error: Check message.log')
 

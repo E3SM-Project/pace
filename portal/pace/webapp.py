@@ -51,10 +51,15 @@ def upload_file():
 		if file and allowed_file(file.filename):
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(UPLOAD_FOLDER, filename))
-			return(parse.parseData())
+			return('complete')
 		else:
 			return ('Error Uploading file, Try again')
 	return render_template('upload.html')
+
+@app.route('/fileparse', methods=['GET','POST'])
+def fileparse():
+	if request.method == 'POST':
+		return(parse.parseData())
 
 @app.route("/userauth", methods=['GET','POST'])
 def userauth():

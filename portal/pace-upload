@@ -21,6 +21,9 @@ GITHUB_API = 'https://api.github.com'
 # server connection url
 uploadurl = "https://pace.ornl.gov/upload"
 
+# server connection url
+parseurl = "https://pace.ornl.gov/fileparse"
+
 # authenticuser url
 authurl = "https://pace.ornl.gov/userauth"
 
@@ -72,9 +75,19 @@ def uploadExp(uploadfile):
 			try:
 				# request for connection to server
 				r = requests.post(uploadurl, files=files)
-				print(r.text)
+				print bcolors.OKGREEN + ('Upload Success') + bcolors.ENDC
+				print (" ")
+				#print(r.text)
 			finally:
 				fin.close()
+			if r.text == 'complete':
+				print bcolors.DARKGREY + ('Parsing experiments...') + bcolors.ENDC
+				req = requests.post(parseurl)
+				if req.text == 'success':
+					print bcolors.OKGREEN + ('Parse Success') + bcolors.ENDC
+				else:
+					print bcolors.FAIL + ('ERROR: Check message.log') + bcolors.ENDC
+			print (" ")
 		else:
 			print bcolors.FAIL +('Error: Unable to upload, %s is empty' %uploadfile)+bcolors.ENDC
 			exit()
