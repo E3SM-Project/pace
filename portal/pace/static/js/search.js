@@ -68,7 +68,7 @@ var searchObj = {
                 if(val[3]!==false){
                     switch(val[1]){
                         case "expid":
-                        searchResult.innerHTML+="<td onclick='searchObj.expDetails("+element.expid+")'><a href='"+detectRootUrl()+"exp-details/"+element.expid+"' target='_blank' title='Click here for more details.'>"+element.expid+"</a></td>";
+                        searchResult.innerHTML+="<td onclick='searchObj.expDetails("+element.expid+")'><a href='"+detectRootUrl()+"exp-details/"+element.expid+"' title='Click here for more details.'>"+element.expid+"</a></td>";
                         break;
                         case "compset":
                         case "user":
