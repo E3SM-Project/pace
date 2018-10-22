@@ -100,7 +100,16 @@ function expDownloadDefault(){
     animate(false);
     currExp.view();
     metaOpenClose(true,currExp.compset,currExp.res,currExp.name);
-    if(window.location.hash==""  || expList.length > 1)
+    //Construct a new url for browser display:
+    let newUrl = detectRootUrl()+"summary/";
+    let idStr = "";
+    let rankStr = "";
+    expList.forEach(exp=>{
+        idStr+=(exp!=expList[0]?",":"")+exp.name;
+        rankStr+=(exp!=expList[0]?",":"")+exp.rank;
+    });
+    history.pushState("","",newUrl+idStr+"/"+rankStr+window.location.hash);
+    if(window.location.hash==""  /*|| expList.length > 1*/)
         summaryButton.click();
     else window.onhashchange();
     expSelect.selectedIndex = expList.length-1;
@@ -114,6 +123,22 @@ function switchExperiment(index = expSelect.selectedIndex){
     else changeGraph( (currExp.currentEntry.children.length == 0?{children:currExp.currentEntry}:currExp.currentEntry) );
     resultChart.options.title.text=currExp.name +": "+currExp.rank+ " (Thread "+currExp.currThread+")";
     metaOpenClose(true,currExp.compset,currExp.res,currExp.name);
+
+    let newUrl = detectRootUrl()+"summary/";
+    let idStr = "";
+    let rankStr = "";
+    let firstExp = false;
+    expList.forEach(exp=>{
+        if(exp!=currExp){
+            idStr+=(firstExp?",":"")+exp.name;
+            rankStr+=(firstExp?",":"")+exp.rank;
+            if(!firstExp)
+                firstExp = true;
+        }
+    });
+    idStr+=(idStr!=""?",":"")+currExp.name;
+    rankStr+=(rankStr!=""?",":"")+currExp.rank;
+    history.pushState("","",newUrl+idStr+"/"+rankStr+"#"+currExp.currentEntry.name);
 }
 
 //This creates an HTML list that directly associates with the address table (which in-turn addresses to the original json file). When a tag is clicked, the other lists witihin it are collapsed.
@@ -138,7 +163,7 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
                 //Pretty much stops all other clicks from triggering.
                 okToClick = false;
                 //Change the url; this would normaly be recursive, but thanks to okToClick, that can all be prevented!
-                window.location.hash=this.id;
+                history.replaceState("","",window.location.href.split("#")[0]+"#"+this.id);
                 setTimeout(()=>okToClick = true,10);
             }
             else if(okToClick){
@@ -149,7 +174,7 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
                     targetExp.currentEntry = targetExp.nodeTableList[targetExp.currThread][this.id];
                 }
                 okToClick = false;
-                window.location.hash=this.id;
+                history.replaceState("","",window.location.href.split("#")[0]+"#"+this.id);
                 setTimeout(()=>okToClick = true,10);
                 
                 //Display appropriate graph info:
