@@ -2,7 +2,7 @@
 #This is a loop to keep pace containers running regardless of a crash. It will NOT restart flask.
 #It also creates a .pacerc file if one doesn't exist.
 # set -x
-if [ ! -f docker/.pacerc ];
+if [ ! -f docker/rc/.pacerc ];
     then if (($#)); then
         if [ $1 = "-file" ]; then 
             echo -e "$2" >> /pace/docker/rc/.pacerc;
