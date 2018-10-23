@@ -6,10 +6,12 @@ import requests
 import sys
 import json
 import os, shutil, distutils
+from os.path import expanduser
 from distutils import dir_util
 import zipfile, tarfile
 import getpass
 import stat
+import socket
 from stat import *
 from datetime import datetime
 from ConfigParser import RawConfigParser
@@ -148,13 +150,12 @@ def isValidFusionExp(expfile):
 	return False	
 
 def getGitToken():
-	configFile = None
-	if os.path.isfile('.pacecc'):
-		configFile = '.pacecc'
+	configFile = os.path.join(expanduser("~"),'.pacecc')
+	if os.path.isfile(configFile):
 		user,token = readconfigfile(configFile)
 	else:
 		user,token = createtoken()
-		createconfigfile(user,token)
+		createconfigfile(user,token,configFile)
 	return (token)
 
 def authenticateUser(user):
@@ -187,7 +188,7 @@ def createtoken():
     	password = getpass.getpass(bcolors.BOLD + 'Github password: '+ bcolors.ENDC)
     	url = urljoin(GITHUB_API, 'authorizations')
     	payload = {}
-    	payload['note'] = 'PACE user'
+    	payload['note'] = 'PACE user - ' + str(socket.gethostname()) + '-' + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
     	res = requests.post(
         	url,
         	auth = (username, password),
@@ -209,12 +210,12 @@ def readconfigfile(configFile):
 	myToken = parser.get('GITHUB','token')
 	return (myUser,myToken)
 
-def createconfigfile(user,token):
+def createconfigfile(user,token,configFile):
 	parser = RawConfigParser()
 	parser.add_section('GITHUB')
 	parser.set('GITHUB','username',user)
 	parser.set('GITHUB','token',token)
-	filename=open('.pacecc','w')
+	filename=open(configFile,'w')
 	parser.write(filename)
 	print bcolors.DARKGREY + 'Config file \".pacecc\" created' + bcolors.ENDC
 	return
