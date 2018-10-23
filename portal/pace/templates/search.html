@@ -7,13 +7,13 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.widgets.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/extras/jquery.tablesorter.pager.min.js"></script>
+	<script src="/static/js/predictiveSearch.js"></script>
     <link rel="stylesheet" href="/static/css/searchPage.css"/>
 {% endblock %}
 
 {% block content %}
 <table id="homePageContent">
 	<tbody>
-		<tr><td style="width:85%"><input id="searchLink" readonly class="form-control" style="border-radius:5px;font-family:monospace;height:30px;margin-bottom:5px;" placeholder="Search results link for sharing..." value=""/></td></tr>
 		<tr style="display:flex">
 			<td style="width:85%"><input class="form-control" id="homeSearchBar" style="font-size:1.5em;height:50px;" placeholder="Keyword"/></td>
 			<td><button class="btn-lg btn-info" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button></td>

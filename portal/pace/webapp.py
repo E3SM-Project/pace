@@ -152,12 +152,12 @@ def summaryQuery(expID,rank):
             newJson.pop()
         resultNodes = [newJson]
     return json.dumps({"obj":resultNodes,"varNames":mt.valueList[listIndex],"meta":{"expid":expID,"rank":rank,"compset":compset,"res":res} })
-
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
     myexp = None
-    myexp = db.session.query(Timingprofile).filter_by(expid = mexpid).all()[0]
-    mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
+    myexp = db.engine.execute("select * from timingprofile where expid= "+mexpid).fetchall()[0]
+    # mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
+    mypelayout = db.engine.execute("select * from pelayout where expid= "+mexpid).fetchall()[0]
     myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()
     ranks = db.session.query(ModelTiming.rank).filter_by(expid = mexpid)
     db.session.close()
@@ -208,10 +208,14 @@ def advSearch(searchQuery):
 @app.route("/ajax/search/<searchTerms>/<limit>/<matchAll>")
 @app.route("/ajax/search/<searchTerms>/<limit>/<matchAll>/<orderBy>")
 @app.route("/ajax/search/<searchTerms>/<limit>/<matchAll>/<orderBy>/<ascDsc>")
-def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc="desc"):
+def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc="desc",whiteList = None,getRanks = True):
     resultItems = []
     filteredItems = []
     variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res","timingprofile.case","init_time"]
+    specificVariables = variableList
+    if not whiteList == None:
+        specificVariables = whiteList
+
     #This should be an easy way to determine if something's in the list
     if orderBy == "case":
         orderBy = "timingprofile.case"
@@ -222,7 +226,7 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
         ascDsc = "desc"
     termList = []
     if searchTerms == "*":
-        queryStr = "select "+str(variableList).strip("[]").replace("'","")+" from timingprofile order by "+orderBy+" "+ascDsc
+        queryStr = "select "+str(specificVariables).strip("[]").replace("'","")+" from timingprofile order by "+orderBy+" "+ascDsc
         if limit:
             queryStr+=" limit "+limit
         allResults = db.engine.execute(queryStr).fetchall()
@@ -247,12 +251,14 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
                 strList.append(syntax[0]+' like "%%'+syntax[1]+'%%"')
             elif syntax[0] == "case":
                 strList.append('timingprofile.case like "%%'+syntax[1]+'%%"')
-        compiledString = "select " + str(variableList).strip("[]").replace("'","") + " from timingprofile where "
+        compiledString = "select " + str(specificVariables).strip("[]").replace("'","") + " from timingprofile where "
         for i in range(len(strList)):
             compiledString+=strList[i]
             if not i==len(strList) - 1:
                 compiledString+=" and "
-        compiledString+=" order by "+orderBy+" "+ascDsc+" limit "+limit+";"
+        compiledString+=" order by "+orderBy+" "+ascDsc
+        if limit:
+            compiledString+=" limit "+limit+";"
         #Copy/paste from above:
         allResults = db.engine.execute(compiledString).fetchall()
         for result in allResults:
@@ -269,7 +275,7 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
         for word in searchTerms.split("+"):
             termList.append(word.replace(";","").replace("\\c",""))
         for word in variableList:
-            queryStr = "select " + str(variableList).strip("[]").replace("'","") + " from timingprofile where "+word+" like "
+            queryStr = "select " + str(specificVariables).strip("[]").replace("'","") + " from timingprofile where "+word+" like "
             firstValue = True
             for term in termList:
                 if not firstValue:
@@ -285,7 +291,7 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
             for element in query:
                 unique = True
                 for item in filteredItems:
-                    if element.user == item["user"] and element.expid == item["expid"] and element.machine == item["machine"]:
+                    if element.expid == item["expid"]:
                         unique = False
                         break
                 if unique:
@@ -295,13 +301,24 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
                     filteredItems.append(resultDict)
     #Grab the ranks based of of filteredItems:
     rankList = []
-    for item in filteredItems:
-        itemRanks = []
-        queryResults = db.engine.execute("select rank from model_timing where expid = "+str(item["expid"])).fetchall()
-        for result in queryResults:
-            itemRanks.append(result.rank)
-        rankList.append([itemRanks,[]]) 
+    if getRanks:
+        for item in filteredItems:
+            itemRanks = []
+            queryResults = db.engine.execute("select rank from model_timing where expid = "+str(item["expid"])).fetchall()
+            for result in queryResults:
+                itemRanks.append(result.rank)
+            rankList.append([itemRanks,[]]) 
     return json.dumps([filteredItems,rankList])
+
+#Retrive specific values from /ajax/search. Order,asc/desc & limits are not a priority with this function:
+@app.route("/ajax/specificSearch/<query>")
+@app.route("/ajax/specificSearch/<query>/<whiteList>")
+def specificSearch(query,whiteList = "total_pes_active,model_throughput,machine,expid"):
+    matchAll = False
+    if ":" in query:
+        matchAll = "matchall"
+    whiteListArray = whiteList.replace("\\c","").replace(";","").split(",")
+    return json.dumps(json.loads(searchBar(query,False,matchAll,"","",whiteListArray,False))[0])
 
 #Get a specific list of elements from timingprofile. Only specific elements are allowed, so users cannot grab everything.
 @app.route("/ajax/getDistinct/<entry>")

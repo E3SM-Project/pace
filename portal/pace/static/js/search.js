@@ -7,7 +7,7 @@ var searchObj = {
     lastRankIndex:[0,0],
     afterFunctions:[],
     search:function(searchStr,limit = this.limit,afterFunc,matchAll = false,orderBy,ascDsc=false){
-        console.log("%cHELLOOO!!","font-size:125%"); //This is VERY important part of the function.
+        console.log("%cHELLOOO!!","font-size:175%"); //This is VERY important part of the function.
         searchBody.innerHTML="";
         if(afterFunc)
             this.afterFunctions.push(afterFunc);
@@ -73,7 +73,7 @@ var searchObj = {
                         case "compset":
                         case "user":
                         case "machine":
-                        searchResult.innerHTML+="<td onclick='searchObj.expDetails("+element.expid+")'><a href='"+detectRootUrl()+"advsearch/"+val[1]+":"+element[val[1]]+"'>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</a></td>";
+                        searchResult.innerHTML+="<td onclick='if(arguments[0].target == this)searchObj.expDetails("+element.expid+")'><a class='searchLink' href='"+detectRootUrl()+"advsearch/"+val[1]+":"+element[val[1]]+"'>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</a></td>";
                         break;
                         default:
                         searchResult.innerHTML+="<td onclick='searchObj.expDetails("+element.expid+")'>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</td>";

@@ -15,8 +15,24 @@ function searchAndCheck(sq = searchQuery,matchMode = (getDistinct?true:false) ){
 	 searchObj.limit*=2;
 	}
 	else moreBtn.style.display = "none";
+
+	//This is experimental:
+	//Each link gets some special treatment so the user stays on the same page while browsing:
+	/*[...document.getElementsByClassName("searchLink")].forEach(link=>{
+		link.onclick = evt=>{
+			evt.preventDefault();
+			matchModeCheck.checked = true;
+			searchAndCheck(evt.target.href.split("advsearch/")[1],true);
+		}
+	});*/
+
 	},matchMode,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked);
-	searchLink.value = sq == "*"?"":detectRootUrl()+(matchMode?"advsearch/":"search/")+sq;
+	let newLink = detectRootUrl() +(sq == "*"?"":(matchMode?"advsearch/":"search/")+sq);
+	if(newLink != window.location.href)
+		history.pushState("","",newLink);
+
+	if(sq!="*")
+		homeSearchBar.value = sq;
 }
 
 matchModeCheck.onclick = function(){
@@ -69,9 +85,9 @@ function sortOrderToggle(){
 }
 
 $(document).ready(function(){
-window.onresize();
-searchAndCheck();
-/*$("#expTable").tablesorter({
-	widthFixed: false
-	});*/
+	window.onresize();
+	searchAndCheck();
+	/*$("#expTable").tablesorter({
+		widthFixed: false
+		});*/
 });
