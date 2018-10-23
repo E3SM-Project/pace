@@ -23,8 +23,11 @@ window.onresize = function(){
         if(window.innerWidth < 700){
             toggleDlLock(false);
             dlSlide(false);
-            listLockButton.children[0].src= "/static/img/" + (dlLock?"lock.svg":"unlock.svg");
         }
+    }
+    else if(window.innerWidth > 700){
+        toggleDlLock(true);
+        dlSlide(true);
     }
 }
 backButton.onclick = function(){
@@ -66,11 +69,6 @@ function dlSlide(listFB = !dlShow,infoFB){
 function toggleDlLock(tf = !dlLock){
     dlLock = tf;
     dlSlide(true,dlLock);
-}
-
-listLockButton.onclick = ()=>{
-    toggleDlLock();
-    listLockButton.children[0].src= "/static/img/" + (dlLock?"lock.svg":"unlock.svg");
 }
 
 summaryButton.onclick=function(){

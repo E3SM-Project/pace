@@ -47,14 +47,14 @@
             </tr>
             </tbody>
         </table>
+        <div id="zoomDiv"><button onclick="resizeChartVal=(resizeChartVal <=1?1:resizeChartVal-25);resizeChart(resizeChartVal)">-</button><button onclick="resizeChartVal+=25;resizeChart(resizeChartVal)">+</button></div>
         <div id="dataInfo"><div id="chartResizeContainer"><canvas id="chartTag"></canvas></div></div>
         <div id="dlDisplayButton" onclick="dlSlide()"></div>
         <div id="dataList">
-            <button id="summaryButton">Summary</button> <button id="listLockButton" style="float:right"><img src="/static/img/lock.svg" style="width:1.8em;height:auto;"/></button>
+            <button id="summaryButton">Summary</button>
             <div style= "margin-left: -6px;" id="listContent"></div>
         </div>
         <button id="backButton"><-Back</button>
-        <div id="zoomDiv"><button onclick="resizeChartVal=(resizeChartVal <=1?1:resizeChartVal-25);resizeChart(resizeChartVal)">-</button><button onclick="resizeChartVal+=25;resizeChart(resizeChartVal)">+</button></div>
     </div>
     <div id="compareSelectDiv">
     <h2>Select the threads you wish to compare.</h2><br>

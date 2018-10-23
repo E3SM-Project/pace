@@ -41,7 +41,7 @@ default_args = {
     'fullstop' : [False,False,False,False,False,False,False,True],
     'figname': "e3sm_timing_runtime",
     ## Do you want the pe-layout to be written on the side of the figure?
-    'addlayout': True,
+    'addlayout': False,
     }
 ## Do you have a block color preference?
 # default_args['color'] = cm.rainbow(np.linspace(0,1,len(default_args['comps'])))
@@ -118,7 +118,7 @@ def render(runtimeIn,opt_dict = None):
     comp_data = list()
     max_pe = 0
     TOT = pe_component("TOT",runtimeIn["TOT"])
-    for ii in range(len(opt_dict.get('comps'))):
+    for ii in range(len(opt_dict['comps'])):
         cc = opt_dict.get('comps')[ii]
         node = pe_component(cc,runtimeIn[cc])
         node.color = next(opt_dict.get('color'))
@@ -155,10 +155,13 @@ def render(runtimeIn,opt_dict = None):
 
         #bdims[0:2], bdims[2],bdims[3]
         #patches.Rectangle([bx,by],bw,bh).get_height()
+
+        #Display the label only if the result is greater than 1%
         displayLabel = True
         if cc.values["seconds"] < (TOT.values["seconds"] * 0.01):
             displayLabel = False
         cc.add2plot(ax,[bx,by,bw,bh],displayLabel)
+        
         if max_pe>1e5:
             layout = "%s\n%s: (%6d,%6d)" %(layout,cc.name,cc.values["root_pe"],\
                               cc.root_task_sum)

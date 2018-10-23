@@ -32,9 +32,15 @@ ul{
     z-index: 0;
 }
 #zoomDiv{
-    position: absolute;
-    left:96%;
+    float:right;
+    margin-top:-1.8em;
 }
+#zoomDiv button{
+    height:1.7em;
+    margin-right:5px;
+    padding-top:0px;
+}
+
 #mtMain{
     font-family: monospace;
     margin-bottom:70%
@@ -100,4 +106,8 @@ ul{
 }
 #mtMain .custom-select{
     width:unset;
+}
+
+.container{
+    max-width: inherit;
 }
