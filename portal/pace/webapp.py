@@ -313,12 +313,15 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
 #Retrive specific values from /ajax/search. Order,asc/desc & limits are not a priority with this function:
 @app.route("/ajax/specificSearch/<query>")
 @app.route("/ajax/specificSearch/<query>/<whiteList>")
-def specificSearch(query,whiteList = "total_pes_active,model_throughput,machine,expid"):
+def specificSearch(query,whiteList = "total_pes_active,model_throughput,machine,run_length,expid"):
     matchAll = False
     if ":" in query:
         matchAll = "matchall"
     whiteListArray = whiteList.replace("\\c","").replace(";","").split(",")
     return json.dumps(json.loads(searchBar(query,False,matchAll,"","",whiteListArray,False))[0])
+@app.route("/searchSummary/<query>")
+def searchSummary(query):
+    return render_template("searchSummary.html",query=query)
 
 #Get a specific list of elements from timingprofile. Only specific elements are allowed, so users cannot grab everything.
 @app.route("/ajax/getDistinct/<entry>")

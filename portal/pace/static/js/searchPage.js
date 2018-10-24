@@ -3,9 +3,9 @@
 
 window.onresize = ()=>{
 	if(window.innerWidth < 1060)
-		document.getElementsByClassName("pTextMenu")[1].style.width = "76%";
+		document.getElementsByClassName("pTextMenu")[0].style.width = "76%";
 	else if(window.innerWidth > 1060)
-		document.getElementsByClassName("pTextMenu")[1].style.width="42em";
+		document.getElementsByClassName("pTextMenu")[0].style.width="42em";
 }
 
 //getDistinct should only be flagged to true when in a search page (not the home page), so the template assumes accordingly...

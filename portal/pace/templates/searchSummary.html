@@ -1,0 +1,65 @@
+{# Author: Zachary Mitchell
+   Purpose: Show a summary for a search query. #}
+{% extends "layout.html" %}
+
+{% block topcscripts %}
+{% endblock %}
+
+{% block content %}
+<canvas id="summaryChartTag"></canvas>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="/static/js/colorTools.js"></script>
+<script>
+var searchQuery = "{{query|safe}}";
+//This is a wrapper for the actual chart made by chart.js. It makes it easier to group functions relative to this project.
+var bChartObj = function(id){
+    this.chart = new Chart(id,{
+        type:"bubble",
+        data: { datasets:[] },
+        options: {}
+    });
+
+    //This makes it easier to map certain machines and their data. (No need for constant iterations)
+    this.machineMap = {};
+
+    //Add data and refresh the chart. The same search syntax as the homepage's search bar applies to this query (basic & advanced searches work as normal).
+    this.addData = function(query){
+        $.get(detectRootUrl()+"ajax/specificSearch/"+query,data=>{
+            resultData = JSON.parse(data);
+            let newColors = false;
+            resultData.forEach(obj=>{
+                if(!this.machineMap[obj.machine]){
+                    this.machineMap[obj.machine] = {data:[],label:obj.machine};
+                    this.chart.data.datasets.push(this.machineMap[obj.machine]);
+                    newColors = true;
+                }
+                this.machineMap[obj.machine].data.push({x:obj.total_pes_active,y:obj.model_throughput,r:obj.run_length});
+            });
+            if(newColors){
+                //Convert letters into numbers, then convert them to percentages:
+                let labelNumbers = [];
+                Object.keys(this.machineMap).forEach( (key,index)=>{
+                    labelNumbers[index] = 0;
+                    for(let i = 0;i<key.length;i++){
+                        labelNumbers[index]+=key.charCodeAt(i);
+                    }
+                });
+                let percentages = arrayToPercentages(labelNumbers,true);
+                //Insert colors:
+                Object.keys(this.machineMap).forEach((key,index)=>{
+                    this.machineMap[key].backgroundColor = percentToColor(percentages[index],0.5);
+                });
+            }
+
+            this.chart.update();
+        });
+    }
+}
+$(document).ready(()=>{
+    summaryChart = new bChartObj("summaryChartTag");
+    summaryChart.addData(searchQuery);
+});
+</script>
+
+{% endblock %}

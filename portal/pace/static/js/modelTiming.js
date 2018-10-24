@@ -335,50 +335,6 @@ function parentPath(nodeIn,currValues=[]){
         return currValues
 }
 
-//return an rgb-based color string based on a percentage provided by the user:
-function percentToColor(percentage=50,transparency=false,returnType=0,colors=[[0,0,255],[0,255,0],[255,0,0]]){
-    if(percentage > 100)
-        percentage=100;
-    let subtractValue = 100 / (colors.length-1);
-    let difference = 0;//This will represet a certain percentage of subtractValue.
-    let colorIndex=0; //The color we will be transitioning from.
-
-    //Add up the subtract values until we have one that's greater than (or matches) the percentage:
-        for(let i=0;i<colors.length;i++){
-            if(percentage >= subtractValue * i){
-                colorIndex = i;
-                difference = (subtractValue * (i+1) ) - percentage;
-            }
-            else break;
-        }
-    let resultColor=colors[colorIndex].slice();
-    let colorPercent = .01 * ( (100 / subtractValue) * (subtractValue-difference));
-    if(percentage!=100){
-        for(let i=0;i<resultColor.length;i++){
-            resultColor[i]-=Math.floor( (resultColor[i] - colors[colorIndex+1][i]) * colorPercent );
-        }
-    }
-    //This value is optional; if returnType is > 0, you optionally get the raw values as well.
-    let resultColorString;
-    if(returnType!=1)
-        resultColorString = "rgba("+resultColor[0]+","+resultColor[1]+","+resultColor[2]+","+(transparency?transparency:1)+")";
-    return (returnType == 0?resultColorString:returnType==1?resultColor:[resultColorString,resultColor]);
-}
-
-//Grabs the ratio of all values inserted, and compares them.
-function arrayToPercentages(arrayIn){
-    //Compare the node count, find the largest, and make percentages based off of those numbers
-    let ratioVals=[];
-    let biggestNumber = 0;
-    arrayIn.forEach(element=>{
-        if(element > biggestNumber)
-            biggestNumber = element;
-    });
-
-    arrayIn.forEach(element=>ratioVals.push((100/biggestNumber)*element))
-    return ratioVals;
-}
-
 var comparisonMode = {
     on:false,
     exp:undefined,
