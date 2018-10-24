@@ -15,13 +15,18 @@ import types
 import modelTiming as mt
 import io
 
+PACE_LOG_DIR ='/pace/assets/static/logs/'
+
 def parseData():
 	# start main
 	# upload directory
 	tmp_updir='/pace/prod/portal/upload/'
 	old_stdout = sys.stdout
-	log_file = open('message.log','w')
+	logfilename = 'message-'+str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))+'.log'
+	logfile = PACE_LOG_DIR + logfilename
+	log_file = open(logfile,'w')
 	sys.stdout = log_file
+	print ("* * * * * * * * * * * * * * PACE Report * * * * * * * * * * * * * *")
 	try:	
 		fpath=tmp_updir
 		# Extract aggregated zip files
@@ -77,9 +82,12 @@ def parseData():
 	
 	# parse and store timing profile file in a database
 	for i in range(len(allfile)):
+		print (' ')
+		print ('**************************************************')
 		# insert experiments for given files
 		isSuccess=insertExperiment(allfile[i],readmefile[i],timingfile[i],gitdescribefile[i],db,fpath)
-		
+		print ('**************************************************')
+		print (' ')
 	
 	# remove uploaded experiments
 	removeFolder(tmp_updir)
@@ -143,6 +151,7 @@ def changeDateTime(c_date):
 
 def checkDuplicateExp(ecase,elid,euser):
 	flag=Timingprofile.query.filter_by(case=ecase,lid=elid,user=euser).first()
+	db.session.close()
 	if flag is None:
 		return(False)
 	else:
@@ -194,6 +203,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 	runTimeTable=[]
 	duplicateFlag=False
 	word=''
+	print ('* Parsing: '+filename)
 	for line in parseFile:
 		if line!='\n':
 			if len(timingProfileInfo)<12:		
@@ -271,6 +281,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 	parseFile.close()
 	duplicateFlag = checkDuplicateExp(timingProfileInfo['case'],timingProfileInfo['lid'],timingProfileInfo['user'])
 	if duplicateFlag is True:
+		print ('    -[Warining]: Duplicate Experiment, ' + timingProfileInfo['lid'])
 		return (True) # This skips this experiment and moves to next
 	tablelist=[]
 	
@@ -308,11 +319,15 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 		componentTable.append(resultlist[i]['stride'])
 		
 	parseFile.close()
-	
+	print ('    -Complete')
+	print ('* Parsing: '+readmefile)
 	readmefile=gzip.open(readmefile,'rb')
 	readmeparse = parseReadme(readmefile)
 	readmefile.close()
+	print ('    -Complete')
+	print ('* Parsing: '+gitfile)
 	expversion = parseModelVersion(gitfile)
+	print ('    -Complete')
 	new_experiment = Timingprofile(case=timingProfileInfo['case'],
 					lid=timingProfileInfo['lid'],
 					machine=timingProfileInfo['machine'],
@@ -365,15 +380,29 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 					model_years=runTimeTable[i+3])
 		db.session.add(new_runtime)
 		i=i+4
+	print ('* Parsing: '+ timingfile)
 	# insert modelTiming
 	insertTiming(timingfile,forexpid.expid,db)
+	print ('    -Complete')
+	print ('* Storing Experiment in server')
 	# store raw data (In server and Minio)
 	zipFolder(forexpid.lid,forexpid.user,forexpid.expid,fpath)
-	# try commit if not, flush 
+	print ('    -Complete')
+	# try commit if not, flush
+	print ('* Storing Experiment Data in Database') 
 	try:	
 		db.session.commit()
+		print ('    -Complete')
 	except:
-		db.session.rollback()	
+		db.session.rollback()
+	print (' ')
+	print ('----- Experiment Summary -----')
+	print ('- Experiment ID (ExpID): '+str(forexpid.expid))
+	print ('- User: '+str(forexpid.user))
+	print ('- Machine: '+str(forexpid.machine))
+	print ('- Web Link: '+str('https://pace.ornl.gov/exp-details/')+str(forexpid.expid))
+	print ('------------------------------')
+	print (' ')	
 	return (True) 
 
 

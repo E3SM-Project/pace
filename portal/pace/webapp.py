@@ -66,6 +66,7 @@ def userauth():
 	if request.method == 'POST':
 		username = request.form['user']
 		searchuser = Authusers.query.filter_by(user=username).first()
+		db.session.close()
 		if searchuser is None:
 			return ("invaliduser")
 		else:
