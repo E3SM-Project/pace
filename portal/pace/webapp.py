@@ -61,6 +61,17 @@ def fileparse():
 	if request.method == 'POST':
 		return(parse.parseData())
 
+@app.route('/downloadmsglog', methods=['POST'])
+def downloadmsglog():
+	from flask import send_file
+	if request.method == 'POST':
+		msgfile = request.form['filename']
+		filelink = ('/pace/assets/static/logs/'+str(msgfile))
+		try:
+			return send_file(filelink,attachment_filename='message.log')
+		except Exception as e:
+			return str(e)
+
 @app.route("/userauth", methods=['GET','POST'])
 def userauth():
 	if request.method == 'POST':

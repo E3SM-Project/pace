@@ -85,11 +85,17 @@ def uploadExp(uploadfile):
 			if r.text == 'complete':
 				print bcolors.DARKGREY + ('Parsing experiments...') + bcolors.ENDC
 				req = requests.post(parseurl)
-				if req.text == 'success':
+				flaglist = (req.text).split("/") # req.text = success/message-timestamp.log
+				if flaglist[0] == 'success':
 					print bcolors.OKGREEN + ('Parse Success') + bcolors.ENDC
 				else:
 					print bcolors.FAIL + ('ERROR: Check message.log') + bcolors.ENDC
-			print (" ")
+				print(" ")
+				print bcolors.DARKGREY + ('Downloading Report log') + bcolors.ENDC
+				downloadMsglog(flaglist[1])
+				print bcolors.OKGREEN + ('Download Success') + bcolors.ENDC
+				print bcolors.BOLD + ('Report saved as: \'' + str(flaglist[1])+'\'') + bcolors.ENDC
+			print (" ")			
 		else:
 			print bcolors.FAIL +('Error: Unable to upload, %s is empty' %uploadfile)+bcolors.ENDC
 			exit()
@@ -228,6 +234,15 @@ def userAuth():
 	else:
 		exit()
 
+def downloadMsglog(filename):
+	downloadurl = "https://pace.ornl.gov/dev1/downloadmsglog"
+	data = {'filename':filename}
+	req = requests.post(downloadurl,data=data)
+	f = open(filename,'w')
+	f.write(req.text)
+	f.close()
+	return
+	
 # main 
 def main():
 	# parse argument
