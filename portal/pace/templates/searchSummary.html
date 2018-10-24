@@ -2,7 +2,15 @@
    Purpose: Show a summary for a search query. #}
 {% extends "layout.html" %}
 
-{% block topcscripts %}
+{% block topscripts %}
+<style>
+    #summaryChartTag{
+        background-image:url(/static/img/ornlLeaf.svg);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: auto;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -22,6 +30,14 @@ var bChartObj = function(id){
 
     //This makes it easier to map certain machines and their data. (No need for constant iterations)
     this.machineMap = {};
+    this.idByMachine = {};
+
+    this.click = evt=>{
+        let evtVars = this.chart.getElementAtEvent(evt);
+        if(evtVars[0])
+            open(detectRootUrl()+"exp-details/"+this.idByMachine[this.chart.data.datasets[evtVars[0]._datasetIndex].label][evtVars[0]._index]);
+    }
+    document.getElementById(id).onclick = this.click;
 
     //Add data and refresh the chart. The same search syntax as the homepage's search bar applies to this query (basic & advanced searches work as normal).
     this.addData = function(query){
@@ -31,10 +47,13 @@ var bChartObj = function(id){
             resultData.forEach(obj=>{
                 if(!this.machineMap[obj.machine]){
                     this.machineMap[obj.machine] = {data:[],label:obj.machine};
+                    this.idByMachine[obj.machine] = [];
                     this.chart.data.datasets.push(this.machineMap[obj.machine]);
                     newColors = true;
                 }
-                this.machineMap[obj.machine].data.push({x:obj.total_pes_active,y:obj.model_throughput,r:obj.run_length});
+                //this.machineMap[obj.machine].data.push({x:obj.total_pes_active,y:obj.model_throughput,r:obj.run_time/60});
+                this.machineMap[obj.machine].data.push({x:obj.total_pes_active,y:obj.model_throughput,r:10});
+                this.idByMachine[obj.machine].push(obj.expid);
             });
             if(newColors){
                 //Convert letters into numbers, then convert them to percentages:
@@ -48,7 +67,7 @@ var bChartObj = function(id){
                 let percentages = arrayToPercentages(labelNumbers,true);
                 //Insert colors:
                 Object.keys(this.machineMap).forEach((key,index)=>{
-                    this.machineMap[key].backgroundColor = percentToColor(percentages[index],0.5);
+                    this.machineMap[key].backgroundColor = percentToColor(percentages[index],0.2);
                 });
             }
 

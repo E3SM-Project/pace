@@ -211,7 +211,7 @@ def advSearch(searchQuery):
 def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc="desc",whiteList = None,getRanks = True):
     resultItems = []
     filteredItems = []
-    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res","timingprofile.case","init_time"]
+    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res","timingprofile.case","init_time","run_time"]
     specificVariables = variableList
     if not whiteList == None:
         specificVariables = whiteList
@@ -247,10 +247,17 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
         strList = []
         for element in termList:
             syntax = element.split(":")
+            #If the $ symbol is at the beginning, we go for an exact match, otherwise use 'like'
+            elementStr = ""
+            if syntax[1][0]=="$":
+                elementStr = " = '"+syntax[1].strip("$")+"'"
+            else:
+                elementStr = ' like "%%'+syntax[1]+'%%"'
+
             if syntax[0] in variableList:
-                strList.append(syntax[0]+' like "%%'+syntax[1]+'%%"')
+                strList.append(syntax[0]+elementStr)
             elif syntax[0] == "case":
-                strList.append('timingprofile.case like "%%'+syntax[1]+'%%"')
+                strList.append('timingprofile.case '+elmentStr)
         compiledString = "select " + str(specificVariables).strip("[]").replace("'","") + " from timingprofile where "
         for i in range(len(strList)):
             compiledString+=strList[i]
@@ -275,12 +282,16 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
         for word in searchTerms.split("+"):
             termList.append(word.replace(";","").replace("\\c",""))
         for word in variableList:
-            queryStr = "select " + str(specificVariables).strip("[]").replace("'","") + " from timingprofile where "+word+" like "
+            queryStr = "select " + str(specificVariables).strip("[]").replace("'","") + " from timingprofile where "
             firstValue = True
             for term in termList:
                 if not firstValue:
-                    queryStr+=" or "+word+" like "
-                queryStr+='"%%'+term+'%%"'
+                    queryStr+=" or "
+                #Equal an exact string if $ is at the beginning:
+                if term[0] == "$":
+                    queryStr+=word+' = "'+term.strip("$")+'"'
+                else:
+                    queryStr+=word+' like "%%'+term+'%%"'
                 firstValue = False
             queryStr+=" order by "+orderBy+" "+ascDsc
             if limit:
@@ -313,7 +324,7 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
 #Retrive specific values from /ajax/search. Order,asc/desc & limits are not a priority with this function:
 @app.route("/ajax/specificSearch/<query>")
 @app.route("/ajax/specificSearch/<query>/<whiteList>")
-def specificSearch(query,whiteList = "total_pes_active,model_throughput,machine,run_length,expid"):
+def specificSearch(query,whiteList = "total_pes_active,model_throughput,machine,run_time,expid"):
     matchAll = False
     if ":" in query:
         matchAll = "matchall"
