@@ -21,13 +21,13 @@ from urlparse import urljoin
 GITHUB_API = 'https://api.github.com'
 
 # server connection url
-uploadurl = "https://pace.ornl.gov/upload"
+uploadurl = "https://pace.ornl.gov/dev1/upload"
 
 # server connection url
-parseurl = "https://pace.ornl.gov/fileparse"
+parseurl = "https://pace.ornl.gov/dev1/fileparse"
 
 # authenticuser url
-authurl = "https://pace.ornl.gov/userauth"
+authurl = "https://pace.ornl.gov/dev1/userauth"
 
 class bcolors:
 	HEADER = '\033[95m'
