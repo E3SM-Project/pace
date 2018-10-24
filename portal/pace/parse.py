@@ -94,9 +94,9 @@ def parseData():
 	sys.stdout = old_stdout
 	log_file.close()
 	if isSuccess == True:
-		return('success')
+		return('success/'+str(logfilename))
 	else:
-		return('Error: Check message.log')
+		return('fail/'+str(logfilename))
 
 # 
 def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
