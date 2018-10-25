@@ -11,6 +11,7 @@ import json
 import urllib
 from sqlalchemy.orm import sessionmaker
 from __init__ import db
+import os, shutil, distutils
 
 #Model Timing Library:
 import modelTiming as mt
@@ -49,6 +50,13 @@ def upload_file():
 	if request.method == 'POST':
 		file = request.files['file']
 		if file and allowed_file(file.filename):
+			try:
+				if os.path.isdir(os.path.join(UPLOAD_FOLDER,'experiments')):
+					shutil.rmtree(os.path.join(UPLOAD_FOLDER,'experiments'))
+				if os.path.exists(os.path.join(UPLOAD_FOLDER,'experiments.zip')):
+					os.remove(os.path.join(UPLOAD_FOLDER,'experiments.zip'))
+			except OSError as e:
+				print ("Error: %s - %s." % (e.filename, e.strerror))		
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(UPLOAD_FOLDER, filename))
 			return('complete')

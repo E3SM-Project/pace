@@ -438,7 +438,7 @@ def removeFolder(removeroot):
 		shutil.rmtree(os.path.join(removeroot,'experiments'))
 		os.remove(os.path.join(removeroot,'experiments.zip'))
 	except OSError as e:
-		return("Error: %s - %s." % (e.filename, e.strerror))
+		print ("Error: %s - %s." % (e.filename, e.strerror))
 	
 	return
 
