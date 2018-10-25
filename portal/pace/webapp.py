@@ -189,26 +189,23 @@ def expsAjax(pageNum):
 #The search page! This is the primary navigation page for the site. It changes depending on where the user is on the site.
 @app.route("/search/")
 @app.route("/search/<searchQuery>")
-def searchPage(searchQuery="*",isHomePage=False,advSearch = ""):
+def searchPage(searchQuery="*",isHomePage=False):
     homePageStr = False
-    getDistinctStr = ""
-    if getDistinct == "advsearch" or advSearch == True:
-        getDistinctStr="getDistinct = true;"
-    return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';",homePage = isHomePage,getDistinctStr= getDistinctStr)
+    return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';",homePage = isHomePage)
 
 #A redirect to /search/<searchQuery>/advsearch
+#This is depricated, but here in case we have old urls:
 @app.route("/advsearch/<searchQuery>")
 def advSearch(searchQuery):
-    return searchPage(searchQuery,False,True)
-
+    return searchPage(searchQuery,False)
 
 #This is a rest-like API that gives information about queried experiments from the timingprofile table.
 @app.route("/ajax/search/<searchTerms>")
 @app.route("/ajax/search/<searchTerms>/<limit>")
-@app.route("/ajax/search/<searchTerms>/<limit>/<matchAll>")
-@app.route("/ajax/search/<searchTerms>/<limit>/<matchAll>/<orderBy>")
-@app.route("/ajax/search/<searchTerms>/<limit>/<matchAll>/<orderBy>/<ascDsc>")
-def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc="desc",whiteList = None,getRanks = True):
+@app.route("/ajax/search/<searchTerms>/<limit>/")
+@app.route("/ajax/search/<searchTerms>/<limit>/<orderBy>")
+@app.route("/ajax/search/<searchTerms>/<limit>/<orderBy>/<ascDsc>")
+def searchCore(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc="desc",whiteList = None,getRanks = True):
     resultItems = []
     filteredItems = []
     variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res","timingprofile.case","init_time","run_time"]
@@ -224,24 +221,48 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
     #Only asc and desc are allowed:
     if ascDsc not in ["asc","desc"]:
         ascDsc = "desc"
-    termList = []
-    if searchTerms == "*":
+
+    #Multiple queries can be used at one time; This helps separate them.
+    queryList = searchTerms.split("|")
+
+    #If we have clashing "modes" (regular, advanced) in one query, we move those to its own query:
+    indexDelete = [] #If we find clashing terms in one query, this is the list that deletes that index (that index is replaced by two differnet strings later)
+    for i in range(len(queryList)):
+        foundAdv = False
+        foundBasic = False
+        termTemp = queryList[i].split(" ")
+
+        #These strings hold terms in the query, just in case both advanced and basic syntax is present
+        basicTemp = ""
+        advTemp = ""
+        for term in termTemp:
+            if ":" in term:
+                foundAdv = True
+                advTemp+=term+" "
+            else:
+                foundBasic = True
+                basicTemp+=term+" "
+        if foundAdv and foundBasic:
+            queryList.append(basicTemp)
+            queryList.append(advTemp)
+            indexDelete.append(i)
+    #Now to delete original queries:
+    for index in indexDelete:
+        queryList.pop(index)
+
+    #The original version of searchCore did not have these three functions separated... this is for cleaner code XP
+    def searchAll(termString):
         queryStr = "select "+str(specificVariables).strip("[]").replace("'","")+" from timingprofile order by "+orderBy+" "+ascDsc
         if limit:
             queryStr+=" limit "+limit
         allResults = db.engine.execute(queryStr).fetchall()
         for result in allResults:
             resultItems.append(result)
-        #Replacement for filtered items loop:
-        for item in resultItems:
-            resultDict = {}
-            for key in item.keys():
-                resultDict[key] = str(item[key])
-            filteredItems.append(resultDict)
-
-    elif matchAll == "matchall":
+            
+    def advSearch(termString):
+        termList = []
         #We assume the user is typing information with the following format: "user:name machine:titan etc:etc"
-        for word in searchTerms.split("+"):
+        for word in termString.split("+"):
             termList.append(word.replace(";","").replace("\\c",""))
         #Make a list of compiled variables to query in one swoop:
         strList = []
@@ -270,16 +291,11 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
         allResults = db.engine.execute(compiledString).fetchall()
         for result in allResults:
             resultItems.append(result)
-        #Replacement for filtered items loop:
-        for item in resultItems:
-            resultDict = {}
-            for key in item.keys():
-                resultDict[key] = str(item[key])
-            filteredItems.append(resultDict)
 
-    else:
+    def basicSearch(termString):
+        termList = []
         #A regular search (no matchall)
-        for word in searchTerms.split("+"):
+        for word in termString.split("+"):
             termList.append(word.replace(";","").replace("\\c",""))
         for word in variableList:
             queryStr = "select " + str(specificVariables).strip("[]").replace("'","") + " from timingprofile where "
@@ -296,20 +312,31 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
             queryStr+=" order by "+orderBy+" "+ascDsc
             if limit:
                 queryStr+=" limit "+limit
-            resultItems.append(db.engine.execute(queryStr).fetchall())
-        #Filter out duplicates:
-        for query in resultItems:
-            for element in query:
-                unique = True
-                for item in filteredItems:
-                    if element.expid == item["expid"]:
-                        unique = False
-                        break
-                if unique:
-                    resultDict = {}
-                    for key in element.keys():
-                        resultDict[key] = str(element[key])
-                    filteredItems.append(resultDict)
+            for result in db.engine.execute(queryStr).fetchall():
+                resultItems.append(result)
+
+    #All query types are defined,now to go through one query at a time...
+    for element in queryList:
+        if element == "*":
+            searchAll(element)
+        elif ":" in element:
+            advSearch(element)
+        else:
+            basicSearch(element)
+
+    #Once all queries are run, we filter out duplicates:
+    for element in resultItems:
+        unique = True
+        for item in filteredItems:
+            if element.expid == item["expid"]:
+                unique = False
+                break
+        if unique:
+            resultDict = {}
+            for key in element.keys():
+                resultDict[key] = str(element[key])
+            filteredItems.append(resultDict)
+    
     #Grab the ranks based of of filteredItems:
     rankList = []
     if getRanks:
@@ -318,20 +345,20 @@ def searchBar(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc=
             queryResults = db.engine.execute("select rank from model_timing where expid = "+str(item["expid"])).fetchall()
             for result in queryResults:
                 itemRanks.append(result.rank)
-            rankList.append([itemRanks,[]]) 
+            rankList.append([itemRanks,[]])
+
     return json.dumps([filteredItems,rankList])
 
 #Retrive specific values from /ajax/search. Order,asc/desc & limits are not a priority with this function:
 @app.route("/ajax/specificSearch/<query>")
 @app.route("/ajax/specificSearch/<query>/<whiteList>")
 def specificSearch(query,whiteList = "total_pes_active,model_throughput,machine,run_time,expid"):
-    matchAll = False
-    if ":" in query:
-        matchAll = "matchall"
-    whiteListArray = whiteList.replace("\\c","").replace(";","").split(",")
-    return json.dumps(json.loads(searchBar(query,False,matchAll,"","",whiteListArray,False))[0])
+    whiteListArray = str(whiteList.replace("\\c","").replace(";","")).split(",")
+    return json.dumps(json.loads(searchCore(query,False,"","",whiteListArray,False))[0])
+
+@app.route("/searchSummary/")
 @app.route("/searchSummary/<query>")
-def searchSummary(query):
+def searchSummary(query = ""):
     return render_template("searchSummary.html",query=query)
 
 #Get a specific list of elements from timingprofile. Only specific elements are allowed, so users cannot grab everything.
@@ -395,7 +422,7 @@ def getRuntimeSvg(expid):
         #Complexity for the expid was added on purpose so that the program wouldn't run if it wasn't a number...
         runtimeQuery = db.engine.execute("select * from runtime where expid = "+str(int(expid))).fetchall()
         for element in runtimeQuery:
-            #These Decimal objects don't have "precision" values, while the ones in searchBar do... :/ [probably because of how these were queried]
+            #These Decimal objects don't have "precision" values, while the ones in searchCore do... :/ [probably because of how these were queried]
             resultElement[element.component] = {"seconds":float(element.seconds),"model_years":float(element.model_years),"model_day":float(element.model_day)}
         for key in resultElement.keys():
             peQuery = db.engine.execute("select root_pe,tasks from pelayout where expid = "+expid+" and component like '%%"+key+"%%'").fetchall()

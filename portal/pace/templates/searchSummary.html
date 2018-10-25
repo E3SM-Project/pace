@@ -14,71 +14,49 @@
 {% endblock %}
 
 {% block content %}
+<button id="clearDataButton" style="float:left">Clear</button>
+<div style="display:inline-block;float:right">
+    <input id="scatterDataInput" placeholder="Add more data"/>
+</div>
 <canvas id="summaryChartTag"></canvas>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="/static/js/predictiveSearch.js"></script>
 <script src="/static/js/colorTools.js"></script>
+<script src="/static/js/searchSummary.js"></script>
 <script>
-var searchQuery = "{{query|safe}}";
-//This is a wrapper for the actual chart made by chart.js. It makes it easier to group functions relative to this project.
-var bChartObj = function(id){
-    this.chart = new Chart(id,{
-        type:"bubble",
-        data: { datasets:[] },
-        options: {}
-    });
-
-    //This makes it easier to map certain machines and their data. (No need for constant iterations)
-    this.machineMap = {};
-    this.idByMachine = {};
-
-    this.click = evt=>{
-        let evtVars = this.chart.getElementAtEvent(evt);
-        if(evtVars[0])
-            open(detectRootUrl()+"exp-details/"+this.idByMachine[this.chart.data.datasets[evtVars[0]._datasetIndex].label][evtVars[0]._index]);
+var noData = true;
+//predictive search for input box:
+scatterInputPredict = new predictiveSearch.element(scatterDataInput,"sip");
+scatterDataInput.onkeydown = evt=>{
+	if(evt.key == "Enter" && scatterInputPredict.allowEnter && scatterDataInput.value!=''){
+        summaryChart.addData(scatterDataInput.value);
+        history.pushState("","",window.location.href+(noData?"":"|")+scatterDataInput.value);
+        noData = false;
     }
-    document.getElementById(id).onclick = this.click;
-
-    //Add data and refresh the chart. The same search syntax as the homepage's search bar applies to this query (basic & advanced searches work as normal).
-    this.addData = function(query){
-        $.get(detectRootUrl()+"ajax/specificSearch/"+query,data=>{
-            resultData = JSON.parse(data);
-            let newColors = false;
-            resultData.forEach(obj=>{
-                if(!this.machineMap[obj.machine]){
-                    this.machineMap[obj.machine] = {data:[],label:obj.machine};
-                    this.idByMachine[obj.machine] = [];
-                    this.chart.data.datasets.push(this.machineMap[obj.machine]);
-                    newColors = true;
-                }
-                //this.machineMap[obj.machine].data.push({x:obj.total_pes_active,y:obj.model_throughput,r:obj.run_time/60});
-                this.machineMap[obj.machine].data.push({x:obj.total_pes_active,y:obj.model_throughput,r:10});
-                this.idByMachine[obj.machine].push(obj.expid);
-            });
-            if(newColors){
-                //Convert letters into numbers, then convert them to percentages:
-                let labelNumbers = [];
-                Object.keys(this.machineMap).forEach( (key,index)=>{
-                    labelNumbers[index] = 0;
-                    for(let i = 0;i<key.length;i++){
-                        labelNumbers[index]+=key.charCodeAt(i);
-                    }
-                });
-                let percentages = arrayToPercentages(labelNumbers,true);
-                //Insert colors:
-                Object.keys(this.machineMap).forEach((key,index)=>{
-                    this.machineMap[key].backgroundColor = percentToColor(percentages[index],0.2);
-                });
-            }
-
-            this.chart.update();
-        });
-    }
+	scatterInputPredict.keydownListener(evt);
+};
+scatterDataInput.onkeyup = evt=>{
+  scatterInputPredict.keyupListener(evt);
+  if(scatterDataInput.value!="" && scatterInputPredict.enabled)
+      $.get(detectRootUrl()+"ajax/similarDistinct/"+scatterInputPredict.inputWords[scatterInputPredict.wordIndex],data=>scatterInputPredict.refreshKeywords(JSON.parse(data)));
 }
+scatterDataInput.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("sip"),150);
+
+clearDataButton.onclick = ()=>{
+    summaryChart.resetData();
+    summaryChart.chart.update();
+    history.pushState('','',detectRootUrl()+'searchSummary/');
+    noData=true
+}
+
+var searchQuery = "{{query|safe}}";
 $(document).ready(()=>{
     summaryChart = new bChartObj("summaryChartTag");
-    summaryChart.addData(searchQuery);
+    if(searchQuery!=""){
+        noData = false;
+        summaryChart.addData(searchQuery);
+    }
 });
 </script>
-
 {% endblock %}

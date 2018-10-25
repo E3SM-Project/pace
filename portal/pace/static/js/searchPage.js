@@ -9,25 +9,15 @@ window.onresize = ()=>{
 }
 
 //getDistinct should only be flagged to true when in a search page (not the home page), so the template assumes accordingly...
-function searchAndCheck(sq = searchQuery,matchMode = (getDistinct?true:false) ){
+function searchAndCheck(sq = searchQuery ){
 	searchObj.search(sq,searchObj.limit,()=>{
 	if(searchObj.searchData.length == searchObj.limit){
 	 searchObj.limit*=2;
 	}
 	else moreBtn.style.display = "none";
 
-	//This is experimental:
-	//Each link gets some special treatment so the user stays on the same page while browsing:
-	/*[...document.getElementsByClassName("searchLink")].forEach(link=>{
-		link.onclick = evt=>{
-			evt.preventDefault();
-			matchModeCheck.checked = true;
-			searchAndCheck(evt.target.href.split("advsearch/")[1],true);
-		}
-	});*/
-
-	},matchMode,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked);
-	let newLink = detectRootUrl() +(sq == "*"?"":(matchMode?"advsearch/":"search/")+sq);
+	},orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked);
+	let newLink = detectRootUrl() +(sq == "*"?"":"search/"+sq);
 	if(newLink != window.location.href)
 		history.pushState("","",newLink);
 
@@ -35,22 +25,12 @@ function searchAndCheck(sq = searchQuery,matchMode = (getDistinct?true:false) ){
 		homeSearchBar.value = sq;
 }
 
-matchModeCheck.onclick = function(){
-	homeSearchBar.value="";
-	homeSearchBar.placeholder = (this.checked?"user:name machine:platform colname:value ...":"Keyword");
-	if(homeSearchBar.innerHTML.replace(" ","")!="")
-		searchAndCheck(homeSearchBar.value,matchModeCheck.checked);
-	//catRefButton.style.display = (catRefButton.style.display == "none"?"":"none");
-	//catReference.style.display = "none";
-	homeSearchPredict.enabled = !matchModeCheck.checked;
-}
-
 //predictive search + home search functionality:
 homeSearchPredict = new predictiveSearch.element(homeSearchBar,"hsb");
 homeSearchBar.onkeydown = evt=>{
 	if(evt.key == "Enter" && homeSearchPredict.allowEnter){
 		searchObj.limit = 10;
-		if(homeSearchBar.value!='') searchAndCheck(homeSearchBar.value,matchModeCheck.checked);
+		if(homeSearchBar.value!='') searchAndCheck(homeSearchBar.value);
 	}
 	homeSearchPredict.keydownListener(evt);
 };
@@ -81,7 +61,7 @@ searchObj.expVars.forEach(element=>{
 });
 
 function sortOrderToggle(){
-	searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,matchModeCheck.checked,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)
+	searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)
 }
 
 $(document).ready(function(){

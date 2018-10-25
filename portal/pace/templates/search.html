@@ -16,24 +16,17 @@
 	<tbody>
 		<tr style="display:flex">
 			<td style="width:85%"><input class="form-control" id="homeSearchBar" style="font-size:1.5em;height:50px;" placeholder="Keyword"/></td>
-			<td><button class="btn-lg btn-info" onclick="searchAndCheck(homeSearchBar.value,matchModeCheck.checked)">Search</button></td>
+			<td><button class="btn-lg btn-info" onclick="searchAndCheck(homeSearchBar.value)">Search</button></td>
 		</tr>
 		<tr class="homePageBottomHalf">
 			<td>
-				<select class="custom-select" style="margin-top:1%;" id="orderBySelect" onchange="searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,matchModeCheck.checked,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)">
+				<select class="custom-select" style="margin-top:1%;" id="orderBySelect" onchange="searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)">
 					<option value="exp_date" selected>Sort by</option>
 				</select>
 			</td>
 			<td>
 				<label class="radio-inline"><input type="radio" id="ascCheck" name="sortOrder" onclick="sortOrderToggle()" > Ascending</label>
 				<label class="radio-inline"><input type="radio" id="descCheck" name="sortOrder" onclick="sortOrderToggle()" > Descending</label>
-			</td>
-
-			<td id="advSearchContainer">
-			<div class="form-check form-check-inline">
-			<input type="checkbox" class="form-check-input" id="matchModeCheck"> 
-			<label class="form-check-label" for="matchModeCheck"> Advanced Search</label></td>
-			</div>
 			</td>
 			<td><span id='catReference'></span></td>
 			<!--<td><button id='catRefButton' class="btn btn-default" onclick='$("#catReference").slideToggle(250)' style='display:none'>Reference</button></td>-->
@@ -61,8 +54,6 @@
 <script src="/static/js/search.js"></script>
 <script>
 {{sq|safe}}
-var getDistinct = false;
-{{getDistinctStr|safe}}
 </script>
 <script src="/static/js/searchPage.js"></script>
 {% endblock %}

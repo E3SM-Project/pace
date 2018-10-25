@@ -6,13 +6,13 @@ var searchObj = {
     rankData:[],
     lastRankIndex:[0,0],
     afterFunctions:[],
-    search:function(searchStr,limit = this.limit,afterFunc,matchAll = false,orderBy,ascDsc=false){
+    search:function(searchStr,limit = this.limit,afterFunc,orderBy,ascDsc=false){
         console.log("%cHELLOOO!!","font-size:175%"); //This is VERY important part of the function.
         searchBody.innerHTML="";
         if(afterFunc)
             this.afterFunctions.push(afterFunc);
         //compile short names before searching:
-        if(matchAll){
+        if(/:/.test(searchStr)){
             let termArray = searchStr.split(" ");
             let elementList = [];
             termArray.forEach(element=>{
@@ -34,7 +34,7 @@ var searchObj = {
                 searchStr+=(index>0?" ":"")+element.join(":");
             });
         }
-        $.get(detectRootUrl()+"ajax/search/"+searchStr.replace(" ","+")+"/"+limit+(matchAll?"/matchall":"/false")+(orderBy?"/"+orderBy+"/"+(ascDsc?"asc":"desc"):""),(data)=>{
+        $.get(detectRootUrl()+"ajax/search/"+searchStr.replace(" ","+")+"/"+limit+(orderBy?"/"+orderBy+"/"+(ascDsc?"asc":"desc"):""),(data)=>{
         let resultData = JSON.parse(data)
         this.searchData = resultData[0];
         this.rankData = resultData[1];
