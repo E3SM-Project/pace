@@ -82,7 +82,6 @@ def uploadExp(uploadfile):
 				r = requests.post(uploadurl, files=files)
 				print bcolors.OKGREEN + ('Upload Success') + bcolors.ENDC
 				print (" ")
-				#print(r.text)
 			finally:
 				fin.close()
 			if r.text == 'complete':
