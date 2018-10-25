@@ -17,17 +17,20 @@ from datetime import datetime
 from ConfigParser import RawConfigParser
 from urlparse import urljoin
 
+# base url
+baseurl = "https://pace.ornl.gov/"
+
 # api for github
 GITHUB_API = 'https://api.github.com'
 
 # server connection url
-uploadurl = "https://pace.ornl.gov/upload"
+uploadurl = baseurl+str("upload")
 
 # server connection url
-parseurl = "https://pace.ornl.gov/fileparse"
+parseurl = baseurl+str("fileparse")
 
 # authenticuser url
-authurl = "https://pace.ornl.gov/userauth"
+authurl = baseurl+str("userauth")
 
 class bcolors:
 	HEADER = '\033[95m'
@@ -92,9 +95,13 @@ def uploadExp(uploadfile):
 					print bcolors.FAIL + ('ERROR: Check message.log') + bcolors.ENDC
 				print(" ")
 				print bcolors.DARKGREY + ('Downloading Report log') + bcolors.ENDC
-				downloadMsglog(flaglist[1])
-				print bcolors.OKGREEN + ('Download Success') + bcolors.ENDC
-				print bcolors.BOLD + ('Report saved as: \'' + str(flaglist[1])+'\'') + bcolors.ENDC
+				try:
+					downloadMsglog(flaglist[1])
+					print bcolors.OKGREEN + ('Download Success') + bcolors.ENDC
+					print bcolors.BOLD + ('Report saved as: \'' + str(flaglist[1])+'\'') + bcolors.ENDC
+				except IOError as e:
+					print bcolors.FAIL + ('ERROR: %s' %e) + bcolors.ENDC
+				print(" ")
 			print (" ")			
 		else:
 			print bcolors.FAIL +('Error: Unable to upload, %s is empty' %uploadfile)+bcolors.ENDC
@@ -235,7 +242,7 @@ def userAuth():
 		exit()
 
 def downloadMsglog(filename):
-	downloadurl = "https://pace.ornl.gov/dev1/downloadmsglog"
+	downloadurl = baseurl+str("downloadmsglog")
 	data = {'filename':filename}
 	req = requests.post(downloadurl,data=data)
 	f = open(filename,'w')

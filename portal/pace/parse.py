@@ -22,7 +22,7 @@ def parseData():
 	# upload directory
 	tmp_updir='/pace/prod/portal/upload/'
 	old_stdout = sys.stdout
-	logfilename = 'message-'+str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))+'.log'
+	logfilename = 'PACE_REPORT-'+str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))+'.log'
 	logfile = PACE_LOG_DIR + logfilename
 	log_file = open(logfile,'w')
 	sys.stdout = log_file
@@ -149,36 +149,61 @@ def changeDateTime(c_date):
 	dtime=yy+'-'+str(mm)+'-'+dd+' '+hhmmss
 	return(dtime)
 
+# converts path string into single file name (/home/absd/asde/file.txt -> file.txt)
+def convertPathtofile(path):
+	if '/' in path:
+		foldername = path.split('/')
+		return (foldername[len(foldername)-1]) #grab the last file from path link
+	else:
+		return path
+
 def checkDuplicateExp(ecase,elid,euser):
 	flag=Timingprofile.query.filter_by(case=ecase,lid=elid,user=euser).first()
-	db.session.close()
 	if flag is None:
 		return(False)
 	else:
 		return(True)
 
-def parseReadme(fileIn):
+def parseReadme(readmefilename):
+	if readmefilename.endswith('.gz'):
+		fileIn=gzip.open(readmefilename,'rb')
+	else:
+		fileIn = open(readmefilename,'rb')
 	resultElement = {}
 	commandLine = None
 	flag=False
-	for commandLine in fileIn:
-		word=commandLine.split(" ")
-		for element in word:
-			if ('create_newcase' in element):
-				cmdArgs = commandLine.split(": ",1)[1].strip("./\n").split(" ")
-				resultElement["name"] = cmdArgs[0]
-				for i in range(len(cmdArgs)):
-					if cmdArgs[i][0] == "-":
-						if "=" in cmdArgs[i]:
-							argumentStr = cmdArgs[i].strip("-").split("=")
-							resultElement[argumentStr[0]] = argumentStr[1]
-						else:
-							argument = cmdArgs[i].strip("-")
-							resultElement[argument] = cmdArgs[i+1]
-					resultElement["date"] = commandLine.split(": ",1)[0].strip(":")
+	try:	
+		for commandLine in fileIn:
+			word=commandLine.split(" ")
+			for element in word:
+				if ('create_newcase' in element):
+					cmdArgs = commandLine.split(": ",1)[1].strip("./\n").split(" ")
+					resultElement["name"] = cmdArgs[0]
+					for i in range(len(cmdArgs)):
+						if cmdArgs[i][0] == "-":
+							if "=" in cmdArgs[i]:
+								argumentStr = cmdArgs[i].strip("-").split("=")
+								resultElement[argumentStr[0]] = argumentStr[1]
+							else:
+								argument = cmdArgs[i].strip("-")
+								resultElement[argument] = cmdArgs[i+1]
+						resultElement["date"] = commandLine.split(": ",1)[0].strip(":")
+					break
+			if 'res' and 'compset' in resultElement.keys():		
 				break
-		if 'res' in resultElement.keys():		
-			break	
+		if resultElement['res'] is None:
+			resultElement['res'] = 'nan'
+		if resultElement['compset'] is None:
+			resultElement['compset'] = 'nan'
+	except KeyError as e:
+		print ('[ERROR]: %s not found in %s' %(e,convertPathtofile(readmefilename)))
+		fileIn.close()
+		return False
+	except IndexError as e:
+		print ('[ERROR]: %s in file %s' %(e,convertPathtofile(readmefilename)))
+		fileIn.close()		
+		return False
+	fileIn.close()	
 	return resultElement
 
 def parseModelVersion(gitfile):
@@ -188,8 +213,9 @@ def parseModelVersion(gitfile):
 		parsefile = open(gitfile, 'rb')
 	version = 0
 	for line in parsefile:
-		version = line.strip('\n')
-		break
+		if line != '\n':
+			version = line.strip('\n')
+			break
 	parsefile.close()
 	return version
 
@@ -203,7 +229,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 	runTimeTable=[]
 	duplicateFlag=False
 	word=''
-	print ('* Parsing: '+filename)
+	print ('* Parsing: '+convertPathtofile(filename))
 	for line in parseFile:
 		if line!='\n':
 			if len(timingProfileInfo)<12:		
@@ -281,7 +307,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 	parseFile.close()
 	duplicateFlag = checkDuplicateExp(timingProfileInfo['case'],timingProfileInfo['lid'],timingProfileInfo['user'])
 	if duplicateFlag is True:
-		print ('    -[Warining]: Duplicate Experiment, ' + timingProfileInfo['lid'])
+		print ('    -[Warining]: Duplicate Experiment, ' + convertPathtofile(filename))
 		return (True) # This skips this experiment and moves to next
 	tablelist=[]
 	
@@ -320,12 +346,12 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 		
 	parseFile.close()
 	print ('    -Complete')
-	print ('* Parsing: '+readmefile)
-	readmefile=gzip.open(readmefile,'rb')
+	print ('* Parsing: '+convertPathtofile(readmefile))
 	readmeparse = parseReadme(readmefile)
-	readmefile.close()
+	if readmeparse == False:
+		return (True) #this skips the experiment
 	print ('    -Complete')
-	print ('* Parsing: '+gitfile)
+	print ('* Parsing: '+convertPathtofile(gitfile))
 	expversion = parseModelVersion(gitfile)
 	print ('    -Complete')
 	new_experiment = Timingprofile(case=timingProfileInfo['case'],
@@ -380,11 +406,11 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 					model_years=runTimeTable[i+3])
 		db.session.add(new_runtime)
 		i=i+4
-	print ('* Parsing: '+ timingfile)
+	print ('* Parsing: '+ convertPathtofile(timingfile))
 	# insert modelTiming
 	insertTiming(timingfile,forexpid.expid,db)
 	print ('    -Complete')
-	print ('* Storing Experiment in server')
+	print ('* Storing Experiment in file server')
 	# store raw data (In server and Minio)
 	zipFolder(forexpid.lid,forexpid.user,forexpid.expid,fpath)
 	print ('    -Complete')
@@ -403,6 +429,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 	print ('- Web Link: '+str('https://pace.ornl.gov/exp-details/')+str(forexpid.expid))
 	print ('------------------------------')
 	print (' ')	
+	db.session.close()
 	return (True) 
 
 
