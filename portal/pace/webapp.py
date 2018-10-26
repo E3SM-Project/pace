@@ -205,7 +205,7 @@ def advSearch(searchQuery):
 @app.route("/ajax/search/<searchTerms>/<limit>/")
 @app.route("/ajax/search/<searchTerms>/<limit>/<orderBy>")
 @app.route("/ajax/search/<searchTerms>/<limit>/<orderBy>/<ascDsc>")
-def searchCore(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc="desc",whiteList = None,getRanks = True):
+def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList = None,getRanks = True):
     resultItems = []
     filteredItems = []
     variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res","timingprofile.case","init_time","run_time"]
@@ -223,32 +223,42 @@ def searchCore(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc
         ascDsc = "desc"
 
     #Multiple queries can be used at one time; This helps separate them.
-    queryList = searchTerms.split("|")
+    querySet = set(searchTerms.replace(" ","+").split("|"))
 
     #If we have clashing "modes" (regular, advanced) in one query, we move those to its own query:
-    indexDelete = [] #If we find clashing terms in one query, this is the list that deletes that index (that index is replaced by two differnet strings later)
-    for i in range(len(queryList)):
+    queryDelete = [] #If we find clashing terms in one query, this is the list that deletes that index (that index is replaced by two differnet strings later)
+    queryQue =  []
+    for query in querySet:
         foundAdv = False
         foundBasic = False
-        termTemp = queryList[i].split(" ")
+        termTemp = query.replace(" ","+").split("+")
+        print(termTemp)
 
         #These strings hold terms in the query, just in case both advanced and basic syntax is present
         basicTemp = ""
         advTemp = ""
         for term in termTemp:
             if ":" in term:
+                if foundAdv:
+                    advTemp+="+"
                 foundAdv = True
-                advTemp+=term+" "
+                advTemp+=term
             else:
+                if foundBasic:
+                    basicTemp+="+"
                 foundBasic = True
-                basicTemp+=term+" "
+                basicTemp+=term
         if foundAdv and foundBasic:
-            queryList.append(basicTemp)
-            queryList.append(advTemp)
-            indexDelete.append(i)
+            queryQue.append(basicTemp)
+            queryQue.append(advTemp)
+            queryDelete.append(query)
     #Now to delete original queries:
-    for index in indexDelete:
-        queryList.pop(index)
+    for index in queryDelete:
+        print(index)
+        querySet.discard(index)
+    #Add in the new queries:
+    for que in queryQue:
+        querySet.add(que)
 
     #The original version of searchCore did not have these three functions separated... this is for cleaner code XP
     def searchAll(termString):
@@ -316,7 +326,7 @@ def searchCore(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc
                 resultItems.append(result)
 
     #All query types are defined,now to go through one query at a time...
-    for element in queryList:
+    for element in querySet:
         if element == "*":
             searchAll(element)
         elif ":" in element:
@@ -328,7 +338,7 @@ def searchCore(searchTerms,limit = False,matchAll = False,orderBy="expid",ascDsc
     for element in resultItems:
         unique = True
         for item in filteredItems:
-            if element.expid == item["expid"]:
+            if str(element["expid"]) == str(item["expid"]):
                 unique = False
                 break
         if unique:
@@ -374,16 +384,16 @@ def getDistinct(entry):
 #These three redirect to the search page with their respective category.
 @app.route("/platforms/<platform>/")
 def platformsRedirect(platform):
-    return searchPage("machine:"+platform,False,True)
+    return searchPage("machine:"+platform,False)
 
 @app.route("/users/<user>/")
 def usersRedirect(user):
-    return searchPage("user:"+user,False,True)
+    return searchPage("user:"+user,False)
 
 @app.route("/benchmarks/<keyword>")
 def benchmarksRedirect(keyword):
     splitStr = keyword.split(" ")
-    return searchPage("compset:"+splitStr[0]+" res:"+splitStr[1],False,True)
+    return searchPage("compset:"+splitStr[0]+" res:"+splitStr[1],False)
 
 
 #This is designed for the search bar on the website. It predicts what a user may be looking for based on where the dev specifies to search.

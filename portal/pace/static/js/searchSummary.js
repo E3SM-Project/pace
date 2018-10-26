@@ -1,6 +1,10 @@
 //Author: Zachary Mitchell
 //Purpose: The javascript for searchSummary.html
 
+var queryHistory = [];
+var bubbleRadius = 15;
+var bubbleGrow = true;
+
 //This is a wrapper for the actual chart made by chart.js. It makes it easier to group functions relative to this project.
 var bChartObj = function(id,config){
     this.chart = new Chart(id,{
@@ -29,7 +33,11 @@ var bChartObj = function(id,config){
             label:["machine"],
             x:["total_pes_active"],
             y:["model_throughput"],
-            r:[15,true]
+            r:[()=>{
+                if(bubbleRadius >= 50 || bubbleRadius <15)
+                    bubbleGrow = !bubbleGrow;
+                return bubbleRadius = bubbleGrow?bubbleRadius+5:bubbleRadius-5;
+            },true]
         }
     }
 

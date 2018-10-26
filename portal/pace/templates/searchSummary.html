@@ -14,9 +14,9 @@
 {% endblock %}
 
 {% block content %}
-<button id="clearDataButton" style="float:left">Clear</button>
+<button id="clearDataButton" class="btn btn-default" style="float:left">Clear</button>
 <div style="display:inline-block;float:right">
-    <input id="scatterDataInput" placeholder="Add more data"/>
+    <input id="scatterDataInput" class="form-control" placeholder="Add more data"/>
 </div>
 <canvas id="summaryChartTag"></canvas>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
@@ -29,11 +29,8 @@ var noData = true;
 //predictive search for input box:
 scatterInputPredict = new predictiveSearch.element(scatterDataInput,"sip");
 scatterDataInput.onkeydown = evt=>{
-	if(evt.key == "Enter" && scatterInputPredict.allowEnter && scatterDataInput.value!=''){
-        summaryChart.addData(scatterDataInput.value);
-        history.pushState("","",window.location.href+(noData?"":"|")+scatterDataInput.value);
-        noData = false;
-    }
+	if(evt.key == "Enter" && scatterInputPredict.allowEnter)
+        initQuery(scatterDataInput.value);
 	scatterInputPredict.keydownListener(evt);
 };
 scatterDataInput.onkeyup = evt=>{
@@ -47,16 +44,45 @@ clearDataButton.onclick = ()=>{
     summaryChart.resetData();
     summaryChart.chart.update();
     history.pushState('','',detectRootUrl()+'searchSummary/');
+    queryHistory = [];
     noData=true
+}
+
+function checkArray(value,srcArray = queryHistory){
+    for(let i=0;i<srcArray.length;i++){
+        if (value == srcArray[i])
+            return false;
+    }
+    return true;
+}
+
+//Lets check for duplicates; if we don't find anything, the query is ignored.
+//If this check is somehow bypassed, there's also protection over the server B)
+function initQuery(userInput,updateUrl=true){
+    if(userInput!=""){
+        queryList = [];
+        userQuery = userInput.split("|");
+        userQuery.forEach(element=>{
+            if(checkArray(element) && checkArray(element,queryList))
+                queryList.push(element);
+        });
+        if(queryList.length!=0){
+            resultQuery = queryList.join("|");
+            summaryChart.addData(resultQuery);
+            if(updateUrl)
+                history.pushState("","",window.location.href+(noData?"":"|")+resultQuery);
+            noData = false;
+            queryList.forEach(element=>{
+                queryHistory.push(element);
+            });
+        }
+    }
 }
 
 var searchQuery = "{{query|safe}}";
 $(document).ready(()=>{
     summaryChart = new bChartObj("summaryChartTag");
-    if(searchQuery!=""){
-        noData = false;
-        summaryChart.addData(searchQuery);
-    }
+    initQuery(searchQuery,false);
 });
 </script>
 {% endblock %}
