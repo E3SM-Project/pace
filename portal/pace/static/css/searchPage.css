@@ -46,3 +46,8 @@
     margin-left:1%;
     }
 }
+
+#searchCompareBtn,#searchViewBtn{
+    float:right;
+    margin-right:5px;
+}

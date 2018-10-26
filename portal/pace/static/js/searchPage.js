@@ -19,7 +19,9 @@ function searchAndCheck(sq = searchQuery ){
 	},orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked);
 	let newLink = detectRootUrl() +(sq == "*"?"":"search/"+sq);
 	if(newLink != window.location.href)
+	
 		history.pushState("","",newLink);
+	sSummaryLink.href=detectRootUrl()+"searchSummary/"+sq;
 
 	if(sq!="*")
 		homeSearchBar.value = sq;
