@@ -91,9 +91,9 @@ def uploadExp(uploadfile):
 				if flaglist[0] == 'success':
 					print bcolors.OKGREEN + ('Parse Success') + bcolors.ENDC
 				else:
-					print bcolors.FAIL + ('ERROR: Check message.log') + bcolors.ENDC
+					print bcolors.FAIL + ('ERROR: Check %s' %flaglist[1]) + bcolors.ENDC
 				print(" ")
-				print bcolors.DARKGREY + ('Downloading Report log') + bcolors.ENDC
+				print bcolors.DARKGREY + ('Downloading Report log...') + bcolors.ENDC
 				try:
 					downloadMsglog(flaglist[1])
 					print bcolors.OKGREEN + ('Download Success') + bcolors.ENDC
@@ -252,34 +252,37 @@ def downloadMsglog(filename):
 # main 
 def main():
 	# parse argument
-	result=parseArguments()
-	if result.source == None:
-		print bcolors.WARNING + 'USAGE: pace-upload [--help/-h] [--exp-dir/-ed SOURCE] [--perf-archive/-pa SOURCE] [--application/-a {e3sm}]'  + bcolors.ENDC	
-		exit()
-	userAuth()
-	zfname = 'experiments'
-	expfile = result.source
-	tmpfile = 'pace-exps-' + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
-	
-	# If path is not empty, and is a directory
-	if(expfile!=''):
-		if (result.application=='e3sm' and isValidE3SMexp(expfile,tmpfile)==True): 	
-			# aggregate all file
-			zipSubdir(zfname,tmpfile)
-			uploadfile='experiments.zip'
-			# upload experiment file		
-			uploadExp(uploadfile)
-			# remove temporary aggregated file
-			os.remove(uploadfile)
-			distutils.dir_util.remove_tree(tmpfile)
-		elif (result.application=='fusion' and isValidFusionExp(expfile)==True):
-			exit()		
-		else:
+	try:
+		result=parseArguments()
+		if result.source == None:
+			print bcolors.WARNING + 'USAGE: pace-upload [--help/-h] [--exp-dir/-ed SOURCE] [--perf-archive/-pa SOURCE] [--application/-a {e3sm}]'  + bcolors.ENDC	
 			exit()
-	else:
-		print(bcolors.FAIL + 'ERROR: %s is empty' %expfile + bcolors.ENDC)
+		userAuth()
+		zfname = 'experiments'
+		expfile = result.source
+		tmpfile = 'pace-exps-' + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+	
+		# If path is not empty, and is a directory
+		if(expfile!=''):
+			if (result.application=='e3sm' and isValidE3SMexp(expfile,tmpfile)==True): 	
+				# aggregate all file
+				zipSubdir(zfname,tmpfile)
+				uploadfile='experiments.zip'
+				# upload experiment file		
+				uploadExp(uploadfile)
+				# remove temporary aggregated file
+				os.remove(uploadfile)
+				distutils.dir_util.remove_tree(tmpfile)
+			elif (result.application=='fusion' and isValidFusionExp(expfile)==True):
+				exit()		
+			else:
+				exit()
+		else:
+			print(bcolors.FAIL + 'ERROR: %s is empty' %expfile + bcolors.ENDC)
+			exit()
+	except:
+		print(bcolors.FAIL + 'ERROR: Something Unexpected happened with %s' %expfile + bcolors.ENDC)
 		exit()
-
 
 if __name__ == "__main__":
 	main()
