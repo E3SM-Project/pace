@@ -12,22 +12,16 @@ var expGetFunc = [];
 
 //This will be where we look for a specific node. (Making the structured time-node into something linear at the same time)
 function addressTable(vals=undefined,jsonArray=false,srcExp,thread = -1){
-    this.length = function (){
-        let count = 0
-        while (this[count] !=undefined){
-            count++;
-        }
-        return count
-    }
+    let newAddressTable = [];
     //It appears that all names for nodes are unique! Let's make use of that...
-    this.addVals = function(jsonIn,jsonArray = false,parent=undefined){
+    newAddressTable.addVals = function(jsonIn,jsonArray = false,parent=undefined){
         if(jsonArray){
             jsonIn.forEach(element=>this.addVals(element));
         }
         else{
             //The awesomness of Javascript allows us to iterate AND call objects by name
             this[jsonIn.name] = jsonIn;
-            this[this.length()] = jsonIn;
+            this.push(jsonIn);
             jsonIn.children.forEach(child=>this.addVals(child,false,jsonIn));
             //Making Parents...
             this[jsonIn.name].parent=(parent==undefined?jsonIn:parent);
@@ -36,13 +30,13 @@ function addressTable(vals=undefined,jsonArray=false,srcExp,thread = -1){
         }
     }
     if(vals)
-        this.addVals(vals,jsonArray)
+        newAddressTable.addVals(vals,jsonArray)
+
+    return newAddressTable
 }
 
 //This holds a single experiment. The goal is to be able to compare multiples, so they are compartmentelized here.
-function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "0",compset="N/A", res="N/A"){
-    this.name = name;
-    this.rank = rank;
+function experiment(timeNodes,config){
     this.timeNodes = timeNodes;
     //Whichever node is selected, everything in the code will follow this index for appropriate addressing:
     this.currThread = 0;
@@ -53,16 +47,28 @@ function experiment(timeNodes,valueNames,name = "Unnamed Experiment",rank = "0",
     this.nodeDomList = [];
     this.threadSelectInner = "";
     this.valueSelectInner = this.rank == "stats"?"<option value='wallmin/wallmax'>wallMin / wallMax</option>":"<option value='nodes'>processes</option><option value='min/max'>Min / Max</option>";
-    this.valueNames = valueNames;
-    this.compset = compset;
-    this.res = res;
+
+    let defaultConfig = {
+        name:"Unnamed Experiment",
+        rank:"0",
+        compset:"N/A",
+        res:"N/A",
+        valueNames:undefined
+    };
+    //Make sure we have everything based on the config argument, if not, it's set to default:
+    Object.keys(defaultConfig).forEach(key=>{
+        this[key] = config[key]?config[key]:defaultConfig[key];
+    });
 
     //Construct:
     this.timeNodes.forEach((thread,i)=>{
-        this.nodeTableList.push(new addressTable(thread,true,this,i));
+        this.nodeTableList.push(addressTable(thread,true,this,i));
         this.nodeDomList.push(htmlList(thread,[0,2]));
         this.threadSelectInner+="<option "+ (!i?"selected":"")+" value="+i+" >Thread "+i+"</option>";
     });
+    //It should be safe to assume that all value names are the same; if not, this can be easily changed to reflect each thread.
+    if(this.valueNames==undefined)
+        this.valueNames = Object.keys(this.nodeTableList[0][0].values);
     this.valueNames.forEach(name=>this.valueSelectInner+="<option "+(name=="wallClock" || name=="wallmax"?"selected":"")+" value='"+name+"'>"+name+"</option>");
     this.currentEntry = {children:this.timeNodes[this.currThread],name:"summaryButton"};
 
@@ -83,8 +89,10 @@ function getExperiment(expSrc,extSrc,funcPush = expDownloadDefault){
     $.get(detectRootUrl()+"summaryQuery/"+expSrc+"/"+extSrc+"/",function(data,status){
         if(status == "success"){
             let results = JSON.parse(data);
+            //The name of the experiment will just be it's expid for now.
+            results.meta.name=results.meta.expid;
             // console.log(results);
-            expList.push(new experiment(results.obj,results.varNames,results.meta.expid,results.meta.rank,results.meta.compset,results.meta.res));
+            expList.push(new experiment(results.obj,results.meta));
         }
         expGetCount--;
         if(expGetCount == 0){
@@ -155,44 +163,8 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
         let listElement = document.createElement("li");
         listElement.id=node.name;
         listElement.innerHTML+="<span>"+node.name+"</span>";
-        listElement.onclick = function(){
-            targetExp = (comparisonMode.on?comparisonMode.exp:currExp);
-            if(targetExp.currentEntry!=undefined && targetExp.currentEntry.name == this.id && targetExp.nodeTableList[targetExp.currThread][this.id].children.length > 0){
-                let listTag = this.getElementsByTagName("ul")[0].style;
-                listTag.display=(listTag.display=="none"?"":"none");
-                //Pretty much stops all other clicks from triggering.
-                okToClick = false;
-                //Change the url; this would normaly be recursive, but thanks to okToClick, that can all be prevented!
-                history.replaceState("","",window.location.href.split("#")[0]+"#"+this.id);
-                setTimeout(()=>okToClick = true,10);
-            }
-            else if(okToClick){
-                if (targetExp.currentEntry == undefined || targetExp.currentEntry.name!= this.id){
-                    this.style.fontWeight="bold";
-                    if(targetExp.currentEntry !=undefined && targetExp.currentEntry.name !=undefined)
-                        document.getElementById(targetExp.currentEntry.name).style.fontWeight="";
-                    targetExp.currentEntry = targetExp.nodeTableList[targetExp.currThread][this.id];
-                }
-                okToClick = false;
-                history.replaceState("","",window.location.href.split("#")[0]+"#"+this.id);
-                setTimeout(()=>okToClick = true,10);
-                
-                //Display appropriate graph info:
-                if(targetExp.nodeTableList[targetExp.currThread][this.id].children.length > 0){
-                    resultChart.options.title.text=this.id;
-                    if(comparisonMode.on)
-                        setTimeout(()=>comparisonMode.viewChart(this.id),10);
-                    //Strange... there's a small chance that something asynchronous will take too long before chart.js can render the chart... LET'S FIX THAT!
-                    else setTimeout(()=>changeGraph(currExp.nodeTableList[currExp.currThread][this.id]),10);
-                }
-                else{
-                    if(comparisonMode.on)
-                        setTimeout(()=>comparisonMode.viewChart(this.id),10);
-                    else setTimeout(()=>changeGraph({children:[currExp.nodeTableList[currExp.currThread][this.id]]}),10);
-                }
-            }
-        };
-        
+        listElement.onclick = htmlList_onClick;
+
         //Make more lists:
         if(node.children.length>0){
             listElement.appendChild(htmlList(node.children,scope,currScope+1));
@@ -203,8 +175,47 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
         newList.appendChild(listElement);
         percentIndex++;
     });
-    
+
     return newList;
+}
+
+//This is reserved for an htmlList element. It's here so that functions arn't called on the spot and take up more memory.
+function htmlList_onClick(){
+    targetExp = (comparisonMode.on?comparisonMode.exp:currExp);
+    if(targetExp.currentEntry!=undefined && targetExp.currentEntry.name == this.id && targetExp.nodeTableList[targetExp.currThread][this.id].children.length > 0){
+        let listTag = this.getElementsByTagName("ul")[0].style;
+        listTag.display=(listTag.display=="none"?"":"none");
+        //Pretty much stops all other clicks from triggering.
+        okToClick = false;
+        //Change the url; this would normaly be recursive, but thanks to okToClick, that can all be prevented!
+        history.replaceState("","",window.location.href.split("#")[0]+"#"+this.id);
+        setTimeout(()=>okToClick = true,10);
+    }
+    else if(okToClick){
+        if (targetExp.currentEntry == undefined || targetExp.currentEntry.name!= this.id){
+            this.style.fontWeight="bold";
+            if(targetExp.currentEntry !=undefined && targetExp.currentEntry.name !=undefined)
+                document.getElementById(targetExp.currentEntry.name).style.fontWeight="";
+            targetExp.currentEntry = targetExp.nodeTableList[targetExp.currThread][this.id];
+        }
+        okToClick = false;
+        history.replaceState("","",window.location.href.split("#")[0]+"#"+this.id);
+        setTimeout(()=>okToClick = true,10);
+
+        //Display appropriate graph info:
+        if(targetExp.nodeTableList[targetExp.currThread][this.id].children.length > 0){
+            resultChart.options.title.text=this.id;
+            if(comparisonMode.on)
+                setTimeout(()=>comparisonMode.viewChart(this.id),10);
+            //Strange... there's a small chance that something asynchronous will take too long before chart.js can render the chart... LET'S FIX THAT!
+            else setTimeout(()=>changeGraph(currExp.nodeTableList[currExp.currThread][this.id]),10);
+        }
+        else{
+            if(comparisonMode.on)
+                setTimeout(()=>comparisonMode.viewChart(this.id),10);
+            else setTimeout(()=>changeGraph({children:[currExp.nodeTableList[currExp.currThread][this.id]]}),10);
+        }
+    }
 }
 
 //This handles the makeGraphBar function to change the graph as a whole.
@@ -321,7 +332,7 @@ function mtSum(nodeIn,valName="nodes"){
         total+=output[0];
         nodeCount+=output[1];
     });
-    if (valName!="nodes")  
+    if (valName!="nodes")
         total+=nodeIn.values[valName];
     return [total,nodeCount];
 }
@@ -370,7 +381,11 @@ var comparisonMode = {
                 compareName+=(firstStr?"":",")+exp[0].name+"_"+exp[0].rank+"(thread "+exp[1]+")";
                 firstStr = false;
             })
-            this.exp = new experiment([this.genList(timeNodeList)],expList[0][0].valueNames,compareName,(expList[0][0].rank == "stats"?"stats":"0000"));
+            this.exp = new experiment([this.genList(timeNodeList)],{
+                name:compareName,
+                rank:(expList[0][0].rank == "stats"?"stats":"0"),
+                valueNames:expList[0][0].valueNames
+            });
         }
         else alert("Please select two experiment threads with the same value types.");
     },
@@ -454,7 +469,7 @@ var comparisonMode = {
                 /*else*/ resultNode.children.forEach(this.viewChart_childPrint);
             }
             else if(element[0].nodeTableList[element[1]][id]){
-                if(element[0].nodeTableList[element[1]][id].children.length == 0) 
+                if(element[0].nodeTableList[element[1]][id].children.length == 0)
                     childrenTemp.push(element[0].nodeTableList[element[1]][id]);
                 else element[0].nodeTableList[element[1]][id].children.forEach(this.viewChart_childPrint);
             }

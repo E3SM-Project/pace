@@ -10,7 +10,7 @@ EXPOSE 80
 ENV PACE_DOCKER_INSTANCE=1
 ENV PACE_RC_DEFAULTS="root 1234 pace pacedb minioftw 12345678 paceminio:9000"
 
-# #If you want a developer enviroment, uncomment these commands:
+#If you want a developer enviroment, uncomment these commands:
 ENV PACE_DEV=1
 # RUN apt-get -y install git vim openssh-server
 # RUN ["bash","docker/devUserAdd.sh"]

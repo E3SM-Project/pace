@@ -4,7 +4,7 @@ from flask import Flask,render_template,Response,make_response,send_from_directo
 from collections import OrderedDict
 from pace import app
 import parse as parse
-import sys 
+import sys
 import collections
 import operator
 import json
@@ -55,7 +55,7 @@ def upload_file():
 		else:
 			return ('Error Uploading file, Try again')
 	return render_template('upload.html')
- 	
+
 @app.route("/uploadlogin", methods=['GET','POST'])
 def uploadlogin():
 	if request.method == 'POST':
@@ -70,20 +70,20 @@ def uploadlogin():
 		y=int(len(c))
 		d=''
 		for i in range(y):
-			d = d + chr(ord(c[i])+1)			
+			d = d + chr(ord(c[i])+1)
 		f=open('/pace/dev1/portal/pace/pass.txt','r')
 		for line in f:
 			admin = line.split(None,1)[0]
 			print(admin)
 			if admin==d:
-				return("ok")				
-				
+				return("ok")
+
 		return("not")
 
 # Error handler
 @app.errorhandler(404)
 def page_not_found(error):
-	return render_template('error.html'), 404	
+	return render_template('error.html'), 404
 
 #Model Timing web-interface.
 @app.route("/summary/<expID>/<rank>/<compare>/<threads>/")
@@ -113,7 +113,6 @@ def summaryHtml(expID,rank,compare="",threads=""):
 @app.route("/summaryQuery/<expID>/<rank>/",methods=["GET"])
 def summaryQuery(expID,rank):
     resultNodes=""
-    listIndex = 0
     compset = "N/A"
     res="N/A"
     basePath = "/pace/"
@@ -133,7 +132,6 @@ def summaryQuery(expID,rank):
         compset,res = tpData[0].compset,tpData[0].res
 
     if rank == 'stats':
-        listIndex = 1
         #Grab processes > 1 second:
         nodeTemp = resultNodes
         newJson = []
@@ -151,7 +149,7 @@ def summaryQuery(expID,rank):
         while not len(newJson) == 50:
             newJson.pop()
         resultNodes = [newJson]
-    return json.dumps({"obj":resultNodes,"varNames":mt.valueList[listIndex],"meta":{"expid":expID,"rank":rank,"compset":compset,"res":res} })
+    return json.dumps({"obj":resultNodes,"meta":{"expid":expID,"rank":rank,"compset":compset,"res":res} })
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
     myexp = None
@@ -268,7 +266,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
         allResults = db.engine.execute(queryStr).fetchall()
         for result in allResults:
             resultItems.append(result)
-            
+
     def advSearch(termString):
         termList = []
         #We assume the user is typing information with the following format: "user:name machine:titan etc:etc"
@@ -346,7 +344,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
             for key in element.keys():
                 resultDict[key] = str(element[key])
             filteredItems.append(resultDict)
-    
+
     #Grab the ranks based of of filteredItems:
     rankList = []
     if getRanks:
