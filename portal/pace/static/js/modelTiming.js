@@ -163,7 +163,7 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
         let listElement = document.createElement("li");
         listElement.id=node.name;
         listElement.innerHTML+="<span>"+node.name+"</span>";
-        listElement.onclick = htmlList_onClick;
+        listElement.onclick = Function("htmlList_onClick(this)");
 
         //Make more lists:
         if(node.children.length>0){
@@ -180,40 +180,40 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
 }
 
 //This is reserved for an htmlList element. It's here so that functions arn't called on the spot and take up more memory.
-function htmlList_onClick(){
+function htmlList_onClick(context){
     targetExp = (comparisonMode.on?comparisonMode.exp:currExp);
-    if(targetExp.currentEntry!=undefined && targetExp.currentEntry.name == this.id && targetExp.nodeTableList[targetExp.currThread][this.id].children.length > 0){
-        let listTag = this.getElementsByTagName("ul")[0].style;
+    if(targetExp.currentEntry!=undefined && targetExp.currentEntry.name == context.id && targetExp.nodeTableList[targetExp.currThread][context.id].children.length > 0){
+        let listTag = context.getElementsByTagName("ul")[0].style;
         listTag.display=(listTag.display=="none"?"":"none");
         //Pretty much stops all other clicks from triggering.
         okToClick = false;
         //Change the url; this would normaly be recursive, but thanks to okToClick, that can all be prevented!
-        history.replaceState("","",window.location.href.split("#")[0]+"#"+this.id);
+        history.replaceState("","",window.location.href.split("#")[0]+"#"+context.id);
         setTimeout(()=>okToClick = true,10);
     }
     else if(okToClick){
-        if (targetExp.currentEntry == undefined || targetExp.currentEntry.name!= this.id){
-            this.style.fontWeight="bold";
+        if (targetExp.currentEntry == undefined || targetExp.currentEntry.name!= context.id){
+            context.style.fontWeight="bold";
             if(targetExp.currentEntry !=undefined && targetExp.currentEntry.name !=undefined)
                 document.getElementById(targetExp.currentEntry.name).style.fontWeight="";
-            targetExp.currentEntry = targetExp.nodeTableList[targetExp.currThread][this.id];
+            targetExp.currentEntry = targetExp.nodeTableList[targetExp.currThread][context.id];
         }
         okToClick = false;
-        history.replaceState("","",window.location.href.split("#")[0]+"#"+this.id);
+        history.replaceState("","",window.location.href.split("#")[0]+"#"+context.id);
         setTimeout(()=>okToClick = true,10);
 
         //Display appropriate graph info:
-        if(targetExp.nodeTableList[targetExp.currThread][this.id].children.length > 0){
-            resultChart.options.title.text=this.id;
+        if(targetExp.nodeTableList[targetExp.currThread][context.id].children.length > 0){
+            resultChart.options.title.text=context.id;
             if(comparisonMode.on)
-                setTimeout(()=>comparisonMode.viewChart(this.id),10);
+                setTimeout(()=>comparisonMode.viewChart(context.id),10);
             //Strange... there's a small chance that something asynchronous will take too long before chart.js can render the chart... LET'S FIX THAT!
-            else setTimeout(()=>changeGraph(currExp.nodeTableList[currExp.currThread][this.id]),10);
+            else setTimeout(()=>changeGraph(currExp.nodeTableList[currExp.currThread][context.id]),10);
         }
         else{
             if(comparisonMode.on)
-                setTimeout(()=>comparisonMode.viewChart(this.id),10);
-            else setTimeout(()=>changeGraph({children:[currExp.nodeTableList[currExp.currThread][this.id]]}),10);
+                setTimeout(()=>comparisonMode.viewChart(context.id),10);
+            else setTimeout(()=>changeGraph({children:[currExp.nodeTableList[currExp.currThread][context.id]]}),10);
         }
     }
 }
