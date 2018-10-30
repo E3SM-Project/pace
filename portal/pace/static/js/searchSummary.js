@@ -31,14 +31,9 @@ var bChartObj = function(id,config){
     if(!config){
         this.config = {
             label:{val:"machine"},
-            x:{val:"total_pes_active",label:"Total PEs"},
             y:{val:"model_throughput",label:"SYPD"},
-            r:{val:()=>{
-                if(bubbleRadius >= 50 || bubbleRadius <15)
-                    bubbleGrow = !bubbleGrow;
-                return bubbleRadius = bubbleGrow?bubbleRadius+5:bubbleRadius-5;
-                },
-                hardCoded:true
+            x:{val:"total_pes_active",label:"Total PEs"},
+            r:{val:15,hardCoded:true
             }
         }
     }
@@ -51,16 +46,16 @@ var bChartObj = function(id,config){
                 yAxes:[{
                     scaleLabel:{
                         display:true,
-                        labelString:this.config.x.label?this.config.x.label:
-                        typof(this.config.x.val) == "function"?this.config.x.val():
-                        this.config.x.val
+                        labelString:this.config.y.label?this.config.y.label:
+                        typof(this.config.y.val) == "function"?this.config.y.val():
+                        this.config.y.val
                     }}],
                 xAxes:[{
                     scaleLabel:{
                         display:true,
-                        labelString:this.config.y.label?this.config.y.label:
-                        typof(this.config.y.val) == "function"?this.config.y.val():
-                        this.config.y.val
+                        labelString:this.config.x.label?this.config.x.label:
+                        typof(this.config.x.val) == "function"?this.config.x.val():
+                        this.config.x.val
                     }}]
             }
         }
