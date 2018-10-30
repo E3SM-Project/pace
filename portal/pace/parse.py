@@ -18,7 +18,7 @@ import io
 def parseData():
 	# start main
 	old_stdout = sys.stdout
-	logfilename = 'PACE_REPORT-'+str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))+'.log'
+	logfilename = 'pace-'+str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))+'.log'
 	logfile = PACE_LOG_DIR + logfilename
 	log_file = open(logfile,'w')
 	sys.stdout = log_file

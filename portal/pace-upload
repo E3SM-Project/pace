@@ -42,6 +42,7 @@ class bcolors:
 	BOLD = '\033[1m'
 	UNDERLINE = '\033[4m'
 	DARKGREY = '\033[90m'
+	LIGHTGREY = '\033[37m'
 
 # argumented parser
 def parseArguments(): 
@@ -55,7 +56,7 @@ def parseArguments():
 
 # Aggregate into zip for given directory path
 def zipSubdir(zfname, path):
-	print bcolors.DARKGREY + ('Compressing valid experiments') + '...' + bcolors.ENDC
+	print bcolors.LIGHTGREY + ('Compressing valid experiments') + '...' + bcolors.ENDC
 	zf = zipfile.ZipFile("%s.zip" % (zfname), "w", zipfile.ZIP_DEFLATED, allowZip64 = True)
 	abs_src = os.path.abspath(path)
 	for root,dirs,files in os.walk(path):
@@ -73,7 +74,7 @@ def uploadExp(uploadfile):
 	# error check empty file
 	if(os.path.exists(uploadfile)):
 		if(os.stat(uploadfile).st_size!=0):
-			print bcolors.DARKGREY + ('Uploading...') + bcolors.ENDC
+			print bcolors.LIGHTGREY + ('Uploading...') + bcolors.ENDC
 			# open zip to be uploaded
 			fin = open(uploadfile, 'rb')			
 			files = {'file': fin}
@@ -85,7 +86,7 @@ def uploadExp(uploadfile):
 			finally:
 				fin.close()
 			if r.text == 'complete':
-				print bcolors.DARKGREY + ('Parsing experiments...') + bcolors.ENDC
+				print bcolors.LIGHTGREY + ('Parsing experiments...') + bcolors.ENDC
 				req = requests.post(parseurl)
 				flaglist = (req.text).split("/") # req.text = success/message-timestamp.log
 				if flaglist[0] == 'success':
@@ -93,7 +94,7 @@ def uploadExp(uploadfile):
 				else:
 					print bcolors.FAIL + ('ERROR: Check %s' %flaglist[1]) + bcolors.ENDC
 				print(" ")
-				print bcolors.DARKGREY + ('Downloading Report log...') + bcolors.ENDC
+				print bcolors.LIGHTGREY + ('Downloading Report log...') + bcolors.ENDC
 				try:
 					downloadlog(flaglist[1])
 					print bcolors.OKGREEN + ('Download Success') + bcolors.ENDC
@@ -118,7 +119,7 @@ def isValidE3SMexp(expfile,tmpfile):
 	completeexp = False
 	# lists to store complete experiment paths	
 	explist = []
-	print bcolors.DARKGREY + ('Validating Experiments in %s' %expfile) + '...' + bcolors.ENDC
+	print bcolors.LIGHTGREY + ('Validating Experiments in %s' %expfile) + '...' + bcolors.ENDC
 	if os.path.exists(expfile):
 		# iterate to check for timing files
 		for path, subdirs, files in os.walk(expfile):
@@ -175,7 +176,7 @@ def authenticateUser(user):
 	r = requests.post(authurl,data=data)
 	if r.text == "validuser":
 		print (" ")
-		print (bcolors.DARKGREY +"* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"+ bcolors.ENDC)
+		print (bcolors.LIGHTGREY +"* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"+ bcolors.ENDC)
 		print (bcolors.OKGREEN +"			Welcome to PACE %s" %user+ bcolors.ENDC)
 		print (" ")
 		return (True)
@@ -229,7 +230,7 @@ def createconfigfile(user,token,configFile):
 	parser.set('GITHUB','token',token)
 	filename=open(configFile,'w')
 	parser.write(filename)
-	print bcolors.DARKGREY + 'Config file \".pacecc\" created' + bcolors.ENDC
+	print bcolors.LIGHTGREY + 'Config file \".pacecc\" created' + bcolors.ENDC
 	return
 
 def userAuth():
