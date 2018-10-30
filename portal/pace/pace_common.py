@@ -61,23 +61,16 @@ def getPACEVer(lastVer):
 #Grab the appropriate Pace RC file. It will be different depending on who (or what) is running this script:
 def detectPaceRc():
 	configFile = None
-	locations=["prod","dev1","dev2","dev3","docker/rc"]
+	locations=["prod","dev1","dev2","dev3"]
 	if os.path.isfile('.pacerc'):
 		configFile = '.pacerc'
-	elif os.path.isfile(os.environ['HOME'] + '/.pacerc'):
-		configFile = os.environ['HOME'] + '/.pacerc'
+	elif os.getenv("PACE_DOCKER_INSTANCE"):
+		configFile="/pace/docker/rc/.pacerc"
 	else:
 		for item in locations:
 			if os.path.isfile('/pace/'+item+'/.pacerc') and os.access('/pace/'+item+'/.pacerc', os.R_OK):
-				isConfig = False
-				if item == "docker/rc":
-					if os.getenv("PACE_DOCKER_INSTANCE"):
-						isConfig = True
-				else:
-					isConfig = True
-				if isConfig:
-					configFile = '/pace/'+item+"/.pacerc"
-					break
+				configFile = '/pace/'+item+"/.pacerc"
+				break
 	return configFile
 
 def getMiniokey():
