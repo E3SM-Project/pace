@@ -252,11 +252,11 @@ def downloadlog(filename):
 # main 
 def main():
 	# parse argument
+	result=parseArguments()
+	if result.source == None:
+		print bcolors.WARNING + 'USAGE: pace-upload [--help/-h] [--exp-dir/-ed SOURCE] [--perf-archive/-pa SOURCE] [--application/-a {e3sm}]'  + bcolors.ENDC	
+		exit()
 	try:
-		result=parseArguments()
-		if result.source == None:
-			print bcolors.WARNING + 'USAGE: pace-upload [--help/-h] [--exp-dir/-ed SOURCE] [--perf-archive/-pa SOURCE] [--application/-a {e3sm}]'  + bcolors.ENDC	
-			exit()
 		userAuth()
 		zfname = 'experiments'
 		expfile = result.source
