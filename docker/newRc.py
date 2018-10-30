@@ -6,17 +6,8 @@ import sys
 #The values in the rc file. the first index in each array is an alternate name, and the second is the name of the value.
 #These can be changed out for any other values one might want
 rcValues = {
-    "PACE":[
-        ["un","username"],
-        ["pw","password"],
-        ["database","db"],
-        ["hst","host"]
-    ],
-    "MINIO":[
-        ["ak","minio_access_key"],
-        ['sk',"minio_secret_key"],
-        ["url","minio_url"]
-    ]
+    "PACE":["username","password","db","host"],
+    "MINIO":["minio_access_key","minio_secret_key","minio_url"]
 }
 
 usrRcVals = {
@@ -61,8 +52,8 @@ if equalPoints > 0:
             for category in rcValues.keys():
                 for element in rcValues[category]:
                     targetStr = sys.argv[i].split("=")
-                    if targetStr[0] in element:
-                        usrRcVals[category][element[1]] = targetStr[1]
+                    if targetStr[0] == element:
+                        usrRcVals[category][element] = targetStr[1]
                         break
     #Generate the file: (If the variable the user specified didn't exist, it won't be accounted for in the rc file)
     for key in usrRcVals.keys():
@@ -76,7 +67,7 @@ elif equalPoints == 0 and len(sys.argv) > 1:
         print("["+key+"]")
         for element in rcValues[key]:
             if not currArgIndex == len(sys.argv):
-                print(element[1]+" = "+sys.argv[currArgIndex])
+                print(element+" = "+sys.argv[currArgIndex])
                 currArgIndex+=1
             else:
                 break
