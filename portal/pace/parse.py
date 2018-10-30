@@ -171,8 +171,9 @@ def convertPathtofile(path):
 	else:
 		return path
 
-def checkDuplicateExp(ecase,elid,euser):
-	flag=Timingprofile.query.filter_by(case=ecase,lid=elid,user=euser).first()
+def checkDuplicateExp(euser,emachine,ecurr, ecase):
+	eexp_date = changeDateTime(ecurr)
+	flag=Timingprofile.query.filter_by(user=euser,machine=emachine,case=ecase,exp_date=eexp_date ).first()
 	if flag is None:
 		return(False)
 	else:
@@ -358,7 +359,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 				elif len(timingProfileInfo)>=20:
 					break
 
-		duplicateFlag = checkDuplicateExp(timingProfileInfo['case'],timingProfileInfo['lid'],timingProfileInfo['user'])
+		duplicateFlag = checkDuplicateExp(timingProfileInfo['user'],timingProfileInfo['machine'],timingProfileInfo['curr'],timingProfileInfo['case'])
 		if duplicateFlag is True:
 			print ('    -[Warining]: Duplicate Experiment, ' + convertPathtofile(filename))
 			db.session.close()
