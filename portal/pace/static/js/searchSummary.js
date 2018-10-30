@@ -7,39 +7,64 @@ var bubbleGrow = true;
 
 //This is a wrapper for the actual chart made by chart.js. It makes it easier to group functions relative to this project.
 var bChartObj = function(id,config){
-    this.chart = new Chart(id,{
-        type:"bubble",
-        data: { datasets:[] },
-        options: {}
-    });
 
     //This makes it easier to map certain machines and their data. (No need for constant iterations)
     this.labelMap = {};
     this.idByLabel = {};
 
-    //The configuration for this object; values can either be retrieved from the database, or hard-coded. use the second index in each array to toggle that option.
-    //Values can also be functions! You can programatically control what values get used. The argument sent in is the object about to be displayed
-    //The third index defines whether or not the value is safe to use while retreiving names of values from the database.
-    //When writing outside the scope of the object, the context for grabbing values within the config object is "this.config";
+    /*The configuration for this object:
+    When writing outside the scope of this object, the context for grabbing values within the config object is "this.config"
 
-    /*example function:
+    configuration options:
+        val: the target value. This can either be a variable name for the database, a raw value or even a function!
+        hardCoded: (bool) specifies whether to use this value as-is, or as a key in the queried data.
+        dbFriendly: (bool) this can be toggled on if this value is a function & safe for generating queries.
+        labelName: (x and y only) These are the nicknames for x and y. They get displayed on the chart as alternatives to the full name.
     
-    r:[obj=>{
+    example function:
+    r:{val:obj=>{
         console.log(obj[this.config.label[0]()]);
         return 15;
-    },true]*/
+    },
+    hardCoded:true
+    }*/
     if(!config){
         this.config = {
-            label:["machine"],
-            x:["total_pes_active"],
-            y:["model_throughput"],
-            r:[()=>{
+            label:{val:"machine"},
+            x:{val:"total_pes_active",label:"Total PEs"},
+            y:{val:"model_throughput",label:"SYPD"},
+            r:{val:()=>{
                 if(bubbleRadius >= 50 || bubbleRadius <15)
                     bubbleGrow = !bubbleGrow;
                 return bubbleRadius = bubbleGrow?bubbleRadius+5:bubbleRadius-5;
-            },true]
+                },
+                hardCoded:true
+            }
         }
     }
+
+    this.chart = new Chart(id,{
+        type:"bubble",
+        data: { datasets:[] },
+        options: {
+            scales: {
+                yAxes:[{
+                    scaleLabel:{
+                        display:true,
+                        labelString:this.config.x.label?this.config.x.label:
+                        typof(this.config.x.val) == "function"?this.config.x.val():
+                        this.config.x.val
+                    }}],
+                xAxes:[{
+                    scaleLabel:{
+                        display:true,
+                        labelString:this.config.y.label?this.config.y.label:
+                        typof(this.config.y.val) == "function"?this.config.y.val():
+                        this.config.y.val
+                    }}]
+            }
+        }
+    });
 
     this.click = evt=>{
         let evtVars = this.chart.getElementAtEvent(evt);
@@ -58,10 +83,10 @@ var bChartObj = function(id,config){
         //Make the list of items needed from the database:
         let dbValueStr = "expid";
         Object.keys(this.config).forEach(key=>{
-            if(typeof(this.config[key][0]) == "function" && this.config[key][2])
-                dbValueStr+=","+this.config[key][0]();
-            else if(!this.config[key][1])
-                dbValueStr+=","+this.config[key][0];
+            if(typeof(this.config[key].val) == "function" && this.config[key].dbFriendly)
+                dbValueStr+=","+this.config[key].val();
+            else if(!this.config[key].hardCoded)
+                dbValueStr+=","+this.config[key].val;
         });
         $.get(detectRootUrl()+"ajax/specificSearch/"+query+"/"+dbValueStr,data=>{
             resultData = JSON.parse(data);
@@ -70,9 +95,9 @@ var bChartObj = function(id,config){
                 //Initialize config variables:
                 let configData = {};
                 Object.keys(this.config).forEach(key=>{
-                    if(typeof(this.config[key][0]) == "function")
-                        configData[key] = this.config[key][1]?this.config[key][0](obj):obj[this.config[key][0](obj)];
-                    else configData[key] = this.config[key][1]?this.config[key][0]:obj[this.config[key][0]];
+                    if(typeof(this.config[key].val) == "function")
+                        configData[key] = this.config[key].hardCoded?this.config[key].val(obj):obj[this.config[key].val(obj)];
+                    else configData[key] = this.config[key].hardCoded?this.config[key].val:obj[this.config[key].val];
                 });
 
                 if(!this.labelMap[configData.label]){

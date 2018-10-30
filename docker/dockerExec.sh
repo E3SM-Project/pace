@@ -3,9 +3,8 @@
 #It also creates a .pacerc file if one doesn't exist.
 # set -x
 cd docker;
-echo $(pwd)
 dockerpath=/pace/docker
-if [ ! -f docker/rc/.pacerc ];
+if [ ! -f $dockerpath/rc/.pacerc ];
     then if (($#)); then
         argStr=""
         while (($#)); do

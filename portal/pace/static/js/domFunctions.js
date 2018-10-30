@@ -113,6 +113,13 @@ quickSearchBar.onkeyup = evt=>{
     if(quickSearchBar.value!="")
         $.get(detectRootUrl()+"ajax/similarDistinct/"+quickSearchPredict.inputWords[quickSearchPredict.wordIndex],data=>quickSearchPredict.refreshKeywords(JSON.parse(data)));
 }
+quickSearchBar.onkeyup = evt=>{
+    quickSearchPredict.keyupListener(evt);
+	if(quickSearchBar.value!="" && quickSearchPredict.enabled)
+	if(!/:/.test(quickSearchPredict.inputWords[quickSearchPredict.wordIndex]))
+        $.get(detectRootUrl()+"ajax/similarDistinct/"+quickSearchPredict.inputWords[quickSearchPredict.wordIndex],data=>quickSearchPredict.refreshKeywords(JSON.parse(data)));
+	else quickSearchPredict.pTextMenu.style.display="none";
+}
 quickSearchBar.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("qsb"),150);
 
 var chartSettings = {

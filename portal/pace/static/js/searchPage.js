@@ -37,9 +37,11 @@ homeSearchBar.onkeydown = evt=>{
 	homeSearchPredict.keydownListener(evt);
 };
 homeSearchBar.onkeyup = evt=>{
-  homeSearchPredict.keyupListener(evt);
-  if(homeSearchBar.value!="" && homeSearchPredict.enabled)
-      $.get(detectRootUrl()+"ajax/similarDistinct/"+homeSearchPredict.inputWords[homeSearchPredict.wordIndex],data=>homeSearchPredict.refreshKeywords(JSON.parse(data)));
+    homeSearchPredict.keyupListener(evt);
+	if(homeSearchBar.value!="" && homeSearchPredict.enabled)
+	if(!/:/.test(homeSearchPredict.inputWords[homeSearchPredict.wordIndex]))
+        $.get(detectRootUrl()+"ajax/similarDistinct/"+homeSearchPredict.inputWords[homeSearchPredict.wordIndex],data=>homeSearchPredict.refreshKeywords(JSON.parse(data)));
+	else homeSearchPredict.pTextMenu.style.display="none";
 }
 homeSearchBar.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("hsb"),150);
 
