@@ -15,15 +15,6 @@ import types
 import modelTiming as mt
 import io
 
-# PACE Report directory 
-PACE_LOG_DIR ='/pace/assets/static/logs/'
-
-# Raw data directory
-EXP_DIR='/pace/assets/static/data/'
-
-# upload directory
-tmp_updir='/pace/prod/portal/upload/'
-
 def parseData():
 	# start main
 	old_stdout = sys.stdout
@@ -33,9 +24,9 @@ def parseData():
 	sys.stdout = log_file
 	print ("* * * * * * * * * * * * * * PACE Report * * * * * * * * * * * * * *")
 	try:	
-		fpath=tmp_updir
+		fpath=UPLOAD_FOLDER
 		# Extract aggregated zip files
-		zip_ref=zipfile.ZipFile(tmp_updir+'experiments.zip','r')
+		zip_ref=zipfile.ZipFile(UPLOAD_FOLDER+'/experiments.zip','r')
 		zip_ref.extractall(fpath)
 		zip_ref.close
 	
@@ -82,13 +73,13 @@ def parseData():
 						gitdescribefile.append(os.path.join(path, name))
 	except IOError as e:
 		print ('[ERROR]: %s' % e.strerror)
-		removeFolder(tmp_updir)
+		removeFolder(UPLOAD_FOLDER)
 		sys.stdout = old_stdout
 		log_file.close()
 		return ('ERROR')
 	except OSError as e:
 		print ('[ERROR]: %s' % e.strerror)
-		removeFolder(tmp_updir)
+		removeFolder(UPLOAD_FOLDER)
 		sys.stdout = old_stdout
 		log_file.close()
 		return ('ERROR')
@@ -104,7 +95,7 @@ def parseData():
 		print (' ')
 	
 	# remove uploaded experiments
-	removeFolder(tmp_updir)
+	removeFolder(UPLOAD_FOLDER)
 	sys.stdout = old_stdout
 	log_file.close()
 	if False in isSuccess:
@@ -219,7 +210,7 @@ def parseReadme(readmefilename):
 		fileIn.close()		
 		return False
 	except :
-		print ('    ERROR: Something is worng with this file')
+		print ('    ERROR: Something is worng with %s' %convertPathtofile(readmefilename))
 		fileIn.close()
 		return False
 	fileIn.close()	
@@ -374,7 +365,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 		parseFile.close()
 		return (False) # skips this experiment
 	except :
-		print ('    ERROR: Something is worng with this file')
+		print ('    ERROR: Something is worng with %s' %convertPathtofile(filename))
 		parseFile.close()
 		return (False) # skips this experiment	
 
@@ -499,15 +490,15 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 		parseFile.close()
 		return (False) # skips this experiment
 	except :
-		print ('    ERROR: Something is worng with this file')
+		print ('    ERROR: Something is worng with %s' %convertPathtofile(filename))
 		db.session.rollback()
 		parseFile.close()
 		return (False) # skips this experiment	
 	
 def removeFolder(removeroot):
 	try:
-		shutil.rmtree(os.path.join(removeroot,'experiments'))
-		os.remove(os.path.join(removeroot,'experiments.zip'))
+		shutil.rmtree(os.path.join(removeroot,'/experiments'))
+		os.remove(os.path.join(removeroot,'/experiments.zip'))
 	except OSError as e:
 		print ("    Error: %s - %s." % (e.filename, e.strerror))
 	
@@ -575,7 +566,7 @@ def insertTiming(mtFile,expID,db):
 		parseFile.close()
 		return (False) # skips this experiment
 	except :
-		print ('    ERROR: Something is worng with this file')
+		print ('    ERROR: Something is worng with %s' %convertPathtofile(mtFile))
 		db.session.rollback()
 		parseFile.close()
 		return (False) # skips this experiment	

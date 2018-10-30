@@ -18,8 +18,7 @@ import modelTiming as mt
 #modelTiming database information:
 from pace_common import *
 
-UPLOAD_FOLDER='/pace/prod/portal/upload'
-#UPLOAD_FOLDER='/pace/dev1/portal/upload'
+
 ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
 
 # Uploading file
@@ -69,8 +68,8 @@ def fileparse():
 	if request.method == 'POST':
 		return(parse.parseData())
 
-@app.route('/downloadmsglog', methods=['POST'])
-def downloadmsglog():
+@app.route('/downloadlog', methods=['POST'])
+def downloadlog():
 	from flask import send_file
 	if request.method == 'POST':
 		msgfile = request.form['filename']
