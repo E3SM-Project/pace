@@ -19,7 +19,7 @@ import io
 PACE_LOG_DIR ='/pace/assets/static/logs/'
 
 # Raw data directory
-newroot='/pace/assets/static/data/'
+EXP_DIR='/pace/assets/static/data/'
 
 # upload directory
 tmp_updir='/pace/prod/portal/upload/'
@@ -521,8 +521,8 @@ def zipFolder(exptag,exptaguser,exptagid,fpath):
 			for name in subdirs:
 				if name.startswith('CaseDocs.'+str(exptag)):
 					expname = 'exp-'+exptaguser+'-'+str(exptagid)
-					shutil.make_archive(os.path.join(newroot,expname),'zip',path)
-					isSuccess=uploadMinio(newroot,expname)
+					shutil.make_archive(os.path.join(EXP_DIR,expname),'zip',path)
+					isSuccess=uploadMinio(EXP_DIR,expname)
 					if isSuccess == False:
 						return False
 	except IOError as e:
@@ -530,14 +530,14 @@ def zipFolder(exptag,exptaguser,exptagid,fpath):
 		return False	
 	return True
 
-def uploadMinio(newroot,expname):
+def uploadMinio(EXP_DIR,expname):
 	from minio import Minio
 	from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
 	myAkey,mySkey, myMiniourl = getMiniokey()
 	# Initialize minioClient with an endpoint and access/secret keys.
 	minioClient = Minio(myMiniourl,access_key=myAkey,secret_key=mySkey,secure=True)
 	try:
-		minioClient.fput_object('e3sm', expname+'.zip', os.path.join(newroot,expname)+'.zip')
+		minioClient.fput_object('e3sm', expname+'.zip', os.path.join(EXP_DIR,expname)+'.zip')
 	except ResponseError as e:     
 		print('    ERROR: Failed to upload to file server %s' %e)
 		return (False)
