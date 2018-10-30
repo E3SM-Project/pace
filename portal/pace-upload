@@ -95,7 +95,7 @@ def uploadExp(uploadfile):
 				print(" ")
 				print bcolors.DARKGREY + ('Downloading Report log...') + bcolors.ENDC
 				try:
-					downloadMsglog(flaglist[1])
+					downloadlog(flaglist[1])
 					print bcolors.OKGREEN + ('Download Success') + bcolors.ENDC
 					print bcolors.BOLD + ('Report saved as: \'' + str(flaglist[1])+'\'') + bcolors.ENDC
 				except IOError as e:
@@ -240,8 +240,8 @@ def userAuth():
 	else:
 		exit()
 
-def downloadMsglog(filename):
-	downloadurl = baseurl+str("downloadmsglog")
+def downloadlog(filename):
+	downloadurl = baseurl+str("downloadlog")
 	data = {'filename':filename}
 	req = requests.post(downloadurl,data=data)
 	f = open(filename,'w')

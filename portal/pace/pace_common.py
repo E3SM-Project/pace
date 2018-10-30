@@ -34,6 +34,14 @@ PACE_USER = 'yourusername'
 LAST_MODIFIED_VER = "$Rev$"
 PACE_VER = ''
 
+# PACE Report directory 
+PACE_LOG_DIR ='/pace/assets/static/logs/'
+
+# Raw data directory
+EXP_DIR='/pace/assets/static/data/'
+
+# upload directory
+UPLOAD_FOLDER = '/pace/prod/portal/upload'
 ### Helper functions etc... ####
 # Colors for console text
 class bcolors:

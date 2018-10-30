@@ -25,7 +25,7 @@ app.config['SQLALCHEMY_POOL_SIZE']=20
 app.config['SQLALCHEMY_MAX_OVERFLOW']=20
 db = SQLAlchemy(app)
 
-UPLOAD_FOLDER = '/pace/prod/portal/upload'
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Limit payload to 16 GB
 app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024 * 16
