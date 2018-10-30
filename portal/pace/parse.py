@@ -497,8 +497,8 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 	
 def removeFolder(removeroot):
 	try:
-		shutil.rmtree(os.path.join(removeroot,'/experiments'))
-		os.remove(os.path.join(removeroot,'/experiments.zip'))
+		shutil.rmtree(os.path.join(removeroot,'experiments'))
+		os.remove(os.path.join(removeroot,'experiments.zip'))
 	except OSError as e:
 		print ("    Error: %s - %s." % (e.filename, e.strerror))
 	
