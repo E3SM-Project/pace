@@ -5,6 +5,7 @@
 <link rel="stylesheet" type="text/css" href="/static/css/modelTiming.css" />
 <!--Search bar CSS-->
 <link rel="stylesheet" type="text/css" href="/static/css/quickSearch.css" />
+<script src="/static/js/predictiveSearch.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -14,47 +15,47 @@
     <div id="mtMain">
         <!--This is the custom highlighter for the model timing graph-->
         <span id="nodeId"></span>
-        <p style="text-align:right">
-            
-        </p>
         <table id="mtOptions">
             <tbody>
             <tr>
             <td>
+                <select id="expSelect" onchange="switchExperiment()"></select>
+                <select id="threadSelect"></select>
                 <select id="valueName" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )"></select>
                 <select id="mode" class="unused" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )">
                     <option value="sum" selected>Sum</option>
                     <option value="avg">Average</option>
-                </select><br>
-                <select id="threadSelect"></select>
-            </td>
-            <td class="checkboxRow">
-                <input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked/>Stacked bars<br>
-                <input id="dmCheck" type="checkbox" onclick="dmObj.toggle(this.checked)"/>Dark Mode
+                </select>
             </td>
             <td>
                 <button id="compareButton" onclick="compDivObj.toggle()">Compare</button>
-                <button onclick="toggleDlLock()">Lock/Unlock Process list</button>
             </td>
             <td>
-                <span id="quickSearchContainer">
-                <input type="text" id="quickSearchBar" placeholder="Quick Search"/>
-                </span>
+                <button onclick='advContainer.style.display=advContainer.style.display == "none"?"inline-block":"none"'>Advanced</button>
+                <div id="advContainer" style="display:none">
+                    <div class="checkboxRow" style="display:inline-block">
+                        <input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked/>Stacked bars<br>
+                        <input id="dmCheck" type="checkbox" onclick="dmObj.toggle(this.checked)"/>Dark Mode
+                    </div>
+                    <span id="quickSearchContainer">
+                    <input type="text" id="quickSearchBar" placeholder="Quick Search" class="form-control"/>
+                    </span>
+                </div>
             </td>
+            <td>
+            </td>
+            <td><span id="metaInfoContainer"><span id="metaInfoTxt" style="margin:20px"></span></span></td>
             </tr>
             </tbody>
         </table>
-        <p style="text-align:center;"><span id="metaInfoContainer"><span id="metaInfoTxt" style="margin:20px"></span></span></p>
+        <div id="zoomDiv"><button onclick="resizeChartVal=(resizeChartVal <=1?1:resizeChartVal-25);resizeChart(resizeChartVal)">-</button><button onclick="resizeChartVal+=25;resizeChart(resizeChartVal)">+</button></div>
         <div id="dataInfo"><div id="chartResizeContainer"><canvas id="chartTag"></canvas></div></div>
-        <div style="position:absolute;width: 2em;z-index:3;left:0;background-color:rgb(230,230,230)" id="dlDisplayButton" onclick="dlSlide()"></div>
+        <div id="dlDisplayButton" onclick="dlSlide()"></div>
         <div id="dataList">
-            <select id="expSelect" onchange="switchExperiment()"></select>
-            <br>
             <button id="summaryButton">Summary</button>
-            <div id="listContent"></div>
+            <div style= "margin-left: -6px;" id="listContent"></div>
         </div>
         <button id="backButton"><-Back</button>
-        <div id="zoomDiv"><button onclick="resizeChartVal=(resizeChartVal <=1?1:resizeChartVal-25);resizeChart(resizeChartVal)">-</button><button onclick="resizeChartVal+=25;resizeChart(resizeChartVal)">+</button></div>
     </div>
     <div id="compareSelectDiv">
     <h2>Select the threads you wish to compare.</h2><br>
@@ -68,73 +69,15 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
     <script src="/static/js/quickSearch.js"></script>
+    <script src="/static/js/colorTools.js"></script>
 	<script src="/static/js/domFunctions.js"></script>
 	<script src="/static/js/modelTiming.js"></script>
 	<script src="/static/js/paceLoadScreen.js"></script>
 	<script>
-    //Fire up the summary:
-    /*$(document).ajaxError(()=>{
-        if(expGetFunc.length > 0){
-            alert("Could not find this experiment");
-            //location.replace("/exps");
-        }
-    });*/
-    //searchBar.parentElement.parentElement.style.display="";
-	$(document).ready(()=>{
-        var expData = undefined;
-        var compare = undefined;
-        var threadList = undefined;
-        var onMtPage = true;
-        {{exp|safe}}
-        dataInfo.style.height = (window.innerHeight*.8)+"px";
-        //safari for IOS is kindof weird with the background colors for dataList, so here's something to change it:
-        dataList.style.backgroundColor="white";
-        //This time, google chrome is the special snowflake; rendering width and other alignments differ from every other browser:
-        if(isChrome){
-            dataInfo.style.left = "22%";
-            dataInfo.style.width= "77%";
-            backButton.style.left = "22%";
-        }
-        quickSearchContainer.children[0].style.width="15em";
-        quickSearchContainer.getElementsByClassName("pTextMenu")[0].style.width="15em";
-
-        //Change the footer to fixed due to weird happenings on mobile:
-        document.getElementsByClassName("footer")[0].style.position="fixed";
-        document.getElementsByClassName("footer")[0].style.zIndex = "-1";
-        dmObj.toggle(dmObj.checkCookies());
-        dmCheck.checked = dmObj.checkCookies();
-		animate();
-        if(expData!=undefined){
-            for(let i=0;i<expData.length;i++){
-                if(i<expData.length-1)
-                    getExperiment(expData[i][0],expData[i][1],false);
-                else{
-                    getExperiment(expData[i][0],expData[i][1],()=>{
-                    expDownloadDefault();
-                    if(threadList){
-                        threadList.forEach((element,index)=>{
-                            expList[index].currThread = element*1;
-                        });
-                    }
-                    if(threadList && !compare && threadList.length == expData.length){
-                        threadSelect.selectedIndex = threadList[threadList.length-1]*1;
-                        threadSelect.onchange();
-                    }
-                    if(compare){
-                        let resultList = [];
-                        expList.forEach( (element,index)=>{
-                            resultList.push([element,( (threadList!=undefined && threadList[index]!=undefined) ?threadList[index]*1:0)]);
-                        });
-                        comparisonMode.new(resultList);
-                        comparisonMode.start();
-                    }
-                    dlDisplayButton.style.height = dataList.style.height;
-                });
-                }
-            }
-        }
-		else getExperiment(-1,"0000");
-        window.onresize();
-	});
+    //Make all buttons bootstrap:
+    $("button").addClass("btn btn-default");
+    $("select").addClass("custom-select");
+    {{exp|safe}}
     </script>
+    <script src="/static/js/mtStart.js"></script>
 {% endblock %}

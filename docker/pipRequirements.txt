@@ -3,3 +3,4 @@ sqlalchemy
 matplotlib
 flask_sqlalchemy
 pymysql
+minio

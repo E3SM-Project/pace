@@ -14,7 +14,6 @@
   <link rel="stylesheet" type="text/css" href="/static/css/predictiveText.css" />
 
   <script src="/static/js/detectRootUrl.js"></script>
-  <script src="/static/js/predictiveSearch.js"></script>
   <script></script>
   {% block topscripts %}
   {% endblock %}
@@ -129,7 +128,7 @@
 
     //predictive search functionality:
     //This search bar has been depricated, but it's here if you need to enable it:
-    searchPredict = new predictiveSearch.element(searchBar,"sb");
+    /*searchPredict = new predictiveSearch.element(searchBar,"sb");
     searchBar.onkeydown = evt=>{
     if(evt.key == "Enter" && searchPredict.allowEnter) searchEvt(evt);;
       searchPredict.keydownListener(evt);
@@ -140,7 +139,7 @@
           $.get(detectRootUrl()+"ajax/similarDistinct/"+searchPredict.inputWords[searchPredict.wordIndex],data=>searchPredict.refreshKeywords(JSON.parse(data)));
     }
     searchBar.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("sb"),150);
-    searchPredict.pTextMenu.style.zIndex = 1001;
+    searchPredict.pTextMenu.style.zIndex = 1001;*/
     </script>
   <footer class="footer">
     <div class="container">

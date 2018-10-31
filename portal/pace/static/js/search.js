@@ -6,13 +6,14 @@ var searchObj = {
     rankData:[],
     lastRankIndex:[0,0],
     afterFunctions:[],
-    search:function(searchStr,limit = this.limit,afterFunc,matchAll = false,orderBy,ascDsc=false){
-        console.log("%cHELLOOO!!","font-size:125%"); //This is VERY important part of the function.
+    search:function(searchStr,limit = this.limit,afterFunc,orderBy,ascDsc=false){
+        console.log("%cHELLOOO!!","font-size:175%"); //This is VERY important part of the function.
         searchBody.innerHTML="";
         if(afterFunc)
             this.afterFunctions.push(afterFunc);
         //compile short names before searching:
-        if(matchAll){
+        //This is here until shortcuts are implemented server-side
+        /*if(/:/.test(searchStr)){
             let termArray = searchStr.split(" ");
             let elementList = [];
             termArray.forEach(element=>{
@@ -33,8 +34,8 @@ var searchObj = {
             elementList.forEach( (element,index)=>{
                 searchStr+=(index>0?" ":"")+element.join(":");
             });
-        }
-        $.get(detectRootUrl()+"ajax/search/"+searchStr.replace(" ","+")+"/"+limit+(matchAll?"/matchall":"/false")+(orderBy?"/"+orderBy+"/"+(ascDsc?"asc":"desc"):""),(data)=>{
+        }*/
+        $.get(detectRootUrl()+"ajax/search/"+searchStr.replace(" ","+")+"/"+limit+(orderBy?"/"+orderBy+"/"+(ascDsc?"asc":"desc"):""),(data)=>{
         let resultData = JSON.parse(data)
         this.searchData = resultData[0];
         this.rankData = resultData[1];
@@ -68,12 +69,12 @@ var searchObj = {
                 if(val[3]!==false){
                     switch(val[1]){
                         case "expid":
-                        searchResult.innerHTML+="<td onclick='searchObj.expDetails("+element.expid+")'><a href='"+detectRootUrl()+"exp-details/"+element.expid+"' target='_blank' title='Click here for more details.'>"+element.expid+"</a></td>";
+                        searchResult.innerHTML+="<td onclick='searchObj.expDetails("+element.expid+")'><a href='"+detectRootUrl()+"exp-details/"+element.expid+"' title='Click here for more details.'>"+element.expid+"</a></td>";
                         break;
                         case "compset":
                         case "user":
                         case "machine":
-                        searchResult.innerHTML+="<td onclick='searchObj.expDetails("+element.expid+")'><a href='"+detectRootUrl()+"advsearch/"+val[1]+":"+element[val[1]]+"'>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</a></td>";
+                        searchResult.innerHTML+="<td onclick='if(arguments[0].target == this)searchObj.expDetails("+element.expid+")'><a class='searchLink' href='"+detectRootUrl()+"search/"+val[1]+":"+element[val[1]]+"'>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</a></td>";
                         break;
                         default:
                         searchResult.innerHTML+="<td onclick='searchObj.expDetails("+element.expid+")'>"+element[val[1]].substr(0,20)+(element[val[1]].length > 20?"...":"")+"</td>";
@@ -202,7 +203,7 @@ Index definitions:
     	["ID","expid"],
     	["User","user"],
     	["Machine","machine"],
-    	["Compset","compset"],
+    	["Compset","compset","comp"],
     	["Res","res"],
     	["Case","case"],
     	["Total PEs","total_pes_active","pes"],

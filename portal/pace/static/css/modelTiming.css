@@ -8,16 +8,20 @@
     background-repeat: no-repeat;
     background-size: auto;
     overflow-y: scroll;
+    -webkit-overflow-scrolling:touch;
 }
 #dataList{
     overflow: scroll;
     -webkit-overflow-scrolling:touch;
     width:18em;
     position: absolute;
-    resize:none;
+    resize:horizontal;
     left:2em;
     background-color:white;
     z-index: 2;
+}
+#dataList ul{
+    margin-left:-32px;
 }
 ul{
     list-style-type: none;
@@ -28,9 +32,15 @@ ul{
     z-index: 0;
 }
 #zoomDiv{
-    position: absolute;
-    left:96%;
+    float:right;
+    margin-top:-1.8em;
 }
+#zoomDiv button{
+    height:1.7em;
+    margin-right:5px;
+    padding-top:0px;
+}
+
 #mtMain{
     font-family: monospace;
     margin-bottom:70%
@@ -81,4 +91,23 @@ ul{
 
 #quickSearchContainer{
     text-align: left;
+}
+
+#dlDisplayButton{
+    position:absolute;
+    width: 2em;
+    z-index:3;
+    left:0;
+    background-color:rgb(230,230,230)
+}
+
+#mtMain button,#mtMain .form-control,#mtMain .custom-select{
+    font-size:1em;
+}
+#mtMain .custom-select{
+    width:unset;
+}
+
+.container{
+    max-width: inherit;
 }

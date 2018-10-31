@@ -15,6 +15,9 @@ import types
 import modelTiming as mt
 import io
 
+from minio import Minio
+from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
+
 def parseData():
 	# start main
 	old_stdout = sys.stdout
@@ -526,11 +529,16 @@ def uploadMinio(EXP_DIR,expname):
 	from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
 	myAkey,mySkey, myMiniourl = getMiniokey()
 	# Initialize minioClient with an endpoint and access/secret keys.
-	minioClient = Minio(myMiniourl,access_key=myAkey,secret_key=mySkey,secure=True)
+	minioSecure=True
+	if os.getenv("PACE_DOCKER_INSTANCE"):
+		minioSecure=False
+	minioClient = Minio(myMiniourl,access_key=myAkey,secret_key=mySkey,secure=minioSecure)
 	try:
+		if not minioClient.bucket_exists("e3sm"):
+			minioClient.make_bucket("e3sm")
 		minioClient.fput_object('e3sm', expname+'.zip', os.path.join(EXP_DIR,expname)+'.zip')
-	except ResponseError as e:     
-		print('    ERROR: Failed to upload to file server %s' %e)
+	except ResponseError as err:     
+		print('    ERROR: Failed to upload to file server %s' %err)
 		return (False)
 	return True
 

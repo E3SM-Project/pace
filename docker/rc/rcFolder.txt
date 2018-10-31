@@ -1,0 +1,3 @@
+This directory is for your .pacerc file. Create one yourself, or generate 
+one before running the container. You can bind-mount this folder with the container
+so you can keep using an existing rc file.

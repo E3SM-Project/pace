@@ -66,32 +66,38 @@ def getPACEVer(lastVer):
 	PACE_VER = 'r' + lastVer.strip('$').split(':')[1].strip()
 	return PACE_VER
 
-def getMiniokey():
+#Grab the appropriate Pace RC file. It will be different depending on who (or what) is running this script:
+def detectPaceRc():
 	configFile = None
+	locations=["prod","dev1","dev2","dev3"]
 	if os.path.isfile('.pacerc'):
 		configFile = '.pacerc'
-	elif os.path.isfile(os.environ['HOME'] + '/.pacerc'):
-		configFile = os.environ['HOME'] + '/.pacerc'
-	elif os.path.isfile('/pace/prod/.pacerc') and os.access("/pace/prod/.pacerc", os.R_OK):
-		configFile = '/pace/prod/.pacerc'
-	elif os.path.isfile('/pace/dev1/.pacerc') and os.access("/pace/dev1/.pacerc", os.R_OK):
-		configFile = '/pace/dev1/.pacerc'
-	elif os.path.isfile('/pace/dev2/.pacerc') and os.access("/pace/dev2/.pacerc", os.R_OK):
-		configFile = '/pace/dev2/.pacerc'
-	elif os.path.isfile('/pace/dev3/.pacerc') and os.access("/pace/dev3/.pacerc", os.R_OK):
-		configFile = '/pace/dev3/.pacerc'
+	elif os.getenv("PACE_DOCKER_INSTANCE"):
+		configFile="/pace/docker/rc/.pacerc"
+	else:
+		for item in locations:
+			if os.path.isfile('/pace/'+item+'/.pacerc') and os.access('/pace/'+item+'/.pacerc', os.R_OK):
+				configFile = '/pace/'+item+"/.pacerc"
+				break
+	return configFile
+
+def getMiniokey():
+	configFile = detectPaceRc()
+	myAkey = None
+	mySkey = None
+	myMiniourl = None
 
 	filePerms = oct(os.stat(configFile)[ST_MODE])
 	if filePerms != '0100600':
 		print bcolors.WARNING + "Config file permissions should be set to read, write for owner only" 
 		print "Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC
-		# print filePerms
-
+	# print filePerms
 	parser = RawConfigParser()
 	parser.read(configFile)
 	myAkey = parser.get('MINIO','minio_access_key')
 	mySkey = parser.get('MINIO','minio_secret_key')
 	myMiniourl = parser.get('MINIO','minio_url')
+
 	return myAkey, mySkey, myMiniourl
 
 def readConfigFile(configFile):
@@ -116,24 +122,9 @@ dburl = ""
 
 def initDatabase():	
 	global dburl
-	configFile = None
-	if os.path.isfile('.pacerc'):
-		configFile = '.pacerc'
-	elif os.path.isfile(os.environ['HOME'] + '/.pacerc'):
-		configFile = os.environ['HOME'] + '/.pacerc'
-	elif os.path.isfile('/pace/prod/.pacerc') and os.access("/pace/prod/.pacerc", os.R_OK):
-		configFile = '/pace/prod/.pacerc'
-	elif os.path.isfile('/pace/dev1/.pacerc') and os.access("/pace/dev1/.pacerc", os.R_OK):
-		configFile = '/pace/dev1/.pacerc'
-	elif os.path.isfile('/pace/dev2/.pacerc') and os.access("/pace/dev2/.pacerc", os.R_OK):
-		configFile = '/pace/dev2/.pacerc'
-	elif os.path.isfile('/pace/dev3/.pacerc') and os.access("/pace/dev3/.pacerc", os.R_OK):
-		configFile = '/pace/dev3/.pacerc'
-
-	if not os.getenv("PACE_DOCKER_DB_INFO") == None:
-		print "Detected Docker instance! Getting config from environment variables..."
-		myuser,mypwd,mydb,myhost = os.getenv("PACE_DOCKER_DB_INFO").split(",")
-	elif configFile:
+	configFile = detectPaceRc()
+	
+	if configFile:
 		print "Reading configuration from " + configFile 
 		myuser,mypwd,mydb,myhost = readConfigFile(configFile)
 	else:
@@ -149,4 +140,3 @@ def initDatabase():
 	# Ref: https://docs.sqlalchemy.org/en/latest/core/pooling.html
 	
 	return dburl
-

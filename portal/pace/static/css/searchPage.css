@@ -1,0 +1,53 @@
+#homeSearchDiv{
+    font-size:1.5em;
+    text-align:left;
+    height:60px;
+    width:35%;
+    margin-left:5%;
+    display:inline-block;
+    margin-right:5px;
+    margin-top:2px;
+}
+#catReference{
+    text-align:left;
+    display:none;
+    border:1px solid lightgray;
+    border-radius:10px;
+    font-family:monospace;
+    position:absolute;
+    background-color:white;
+    margin-left:-50px;
+}
+.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+    background-color:#C9D7E8;
+}
+#homePageContent tbody tr td{
+    display:inline-block;
+}
+#homePageContent{
+    width:50em;
+    margin-left:25%;
+}
+
+.homePageBottomHalf td{
+    margin-right:2em;
+}
+
+#advSearchContainer{
+    margin-left:8em;
+}
+
+@media screen and (max-width: 1060px){
+    #homePageContent{
+        width:95%;
+        margin-left:5%;
+    }
+    #advSearchContainer{
+    margin-left:1%;
+    }
+}
+
+#searchCompareBtn,#searchViewBtn{
+    float:right;
+    margin-right:5px;
+}
