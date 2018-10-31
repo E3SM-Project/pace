@@ -11,14 +11,14 @@ import json
 import urllib
 from sqlalchemy.orm import sessionmaker
 from __init__ import db
+import os, shutil, distutils
 
 #Model Timing Library:
 import modelTiming as mt
 #modelTiming database information:
 from pace_common import *
 
-UPLOAD_FOLDER='/pace/prod/portal/upload'
-#UPLOAD_FOLDER='/pace/dev1/portal/upload'
+
 ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
 
 # Uploading file
@@ -49,12 +49,46 @@ def upload_file():
 	if request.method == 'POST':
 		file = request.files['file']
 		if file and allowed_file(file.filename):
+			try:
+				if os.path.isdir(os.path.join(UPLOAD_FOLDER,'experiments')):
+					shutil.rmtree(os.path.join(UPLOAD_FOLDER,'experiments'))
+				if os.path.exists(os.path.join(UPLOAD_FOLDER,'experiments.zip')):
+					os.remove(os.path.join(UPLOAD_FOLDER,'experiments.zip'))
+			except OSError as e:
+				print ("Error: %s - %s." % (e.filename, e.strerror))		
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(UPLOAD_FOLDER, filename))
-			return(parse.parseData())
+			return('complete')
 		else:
 			return ('Error Uploading file, Try again')
 	return render_template('upload.html')
+
+@app.route('/fileparse', methods=['GET','POST'])
+def fileparse():
+	if request.method == 'POST':
+		return(parse.parseData())
+
+@app.route('/downloadlog', methods=['POST'])
+def downloadlog():
+	from flask import send_file
+	if request.method == 'POST':
+		msgfile = request.form['filename']
+		filelink = ('/pace/assets/static/logs/'+str(msgfile))
+		try:
+			return send_file(filelink,attachment_filename='message.log')
+		except Exception as e:
+			return str(e)
+
+@app.route("/userauth", methods=['GET','POST'])
+def userauth():
+	if request.method == 'POST':
+		username = request.form['user']
+		searchuser = Authusers.query.filter_by(user=username).first()
+		db.session.close()
+		if searchuser is None:
+			return ("invaliduser")
+		else:
+			return ("validuser")
 
 @app.route("/uploadlogin", methods=['GET','POST'])
 def uploadlogin():

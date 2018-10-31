@@ -58,3 +58,7 @@ class ModelTiming(db.Model):
 	expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('timingprofile.expid'), nullable=False, index=True)
 	jsonVal = db.Column(MEDIUMTEXT, nullable=False)
 	rank = db.Column(db.String(10), nullable=False)
+
+class Authusers(db.Model):
+	id = db.Column(INTEGER(unsigned=True), primary_key=True,autoincrement=True)
+	user = db.Column(db.String(50))
