@@ -125,6 +125,8 @@ def render(runtimeIn,opt_dict = None):
         node.fullstop = opt_dict.get('fullstop')[ii]
         comp_data.append(node)
         max_pe = np.amax([max_pe,node.root_task_sum])
+    if max_pe == 0:
+        max_pe =1
     ## Build figure
     fig = plt.figure(figsize=[16,10])
     ax  = fig.add_subplot(111)
