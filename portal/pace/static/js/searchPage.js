@@ -32,7 +32,10 @@ homeSearchPredict = new predictiveSearch.element(homeSearchBar,"hsb");
 homeSearchBar.onkeydown = evt=>{
 	if(evt.key == "Enter" && homeSearchPredict.allowEnter){
 		searchObj.limit = 10;
-		if(homeSearchBar.value!='') searchAndCheck(homeSearchBar.value);
+		if(homeSearchBar.value!=''){
+			searchAndCheck(homeSearchBar.value);
+			searchQuery = homeSearchBar.value;
+		}
 	}
 	homeSearchPredict.keydownListener(evt);
 };
