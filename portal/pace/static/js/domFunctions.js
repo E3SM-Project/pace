@@ -82,7 +82,7 @@ summaryButton.onclick=function(){
     resultChart.options.title.text=(comparisonMode.on?comparisonMode.exp.name:currExp.name +": "+currExp.rank+ " (Thread "+currExp.currThread+")");
     okToClick = false;
     setTimeout(()=>okToClick = true,10);
-    window.location.hash="summary";
+    history.replaceState("","",window.location.href.split("#")[0]+(comparisonMode.on && !/compare/.test(window.location.href)?"/compare/":"")+"#summary");
 }
 
 window.onhashchange = function(event = undefined){

@@ -116,10 +116,12 @@ function expDownloadDefault(){
         idStr+=(exp!=expList[0]?",":"")+exp.name;
         rankStr+=(exp!=expList[0]?",":"")+exp.rank;
     });
-    history.pushState("","",newUrl+idStr+"/"+rankStr+window.location.hash);
-    if(window.location.hash==""  /*|| expList.length > 1*/)
+    history.pushState("","",newUrl+idStr+"/"+rankStr+(compare?"/compare/":"")+window.location.hash);
+    if(window.location.hash=="" && !compare /*|| expList.length > 1*/)
         summaryButton.click();
-    else window.onhashchange();
+    else
+        //There's some lag when switching from regular mode to comparison mode when directly visiting a compare link, so this is here to let the chart render, *then change the hash.
+        setTimeout(window.onhashchange,compare?10:0);
     expSelect.selectedIndex = expList.length-1;
     }
 
@@ -128,7 +130,7 @@ function switchExperiment(index = expSelect.selectedIndex){
     currExp.view();
     if(currExp.currentEntry == undefined)
         summaryButton.click();
-    else changeGraph( (currExp.currentEntry.children.length == 0?{children:currExp.currentEntry}:currExp.currentEntry) );
+    else document.getElementById(currExp.currentEntry.name).click();
     resultChart.options.title.text=currExp.name +": "+currExp.rank+ " (Thread "+currExp.currThread+")";
     metaOpenClose(true,currExp.compset,currExp.res,currExp.name);
 
@@ -181,7 +183,7 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
 
 //This is reserved for an htmlList element. It's here so that functions arn't called on the spot and take up more memory.
 function htmlList_onClick(context){
-    targetExp = (comparisonMode.on?comparisonMode.exp:currExp);
+    targetExp = mtViewer.currExp();
     if(targetExp.currentEntry!=undefined && targetExp.currentEntry.name == context.id && targetExp.nodeTableList[targetExp.currThread][context.id].children.length > 0){
         let listTag = context.getElementsByTagName("ul")[0].style;
         listTag.display=(listTag.display=="none"?"":"none");
@@ -202,19 +204,7 @@ function htmlList_onClick(context){
         history.replaceState("","",window.location.href.split("#")[0]+"#"+context.id);
         setTimeout(()=>okToClick = true,10);
 
-        //Display appropriate graph info:
-        if(targetExp.nodeTableList[targetExp.currThread][context.id].children.length > 0){
-            resultChart.options.title.text=context.id;
-            if(comparisonMode.on)
-                setTimeout(()=>comparisonMode.viewChart(context.id),10);
-            //Strange... there's a small chance that something asynchronous will take too long before chart.js can render the chart... LET'S FIX THAT!
-            else setTimeout(()=>changeGraph(currExp.nodeTableList[currExp.currThread][context.id]),10);
-        }
-        else{
-            if(comparisonMode.on)
-                setTimeout(()=>comparisonMode.viewChart(context.id),10);
-            else setTimeout(()=>changeGraph({children:[currExp.nodeTableList[currExp.currThread][context.id]]}),10);
-        }
+        mtViewer.loadChart(context.id);
     }
 }
 
@@ -252,9 +242,13 @@ function changeGraph(nodeIn,valIn=valueName.children[valueName.selectedIndex].va
                 resultChart.data.labels.push(nodeIn.children[i].name);
                 makeGraphBar( (stackedBar?nodeIn.children[i]:{children:[nodeIn.children[i]]} ),valIn,i);
             }
+            //console.log(nodeIn);
             colorChart(stackedBar);
         }
     resizeChart();
+    //This is to help fix a bug in chartjs & resizing the chart
+    if(chartTag.height*1 <chartTag.style.height.replace("px","")*1)
+        setTimeout(resizeChart,10);
     resultChart.update();
 }
 
@@ -346,11 +340,44 @@ function parentPath(nodeIn,currValues=[]){
         return currValues
 }
 
+//This object aims to unify common atributes between regular mode and comparison mode. So many methods for tying up both were littered across the code, so this should clean it up!
+var mtViewer = {
+    currExp:()=>comparisonMode.on?comparisonMode.exp:currExp,
+    expList:()=>{
+        if(comparisonMode.on){
+            newExpList = [];
+            activeExps.forEach(array=>{
+                newExpList.push(array[0]);
+            });
+            return newExpList;
+        }
+        else return expList;
+    },
+    loadChart:function(processId = mtViewer.currExp().currentEntry.name){
+        targetExp = this.currExp();
+        //Display appropriate graph info:
+        if(processId == "summaryButton")
+            summaryButton.click();
+        else if(targetExp.nodeTableList[targetExp.currThread][processId].children.length > 0){
+            resultChart.options.title.text=processId;
+            if(comparisonMode.on)
+                setTimeout(()=>comparisonMode.viewChart(processId),10);
+            //Strange... there's a small chance that something asynchronous will take too long before chart.js can render the chart... LET'S FIX THAT!
+            else setTimeout(()=>changeGraph(currExp.nodeTableList[currExp.currThread][processId]),10);
+        }
+        else{
+            if(comparisonMode.on)
+                setTimeout(()=>comparisonMode.viewChart(processId),10);
+            else setTimeout(()=>changeGraph({children:[currExp.nodeTableList[currExp.currThread][processId]]}),10);
+        }
+    }
+}
+
 var comparisonMode = {
     on:false,
     exp:undefined,
     relatedNodes:[],
-    activeExps:undefined,
+    activeExps:[],
     activeChildren:[],
     new:function(expList){
         //As long as values are the same, we can run this function:
@@ -474,7 +501,7 @@ var comparisonMode = {
                 else element[0].nodeTableList[element[1]][id].children.forEach(this.viewChart_childPrint);
             }
             this.activeExps.push(element);
-            this.activeExps[element.name] = element;
+            this.activeExps["e"+element[0].name] = element;
         });
         expNames.forEach(element=>expNameSort[element].forEach(node=>{
                 childrenTemp.push(node);
@@ -525,7 +552,25 @@ var comparisonMode = {
             this.exp.view();
             threadSelect.style.display = "none";
             expSelect.style.display = "none";
-            summaryButton.click();
+            setTimeout(()=>{
+                if(this.exp.nodeTableList[0][window.location.hash.split("#")[1]] && compare){
+                    document.getElementById(window.location.hash.split("#")[1]).click();
+                    compare = false;
+                }
+                else summaryButton.click();
+
+                setTimeout(()=>{
+                    //Generate a new link for comparison mode:
+                    let newLink = detectRootUrl()+"summary/";
+                    let idStr="";
+                    let rankStr="";
+                    this.activeExps.forEach(expArray=>{
+                        idStr+=(idStr == ""?"":",")+expArray[0].name;
+                        rankStr+=(rankStr == ""?"":",")+expArray[0].rank;
+                    });
+                    history.pushState("","",newLink+idStr+"/"+rankStr+"/compare/"+(compare?window.location.hash:"#summary"));
+                },10);
+            },10);
             compareButton.innerHTML = "End Comparison";
             compareButton.onclick = ()=>comparisonMode.finish();
         }
@@ -533,11 +578,11 @@ var comparisonMode = {
     //Close comparison mode and go back to the regular view.
     finish:function(){
         backButton.style.display="";
-        this.on = false;
         threadSelect.style.display = "";
         expSelect.style.display = "";
         compareButton.innerHTML = "Compare";
         compareButton.onclick = ()=>compDivObj.toggle();
         switchExperiment(currExp);
+        this.on = false;
     }
 }
