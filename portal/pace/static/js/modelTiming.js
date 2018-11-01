@@ -130,7 +130,7 @@ function switchExperiment(index = expSelect.selectedIndex){
     currExp.view();
     if(currExp.currentEntry == undefined)
         summaryButton.click();
-    else document.getElementById(currExp.currentEntry.name).click();
+    else mtViewer.loadChart();
     resultChart.options.title.text=currExp.name +": "+currExp.rank+ " (Thread "+currExp.currThread+")";
     metaOpenClose(true,currExp.compset,currExp.res,currExp.name);
 
@@ -582,7 +582,7 @@ var comparisonMode = {
         expSelect.style.display = "";
         compareButton.innerHTML = "Compare";
         compareButton.onclick = ()=>compDivObj.toggle();
-        switchExperiment(currExp);
         this.on = false;
+        switchExperiment(currExp);
     }
 }
