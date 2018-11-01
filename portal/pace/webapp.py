@@ -264,7 +264,6 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
         foundAdv = False
         foundBasic = False
         termTemp = query.replace(" ","+").split("+")
-        print(termTemp)
 
         #These strings hold terms in the query, just in case both advanced and basic syntax is present
         basicTemp = ""
@@ -286,7 +285,6 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
             queryDelete.append(query)
     #Now to delete original queries:
     for index in queryDelete:
-        print(index)
         querySet.discard(index)
     #Add in the new queries:
     for que in queryQue:
@@ -320,7 +318,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
             if syntax[0] in variableList:
                 strList.append(syntax[0]+elementStr)
             elif syntax[0] == "case":
-                strList.append('timingprofile.case '+elmentStr)
+                strList.append('timingprofile.case '+elementStr)
         compiledString = "select " + str(specificVariables).strip("[]").replace("'","") + " from timingprofile where "
         for i in range(len(strList)):
             compiledString+=strList[i]
@@ -339,18 +337,29 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
         #A regular search (no matchall)
         for word in termString.split("+"):
             termList.append(word.replace(";","").replace("\\c",""))
-        for word in variableList:
+        #Remove empty strings: (spaces on the client side)
+        while '' in termList:
+            termList.remove('')
+        print(termList)
+        
+        if(len(termList) > 0):
             queryStr = "select " + str(specificVariables).strip("[]").replace("'","") + " from timingprofile where "
-            firstValue = True
             for term in termList:
-                if not firstValue:
-                    queryStr+=" or "
-                #Equal an exact string if $ is at the beginning:
-                if term[0] == "$":
-                    queryStr+=word+' = "'+term.strip("$")+'"'
-                else:
-                    queryStr+=word+' like "%%'+term+'%%"'
-                firstValue = False
+                if not term == termList[0]:
+                    queryStr+=" and "
+                queryStr+='( '
+                firstValue = True
+                for word in variableList:
+                    if not firstValue:
+                        queryStr+=" or "
+                    #Equal an exact string if $ is at the beginning:
+                    if term[0] == "$":
+                        queryStr+=word+' = "'+term.strip("$")+'"'
+                    else:
+                        queryStr+=word+' like "%%'+term+'%%"'
+                    firstValue = False
+                queryStr +=" )"
+    
             queryStr+=" order by "+orderBy+" "+ascDsc
             if limit:
                 queryStr+=" limit "+limit

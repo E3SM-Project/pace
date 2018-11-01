@@ -21,8 +21,8 @@
             <td>
                 <select id="expSelect" onchange="switchExperiment()"></select>
                 <select id="threadSelect"></select>
-                <select id="valueName" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )"></select>
-                <select id="mode" class="unused" onclick="(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) )">
+                <select id="valueName" onclick="mtViewer.loadChart()"></select>
+                <select id="mode" class="unused" onclick="mtViewer.loadChart()">
                     <option value="sum" selected>Sum</option>
                     <option value="avg">Average</option>
                 </select>
@@ -34,7 +34,7 @@
                 <button onclick='advContainer.style.display=advContainer.style.display == "none"?"inline-block":"none"'>Advanced</button>
                 <div id="advContainer" style="display:none">
                     <div class="checkboxRow" style="display:inline-block">
-                        <input type="checkbox" onclick="stackedCharts = this.checked;(comparisonMode.on?comparisonMode.viewChart(comparisonMode.exp.currentEntry.name):changeGraph(currExp.currentEntry) );" checked/>Stacked bars<br>
+                        <input type="checkbox" onclick="stackedCharts = this.checked;mtViewer.loadChart();" checked/>Stacked bars<br>
                         <input id="dmCheck" type="checkbox" onclick="dmObj.toggle(this.checked)"/>Dark Mode
                     </div>
                     <span id="quickSearchContainer">
@@ -77,6 +77,7 @@
     //Make all buttons bootstrap:
     $("button").addClass("btn btn-default");
     $("select").addClass("custom-select");
+    var compare = false;
     {{exp|safe}}
     </script>
     <script src="/static/js/mtStart.js"></script>

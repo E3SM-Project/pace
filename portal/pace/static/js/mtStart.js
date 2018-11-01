@@ -3,7 +3,6 @@
 
 //Fire up the summary:
 $(document).ready(()=>{
-    var compare = undefined;
     var threadList = undefined;
     var onMtPage = true;
     dataInfo.style.height = (window.innerHeight*.8)+"px";
