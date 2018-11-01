@@ -50,7 +50,7 @@ def parseArguments():
 	# Argument parser for E3SM experiments
 	parser.add_argument('--exp-dir','-ed', action='store', dest='source', help="Root directory containing experiment(s) results. Handles multiple experiment directories under root")
 	parser.add_argument('--perf-archive','-pa', action='store', dest='source', help="Root directory containing performance archive. Handles multiple performance archive directories under root")
-	parser.add_argument('--application', '-a', help="Application name", default='e3sm', choices=['e3sm','fusion'])
+	parser.add_argument('--application', '-a', help="Application name", default='e3sm', choices=['e3sm'])
 	args = parser.parse_args()
 	return args
 
