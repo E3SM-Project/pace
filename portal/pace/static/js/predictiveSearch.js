@@ -40,10 +40,10 @@ var predictiveSearch = {
                     case "Enter":
                         if(this.targetIn.value!="" && this.pTextMenu.style.display!="none")
                             this.applyText();
-                        this.allowEnter = true;
                     case "Escape":
                     case " ":
                     this.pTextMenu.style.display="none";
+                    this.allowEnter = true;
                 }
                 if( (evt.key == "ArrowDown" || evt.key == "ArrowUp") && this.pTextMenu.style.display!="none" && this.ptmValues.length > 0){
                     this.allowEnter = false;
@@ -83,13 +83,16 @@ var predictiveSearch = {
             //Load the results inside the textMenu:
             if(!predictiveSearch.keyBlackList.find(element=>{return element == this.lastKeyPressed})){
                 //Refresh the menu:
-                if(this.pTextMenu.length == 0)
+                if(this.pTextMenu.length == 0){
                     this.pTextMenu.style.display == "none";
+                    this.this.allowEnter = true;
+                }
                 else{
                     this.pTextMenu.innerHTML = "";
                     this.highlightIndex = undefined;
                     this.ptmValues.forEach( (element,index) => this.pTextMenu.innerHTML+="<div data-index="+index+" onmouseover='predictiveSearch.highlight(this,\""+this.targetId+"\")' onmouseout='predictiveSearch.unHighlight(this,\""+this.targetId+"\")' onclick='this.parentElement.style.display=\"none\";predictiveSearch.pool[\""+this.targetId+"\"].applyText()'>"+element+"</div>");
                     this.pTextMenu.style.display="block";
+                    this.allowEnter = false;
                     if(this.ptmValues.length > 0){
                         this.highlightIndex = 0
                         this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "lightgray";
