@@ -1,5 +1,4 @@
-#from data import db
-#from data import ModelTiming, Timingprofile, Pelayout, Runtime
+# imports
 from datastructs import *
 from pace_common import *
 db.create_all()
@@ -11,15 +10,14 @@ import shutil
 import zipfile
 import pymysql
 import types
-
 import modelTiming as mt
 import io
-
 from minio import Minio
 from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
 
+# main
 def parseData():
-	# start main
+	# open file to write pace report
 	old_stdout = sys.stdout
 	logfilename = 'pace-'+str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))+'.log'
 	logfile = PACE_LOG_DIR + logfilename
@@ -79,14 +77,14 @@ def parseData():
 		removeFolder(UPLOAD_FOLDER)
 		sys.stdout = old_stdout
 		log_file.close()
-		return ('ERROR')
+		return ('ERROR/'+str(logfilename))
 	except OSError as e:
 		print ('[ERROR]: %s' % e.strerror)
 		removeFolder(UPLOAD_FOLDER)
 		sys.stdout = old_stdout
 		log_file.close()
-		return ('ERROR')
-	
+		return ('ERROR/'+str(logfilename))
+	# boolean list
 	isSuccess=[]
 	# parse and store timing profile file in a database
 	for i in range(len(allfile)):
@@ -101,12 +99,13 @@ def parseData():
 	removeFolder(UPLOAD_FOLDER)
 	sys.stdout = old_stdout
 	log_file.close()
+	# check parse status, returns status with report
 	if False in isSuccess:
 		return('fail/'+str(logfilename))
 	else:
 		return('success/'+str(logfilename))
 
-# 
+# removes unwanted spaces (dedicated for parsing model_timing files)
 def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
     phraseIn = phraseIn.strip(filter)
     #Destroy spaces by default:
@@ -134,7 +133,8 @@ def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
                     total[currPhrase]+=" "
                 total[currPhrase]+=phraseSplit[i]
     return total
-#Returns a list of items from the table. This is different because of how the data itself is structured. If "component" makes a good way to address these values, I'm open to making this return a dictionary.
+
+# Returns a list of items from the table.
 def tableParse(lineInput):
     names=["component","comp_pes","root_pe","tasks","threads","instances","stride"]
     resultList=[]
@@ -146,6 +146,7 @@ def tableParse(lineInput):
         resultList.append(tableColumn)
     return resultList
 
+# change string into date time format
 def changeDateTime(c_date):
 	from time import strptime
 	from datetime import datetime
@@ -165,6 +166,7 @@ def convertPathtofile(path):
 	else:
 		return path
 
+# function to check duplicate experiments (check based on user,machinr,exp_date,case)
 def checkDuplicateExp(euser,emachine,ecurr, ecase):
 	eexp_date = changeDateTime(ecurr)
 	flag=Timingprofile.query.filter_by(user=euser,machine=emachine,case=ecase,exp_date=eexp_date ).first()
@@ -173,7 +175,9 @@ def checkDuplicateExp(euser,emachine,ecurr, ecase):
 	else:
 		return(True)
 
+# parser for readme file
 def parseReadme(readmefilename):
+	# open file
 	if readmefilename.endswith('.gz'):
 		fileIn=gzip.open(readmefilename,'rb')
 	else:
@@ -185,6 +189,7 @@ def parseReadme(readmefilename):
 		for commandLine in fileIn:
 			word=commandLine.split(" ")
 			for element in word:
+				# this line holds profile information
 				if ('create_newcase' in element):
 					cmdArgs = commandLine.split(": ",1)[1].strip("./\n").split(" ")
 					resultElement["name"] = cmdArgs[0]
@@ -198,8 +203,10 @@ def parseReadme(readmefilename):
 								resultElement[argument] = cmdArgs[i+1]
 						resultElement["date"] = commandLine.split(": ",1)[0].strip(":")
 					break
+			# job done after finding elements res, compset
 			if 'res' and 'compset' in resultElement.keys():		
 				break
+		# this case only runs if element 'res','compset' exists else throws keyError
 		if resultElement['res'] is None:
 			resultElement['res'] = 'nan'
 		if resultElement['compset'] is None:
@@ -219,11 +226,14 @@ def parseReadme(readmefilename):
 	fileIn.close()	
 	return resultElement
 
+# parser for GIT_DESCRIBE file
 def parseModelVersion(gitfile):
+	# open file
 	if gitfile.endswith('.gz'):
 		parsefile = gzip.open(gitfile,'rb')
 	else:
 		parsefile = open(gitfile, 'rb')
+	# initialize version
 	version = 0
 	for line in parsefile:
 		if line != '\n':
@@ -232,22 +242,28 @@ def parseModelVersion(gitfile):
 	parsefile.close()
 	return version
 
+# This function provides pathway to files for their respective parser function and finally stores in database
 def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
+
+	# returns expid if success else returns False
 	forexpid = parseE3SMtiming(filename,readmefile,gitfile,db,fpath)
 	if forexpid == False:
 		return False
 	print ('* Parsing: '+ convertPathtofile(timingfile))
+
 	# insert modelTiming
 	isSuccess = insertTiming(timingfile,forexpid.expid,db)
 	if isSuccess == False:
 		return False	
 	print ('    -Complete')
-	print ('* Storing Experiment in file server')
+
 	# store raw data (In server and Minio)
+	print ('* Storing Experiment in file server')
 	isSuccess = zipFolder(forexpid.lid,forexpid.user,forexpid.expid,fpath)
 	if isSuccess == False:
 		return False	
 	print ('    -Complete')
+
 	# try commit if not, rollback
 	print ('* Storing Experiment Data in Database') 
 	try:	
@@ -255,6 +271,8 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 		print ('    -Complete')
 	except:
 		db.session.rollback()
+
+	# write basic summary in report
 	print (' ')
 	print ('----- Experiment Summary -----')
 	print ('- Experiment ID (ExpID): '+str(forexpid.expid))
@@ -262,24 +280,34 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 	print ('- Machine: '+str(forexpid.machine))
 	print ('- Web Link: '+str('https://pace.ornl.gov/exp-details/')+str(forexpid.expid))
 	print ('------------------------------')
-	print (' ')	
+	print (' ')
+	# close session	
 	db.session.close()
 	return (True) 
 
+# parse e3sm files
 def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
+	# open file
 	if filename.endswith('.gz'):
 		parseFile=gzip.open(filename,'rb')
 	else:
-		parseFile=open(filename,'rb')	
+		parseFile=open(filename,'rb')
+
+	# dictionary to store timingprofile 	
 	timingProfileInfo={}
+	# list to store component table
 	componentTable=[]
+	# list to store runtime table
 	runTimeTable=[]
+	# boolean flag
 	duplicateFlag=False
+	# tmp var for parsing purpose
 	word=''
 	print ('* Parsing: '+convertPathtofile(filename))
 	try:
 		for line in parseFile:
 			if line!='\n':
+				# find values for given keys
 				if len(timingProfileInfo)<12:		
 					word=line.split(None,3)
 					if word[0]=='Case':
@@ -353,6 +381,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 				elif len(timingProfileInfo)>=20:
 					break
 
+		# check if this is duplicate experiment 
 		duplicateFlag = checkDuplicateExp(timingProfileInfo['user'],timingProfileInfo['machine'],timingProfileInfo['curr'],timingProfileInfo['case'])
 		if duplicateFlag is True:
 			print ('    -[Warining]: Duplicate Experiment, ' + convertPathtofile(filename))
@@ -373,7 +402,8 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 		return (False) # skips this experiment	
 
 	parseFile.close()
-
+	
+	# open file again to parse component and runtime tables
 	try:
 		if filename.endswith('.gz'):
 			parseFile=gzip.open(filename,'rb')
@@ -384,6 +414,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 		runtimeTableSuccess = False
 		component=[]
 		tablelist=[]
+		# loop to grab component and store in a list and parse runtime table
 		for i in range(len(lines)):
 			if lines[i] != '\n':
 				firstWord = lines[i].split()[0]
@@ -391,6 +422,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 					for j in range(9):
 						tablelist.append(lines[i+j+2])
 					componentTableSuccess = True
+				# parse runtime table and store in a list
 				elif firstWord == 'TOT':
 					for j in range(11):	
 						component=lines[i+j].split()
@@ -402,13 +434,19 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 						runTimeTable.append(component[5])
 						runTimeTable.append(component[7])
 						runtimeTableSuccess = True
+			# grabbed both tables then break
 			if componentTableSuccess == True and runtimeTableSuccess == True:
 				break
+		# check if both table exists
 		if componentTableSuccess != True or runtimeTableSuccess != True:
 			print ('    ERROR: runtime/component table not found')
 			return False
+
+		# parse component table
 		resultlist=tableParse(tablelist)
 		parseFile.close()
+		
+		# store component table values in a list
 		for i in range(len(tablelist)):
 			tmpthread1=resultlist[i]['component']
 			change1=tmpthread1.split(" ")
@@ -423,14 +461,20 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 			componentTable.append(resultlist[i]['stride'])
 	
 		print ('    -Complete')
+
+		# parse README.docs file
 		print ('* Parsing: '+convertPathtofile(readmefile))
 		readmeparse = parseReadme(readmefile)
 		if readmeparse == False:
 			return (False) #this skips the experiment
 		print ('    -Complete')
+
+		# parse GIT_DESCRIBE file
 		print ('* Parsing: '+convertPathtofile(gitfile))
 		expversion = parseModelVersion(gitfile)
 		print ('    -Complete')
+
+		# insert timingprofile 
 		new_experiment = Timingprofile(case=timingProfileInfo['case'],
 						lid=timingProfileInfo['lid'],
 						machine=timingProfileInfo['machine'],
@@ -473,6 +517,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 						stride=componentTable[i+6])
 			db.session.add(new_pelayout)	
 			i=i+7
+
 		#insert run time
 		i=0
 		while i < len(runTimeTable):
@@ -497,7 +542,8 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 		db.session.rollback()
 		parseFile.close()
 		return (False) # skips this experiment	
-	
+
+# removes temporary folders in server
 def removeFolder(removeroot):
 	try:
 		shutil.rmtree(os.path.join(removeroot,'experiments'))
@@ -507,6 +553,7 @@ def removeFolder(removeroot):
 	
 	return
 
+# aggregate files and store in file server
 def zipFolder(exptag,exptaguser,exptagid,fpath):
 	try:	
 		expname=0	
@@ -516,6 +563,7 @@ def zipFolder(exptag,exptaguser,exptagid,fpath):
 				if name.startswith('CaseDocs.'+str(exptag)):
 					expname = 'exp-'+exptaguser+'-'+str(exptagid)
 					shutil.make_archive(os.path.join(EXP_DIR,expname),'zip',path)
+					# upload files into file server
 					isSuccess=uploadMinio(EXP_DIR,expname)
 					if isSuccess == False:
 						return False
@@ -524,9 +572,9 @@ def zipFolder(exptag,exptaguser,exptagid,fpath):
 		return False	
 	return True
 
+# function to store files into file server
 def uploadMinio(EXP_DIR,expname):
-	from minio import Minio
-	from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
+	# get minio credentials 
 	myAkey,mySkey, myMiniourl = getMiniokey()
 	# Initialize minioClient with an endpoint and access/secret keys.
 	minioSecure=True
@@ -542,6 +590,7 @@ def uploadMinio(EXP_DIR,expname):
 		return (False)
 	return True
 
+# parse model_timing files
 def insertTiming(mtFile,expID,db):
 	try:
 		sourceFile = tarfile.open(mtFile)
