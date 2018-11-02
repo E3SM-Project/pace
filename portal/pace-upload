@@ -32,6 +32,7 @@ parseurl = baseurl+str("fileparse")
 # authenticuser url
 authurl = baseurl+str("userauth")
 
+# color class
 class bcolors:
 	HEADER = '\033[95m'
 	OKBLUE = '\033[94m'
@@ -50,7 +51,7 @@ def parseArguments():
 	# Argument parser for E3SM experiments
 	parser.add_argument('--exp-dir','-ed', action='store', dest='source', help="Root directory containing experiment(s) results. Handles multiple experiment directories under root")
 	parser.add_argument('--perf-archive','-pa', action='store', dest='source', help="Root directory containing performance archive. Handles multiple performance archive directories under root")
-	parser.add_argument('--application', '-a', help="Application name", default='e3sm', choices=['e3sm','fusion'])
+	parser.add_argument('--application', '-a', help="Application name", default='e3sm', choices=['e3sm'])
 	args = parser.parse_args()
 	return args
 
@@ -162,6 +163,7 @@ def isValidE3SMexp(expfile,tmpfile):
 def isValidFusionExp(expfile):
 	return False	
 
+# read token from config file if it exists else create new
 def getGitToken():
 	configFile = os.path.join(expanduser("~"),'.pacecc')
 	if os.path.isfile(configFile):
@@ -171,6 +173,7 @@ def getGitToken():
 		createconfigfile(user,token,configFile)
 	return (token)
 
+# authenticate user based upon valid users
 def authenticateUser(user):
 	print bcolors.LIGHTGREY + ('Authorizing user %s' %user) + '...' + bcolors.ENDC
 	data = {'user':user}
@@ -185,6 +188,7 @@ def authenticateUser(user):
 		print (bcolors.FAIL+"ERROR: User NOT AUTHORIZED"+bcolors.ENDC)
 		return (False)
 
+# authenticate token with github
 def gitAuthenticate(token):
 	try:
 		headers = {'Authorization': 'token ' + token}
@@ -196,6 +200,7 @@ def gitAuthenticate(token):
 	validUser = authenticateUser(user)
 	return (validUser)
 
+# create new token for the user
 def createtoken():
 	#User Input
     	username = raw_input(bcolors.BOLD + 'Github username: '+ bcolors.ENDC)
@@ -217,6 +222,7 @@ def createtoken():
 	token = j['token']
 	return (username,token)
 
+# read from config file
 def readconfigfile(configFile):
 	parser = RawConfigParser()
 	parser.read(configFile)
@@ -224,6 +230,7 @@ def readconfigfile(configFile):
 	myToken = parser.get('GITHUB','token')
 	return (myUser,myToken)
 
+# create new config file
 def createconfigfile(user,token,configFile):
 	parser = RawConfigParser()
 	parser.add_section('GITHUB')
@@ -234,6 +241,7 @@ def createconfigfile(user,token,configFile):
 	print bcolors.LIGHTGREY + 'Config file \".pacecc\" created' + bcolors.ENDC
 	return
 
+# authenticate user
 def userAuth():
 	token = getGitToken()
 	isSuccess = gitAuthenticate(token)
@@ -242,6 +250,7 @@ def userAuth():
 	else:
 		exit()
 
+# Downloads pace report from server
 def downloadlog(filename):
 	downloadurl = baseurl+str("downloadlog")
 	data = {'filename':filename}
