@@ -175,7 +175,7 @@ def getGitToken():
 
 # authenticate user based upon valid users
 def authenticateUser(user):
-	print bcolors.LIGHTGREY + ('Authorizing user %s' %user) + '...' + bcolors.ENDC
+	print bcolors.LIGHTGREY + ('Authorizing %s for PACE' %user) + '...' + bcolors.ENDC
 	data = {'user':user}
 	r = requests.post(authurl,data=data)
 	if r.text == "validuser":
@@ -185,7 +185,7 @@ def authenticateUser(user):
 		print (" ")
 		return (True)
 	else:
-		print (bcolors.FAIL+"ERROR: User NOT AUTHORIZED"+bcolors.ENDC)
+		print (bcolors.FAIL+("ERROR: %s NOT AUTHORIZED for PACE" %user)+bcolors.ENDC)
 		return (False)
 
 # authenticate token with github
@@ -220,6 +220,8 @@ def createtoken():
 		print bcolors.FAIL + 'ERROR: %s' % msg + bcolors.ENDC
 		exit()
 	token = j['token']
+	print (bcolors.OKGREEN +"Github login success" + bcolors.ENDC)
+	print (" ")
 	return (username,token)
 
 # read from config file
@@ -239,6 +241,7 @@ def createconfigfile(user,token,configFile):
 	filename=open(configFile,'w')
 	parser.write(filename)
 	print bcolors.LIGHTGREY + 'Config file \".pacecc\" created' + bcolors.ENDC
+	print (" ")
 	return
 
 # authenticate user
@@ -267,8 +270,9 @@ def main():
 	if result.source == None:
 		print bcolors.WARNING + 'USAGE: pace-upload [--help/-h] [--exp-dir/-ed SOURCE] [--perf-archive/-pa SOURCE] [--application/-a {e3sm}]'  + bcolors.ENDC	
 		exit()
+	expfile = 0
+	userAuth()
 	try:
-		userAuth()
 		zfname = 'experiments'
 		expfile = result.source
 		tmpfile = 'pace-exps-' + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
