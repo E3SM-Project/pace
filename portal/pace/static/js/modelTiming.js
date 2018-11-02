@@ -257,7 +257,8 @@ function makeGraphBar(nodeIn,valIn="nodes",dataIndex=0,stackOffset=0){
     // console.log(nodeIn.children);
     //Get all the children in this node:
     let mtData = [];//Data from mtSum
-    nodeIn.children.forEach(child=>mtData.push(mtSum(child,valIn)));
+    //Instead of using the recursive sum, it has been changed so that the face-value of a child is printed:
+    nodeIn.children.forEach(child=>mtData.push( valIn == "nodes"?mtSum(child):[child.values[valIn],mtSum(child)[1]] ));
 
     let offset = nodeIn.children.length * stackOffset;
 
@@ -318,17 +319,17 @@ function colorChart(vertical=true){
 }
 
 //Grabs the values needed from the timeNode tree(This is a direct port from what was used in modelTiming.py)
-function mtSum(nodeIn,valName="nodes"){
+function mtSum(nodeIn,valName="nodes",parentNode=true){
     let total=0;
     let nodeCount=1;
     nodeIn.children.forEach(child=>{
-        let output = mtSum(child,valName);
+        let output = mtSum(child,valName,false);
         total+=output[0];
         nodeCount+=output[1];
     });
     if (valName!="nodes")
         total+=nodeIn.values[valName];
-    return [total,nodeCount];
+    return [total,(parentNode?nodeCount-1:nodeCount)];
 }
 
 //Go backwards in a node to get a path from the parent to the child.

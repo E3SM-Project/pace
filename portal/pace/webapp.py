@@ -328,6 +328,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
         if limit:
             compiledString+=" limit "+limit+";"
         #Copy/paste from above:
+        print(compiledString)
         allResults = db.engine.execute(compiledString).fetchall()
         for result in allResults:
             resultItems.append(result)
@@ -363,6 +364,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
             queryStr+=" order by "+orderBy+" "+ascDsc
             if limit:
                 queryStr+=" limit "+limit
+            print(queryStr)
             for result in db.engine.execute(queryStr).fetchall():
                 resultItems.append(result)
 

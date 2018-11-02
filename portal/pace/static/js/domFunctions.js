@@ -194,6 +194,9 @@ var resultChart = new Chart(chartTag, chartSettings);
 
 //You can't directly define specific variables for some reason when one is highlighted by chart.js, so here's a quick fix:
 chartTag.onmousemove = function(event){
+    //this should make things clearner to read:
+    let valueElement = valueName.children[valueName.selectedIndex];
+
     let results = resultChart.getElementAtEvent(event);
     if(results.length > 0){
         nodeId.style.left = (event.x + 20)+"px";
@@ -203,21 +206,21 @@ chartTag.onmousemove = function(event){
             [["WallMin","wallmin"],["WallMax","wallmax"]],
         ];
         let formatNameIndex = 0;
-        if(valueName.children[valueName.selectedIndex].value == "wallmin/wallmax")
+        if(valueElement.value == "wallmin/wallmax")
             formatNameIndex++;
 
         if(!comparisonMode.on){
             let resultNode = (!stackedCharts ||
-                valueName.children[valueName.selectedIndex].value == "min/max" || 
-                valueName.children[valueName.selectedIndex].value == "wallmin/wallmax" || 
+                valueElement.value == "min/max" || 
+                valueElement.value == "wallmin/wallmax" || 
                 resultChart.data.datasets.length == 1?currExp.nodeTableList[currExp.currThread][results[0]._model.label].name:
                 currExp.nodeTableList[currExp.currThread][results[0]._model.label].children[results[0]._datasetIndex].name);
             let outputStr = "";
-            if(valueName.children[valueName.selectedIndex].value == "min/max" || valueName.children[valueName.selectedIndex].value == "wallmin/wallmax"){
+            if(valueElement.value == "min/max" || valueElement.value == "wallmin/wallmax"){
                 outputStr=formattedNames[formatNameIndex][0][0]+": "+currExp.nodeTableList[currExp.currThread][resultNode].values[formattedNames[formatNameIndex][0][1]] +
                 "<br>"+ formattedNames[formatNameIndex][1][0]+": "+currExp.nodeTableList[currExp.currThread][resultNode].values[formattedNames[formatNameIndex][1][1]];
             }
-            else outputStr = valueName.children[valueName.selectedIndex].innerHTML+": "+currExp.nodeTableList[currExp.currThread][resultNode].values[valueName.children[valueName.selectedIndex].innerHTML]
+            else outputStr = valueElement.innerHTML+": "+(valueElement.value == "nodes"?mtSum(currExp.nodeTableList[currExp.currThread][resultNode])[1]: currExp.nodeTableList[currExp.currThread][resultNode].values[valueElement.innerHTML]);
             nodeId.innerHTML=currExp.name+"_"+currExp.rank+"(Thread "+currExp.currThread+")<br>"+resultNode+"<br>"+outputStr;
         }
         else{
@@ -225,11 +228,11 @@ chartTag.onmousemove = function(event){
                 let output = comparisonEvt(results);
                 //console.log(output);
                 let valueStr = "";
-                if(valueName.children[valueName.selectedIndex].value == "min/max" || valueName.children[valueName.selectedIndex].value == "wallmin/wallmax"){
+                if(valueElement.value == "min/max" || valueElement.value == "wallmin/wallmax"){
                     valueStr=formattedNames[formatNameIndex][0][0]+": "+output.targetNode.values[formattedNames[formatNameIndex][0][1]] +
                 "<br>"+ formattedNames[formatNameIndex][1][0]+": "+output.targetNode.values[formattedNames[formatNameIndex][1][1]];
                 }
-                else valueStr = valueName.children[valueName.selectedIndex].innerHTML+": "+output.targetNode.values[valueName.children[valueName.selectedIndex].innerHTML];
+                else valueStr = valueElement.innerHTML+": "+(valueElement.value == "nodes"?mtSum(output.targetNode)[1]:output.targetNode.values[valueElement.innerHTML]);
                 nodeId.innerHTML=output.spefExp.name+"_"+output.spefExp.rank+"(Thread "+output.targetNode.thread+")<br>"+output.targetNode.name+"<br>"+valueStr;
             }
         }
@@ -314,7 +317,6 @@ var dmObj={
     percentage:0,
     interval:undefined,
     bgcolor:[[255,255,255],[25,25,25]],
-    footColor:[[245,245,245],[17,17,17]],
     textColor:[[0,0,0],[100,100,100]],
     //Turn dark mode on and off (complete with a smooth transition)
     toggle:function(tf){
@@ -331,7 +333,6 @@ var dmObj={
                 else dmObj.percentage-=4;
                 //Body Colors:
                 this.colorElements([[document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar,dataList]],"backgroundColor",this.bgcolor);
-                this.colorElements([[document.getElementsByClassName("footer")[0]]],"backgroundColor",this.footColor);
                 //textColor
                 this.colorElements([[listContent,quickSearchBar],
                 document.getElementsByTagName("h2"),
