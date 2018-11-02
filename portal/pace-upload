@@ -172,6 +172,7 @@ def getGitToken():
 	return (token)
 
 def authenticateUser(user):
+	print bcolors.LIGHTGREY + ('Authorizing user %s' %user) + '...' + bcolors.ENDC
 	data = {'user':user}
 	r = requests.post(authurl,data=data)
 	if r.text == "validuser":
