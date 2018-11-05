@@ -225,7 +225,7 @@ function changeGraph(nodeIn,valIn=valueName.children[valueName.selectedIndex].va
                 resultChart.data.labels.push(nodeIn.children[i].name);
                 minmaxArray[minmaxIndex].forEach((minMax,index)=>makeGraphBar({children:[nodeIn.children[i]]},minMax,i,index));
             }
-            colorChart();
+            colorChart(1);
             resultChart.data.datasets[0].label=minmaxArray[minmaxIndex][0];
             resultChart.data.datasets[1].label=minmaxArray[minmaxIndex][1];
         }
@@ -243,7 +243,7 @@ function changeGraph(nodeIn,valIn=valueName.children[valueName.selectedIndex].va
                 makeGraphBar( (stackedBar?nodeIn.children[i]:{children:[nodeIn.children[i]]} ),valIn,i);
             }
             //console.log(nodeIn);
-            colorChart(stackedBar);
+            colorChart(stackedBar?1:0);
         }
     resizeChart();
     //This is to help fix a bug in chartjs & resizing the chart
@@ -289,32 +289,81 @@ function makeGraphBar(nodeIn,valIn="nodes",dataIndex=0,stackOffset=0){
 }
 
 //Chart coloring is handled here so resultChart isn't colored more than once:
-function colorChart(vertical=true){
-    //console.log(resultChart.data.datasets);
-    if(vertical){
-        for(let i=0;i<resultChart.data.datasets[0].data.length;i++){
+function colorChart(mode=0){
+    //Clear the current colors:
+    resultChart.data.datasets.forEach(e=>{
+        e.backgroundColor=[];
+        e.borderColor=[];
+    });
+
+    switch(mode){
+        case 0:
+            //Color based on all data on the chart:
             let colorSumlist = [];
-            for(let j=0;j<resultChart.data.datasets.length;j++)
-                colorSumlist.push(resultChart.data.datasets[j].data[i]);
+            // for(let j=0;j<resultChart.data.datasets[0].data.length;j++)
+            //     colorSumlist.push(resultChart.data.datasets[0].data[j]);
+            if(mtViewer.currExp().currentEntry.children.length > 0)
+                mtViewer.currExp().currentEntry.children.forEach(e=>colorSumlist.push(e.values[valueName.children[valueName.selectedIndex].value]));
+            else colorSumlist.push(mtViewer.currExp().currentEntry.values[valueName.children[valueName.selectedIndex].value]);
+            
+            //color everything the same color in one dataset:
             let colorPercentages = arrayToPercentages(colorSumlist);
-            for(let j=0;j<resultChart.data.datasets.length;j++){
+            for(let i=0;i<resultChart.data.datasets.length;i++){
+                for(let j=0;j<resultChart.data.datasets[i].data.length;j++){
+                    let colorData = percentToColor(colorPercentages[j],.2,2);
+                    resultChart.data.datasets[i].backgroundColor.push(colorData[0]);
+                    resultChart.data.datasets[i].borderColor.push(percentToColor(50,.2,0,[colorData[1],[0,0,0]]));
+                }
+            }
+        break;
+        case 1:
+            //Color each stacked bar individually:
+            for(let i=0;i<resultChart.data.datasets[0].data.length;i++){
+                let colorSumlist = [];
+                for(let j=0;j<resultChart.data.datasets.length;j++)
+                    colorSumlist.push(resultChart.data.datasets[j].data[i]);
+                let colorPercentages = arrayToPercentages(colorSumlist);
+                for(let j=0;j<resultChart.data.datasets.length;j++){
                     let colorData = percentToColor(colorPercentages[j],.2,2);
                     resultChart.data.datasets[j].backgroundColor.push(colorData[0]);
                     resultChart.data.datasets[j].borderColor.push(percentToColor(50,.2,0,[colorData[1],[0,0,0]]));
                 }
-        }
-    }
-    else{
-        //Same thing, except we're only looking at one layer
-            let colorSumlist = [];
-            for(let j=0;j<resultChart.data.datasets[0].data.length;j++)
-                colorSumlist.push(resultChart.data.datasets[0].data[j]);
-            let colorPercentages = arrayToPercentages(colorSumlist);
-            for(let j=0;j<resultChart.data.datasets[0].data.length;j++){
-                    let colorData = percentToColor(colorPercentages[j],.2,2);
-                    resultChart.data.datasets[0].backgroundColor.push(colorData[0]);
-                    resultChart.data.datasets[0].borderColor.push(percentToColor(50,.2,0,[colorData[1],[0,0,0]]));
+            }
+        break;
+        case 2:
+            //Color each bar based on which experiment it came from:
+            let valPool = [];
+            if(mtViewer.currExp().currentEntry.children.length == 0){
+                if(!valPool[mtViewer.currExp().currentEntry.srcExp.name]){
+                    //Here we create a frakenstine that acts like an associated array and a traditional one. This will help us properly address our percentages (Since an array is returned)
+                    valPool[mtViewer.currExp().currentEntry.srcExp.name] = {total:0,index:valPool.length};
+                    valPool.push(valPool[mtViewer.currExp().currentEntry.srcExp.name]);
                 }
+                valPool[mtViewer.currExp().currentEntry.srcExp.name].total+=valPool[mtViewer.currExp().currentEntry.srcExp.name].values[valueName.children[valueName.selectedIndex].value];
+            }
+            else mtViewer.currExp().currentEntry.children.forEach(child=>{
+                    if(valPool[child.srcExp.name]){
+                        //Ditto above:
+                        valPool[child.srcExp.name] = {total:0,index:valPool.length};
+                        valPool.push(valPool[child.srcExp.name]);
+                    }
+                    valPool[child.srcExp.name].total += child.values[valueName.children[valueName.selectedIndex].value];
+                });
+            let resultPercentages = arrayToPercentages( (()=>{
+                //This function creates an array that we only use once to generate percentages:
+                resultArray = [];
+                valPool.forEach(element=>resultArray.push(element));
+                return resultArray;
+            })(),true);
+
+            //Now to actually color each bar:
+            mtViewer.currExp().currentEntry.children.forEach((exp,index)=>{
+                resultChart.data.datasets.forEach(dataSet=>{
+                    dataSet.backgroundColor[index] = resultPercentages[valPool[exp.srcExp.name].index];
+                });
+            });
+            
+        break;
     }
 }
 
@@ -537,9 +586,7 @@ var comparisonMode = {
                 expNames.push(node.name);
         if(!expNameSort[node.name])
             expNameSort[node.name] = [];
-        if(node.children.length >0 || !stackedCharts)
             expNameSort[node.name].push(node);
-        else if (stackedCharts) expNameSort[node.name].push({name:node.name,children:[node],srcExp:node.srcExp});
         },
     start:function(){
         metaOpenClose();
