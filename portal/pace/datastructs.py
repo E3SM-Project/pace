@@ -62,3 +62,8 @@ class ModelTiming(db.Model):
 class Authusers(db.Model):
 	id = db.Column(INTEGER(unsigned=True), primary_key=True,autoincrement=True)
 	user = db.Column(db.String(50))
+
+class Additionalnote(db.Model):
+	id = db.Column(INTEGER(unsigned=True), primary_key=True, index=True)
+	expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('timingprofile.expid'), nullable=False, index=True)
+	note = db.Column(MEDIUMTEXT, nullable=False)

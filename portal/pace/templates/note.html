@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
+
+{% block topcontent %}
+{% endblock topcontent %}
+
+<h3 style="text-align:center">Additional Note For Experiment {{expid}} </h3>
+<form id="save" action="/note/{{expid}}" method="POST">
+<p style = "text-align:center;margin-top:40px">
+<textarea rows="4" cols="50" style="resize:both" maxlength="16000000" id="note" name="note" class="form-control">{{note}}</textarea>
+<br>
+<button type="submit" class="btn btn-primary btn-success">
+Save
+</button>
+<a href="/exp-details/{{expid}}"><input type="button" value="Back" class="btn btn-light"/>
+</a>
+</p>
+</form>
+
+{% endblock %}
+
