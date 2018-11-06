@@ -54,6 +54,8 @@ MPI tasks/node: {{exp.mpi_tasks_per_node}}
 Summary Charts: {% for rank in ranks -%}<a href="/summary/{{expid}}/{{rank.rank}}">{{rank.rank}}</a> &nbsp;
             {%- endfor %}
 <a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
+<br>
+<a href="/note/{{expid}}">Additional Notes</a>
             </code></pre>
         </td>
         <td class="inBlock">

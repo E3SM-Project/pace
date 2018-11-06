@@ -147,6 +147,7 @@ def summaryHtml(expID,rank,compare="",threads=""):
         extraStr+="threadList = "+json.dumps(threadStr.split(","))+";"
     return render_template("modelTiming.html",exp = "var expData = ["+resultString+"];"+extraStr)
 
+
 #A rest-like API that retrives a model-timing tree in JSON from the database
 @app.route("/summaryQuery/<expID>/<rank>/",methods=["GET"])
 def summaryQuery(expID,rank):
@@ -202,6 +203,23 @@ def expDetails(mexpid):
         colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
     return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks,chartColors = json.dumps(colorDict))
 
+@app.route("/note/<expID>", methods=["GET","POST"])
+def note(expID):
+	if request.method == "GET":
+		try:
+			myexp = db.engine.execute("select * from additionalnote where expid= "+expID).fetchall()[0]
+			note = myexp.note
+		except IndexError:
+			note=""
+		return render_template('note.html', note = note, expid = expID)
+	elif request.method == "POST":
+		note = request.form['note']		
+		try:
+			myexp = db.engine.execute("select * from additionalnote where expid= "+expID).fetchall()[0]
+			db.engine.execute("update additionalnote set note =\'"+str(note)+"\' where expid = " +expID)
+		except IndexError:
+			db.engine.execute("insert into additionalnote(expid,note) values ("+expID+",\'"+str(note)+"\')")
+		return render_template('note.html', note = note, expid = expID)
 #Depcricated version of the search page
 """@app.route("/exps")
 def expsList():
