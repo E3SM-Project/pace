@@ -76,8 +76,8 @@ summaryButton.onclick=function(){
         comparisonMode.viewChart("summaryButton");
     else{
         let root={children:currExp.timeNodes[currExp.currThread],name:"summaryButton"};
-        changeGraph(root);
         currExp.currentEntry=root;
+        changeGraph(root);
     }
     resultChart.options.title.text=(comparisonMode.on?comparisonMode.exp.name:currExp.name +": "+currExp.rank+ " (Thread "+currExp.currThread+")");
     okToClick = false;
