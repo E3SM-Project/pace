@@ -9,6 +9,7 @@ var expList = [];
 //A backlog of things to do when all experiments are retrieved. It is cleared out afterwards.
 var expGetCount = 0;
 var expGetFunc = [];
+var colorSetting = -1;
 
 //This will be where we look for a specific node. (Making the structured time-node into something linear at the same time)
 function addressTable(vals=undefined,jsonArray=false,srcExp,thread = -1){
@@ -225,7 +226,6 @@ function changeGraph(nodeIn,valIn=valueName.children[valueName.selectedIndex].va
                 resultChart.data.labels.push(nodeIn.children[i].name);
                 minmaxArray[minmaxIndex].forEach((minMax,index)=>makeGraphBar({children:[nodeIn.children[i]]},minMax,i,index));
             }
-            colorChart(1);
             resultChart.data.datasets[0].label=minmaxArray[minmaxIndex][0];
             resultChart.data.datasets[1].label=minmaxArray[minmaxIndex][1];
         }
@@ -242,9 +242,8 @@ function changeGraph(nodeIn,valIn=valueName.children[valueName.selectedIndex].va
                 resultChart.data.labels.push(nodeIn.children[i].name);
                 makeGraphBar( (stackedBar?nodeIn.children[i]:{children:[nodeIn.children[i]]} ),valIn,i);
             }
-            //console.log(nodeIn);
-            colorChart(stackedBar?1:0);
         }
+    colorChart(colorSetting);
     resizeChart();
     //This is to help fix a bug in chartjs & resizing the chart
     if(chartTag.height*1 <chartTag.style.height.replace("px","")*1)
@@ -289,12 +288,30 @@ function makeGraphBar(nodeIn,valIn="nodes",dataIndex=0,stackOffset=0){
 }
 
 //Chart coloring is handled here so resultChart isn't colored more than once:
-function colorChart(mode=0){
+function colorChart(mode=-1){
     //Clear the current colors:
     resultChart.data.datasets.forEach(e=>{
         e.backgroundColor=[];
         e.borderColor=[];
     });
+
+    if(mode == -1){
+        //Automatically choose an option:
+
+        //Check for no children (roughly the same algorhythm from changeGraph):
+        let noChildren = true;
+        if(mtViewer.currExp().currentEntry.children.length == 0)
+            noChildren = false;
+        else for(let i=0;i<mtViewer.currExp().currentEntry.children.length;i++){
+            if(mtViewer.currExp().currentEntry.children[i].children.length > 0){
+                noChildren = false;
+                break;
+            }
+        }
+        if(comparisonMode.on) mode = 2;
+        else if(noChildren || !stackedCharts) mode = 0;
+        else if (stackedCharts) mode = 1
+    }
 
     switch(mode){
         case 0:
@@ -334,20 +351,20 @@ function colorChart(mode=0){
             //Color each bar based on which experiment it came from:
             let valPool = [];
             if(mtViewer.currExp().currentEntry.children.length == 0){
-                if(!valPool[mtViewer.currExp().currentEntry.srcExp.name]){
+                if(!valPool["e"+mtViewer.currExp().currentEntry.srcExp.name]){
                     //Here we create a frakenstine that acts like an associated array and a traditional one. This will help us properly address our percentages (Since an array is returned)
-                    valPool[mtViewer.currExp().currentEntry.srcExp.name] = {total:0,index:valPool.length};
-                    valPool.push(valPool[mtViewer.currExp().currentEntry.srcExp.name]);
+                    valPool["e"+mtViewer.currExp().currentEntry.srcExp.name] = {total:0,index:valPool.length};
+                    valPool.push(valPool["e"+mtViewer.currExp().currentEntry.srcExp.name]);
                 }
-                valPool[mtViewer.currExp().currentEntry.srcExp.name].total+=valPool[mtViewer.currExp().currentEntry.srcExp.name].values[valueName.children[valueName.selectedIndex].value];
+                valPool["e"+mtViewer.currExp().currentEntry.srcExp.name].total+=valPool["e"+mtViewer.currExp().currentEntry.srcExp.name].values[valueName.children[valueName.selectedIndex].value];
             }
             else mtViewer.currExp().currentEntry.children.forEach(child=>{
-                    if(valPool[child.srcExp.name]){
+                    if(!valPool["e"+child.srcExp.name]){
                         //Ditto above:
-                        valPool[child.srcExp.name] = {total:0,index:valPool.length};
-                        valPool.push(valPool[child.srcExp.name]);
+                        valPool["e"+child.srcExp.name] = {total:0,index:valPool.length};
+                        valPool.push(valPool["e"+child.srcExp.name]);
                     }
-                    valPool[child.srcExp.name].total += child.values[valueName.children[valueName.selectedIndex].value];
+                    valPool["e"+child.srcExp.name].total += child.values[valueName.children[valueName.selectedIndex].value];
                 });
             let resultPercentages = arrayToPercentages( (()=>{
                 //This function creates an array that we only use once to generate percentages:
@@ -355,15 +372,25 @@ function colorChart(mode=0){
                 valPool.forEach(element=>resultArray.push(element));
                 return resultArray;
             })(),true);
-
             //Now to actually color each bar:
             mtViewer.currExp().currentEntry.children.forEach((exp,index)=>{
                 resultChart.data.datasets.forEach(dataSet=>{
-                    dataSet.backgroundColor[index] = resultPercentages[valPool[exp.srcExp.name].index];
+                    let colorData = percentToColor(resultPercentages[valPool["e"+exp.srcExp.name].index],.2,2);
+                    dataSet.backgroundColor[index] = colorData[0];
+                    dataSet.borderColor[index] = percentToColor(50,.2,0,[colorData[1],[0,0,0]]);
                 });
             });
             
         break;
+        case 3:
+            //Color everything randomly:
+            resultChart.data.datasets.forEach(dset=>{
+                for(let i=0;i<dset.data.length;i++){
+                    let rndColor = percentToColor(Math.floor(Math.random()*100),.2,2);
+                    dset.backgroundColor.push(rndColor[0]);
+                    dset.borderColor.push(percentToColor(50,.2,0,[rndColor[1],[0,0,0]]));
+                }
+            });
     }
 }
 

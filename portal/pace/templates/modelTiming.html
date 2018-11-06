@@ -40,6 +40,16 @@
                     <span id="quickSearchContainer">
                     <input type="text" id="quickSearchBar" placeholder="Quick Search" class="form-control"/>
                     </span>
+                    <span>Color by:
+                        <select onchange="colorSetting=this.children[this.selectedIndex].value*1;colorChart(colorSetting);resultChart.update();">
+                            <option selected value=-1>Auto</option>
+                            <option value=1>Stacked bars</option>
+                            <option value=0>Whole bar</option>
+                            <option value=2>Experiment</option>
+                            <option value=3>Random</option>
+                            <option value=-2>Off</option>
+                        </select>
+                    </span>
                 </div>
             </td>
             <td>
