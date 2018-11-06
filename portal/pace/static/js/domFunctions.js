@@ -332,7 +332,7 @@ var dmObj={
                     dmObj.percentage+=4;
                 else dmObj.percentage-=4;
                 //Body Colors:
-                this.colorElements([[document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar,dataList]],"backgroundColor",this.bgcolor);
+                this.colorElements([[document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar,dataList,colorSelectDiv]],"backgroundColor",this.bgcolor);
                 //textColor
                 this.colorElements([[listContent,quickSearchBar],
                 document.getElementsByTagName("h2"),
@@ -410,3 +410,33 @@ function metaOpenClose(openClose=false,compset,res,expid){
     else
         $(metaInfoTxt.parentElement).slideUp(200);
 }
+
+//The interface for the color selection:
+var colorSelect = {
+    display:false,
+    toggle:function(){
+        this.display = !this.display;
+        if(this.display)
+            colorSelectDiv.style.display = "initial";
+        $("#colorSelectDiv").animate({opacity:(colorSelectDiv.style.opacity != "1"?"1":"0")},300,()=>{if(!colorSelect.display) colorSelectDiv.style.display = "none";});
+    },
+    addColor:function(refresh = true,color="#FF0000"){
+        colorSelectDiv.innerHTML+=`
+            <div>
+                <input type="color" value="`+color+`" class="colorInput" onchange="colorSelect.saveColorConfig()"/>
+                <button class="btn btn-default" onclick="setTimeout(()=>colorSelect.saveColorConfig(),10);this.parentElement.outerHTML='';">X</button>
+            </div>`;
+        if(refresh)
+            this.saveColorConfig();
+    },
+    saveColorConfig:function(){
+        hexArray = [];
+        colorList = colorSelectDiv.getElementsByClassName("colorInput");
+        for(let i=0;i<colorList.length;i++)
+            hexArray.push(colorList[i].value);
+        colorConfig = hex2RgbArray(hexArray);
+        colorChart();
+        resultChart.update();
+    }
+}
+

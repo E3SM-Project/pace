@@ -111,3 +111,19 @@ ul{
 .container{
     max-width: inherit;
 }
+
+#colorSelectDiv{
+    width:20%;
+    height:20%;
+    position:absolute;
+    top:20%;
+    left:80%;
+    box-shadow:0px 5px 5px gray;
+    background-color:white;
+    opacity:0;
+    display:none;
+    border-radius:10px;
+    font-family:arial;
+    text-align:center;
+    overflow-y:scroll;
+}

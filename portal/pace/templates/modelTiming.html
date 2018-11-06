@@ -50,6 +50,7 @@
                             <option value=-2>Off</option>
                         </select>
                     </span>
+                    <button onclick="colorSelect.toggle()">Set Colors</button>
                 </div>
             </td>
             <td>
@@ -72,6 +73,19 @@
     <p><button onclick='compDivObj.makeExp()'>Add</button></p>
     <div id="compDivBody"></div>
     <p style="text-align:center"><button id="compareGo" onclick="compDivObj.scan()">Go!</button></p>
+    </div>
+    <div id="colorSelectDiv">
+        <h5>Change the default colors. They are used from least to greatest in the order listed.</h5>
+        <button onclick="colorSelect.addColor()">Add</button>
+        <div><input type="color" value="#0000FF" class="colorInput" onchange="colorSelect.saveColorConfig()"/></div>
+            <div>
+                <input type="color" value="#00FF00" class="colorInput" onchange="colorSelect.saveColorConfig()"/>
+                <button class="btn btn-default" onclick="setTimeout(()=>colorSelect.saveColorConfig(),10);this.parentElement.outerHTML='';">X</button>
+            </div>
+            <div>
+                <input type="color" value="#FF0000" class="colorInput" onchange="colorSelect.saveColorConfig()"/>
+                <button class="btn btn-default" onclick="setTimeout(()=>colorSelect.saveColorConfig(),10);this.parentElement.outerHTML='';">X</button>
+            </div>
     </div>
 {% endblock %}
 

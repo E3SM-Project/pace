@@ -3,6 +3,13 @@
 
 //return an rgb-based color string based on a percentage provided by the user:
 function percentToColor(percentage=50,transparency=false,returnType=0,colors=[[0,0,255],[0,255,0],[255,0,0]]){
+    //We need a minimum of two colors; if There isn't two, we just make the second one the first:
+    if (colors.length == 0 || typeof(colors) != "object"){
+        console.error("A minimum of 1-2 colors is required via array format (e.g [r,g,b])");
+        return undefined;
+    }
+    if(colors.length < 2)
+        colors[1] = colors[0];
     if(percentage > 100)
         percentage=100;
     let subtractValue = 100 / (colors.length-1);
@@ -58,4 +65,20 @@ function arrayToPercentages(arrayIn,rankMode = false){
         });
     }
     return ratioVals;
+}
+
+//Javascript already can read hex; we can use that to help make a quick conversion to rgb:
+function hex2RgbArray(hexArray){
+    //Take in all hex strings from the function arguments:
+    let resultArray=[];
+    for(let i=0;i<hexArray.length;i++){
+        let subStart = 1;
+        let currArray = [];
+        for(let j=0;j<3;j++){
+            currArray.push( ("0x"+hexArray[i].substr(subStart,2)) *1);
+            subStart+=2;
+        }
+        resultArray.push(currArray);
+    }
+    return resultArray
 }
