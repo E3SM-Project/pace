@@ -11,6 +11,9 @@ var expGetCount = 0;
 var expGetFunc = [];
 var colorSetting = -1;
 
+//The default color configuration, setting this to undefined will make the mtViewer use the defaults in percentToColor()
+var colorConfig = [[0,0,255],[0,255,0],[255,0,0]];
+
 //This will be where we look for a specific node. (Making the structured time-node into something linear at the same time)
 function addressTable(vals=undefined,jsonArray=false,srcExp,thread = -1){
     let newAddressTable = [];
@@ -288,7 +291,7 @@ function makeGraphBar(nodeIn,valIn="nodes",dataIndex=0,stackOffset=0){
 }
 
 //Chart coloring is handled here so resultChart isn't colored more than once:
-function colorChart(mode=-1){
+function colorChart(mode=-1,colorList = colorConfig){
     //Clear the current colors:
     resultChart.data.datasets.forEach(e=>{
         e.backgroundColor=[];
@@ -327,7 +330,7 @@ function colorChart(mode=-1){
             let colorPercentages = arrayToPercentages(colorSumlist);
             for(let i=0;i<resultChart.data.datasets.length;i++){
                 for(let j=0;j<resultChart.data.datasets[i].data.length;j++){
-                    let colorData = percentToColor(colorPercentages[j],.2,2);
+                    let colorData = percentToColor(colorPercentages[j],.2,2,colorList);
                     resultChart.data.datasets[i].backgroundColor.push(colorData[0]);
                     resultChart.data.datasets[i].borderColor.push(percentToColor(50,.2,0,[colorData[1],[0,0,0]]));
                 }
@@ -341,7 +344,7 @@ function colorChart(mode=-1){
                     colorSumlist.push(resultChart.data.datasets[j].data[i]);
                 let colorPercentages = arrayToPercentages(colorSumlist);
                 for(let j=0;j<resultChart.data.datasets.length;j++){
-                    let colorData = percentToColor(colorPercentages[j],.2,2);
+                    let colorData = percentToColor(colorPercentages[j],.2,2,colorList);
                     resultChart.data.datasets[j].backgroundColor.push(colorData[0]);
                     resultChart.data.datasets[j].borderColor.push(percentToColor(50,.2,0,[colorData[1],[0,0,0]]));
                 }
@@ -375,7 +378,7 @@ function colorChart(mode=-1){
             //Now to actually color each bar:
             mtViewer.currExp().currentEntry.children.forEach((exp,index)=>{
                 resultChart.data.datasets.forEach(dataSet=>{
-                    let colorData = percentToColor(resultPercentages[valPool["e"+exp.srcExp.name].index],.2,2);
+                    let colorData = percentToColor(resultPercentages[valPool["e"+exp.srcExp.name].index],.2,2,colorList);
                     dataSet.backgroundColor[index] = colorData[0];
                     dataSet.borderColor[index] = percentToColor(50,.2,0,[colorData[1],[0,0,0]]);
                 });
@@ -386,7 +389,7 @@ function colorChart(mode=-1){
             //Color everything randomly:
             resultChart.data.datasets.forEach(dset=>{
                 for(let i=0;i<dset.data.length;i++){
-                    let rndColor = percentToColor(Math.floor(Math.random()*100),.2,2);
+                    let rndColor = percentToColor(Math.floor(Math.random()*100),.2,2,colorList);
                     dset.backgroundColor.push(rndColor[0]);
                     dset.borderColor.push(percentToColor(50,.2,0,[rndColor[1],[0,0,0]]));
                 }
