@@ -4,7 +4,7 @@
 var queryHistory = [];
 var bubbleRadius = 15;
 var bubbleGrow = true;
-
+Chart.defaults.global.defaultFontSize = 16;
 //This is a wrapper for the actual chart made by chart.js. It makes it easier to group functions relative to this project.
 var bChartObj = function(id,config){
 
