@@ -191,17 +191,22 @@ def summaryQuery(expID,rank):
     return json.dumps({"obj":resultNodes,"meta":{"expid":expID,"rank":rank,"compset":compset,"res":res} })
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
-    myexp = None
-    myexp = db.engine.execute("select * from timingprofile where expid= "+mexpid).fetchall()[0]
-    # mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
-    mypelayout = db.engine.execute("select * from pelayout where expid= "+mexpid).fetchall()[0]
-    myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()
-    ranks = db.session.query(ModelTiming.rank).filter_by(expid = mexpid)
-    db.session.close()
-    colorDict = {}
-    for i in range(len(runtimeSvg.default_args['comps'])):
-        colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
-    return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks,chartColors = json.dumps(colorDict))
+	myexp = None
+	myexp = db.engine.execute("select * from timingprofile where expid= "+mexpid).fetchall()[0]
+	# mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
+	mypelayout = db.engine.execute("select * from pelayout where expid= "+mexpid).fetchall()[0]
+	myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()
+	ranks = db.session.query(ModelTiming.rank).filter_by(expid = mexpid)
+	db.session.close()
+	colorDict = {}
+	for i in range(len(runtimeSvg.default_args['comps'])):
+		colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
+	try:
+		noteexp = db.engine.execute("select * from additionalnote where expid= "+mexpid).fetchall()[0]
+		note = noteexp.note
+	except IndexError:
+		note=""
+	return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks,chartColors = json.dumps(colorDict),note=note)
 
 @app.route("/note/<expID>", methods=["GET","POST"])
 def note(expID):
@@ -219,6 +224,7 @@ def note(expID):
 			db.engine.execute("update additionalnote set note =\'"+str(note)+"\' where expid = " +expID)
 		except IndexError:
 			db.engine.execute("insert into additionalnote(expid,note) values ("+expID+",\'"+str(note)+"\')")
+		return redirect('/exp-details/'+str(expID))
 		return render_template('note.html', note = note, expid = expID)
 #Depcricated version of the search page
 """@app.route("/exps")
