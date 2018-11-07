@@ -188,7 +188,10 @@ def summaryQuery(expID,rank):
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
 	myexp = None
-	myexp = db.engine.execute("select * from timingprofile where expid= "+mexpid).fetchall()[0]
+	try:
+		myexp = db.engine.execute("select * from timingprofile where expid= "+mexpid).fetchall()[0]
+	except IndexError:
+		return render_template('error.html')
 	# mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
 	mypelayout = db.engine.execute("select * from pelayout where expid= "+mexpid).fetchall()[0]
 	myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()
@@ -221,7 +224,7 @@ def note(expID):
 		except IndexError:
 			db.engine.execute("insert into additionalnote(expid,note) values ("+expID+",\'"+str(note)+"\')")
 		return redirect('/exp-details/'+str(expID))
-		return render_template('note.html', note = note, expid = expID)
+		#return render_template('note.html', note = note, expid = expID)
 #Depcricated version of the search page
 """@app.route("/exps")
 def expsList():
