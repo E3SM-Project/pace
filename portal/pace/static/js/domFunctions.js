@@ -420,23 +420,24 @@ var colorSelect = {
             colorSelectDiv.style.display = "initial";
         $("#colorSelectDiv").animate({opacity:(colorSelectDiv.style.opacity != "1"?"1":"0")},300,()=>{if(!colorSelect.display) colorSelectDiv.style.display = "none";});
     },
-    addColor:function(refresh = true,color="#FF0000"){
-        colorSelectDiv.innerHTML+=`
-            <div>
-                <input type="color" value="`+color+`" class="colorInput" onchange="colorSelect.saveColorConfig()"/>
-                <button class="btn btn-default" onclick="setTimeout(()=>colorSelect.saveColorConfig(),10);this.parentElement.outerHTML='';">X</button>
-            </div>`;
+    addColor:function(color="#FF0000",deletable = true,refresh = true){
+        newColor = document.createElement("div");
+        newColor.innerHTML+=`<input type="color" value="`+color+`" class="colorInput" onchange="colorSelect.saveColorConfig()"/>`+(deletable?`<button class="btn btn-default" onclick="setTimeout(()=>colorSelect.saveColorConfig(),10);this.parentElement.outerHTML='';">X</button>`:'');
+        colorSelectDiv.appendChild(newColor);
+        
         if(refresh)
             this.saveColorConfig();
     },
-    saveColorConfig:function(){
+    saveColorConfig:function(updateChart = true){
         hexArray = [];
         colorList = colorSelectDiv.getElementsByClassName("colorInput");
         for(let i=0;i<colorList.length;i++)
             hexArray.push(colorList[i].value);
         colorConfig = hex2RgbArray(hexArray);
-        colorChart();
-        resultChart.update();
+        //In the event that you can't load the chart yet, this is usefull:
+        if(updateChart){
+            resultChart.update();
+            colorChart();
+        }
     }
 }
-

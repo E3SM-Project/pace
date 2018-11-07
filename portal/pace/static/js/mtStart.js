@@ -3,6 +3,14 @@
 
 //Fire up the summary:
 $(document).ready(()=>{
+    //Load colors for customizing:
+    let colorDelete = false;
+    ["#0000FF","#00FF00","#FF0000"].forEach(color=>{
+        colorSelect.addColor(color,colorDelete,false);
+        colorDelete = true;
+    });
+    colorSelect.saveColorConfig(false);
+
     var threadList = undefined;
     var onMtPage = true;
     dataInfo.style.height = (window.innerHeight*.8)+"px";
