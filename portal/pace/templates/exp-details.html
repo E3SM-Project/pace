@@ -53,10 +53,13 @@ Stop Option: {{ exp.stop_option}}
 MPI tasks/node: {{exp.mpi_tasks_per_node}}
 Summary Charts: {% for rank in ranks -%}<a href="/summary/{{expid}}/{{rank.rank}}">{{rank.rank}}</a> &nbsp;
             {%- endfor %}
-<a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
 <br>
-<a href="/note/{{expid}}">Additional Notes</a>
-            </code></pre>
+Additional Notes:
+</code>
+<textarea style="resize:both" id="note" name="note" class="form-control" readonly>{{note}}</textarea><a href="/note/{{exp.expid}}"><input style = "text-align:center;width:100%" value="Add/Edit" class="btn btn-light"/>
+<br>
+<a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
+           </pre>
         </td>
         <td class="inBlock">
             <img id="runtimeImg"/>
