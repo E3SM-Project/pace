@@ -436,8 +436,8 @@ var colorSelect = {
         colorConfig = hex2RgbArray(hexArray);
         //In the event that you can't load the chart yet, this is usefull:
         if(updateChart){
-            resultChart.update();
             colorChart();
+            resultChart.update();
         }
     }
 }
