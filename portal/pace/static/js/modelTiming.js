@@ -323,7 +323,6 @@ function colorChart(mode=-1,colorList = colorConfig){
             // for(let j=0;j<resultChart.data.datasets[0].data.length;j++)
             //     colorSumlist.push(resultChart.data.datasets[0].data[j]);
             let targetValue = valueName.children[valueName.selectedIndex].value;
-            console.log(targetValue);
             if(mtViewer.currExp().currentEntry.children.length > 0)
                 mtViewer.currExp().currentEntry.children.forEach(e=>colorSumlist.push(targetValue == "nodes"?mtSum(e)[1]:e.values[targetValue]));
             else colorSumlist.push(targetValue == "nodes"?mtSum(mtViewer.currExp().currentEntry)[1]:mtViewer.currExp().currentEntry.values[targetValue]);
