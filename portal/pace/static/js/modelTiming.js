@@ -12,7 +12,7 @@ var expGetFunc = [];
 var colorSetting = -1;
 
 //The default color configuration, setting this to undefined will make the mtViewer use the defaults in percentToColor()
-var colorConfig = [[0,0,255],[0,255,0],[255,0,0]];
+var colorConfig = [];
 
 //This will be where we look for a specific node. (Making the structured time-node into something linear at the same time)
 function addressTable(vals=undefined,jsonArray=false,srcExp,thread = -1){
@@ -174,7 +174,7 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
         //Make more lists:
         if(node.children.length>0){
             listElement.appendChild(htmlList(node.children,scope,currScope+1));
-            listElement.getElementsByTagName("span")[0].style.backgroundColor=percentToColor(percentList[percentIndex],.2);
+            listElement.getElementsByTagName("span")[0].style.backgroundColor=percentToColor(percentList[percentIndex],.2,0,colorConfig);
             if(currScope >= scope[0] && currScope<=scope[1])
                 listElement.getElementsByTagName("ul")[0].style.display="none";
         }
