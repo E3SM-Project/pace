@@ -38,6 +38,10 @@ def homePage():
 def aboutPage():
     return render_template("about.html")
 
+@app.route("/upload-howto")
+def uploadhowto():
+    return render_template("upload-howto.html")
+
 # Check file extention
 def allowed_file(filename):
     return '.' in filename and \

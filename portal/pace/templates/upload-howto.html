@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+{% block topscripts %}
+<title>PACE - Upload</title>
+{%endblock%}
+{% block content %}
+
+<h3> Tool </h3>
+<p>
+Please <a href="/static/tools/pace-upload">download and use this tool</a> to upload experiment data directly from supercomputers.
+<br>
+<code>
+# To download using command line
+<br>
+wget https://pace.ornl.gov/static/tools/pace-upload
+<br>
+chmod +x ./pace-upload
+<br>
+</code>
+</p>
+This is a Python-based tool that can be executed directly (./pace-upload) once you download and make it executable. 
+<br>
+It presently handles uploading user data in performance archive directories from all E3SM supported machines. The server checks for duplicates while processing uploaded data.
+<br>
+Please <a href="/static/demo/pace-upload.mp4">see the demo </a> for reference. A log file is written at the end that details the upload progress and notes any errors.
+<hr>
+
+<h3> Usage </h3>
+Examples: 
+<br>
+<code>
+./pace-upload --perf-archive user-exps-set
+<br>
+./pace-upload --perf-archive /project/projectdirs/acme/performance_archive/sarat
+</code>
+
+<p>
+<pre>
+Detailed usage:
+$ ./pace-upload --help
+usage: pace-upload [-h] [--exp-dir SOURCE] [--perf-archive SOURCE]
+                   [--application {e3sm}]
+
+PACE upload tool.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --exp-dir SOURCE, -ed SOURCE
+                        Root directory containing experiment(s) results.
+                        Handles multiple experiment directories under root
+  --perf-archive SOURCE, -pa SOURCE
+                        Root directory containing performance archive. Handles
+                        multiple performance archive directories under root
+  --application {e3sm}, -a {e3sm}
+                        Application name
+</pre>
+
+<hr>
+<h3> Performance Archive Locations</h3>
+<ul>
+<li>
+NERSC: /project/projectdirs/acme/performance_archive
+<br>
+       or /project/projectdirs/&lt;project name&gt;/performance_archive
+<li>
+ALCF: /projects/ClimateEnergy/performance_archive
+<br>
+       or  /projects/&lt;project name&gt;/performance_archive
+<li>
+OLCF: /lustre/atlas/proj-shared/cli115/performance_archive
+<br>
+       or /lustre/atlas/proj-shared/&lt;project name&gt;/performance_archive
+</li>
+
+<br>
+Structure within performance archive directory:
+<ul>
+<li>    Within the performance_archive directory there is a subdirectory for each user name.
+<li>    Within each user name subdirectory is a subdirectory for each case name (as defined by the create_newcase command).
+<li>    Within each case name subdirectory is a separate directory for each job with this case name, labelled by the E3SM $LID (essentially the date and time for this particular run: %y%m%d-%H%M%S).
+</ul>
+</ul>
+<br>
+<p>
+
+{% endblock %}
