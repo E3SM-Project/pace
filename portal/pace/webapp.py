@@ -12,12 +12,12 @@ import urllib
 from sqlalchemy.orm import sessionmaker
 from __init__ import db
 import os, shutil, distutils
+import re
 
 #Model Timing Library:
 import modelTiming as mt
 #modelTiming database information:
 from pace_common import *
-
 
 ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
 
@@ -59,7 +59,7 @@ def upload_file():
 				if os.path.exists(os.path.join(UPLOAD_FOLDER,'experiments.zip')):
 					os.remove(os.path.join(UPLOAD_FOLDER,'experiments.zip'))
 			except OSError as e:
-				print ("Error: %s - %s." % (e.filename, e.strerror))		
+				print ("Error: %s - %s." % (e.filename, e.strerror))
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(UPLOAD_FOLDER, filename))
 			return('complete')
@@ -244,15 +244,21 @@ def advSearch(searchQuery):
 def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList = None,getRanks = True):
     resultItems = []
     filteredItems = []
-    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res","timingprofile.case","init_time","run_time"]
-    specificVariables = variableList
-    if not whiteList == None:
-        specificVariables = whiteList
+
+    #Variable names are split into non-string and string respectively; this is to help improve search results during a basic search.
+    variableList=[
+        ["expid","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","init_time","run_time"],
+        ["user","machine","compset","exp_date","res","timingprofile.case"]
+    ]
+
+    specificVariables = whiteList
+    if whiteList == None:
+        specificVariables = variableList[0] + variableList[1]
 
     #This should be an easy way to determine if something's in the list
     if orderBy == "case":
         orderBy = "timingprofile.case"
-    elif orderBy not in variableList:
+    elif orderBy not in variableList[0] + variableList[1]:
         orderBy = "expid"
     #Only asc and desc are allowed:
     if ascDsc not in ["asc","desc"]:
@@ -319,7 +325,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
             else:
                 elementStr = ' like "%%'+syntax[1]+'%%"'
 
-            if syntax[0] in variableList:
+            if syntax[0] in variableList[0] + variableList[1]:
                 strList.append(syntax[0]+elementStr)
             elif syntax[0] == "case":
                 strList.append('timingprofile.case '+elementStr)
@@ -345,16 +351,23 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
         #Remove empty strings: (spaces on the client side)
         while '' in termList:
             termList.remove('')
-        print(termList)
-        
+        #print(termList)
+
         if(len(termList) > 0):
             queryStr = "select " + str(specificVariables).strip("[]").replace("'","") + " from timingprofile where "
             for term in termList:
+                #This controlls whether or not to search through number-based or string based variables:
+                targetIndex = 0
+                try:
+                    decimal(term)
+                except:
+                    targetIndex+=1
+
                 if not term == termList[0]:
                     queryStr+=" and "
                 queryStr+='( '
                 firstValue = True
-                for word in variableList:
+                for word in variableList[targetIndex]:
                     if not firstValue:
                         queryStr+=" or "
                     #Equal an exact string if $ is at the beginning:
@@ -364,7 +377,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
                         queryStr+=word+' like "%%'+term+'%%"'
                     firstValue = False
                 queryStr +=" )"
-    
+
             queryStr+=" order by "+orderBy+" "+ascDsc
             if limit:
                 queryStr+=" limit "+limit
