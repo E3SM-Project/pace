@@ -25,8 +25,7 @@ $(document).ready(()=>{
     quickSearchContainer.children[0].style.width="15em";
     quickSearchContainer.getElementsByClassName("pTextMenu")[0].style.width="15em";
 
-    //Change the footer to fixed due to weird happenings on mobile:
-    document.getElementsByClassName("footer")[0].style.position="fixed";
+    //Change the footer due to weird happenings on mobile:
     document.getElementsByClassName("footer")[0].style.zIndex = "-1";
     dmObj.toggle(dmObj.checkCookies());
     dmCheck.checked = dmObj.checkCookies();
