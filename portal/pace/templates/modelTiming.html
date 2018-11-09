@@ -75,8 +75,10 @@
     <p style="text-align:center"><button id="compareGo" onclick="compDivObj.scan()">Go!</button></p>
     </div>
     <div id="colorSelectDiv">
-        <h5>Change the default colors. They are used from least to greatest in the order listed.</h5>
-        <button onclick="colorSelect.addColor()">Add</button>
+        <p>Themes: <select style="width:65%" id="colorSThemes" onchange="colorSelect.swapTheme(this.selectedIndex)"></select></p>
+        <button onclick="colorSelect.addColor()">Add</button><button onclick="colorSelect.swapTheme(colorSThemes.selectedIndex)">Reset</button>
+        <span id="colorInputContainer">
+        </span>
     </div>
 {% endblock %}
 

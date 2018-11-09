@@ -423,11 +423,12 @@ var colorSelect = {
     addColor:function(color="#FF0000",deletable = true,refresh = true){
         newColor = document.createElement("div");
         newColor.innerHTML+=`<input type="color" value="`+color+`" class="colorInput" onchange="colorSelect.saveColorConfig()"/>`+(deletable?`<button class="btn btn-default" onclick="setTimeout(()=>colorSelect.saveColorConfig(),10);this.parentElement.outerHTML='';">X</button>`:'');
-        colorSelectDiv.appendChild(newColor);
+        colorInputContainer.appendChild(newColor);
         
         if(refresh)
             this.saveColorConfig();
     },
+    //Set the colors upon a change. This also get's saved to cookies.
     saveColorConfig:function(updateChart = true){
         hexArray = [];
         colorList = colorSelectDiv.getElementsByClassName("colorInput");
@@ -439,5 +440,48 @@ var colorSelect = {
             colorChart();
             resultChart.update();
         }
+        let cookiePath=";path="+detectRootUrl()+"summary/";
+        document.cookie = "barTheme="+colorSThemes.selectedIndex+cookiePath;
+        document.cookie = "barColors="+hexArray.join()+cookiePath;
+    },
+    themes:[
+        {name:"default",values:["#0000FF","#00FF00","#FF0000"]},
+        {name:"fall",values:["#66ff33","#FFFF00","#FF8000","#663300"]},
+        {name:"frost",values:["#FFFFFF","#00ffff"]},
+        {name:"tuxedo",values:["#FFFFFF","#000000"]},
+        {name:"Red on yellow kill a fellow...",values:["#FFF000","#FF0000","#000000"]}
+    ],
+    loadThemes:function(){
+        this.themes.forEach(theme=>{
+            colorSThemes.innerHTML+="<option"+(theme == this.themes[0]?" selected":"")+">"+theme.name+"</option>"
+        });
+    },
+    //Changed the currently used theme; it can either be one from this scope (specify the index) or a custom array.
+    swapTheme:function(srcObj,updateChart = true){
+        currColors = document.getElementsByClassName("colorInput");
+        if(currColors.length > 0)
+            colorInputContainer.innerHTML="";
+        //Load colors for customizing:
+        let colorDelete = false;
+        
+        (typeof(srcObj) == "object"?srcObj:this.themes[srcObj].values).forEach(color=>{
+            colorSelect.addColor(color,colorDelete,false);
+            colorDelete = true;
+        });
+        colorSelect.saveColorConfig(updateChart);
+    },
+    //This is a quick function to help look for cookies. It's general enough for use anywhere else if needed.
+    //Regex is required for use, see: https://www.w3schools.com/jsref/jsref_obj_regexp.asp
+    cookieSearch:regex=>document.cookie.split(";").find(e=>regex.test(e)),
+    restoreCookies:function(){
+        let cookieList = [
+            this.cookieSearch(/barTheme/),
+            this.cookieSearch(/barColors/)
+        ];
+        if(cookieList[0] && cookieList[1]){
+            colorSThemes.selectedIndex = cookieList[0].split("=")[1]*1;
+            this.swapTheme(cookieList[1].split("=")[1].split(","),false);
+        }
+        else colorSelect.swapTheme(0,false);
     }
 }
