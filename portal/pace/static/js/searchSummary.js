@@ -33,8 +33,7 @@ var bChartObj = function(id,config){
             label:{val:"machine"},
             y:{val:"model_throughput",label:"SYPD"},
             x:{val:"total_pes_active",label:"Total PEs"},
-            r:{val:15,hardCoded:true
-            }
+            r:{val:15,hardCoded:true}
         }
     }
 

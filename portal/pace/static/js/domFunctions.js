@@ -261,14 +261,17 @@ var compDivObj = {
             $("#compareSelectDiv").animate({opacity:(compareSelectDiv.style.opacity != "1"?"1":"0")},300,()=>{if(!compDivObj.display) compareSelectDiv.style.display = "none";});
     },
     makeExp:function(){
-        let resultString = "<div class='compareDiv'><p style='text-align:right;'><button onclick='this.parentElement.parentElement.outerHTML=\"\";compDivObj.expCountCheck();'>X</button></p><select onchange='compDivObj.updateThreads(this)'>";
+        let resultElement = document.createElement("div");
+        resultElement.className="compareDiv";
+        let resultString = "<p style='text-align:right;'><button onclick='this.parentElement.parentElement.outerHTML=\"\";compDivObj.expCountCheck();'>X</button></p><select onchange='compDivObj.updateThreads(this)'>";
             expList.forEach(exp=>{
                 resultString+="<option>"+exp.name+"_"+exp.rank+"</option>"
             });
             resultString+="</select><select>";
             expList[0].timeNodes.forEach((element,index)=>resultString+="<option value='"+index+"'>Thread "+index+"</option>");
-        resultString+="</select></div>";
-        compDivBody.innerHTML+=resultString;
+        resultString+="</select>";
+        resultElement.innerHTML=resultString;
+        compDivBody.appendChild(resultElement);
         this.expCountCheck();
     },
     //This name is weird XP
@@ -322,7 +325,7 @@ var dmObj={
     toggle:function(tf){
         this.on = tf;
         //Change cookies:
-        document.cookie = "darkMode="+(tf?1:0)+"; path="+detectRootUrl().replace("https://pace.ornl.gov","")+"summary/";
+        document.cookie = "darkMode="+(tf?1:0)+"; path=/summary/";
         clearInterval(dmObj.interval);
         lsBackground.style.backgroundColor = (tf?"rgb(25,25,25)":"white");
         dmObj.interval = setInterval(()=>{
@@ -440,15 +443,15 @@ var colorSelect = {
             colorChart();
             resultChart.update();
         }
-        let cookiePath=";path="+detectRootUrl()+"summary/";
+        let cookiePath=";path=/summary/";
         document.cookie = "barTheme="+colorSThemes.selectedIndex+cookiePath;
         document.cookie = "barColors="+hexArray.join()+cookiePath;
     },
     themes:[
-        {name:"default",values:["#0000FF","#00FF00","#FF0000"]},
-        {name:"fall",values:["#66ff33","#FFFF00","#FF8000","#663300"]},
-        {name:"frost",values:["#FFFFFF","#00ffff"]},
-        {name:"tuxedo",values:["#FFFFFF","#000000"]},
+        {name:"Default",values:["#0000FF","#00FF00","#FF0000"]},
+        {name:"Fall",values:["#66ff33","#FFFF00","#FF8000","#663300"]},
+        {name:"Frost",values:["#FFFFFF","#00ffff"]},
+        {name:"Tuxedo",values:["#FFFFFF","#000000"]},
         {name:"Red on yellow kill a fellow...",values:["#FFF000","#FF0000","#000000"]}
     ],
     loadThemes:function(){
