@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-from flask import Flask,render_template,Response,make_response,send_from_directory,request,redirect,url_for
+from flask import Flask,render_template,Response,make_response,send_from_directory,request,redirect,url_for, session
 from collections import OrderedDict
 from pace import app
 import parse as parse
@@ -17,6 +17,20 @@ import os, shutil, distutils
 import modelTiming as mt
 #modelTiming database information:
 from pace_common import *
+
+#github imports
+import binascii
+from rauth import OAuth2Service
+
+GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET = getGithubkey()
+
+github = OAuth2Service(
+    client_id=GITHUB_CLIENT_ID,
+    client_secret=GITHUB_CLIENT_SECRET,
+    name='github',
+    authorize_url='https://github.com/login/oauth/authorize',
+    access_token_url='https://github.com/login/oauth/access_token',
+    base_url='https://api.github.com/')
 
 
 ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
@@ -89,6 +103,58 @@ def userauth():
 			return ("invaliduser")
 		else:
 			return ("validuser")
+
+@app.route('/login')
+def login():
+
+	# Generte and store a state in session before calling authorize_url
+	if 'oauth_state' not in session:
+		session['oauth_state'] = binascii.hexlify(os.urandom(24))
+
+	# For unauthorized users, show link to sign in
+	authorize_url = github.get_authorize_url(scope='', state=session['oauth_state'])
+	return redirect(authorize_url)
+
+
+@app.route('/callback')
+def callback():
+	#OAuth callback from GitHub
+	code = request.args['code']
+	state = request.args['state'].encode('utf-8')
+	# Validate state param to prevent CSRF
+	if state != session['oauth_state']:
+		return render_template('error.html')
+
+	# Request access token
+	auth_session = github.get_auth_session(data={'code': code})
+	session['access_token'] = auth_session.access_token
+
+	# Call API to retrieve username.
+	# `auth_session` is a wrapper object of requests with oauth access token
+	r = auth_session.get('/user')
+	session['username'] = r.json()['login']
+	searchuser = Authusers.query.filter_by(user=session['username']).first()
+	db.session.close()
+	if searchuser is None:
+		session['login']=False
+		session.pop('username')
+		session.pop('access_token')
+		return render_template('notauth.html')
+	else:
+		session['login']=True
+		return redirect('/note/'+str(session['expid']))
+
+
+@app.route('/logout')
+def logout():
+	try:
+		# Delete session data
+		session.pop('username')
+		session.pop('access_token')
+		session['login']=False
+	except KeyError:
+		return redirect('/')
+	return redirect('/')
 
 @app.route("/uploadlogin", methods=['GET','POST'])
 def uploadlogin():
@@ -209,22 +275,29 @@ def expDetails(mexpid):
 
 @app.route("/note/<expID>", methods=["GET","POST"])
 def note(expID):
-	if request.method == "GET":
-		try:
-			myexp = db.engine.execute("select * from additionalnote where expid= "+expID).fetchall()[0]
-			note = myexp.note
-		except IndexError:
-			note=""
-		return render_template('note.html', note = note, expid = expID)
-	elif request.method == "POST":
-		note = request.form['note']		
-		try:
-			myexp = db.engine.execute("select * from additionalnote where expid= "+expID).fetchall()[0]
-			db.engine.execute("update additionalnote set note =\'"+str(note)+"\' where expid = " +expID)
-		except IndexError:
-			db.engine.execute("insert into additionalnote(expid,note) values ("+expID+",\'"+str(note)+"\')")
-		return redirect('/exp-details/'+str(expID))
-		#return render_template('note.html', note = note, expid = expID)
+	session['expid']=expID
+	try:
+		userlogin = session['login']
+	except KeyError:
+		return redirect('/login')
+	if userlogin == True:
+		if request.method == "GET":
+			try:
+				myexp = db.engine.execute("select * from additionalnote where expid= "+expID).fetchall()[0]
+				note = myexp.note
+			except IndexError:
+				note=""
+			return render_template('note.html', note = note, expid = expID)
+		elif request.method == "POST":
+			note = request.form['note']		
+			try:
+				myexp = db.engine.execute("select * from additionalnote where expid= "+expID).fetchall()[0]
+				db.engine.execute("update additionalnote set note =\'"+str(note)+"\' where expid = " +expID)
+			except IndexError:
+				db.engine.execute("insert into additionalnote(expid,note) values ("+expID+",\'"+str(note)+"\')")
+			return redirect('/exp-details/'+str(expID))
+	else:
+		return redirect('/login')
 #Depcricated version of the search page
 """@app.route("/exps")
 def expsList():
