@@ -42,6 +42,7 @@ EXP_DIR='/pace/assets/static/data/'
 
 # upload directory
 UPLOAD_FOLDER = '/pace/prod/portal/upload'
+
 ### Helper functions etc... ####
 # Colors for console text
 class bcolors:
@@ -99,6 +100,23 @@ def getMiniokey():
 	myMiniourl = parser.get('MINIO','minio_url')
 
 	return myAkey, mySkey, myMiniourl
+
+def getGithubkey():
+	configFile = detectPaceRc()
+	myClientid = None
+	myClientsecret = None
+
+	filePerms = oct(os.stat(configFile)[ST_MODE])
+	if filePerms != '0100600':
+		print bcolors.WARNING + "Config file permissions should be set to read, write for owner only" 
+		print "Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC
+	# print filePerms
+	parser = RawConfigParser()
+	parser.read(configFile)
+	myClientid = parser.get('GITHUBAPP','githubapp_client_id')
+	myClientsecret = parser.get('GITHUBAPP','githubapp_secret_key')
+
+	return myClientid, myClientsecret
 
 def readConfigFile(configFile):
 	global PACE_USER
