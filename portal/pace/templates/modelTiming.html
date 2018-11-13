@@ -53,15 +53,14 @@
                     <button onclick="colorSelect.toggle()">Set Colors</button>
                 </div>
             </td>
-            <td>
-            </td>
-            <td><span id="metaInfoContainer"><span id="metaInfoTxt" style="margin:20px"></span></span></td>
+            <td style="margin-bottom:1.7em"><span id="metaInfoContainer"><span id="metaInfoTxt" style="margin:20px"></span><span></td>
             </tr>
             </tbody>
         </table>
         <div id="zoomDiv"><button onclick="resizeChartVal=(resizeChartVal <=1?1:resizeChartVal-25);resizeChart(resizeChartVal)">-</button><button onclick="resizeChartVal+=25;resizeChart(resizeChartVal)">+</button></div>
         <div id="dataInfo"><div id="chartResizeContainer"><canvas id="chartTag"></canvas></div></div>
         <div id="dlDisplayButton" onclick="dlSlide()"></div>
+        <div id="dlResizeBar" onmousedown="arguments[0].preventDefault();dlMouseDown = true; dlBarMouseDown = true;" onmouseup="dlMouseDown=false;dlBarMouseDown = false;"></div>
         <div id="dataList">
             <button id="summaryButton">Summary</button>
             <div style= "margin-left: -6px;" id="listContent"></div>

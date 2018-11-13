@@ -39,6 +39,7 @@ ul{
     height:1.7em;
     margin-right:5px;
     padding-top:0px;
+    z-index: 2;
 }
 
 #mtMain{
@@ -62,6 +63,7 @@ ul{
     font-family:arial;
     text-align:center;
     overflow-y:scroll;
+    z-index:3;
 }
 .compareDiv{
     width:10em;
@@ -82,11 +84,18 @@ ul{
     display:inline-block;
 }
 
+#metaTable tr td{
+    display:table-cell;
+    border:5px solid transparent;
+}
+
 #metaInfoContainer{
     text-align:center;
     background-color:lightgray;
     border-radius:20px;
-    display:none
+    display:none;
+    position:absolute;
+    z-index: 4;
 }
 
 #quickSearchContainer{
@@ -126,4 +135,13 @@ ul{
     font-family:arial;
     text-align:center;
     overflow-y:scroll;
+}
+
+#dlResizeBar{
+    /* background-color:black; */
+    width:2em;
+    left:20em;
+    position:absolute;
+    cursor:ew-resize;
+    z-index: 3;
 }

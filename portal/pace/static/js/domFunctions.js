@@ -6,6 +6,7 @@ var dlLock = true; //Locks dataList in place. If it slides back, so will dataInf
 var dlShow = true;
 //These are for data list event listeners:
 var dlMouseDown = false;
+var dlBarMouseDown = false;
 var dlCurrWidth = dataList.style.width;
 
 //adjust the size of the dataList to reflect the graph's height:
@@ -15,7 +16,11 @@ window.onresize = function(){
     dataList.style.height = dataList.style.height;
     dlDisplayButton.style.height = dataList.style.height;
     clearTimeout(triggerResize);
-    triggerResize=setTimeout(()=>dataList.style.height = dataInfo.style.height,10)
+    triggerResize=setTimeout(()=>{
+        dataList.style.height = dataInfo.style.height
+        dlResizeBar.style.height = dataList.style.height;
+        dlResizeBar.style.left = ((dataList.style.width.replace("px","")*1)+25)+"px";
+    },10)
 
     //Normally, 1 em = 16px, but 13 seems to work better for this scenario :P (See: https://kyleschaeffer.com/development/css-font-size-em-vs-px-vs-pt-vs/)
     if(dlLock){
@@ -45,9 +50,12 @@ dataList.onmouseup = function(){
     dlMouseDown = false
 }
 
-dataList.onmousemove = function(){
+window.onmousemove = function(){
+    if(dlBarMouseDown)
+        dataList.style.width = arguments[0].x-32+'px';
     if(dlLock && dlMouseDown && dataList.style.width !=dlCurrWidth){
         dlCurrWidth = dataList.style.width;
+        dlResizeBar.style.left = ((dataList.style.width.replace("px","")*1)+25)+"px";
         dataInfo.style.width = (window.innerWidth - dataList.style.width.replace("px","")*1) + "px";
         dataInfo.style.left = ((dataList.style.width.replace("px","")*1) + 30) + "px";
         backButton.style.left = ((dataList.style.width.replace("px","")*1) + 30) + "px";
@@ -59,6 +67,12 @@ function dlSlide(listFB = !dlShow,infoFB){
     if(infoFB === undefined)
         infoFB = dlLock && listFB?true:false;
     $(dataList).animate((listFB?{left:"2em",width: (dlLock? (window.innerWidth * .2) / 13 + "em":"18em" ) }:{left:"-22em",width:"18em"}),250);
+    if(!listFB)
+        dlResizeBar.style.display="none";
+    else{
+        dlResizeBar.style.display="";
+        dlResizeBar.style.left = ((dataList.style.width.replace("em","")*1)+5)+"em";
+    }
     dlShow = listFB;
 
     let leftValue = isChrome?"22%":"27%";
@@ -400,10 +414,29 @@ dataInfo.onwheel = function(evt){
     }
 }
 
+//I disovered a bug in google chrome! Until it's fixed, here's something to properly render the metatable.
+function metaContainerChromeFix(){
+    if(isChrome && metaTable.style.display == "none"){
+        metaInfoContainer.style.display="none";
+        setTimeout(()=>metaInfoContainer.style.display="inline",10);
+    }
+}
+
 //Open and close the meta-info box
-function metaOpenClose(openClose=false,compset,res,expid){
-    if(compset && res && expid){
-        let outStr = "Compset: <a href='"+detectRootUrl()+"advsearch/compset:"+compset+"'>"+compset+"</a> Res: <a href='"+detectRootUrl()+"advsearch/res:"+res+"'>"+res+"</a> (<a href='"+detectRootUrl()+"exp-details/"+expid+"'>Details</a>)";
+function metaOpenClose(openClose=false,metaArray){
+    if(metaArray){
+        let outStr=""
+        if(metaArray.length > 1){
+            outStr = `<span onclick='$(metaTable).slideToggle(200,metaContainerChromeFix)' style='cursor:pointer'>Click to view more details about these experiments.</span>
+            <div id='metaTable' style="display:none;text-align:left;margin-left:25%"><table><thead><tr><th>Compset</th><th>Res</th><th>Expid</th></tr></thead><tbody>`;
+            metaArray.forEach(exp=>{
+                outStr+="<tr><td>"+exp.compset+"</td><td>"+exp.res+"</td><td><a href='"+detectRootUrl()+"exp-details/"+exp.name+"'>"+exp.name+"</a></td></tr></div>";
+            });
+            outStr+="</tbody></table>"
+        }
+        else{
+            outStr = "Compset: <a href='"+detectRootUrl()+"advsearch/compset:"+metaArray[0].compset+"'>"+metaArray[0].compset+"</a> Res: <a href='"+detectRootUrl()+"advsearch/res:"+metaArray[0].res+"'>"+metaArray[0].res+"</a> (<a href='"+detectRootUrl()+"exp-details/"+metaArray[0].name+"'>Details</a>)";
+        }
         $(metaInfoTxt.parentElement).slideUp(200);
         setTimeout(()=>metaInfoTxt.innerHTML = outStr,metaInfoTxt.innerHTML == ""?0:200);
         $(metaInfoTxt.parentElement).slideDown(200);

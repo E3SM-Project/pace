@@ -111,7 +111,7 @@ function expDownloadDefault(){
     updateExpSelect();
     animate(false);
     currExp.view();
-    metaOpenClose(true,currExp.compset,currExp.res,currExp.name);
+    metaOpenClose(true,[currExp]);
     //Construct a new url for browser display:
     let newUrl = detectRootUrl()+"summary/";
     let idStr = "";
@@ -136,7 +136,7 @@ function switchExperiment(index = expSelect.selectedIndex){
         summaryButton.click();
     else mtViewer.loadChart();
     resultChart.options.title.text=currExp.name +": "+currExp.rank+ " (Thread "+currExp.currThread+")";
-    metaOpenClose(true,currExp.compset,currExp.res,currExp.name);
+    metaOpenClose(true,[currExp]);
 
     let newUrl = detectRootUrl()+"summary/";
     let idStr = "";
@@ -620,7 +620,6 @@ var comparisonMode = {
             expNameSort[node.name].push(node);
         },
     start:function(){
-        metaOpenClose();
         if(this.exp.timeNodes[0].length == 0){
             alert("Error: there's nothing to compare.");
             comparisonMode.finish();
@@ -643,10 +642,14 @@ var comparisonMode = {
                     let newLink = detectRootUrl()+"summary/";
                     let idStr="";
                     let rankStr="";
+
+                    let metaArray = [];
                     this.activeExps.forEach(expArray=>{
                         idStr+=(idStr == ""?"":",")+expArray[0].name;
                         rankStr+=(rankStr == ""?"":",")+expArray[0].rank;
+                        metaArray.push(expArray[0]);
                     });
+                    metaOpenClose(true,metaArray);
                     history.pushState("","",newLink+idStr+"/"+rankStr+"/compare/"+(compare?window.location.hash:"#summary"));
                 },10);
             },10);
