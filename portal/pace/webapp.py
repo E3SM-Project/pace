@@ -287,6 +287,10 @@ def note(expID):
 	if userlogin == True:
 		if request.method == "GET":
 			try:
+				myexpid = db.engine.execute("select * from timingprofile where expid= "+expID).fetchall()[0]
+			except IndexError:
+				return render_template('error.html')
+			try:
 				myexp = db.engine.execute("select * from additionalnote where expid= "+expID).fetchall()[0]
 				note = myexp.note
 			except IndexError:
