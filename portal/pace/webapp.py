@@ -262,11 +262,9 @@ def expDetails(mexpid):
 		myexp = db.engine.execute("select * from timingprofile where expid= "+mexpid).fetchall()[0]
 	except IndexError:
 		return render_template('error.html')
-	# mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
 	mypelayout = db.engine.execute("select * from pelayout where expid= "+mexpid).fetchall()[0]
-	myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()
-	ranks = db.session.query(ModelTiming.rank).filter_by(expid = mexpid)
-	db.session.close()
+	myruntime = db.session.execute("select * from runtime where expid= "+mexpid).fetchall()
+	ranks = db.session.execute("select rank from model_timing where expid= "+mexpid).fetchall()
 	colorDict = {}
 	for i in range(len(runtimeSvg.default_args['comps'])):
 		colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
