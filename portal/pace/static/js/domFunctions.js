@@ -23,9 +23,10 @@ window.onresize = function(){
         //Datalist and dataInfo wind up using three different units for resizing! ...This changes the measurement again because dataInfo doesn't want to align with datalist otherwise XP
         if(dataInfo.style.width[dataInfo.style.width.length-1] !="%"){
             dataInfo.style.width = (window.innerWidth *.77) / 13 + "em";
-            dataInfo.style.left = dataList.style.width;
+            dataInfo.style.left = (window.innerWidth *.22) / 13 + "em";
+            backButton.style.left = dataInfo.style.left;
         }
-    },10)
+    },10);
 
     //Normally, 1 em = 16px, but 13 seems to work better for this scenario :P (See: https://kyleschaeffer.com/development/css-font-size-em-vs-px-vs-pt-vs/)
     if(dlLock){
@@ -61,7 +62,7 @@ window.onmousemove = function(){
     if(dlLock && dlMouseDown && dataList.style.width !=dlCurrWidth){
         dlCurrWidth = dataList.style.width;
         //This value is for converting back to px:
-        let currWidthTemp = dlCurrWidth.replace("em","")*13;
+        let currWidthTemp = (/em/.test(dlCurrWidth)?dlCurrWidth.replace("em","")*13:dlCurrWidth.replace("px","")*1);
 
         dlResizeBar.style.left = (currWidthTemp+25)+"px";
         dataInfo.style.width = (window.innerWidth - currWidthTemp) + "px";
