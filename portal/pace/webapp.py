@@ -29,6 +29,12 @@ from datastructs import *
 #Runtime image generator: by donahue5 (Modified for use on PACE)
 import pe_layout_timings as runtimeSvg
 
+#This is for querying colors:
+from matplotlib.colors import to_rgb,to_hex
+import matplotlib.cm as cm
+
+mplColors = cm.datad.keys()
+
 # Home page
 @app.route("/")
 def homePage():
@@ -201,6 +207,26 @@ def expDetails(mexpid):
     for i in range(len(runtimeSvg.default_args['comps'])):
         colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
     return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks,chartColors = json.dumps(colorDict))
+
+#Directly import colors from matplotlib! There are allot of colors available, so why not? :D
+@app.route("/ajax/getMplColor/<mplName>")
+@app.route("/ajax/getMplColor/<mplName>/<colorCount>")
+def getMplColor(mplName,colorCount = "10"):
+    if mplName in mplColors:
+        targetColor = cm.get_cmap(mplName)
+        colorList = []
+        colorAdd = 1.0 / int(colorCount)
+        currColor = colorAdd
+
+        while currColor < 1+colorAdd:
+            print (currColor)
+            colorList.append( to_hex(to_rgb(targetColor(currColor))) )
+            currColor+=colorAdd
+        #Reverse the list to be compatible with the mtViewer
+        # colorList.reverse()
+        return json.dumps(colorList)
+    else:
+        return "[]"
 
 #Depcricated version of the search page
 """@app.route("/exps")

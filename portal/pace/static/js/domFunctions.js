@@ -495,7 +495,8 @@ var colorSelect = {
         {name:"Frost",values:["#FFFFFF","#00ffff"]},
         {name:"Tuxedo",values:["#FFFFFF","#000000"]},
         {name:"Red on yellow kill a fellow...",values:["#FFF000","#FF0000","#000000"]},
-        {name:"The Legendary KC",values:["#b138ff", "#26003e"]}
+        {name:"The Legendary KC",values:["#b138ff", "#26003e"]},
+        {name:"matplotlib colormaps",values:["#0000FF","#00FF00","#FF0000"]}
     ],
     loadThemes:function(){
         this.themes.forEach(theme=>{
@@ -529,5 +530,13 @@ var colorSelect = {
             this.swapTheme(cookieList[1].split("=")[1].split(","),false);
         }
         else colorSelect.swapTheme(0,false);
+    },
+    getMplTheme:function(name,colorCount = 10){
+        $.get("/ajax/getMplColor/"+name+"/"+colorCount,data=>{
+            colorArray = JSON.parse(data);
+            if(colorArray.length == 0)
+                alert("Color not found...");
+            else this.swapTheme(colorArray);
+        });
     }
 }

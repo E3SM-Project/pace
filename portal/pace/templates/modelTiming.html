@@ -74,7 +74,11 @@
     <p style="text-align:center"><button id="compareGo" onclick="compDivObj.scan()">Go!</button></p>
     </div>
     <div id="colorSelectDiv">
-        <p>Themes: <select style="width:65%" id="colorSThemes" onchange="colorSelect.swapTheme(this.selectedIndex)"></select></p>
+        <p>Themes: <select style="width:65%" id="colorSThemes" onchange="mplContainer.style.display = (this.selectedIndex == this.children.length-1?'block':'none');colorSelect.swapTheme(this.selectedIndex)"></select></p>
+        <span id="mplContainer" style="display:none">
+            For a color reference, <a href = "https://matplotlib.org/gallery/color/colormap_reference.html">click here</a>
+            <input id="mplSearchInput" class="form-control" placeholder="Search..." onchange="colorSelect.getMplTheme(this.value)">
+        </span>
         <button onclick="colorSelect.addColor()">Add</button><button onclick="colorSelect.swapTheme(colorSThemes.selectedIndex)">Reset</button>
         <span id="colorInputContainer">
         </span>
