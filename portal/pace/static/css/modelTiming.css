@@ -29,7 +29,7 @@ ul{
 #backButton{
     position: absolute;
     left:27%;
-    z-index: 0;
+    z-index: 3;
 }
 #zoomDiv{
     float:right;

@@ -164,14 +164,14 @@ def summaryQuery(expID,rank):
     elif expID == "-2":
         resultNodes = mt.parse(basePath+"model_timing_stats")
     else:
-        resultNodes = json.loads(db.engine.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal)
+        resultNodes = db.engine.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
         #Get user and machine information:
         tpData = db.engine.execute("select compset,res from timingprofile where expid = "+expID).fetchall()
         compset,res = tpData[0].compset,tpData[0].res
 
     if rank == 'stats':
         #Grab processes > 1 second:
-        nodeTemp = resultNodes
+        nodeTemp = json.loads(resultNodes)
         newJson = []
         for node in nodeTemp[0]:
             if node["values"]["wallmax"] > 0:
@@ -186,8 +186,8 @@ def summaryQuery(expID,rank):
         #Grab the top twenty nodes:
         while not len(newJson) == 50:
             newJson.pop()
-        resultNodes = [newJson]
-    return json.dumps({"obj":resultNodes,"meta":{"expid":expID,"rank":rank,"compset":compset,"res":res} })
+        resultNodes = json.dumps([newJson])
+    return  '{{"obj":{0},"meta":{{"expid":"{1}","rank":"{2}","compset":"{3}","res":"{4}"}} }}'.format(resultNodes,expID,rank,compset,res)
 @app.route("/exp-details/<mexpid>")
 def expDetails(mexpid):
     myexp = None

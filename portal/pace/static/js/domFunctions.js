@@ -19,7 +19,12 @@ window.onresize = function(){
     triggerResize=setTimeout(()=>{
         dataList.style.height = dataInfo.style.height
         dlResizeBar.style.height = dataList.style.height;
-        dlResizeBar.style.left = ((dataList.style.width.replace("px","")*1)+25)+"px";
+        dlResizeBar.style.left = dataInfo.style.left;
+        //Datalist and dataInfo wind up using three different units for resizing! ...This changes the measurement again because dataInfo doesn't want to align with datalist otherwise XP
+        if(dataInfo.style.width[dataInfo.style.width.length-1] !="%"){
+            dataInfo.style.width = (window.innerWidth *.77) / 13 + "em";
+            dataInfo.style.left = dataList.style.width;
+        }
     },10)
 
     //Normally, 1 em = 16px, but 13 seems to work better for this scenario :P (See: https://kyleschaeffer.com/development/css-font-size-em-vs-px-vs-pt-vs/)
@@ -52,13 +57,16 @@ dataList.onmouseup = function(){
 
 window.onmousemove = function(){
     if(dlBarMouseDown)
-        dataList.style.width = arguments[0].x-32+'px';
+        dataList.style.width = ( (arguments[0].x-32)/13)+'em';
     if(dlLock && dlMouseDown && dataList.style.width !=dlCurrWidth){
         dlCurrWidth = dataList.style.width;
-        dlResizeBar.style.left = ((dataList.style.width.replace("px","")*1)+25)+"px";
-        dataInfo.style.width = (window.innerWidth - dataList.style.width.replace("px","")*1) + "px";
-        dataInfo.style.left = ((dataList.style.width.replace("px","")*1) + 30) + "px";
-        backButton.style.left = ((dataList.style.width.replace("px","")*1) + 30) + "px";
+        //This value is for converting back to px:
+        let currWidthTemp = dlCurrWidth.replace("em","")*13;
+
+        dlResizeBar.style.left = (currWidthTemp+25)+"px";
+        dataInfo.style.width = (window.innerWidth - currWidthTemp) + "px";
+        dataInfo.style.left = (currWidthTemp + 30) + "px";
+        backButton.style.left = (currWidthTemp + 30) + "px";
     }
 }
 
@@ -67,17 +75,17 @@ function dlSlide(listFB = !dlShow,infoFB){
     if(infoFB === undefined)
         infoFB = dlLock && listFB?true:false;
     $(dataList).animate((listFB?{left:"2em",width: (dlLock? (window.innerWidth * .2) / 13 + "em":"18em" ) }:{left:"-22em",width:"18em"}),250);
-    if(!listFB)
-        dlResizeBar.style.display="none";
-    else{
-        dlResizeBar.style.display="";
-        dlResizeBar.style.left = ((dataList.style.width.replace("em","")*1)+5)+"em";
-    }
     dlShow = listFB;
 
     let leftValue = isChrome?"22%":"27%";
     $(dataInfo).animate((infoFB?{left:leftValue,width:isChrome?"77%":"75%"}:{left:"2%",width:"99%"} ),250);
     $(backButton).animate((infoFB?{left:leftValue}:{left:"2%"} ),250);
+    if(!listFB)
+        dlResizeBar.style.display="none";
+    else{
+        dlResizeBar.style.display="";
+        dlResizeBar.style.left = leftValue;
+    }
 }
 
 function toggleDlLock(tf = !dlLock){
@@ -485,7 +493,8 @@ var colorSelect = {
         {name:"Fall",values:["#66ff33","#FFFF00","#FF8000","#663300"]},
         {name:"Frost",values:["#FFFFFF","#00ffff"]},
         {name:"Tuxedo",values:["#FFFFFF","#000000"]},
-        {name:"Red on yellow kill a fellow...",values:["#FFF000","#FF0000","#000000"]}
+        {name:"Red on yellow kill a fellow...",values:["#FFF000","#FF0000","#000000"]},
+        {name:"The Legendary KC",values:["#b138ff", "#26003e"]}
     ],
     loadThemes:function(){
         this.themes.forEach(theme=>{
