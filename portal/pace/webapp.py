@@ -228,6 +228,25 @@ def getMplColor(mplName,colorCount = "10"):
     else:
         return "[]"
 
+@app.route("/ajax/queryMpl/<mplName>")
+def queryMpl(mplName):
+    ezPattern = re.compile(mplName)
+    results = []
+    for name in mplColors:
+        if re.search(ezPattern,name) or name == mplName:
+            results.append(name)
+    sortPattern = re.compile("\\b"+mplName)
+    for i in range(len(results)):
+        if(re.search(sortPattern,results[i])):
+            # print(results[i])
+            for j in range(len(results)):
+                if not results[j] == results[i] and not re.search(sortPattern,results[j]):
+                    # print("replace:"+results[j])
+                    tmp = results[j]
+                    results[j] = results[i]
+                    results[i] = tmp
+                    break
+    return json.dumps(results)
 #Depcricated version of the search page
 """@app.route("/exps")
 def expsList():

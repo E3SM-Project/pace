@@ -5,6 +5,7 @@
 $(document).ready(()=>{
     colorSelect.loadThemes();
     colorSelect.restoreCookies();
+    mplContainer.style.display = (colorSThemes.selectedIndex == colorSThemes.children.length-1?'block':'none');
 
     var threadList = undefined;
     var onMtPage = true;

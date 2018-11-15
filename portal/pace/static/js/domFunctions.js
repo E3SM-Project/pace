@@ -540,3 +540,20 @@ var colorSelect = {
         });
     }
 }
+
+var colorSearchPredict = new predictiveSearch.element(mplSearchInput,"csp");
+mplSearchInput.onkeydown = evt=>{
+    if(evt.key == "Enter" && colorSearchPredict.allowEnter)
+        colorSelect.getMplTheme(mplSearchInput.value)
+    colorSearchPredict.keydownListener(evt);
+};
+
+mplSearchInput.onkeyup = evt=>{
+    colorSearchPredict.keyupListener(evt);
+    if(mplSearchInput.value!="")
+        $.get("/ajax/queryMpl/"+mplSearchInput.value,data=>colorSearchPredict.refreshKeywords(JSON.parse(data)) );
+    else colorSearchPredict.pTextMenu.style.display="none";
+}
+
+mplSearchInput.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("csp"),150);
+colorSearchPredict.pTextMenu.style.width = "100%";
