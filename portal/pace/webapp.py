@@ -219,7 +219,7 @@ def getMplColor(mplName,colorCount = 10):
         currColor = colorAdd
 
         while currColor < 1+colorAdd:
-            print (currColor)
+            # print (currColor)
             colorList.append( to_hex(to_rgb(targetColor(currColor))) )
             currColor+=colorAdd
         #Reverse the list to be compatible with the mtViewer
