@@ -286,7 +286,7 @@ var compDivObj = {
     makeExp:function(){
         let resultElement = document.createElement("div");
         resultElement.className="compareDiv";
-        let resultString = "<p style='text-align:right;'><button onclick='this.parentElement.parentElement.outerHTML=\"\";compDivObj.expCountCheck();'>X</button></p><select onchange='compDivObj.updateThreads(this)'>";
+        let resultString = "<p style='text-align:right;'><button class='btn btn-default' onclick='this.parentElement.parentElement.outerHTML=\"\";compDivObj.expCountCheck();'>X</button></p><select onchange='compDivObj.updateThreads(this)'>";
             expList.forEach(exp=>{
                 resultString+="<option>"+exp.name+"_"+exp.rank+"</option>"
             });

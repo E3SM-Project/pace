@@ -154,7 +154,7 @@ def summaryHtml(expID,rank,compare="",threads=""):
     return render_template("modelTiming.html",exp = "var expData = ["+resultString+"];"+extraStr)
 
 #A rest-like API that retrives a model-timing tree in JSON from the database
-@app.route("/summaryQuery/<expID>/<rank>/",methods=["GET"])
+@app.route("/summaryQuery/<int:expID>/<rank>/",methods=["GET"])
 def summaryQuery(expID,rank):
     resultNodes=""
     compset = "N/A"
@@ -170,9 +170,9 @@ def summaryQuery(expID,rank):
     elif expID == "-2":
         resultNodes = mt.parse(basePath+"model_timing_stats")
     else:
-        resultNodes = db.engine.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
+        resultNodes = db.engine.execute("select jsonVal from model_timing where expid = "+str(expID)+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
         #Get user and machine information:
-        tpData = db.engine.execute("select compset,res from timingprofile where expid = "+expID).fetchall()
+        tpData = db.engine.execute("select compset,res from timingprofile where expid = "+str(expID)).fetchall()
         compset,res = tpData[0].compset,tpData[0].res
 
     if rank == 'stats':
@@ -194,7 +194,7 @@ def summaryQuery(expID,rank):
             newJson.pop()
         resultNodes = json.dumps([newJson])
     return  '{{"obj":{0},"meta":{{"expid":"{1}","rank":"{2}","compset":"{3}","res":"{4}"}} }}'.format(resultNodes,expID,rank,compset,res)
-@app.route("/exp-details/<mexpid>")
+@app.route("/exp-details/<int:mexpid>")
 def expDetails(mexpid):
     myexp = None
     myexp = db.engine.execute("select * from timingprofile where expid= "+mexpid).fetchall()[0]
@@ -210,8 +210,8 @@ def expDetails(mexpid):
 
 #Directly import colors from matplotlib! There are allot of colors available, so why not? :D
 @app.route("/ajax/getMplColor/<mplName>")
-@app.route("/ajax/getMplColor/<mplName>/<colorCount>")
-def getMplColor(mplName,colorCount = "10"):
+@app.route("/ajax/getMplColor/<mplName>/<int:colorCount>")
+def getMplColor(mplName,colorCount = 10):
     if mplName in mplColors:
         targetColor = cm.get_cmap(mplName)
         colorList = []
@@ -530,7 +530,7 @@ def searchPrediction(keyword):
     return json.dumps(resultWords)
 
 #This generates an svg graph of runtime information. It makes use of an algorhythm created by donahue5 (modified to work with this project)
-@app.route("/svg/runtime/<expid>")
+@app.route("/svg/runtime/<int:expid>")
 def getRuntimeSvg(expid):
     resultElement = {}
     try:
