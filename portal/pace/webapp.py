@@ -197,9 +197,9 @@ def summaryQuery(expID,rank):
 @app.route("/exp-details/<int:mexpid>")
 def expDetails(mexpid):
     myexp = None
-    myexp = db.engine.execute("select * from timingprofile where expid= "+mexpid).fetchall()[0]
+    myexp = db.engine.execute("select * from timingprofile where expid= "+str(mexpid) ).fetchall()[0]
     # mypelayout = db.session.query(Pelayout).filter_by(expid = mexpid).all()[0]
-    mypelayout = db.engine.execute("select * from pelayout where expid= "+mexpid).fetchall()[0]
+    mypelayout = db.engine.execute("select * from pelayout where expid= "+str(mexpid) ).fetchall()[0]
     myruntime = db.session.query(Runtime).filter_by(expid = mexpid).all()
     ranks = db.session.query(ModelTiming.rank).filter_by(expid = mexpid)
     db.session.close()
@@ -533,17 +533,13 @@ def searchPrediction(keyword):
 @app.route("/svg/runtime/<int:expid>")
 def getRuntimeSvg(expid):
     resultElement = {}
-    try:
-        #Complexity for the expid was added on purpose so that the program wouldn't run if it wasn't a number...
-        runtimeQuery = db.engine.execute("select * from runtime where expid = "+str(int(expid))).fetchall()
-        for element in runtimeQuery:
-            #These Decimal objects don't have "precision" values, while the ones in searchCore do... :/ [probably because of how these were queried]
-            resultElement[element.component] = {"seconds":float(element.seconds),"model_years":float(element.model_years),"model_day":float(element.model_day)}
-        for key in resultElement.keys():
-            peQuery = db.engine.execute("select root_pe,tasks from pelayout where expid = "+expid+" and component like '%%"+key+"%%'").fetchall()
-            if len(peQuery) > 0:
-                resultElement[key]["root_pe"] = peQuery[0].root_pe
-                resultElement[key]["tasks"] = peQuery[0].tasks -1
-    except ValueError:
-        return render_template("error.html"),404
+    runtimeQuery = db.engine.execute("select * from runtime where expid = "+str(expid)).fetchall()
+    for element in runtimeQuery:
+        #These Decimal objects don't have "precision" values, while the ones in searchCore do... :/ [probably because of how these were queried]
+        resultElement[element.component] = {"seconds":float(element.seconds),"model_years":float(element.model_years),"model_day":float(element.model_day)}
+    for key in resultElement.keys():
+        peQuery = db.engine.execute("select root_pe,tasks from pelayout where expid = "+str(expid)+" and component like '%%"+key+"%%'").fetchall()
+        if len(peQuery) > 0:
+            resultElement[key]["root_pe"] = peQuery[0].root_pe
+            resultElement[key]["tasks"] = peQuery[0].tasks -1
     return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")
