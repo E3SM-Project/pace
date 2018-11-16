@@ -542,4 +542,7 @@ def getRuntimeSvg(expid):
         if len(peQuery) > 0:
             resultElement[key]["root_pe"] = peQuery[0].root_pe
             resultElement[key]["tasks"] = peQuery[0].tasks -1
-    return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")
+    if len(resultElement.keys()) > 0:
+        return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")
+    else:
+        return render_template('error.html'), 404
