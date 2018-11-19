@@ -34,8 +34,15 @@ function addressTable(vals=undefined,jsonArray=false,srcExp,thread = -1){
         }
     }
     if(vals)
-        newAddressTable.addVals(vals,jsonArray)
-
+    newAddressTable.addVals(vals,jsonArray)
+    
+    newAddressTable.noChildren = true;
+    for(let i=0;i<newAddressTable.length;i++){
+        if(newAddressTable[i].children.length > 0){
+            newAddressTable.noChildren = false;
+            break;
+        }
+    }
     return newAddressTable
 }
 
@@ -112,6 +119,7 @@ function expDownloadDefault(){
     animate(false);
     currExp.view();
     metaOpenClose(true,[currExp]);
+    mtViewer.closeDlList();
     //Construct a new url for browser display:
     let newUrl = detectRootUrl()+"summary/";
     let idStr = "";
@@ -135,6 +143,7 @@ function switchExperiment(index = expSelect.selectedIndex){
     if(currExp.currentEntry == undefined)
         summaryButton.click();
     else mtViewer.loadChart();
+    mtViewer.closeDlList();
     resultChart.options.title.text=currExp.name +": "+currExp.rank+ " (Thread "+currExp.currThread+")";
     metaOpenClose(true,[currExp]);
 
@@ -451,6 +460,13 @@ var mtViewer = {
                 setTimeout(()=>comparisonMode.viewChart(processId),10);
             else setTimeout(()=>changeGraph({children:[currExp.nodeTableList[currExp.currThread][processId]]}),10);
         }
+    },
+    //If the data list has no children, close it. If it's not mobile, there's a chance somebody would use the data list...
+    closeDlList:()=>{
+        if(currExp.nodeTableList[currExp.currThread].noChildren)
+            dlSlide(dlShow = false);
+        else if(window.innerWidth > 700)
+            dlSlide(dlShow = true);
     }
 }
 
@@ -650,6 +666,7 @@ var comparisonMode = {
                         metaArray.push(expArray[0]);
                     });
                     metaOpenClose(true,metaArray);
+                    mtViewer.closeDlList();
                     history.pushState("","",newLink+idStr+"/"+rankStr+"/compare/"+(compare?window.location.hash:"#summary"));
                 },10);
             },10);

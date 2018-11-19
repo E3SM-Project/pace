@@ -268,6 +268,7 @@ threadSelect.onchange = function(){
     currExp.currThread = threadSelect.children[threadSelect.selectedIndex].value;
     listContent.innerHTML = "";
     listContent.appendChild(currExp.nodeDomList[currExp.currThread]);
+    mtViewer.closeDlList();
     summaryButton.click();
 }
 
