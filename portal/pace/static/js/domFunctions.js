@@ -556,4 +556,8 @@ mplSearchInput.onkeyup = evt=>{
 }
 
 mplSearchInput.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("csp"),150);
+mplColorSelect.onchange = ()=>{
+    if(mplSearchInput.value!='')
+        mplSearchInput.onkeydown({key:'Enter'});
+}
 colorSearchPredict.pTextMenu.style.width = "100%";
