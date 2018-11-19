@@ -16,7 +16,7 @@ from minio import Minio
 from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
 
 # main
-def parseData():
+def parseData(zipfilename):
 	# open file to write pace report
 	old_stdout = sys.stdout
 	logfilename = 'pace-'+str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))+'.log'
@@ -27,15 +27,13 @@ def parseData():
 	try:	
 		fpath=UPLOAD_FOLDER
 		# Extract aggregated zip files
-		zip_ref=zipfile.ZipFile(UPLOAD_FOLDER+'/experiments.zip','r')
+		zip_ref=zipfile.ZipFile(os.path.join(fpath,zipfilename),'r')
 		zip_ref.extractall(fpath)
 		zip_ref.close
-	
 		# list and store path of all new uploaded file
 		dic=[]
 		for i in os.listdir(fpath):
 			dic.append(os.path.join(fpath,i))
-
 
 		# untar, if tar file exists
 		for i in range(len(dic)):
@@ -46,10 +44,10 @@ def parseData():
 
 		# store path of all directorie
 		dic1=[]
+		tmpfilename = zipfilename.split('.')[0]
 		for i in os.listdir(fpath):
-			if i !='parse.py' and i!='upload' and i!='experiments.zip':	
+			if i == tmpfilename:	
 				dic1.append(i)
-
 
 		# "e3sm_timing." file list		
 		allfile=[]
@@ -74,13 +72,13 @@ def parseData():
 						gitdescribefile.append(os.path.join(path, name))
 	except IOError as e:
 		print ('[ERROR]: %s' % e.strerror)
-		removeFolder(UPLOAD_FOLDER)
+		removeFolder(UPLOAD_FOLDER,zipfilename)
 		sys.stdout = old_stdout
 		log_file.close()
 		return ('ERROR/'+str(logfilename))
 	except OSError as e:
 		print ('[ERROR]: %s' % e.strerror)
-		removeFolder(UPLOAD_FOLDER)
+		removeFolder(UPLOAD_FOLDER,zipfilename)
 		sys.stdout = old_stdout
 		log_file.close()
 		return ('ERROR/'+str(logfilename))
@@ -96,7 +94,7 @@ def parseData():
 		print (' ')
 	
 	# remove uploaded experiments
-	removeFolder(UPLOAD_FOLDER)
+	removeFolder(UPLOAD_FOLDER,zipfilename)
 	sys.stdout = old_stdout
 	log_file.close()
 	# check parse status, returns status with report
@@ -544,10 +542,10 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 		return (False) # skips this experiment	
 
 # removes temporary folders in server
-def removeFolder(removeroot):
+def removeFolder(removeroot,filename):
 	try:
-		shutil.rmtree(os.path.join(removeroot,'experiments'))
-		os.remove(os.path.join(removeroot,'experiments.zip'))
+		shutil.rmtree(os.path.join(removeroot,filename.split('.')[0]))
+		os.remove(os.path.join(removeroot,filename))
 	except OSError as e:
 		print ("    Error: %s - %s." % (e.filename, e.strerror))
 	
@@ -630,4 +628,4 @@ def insertTiming(mtFile,expID,db):
 	return
 
 if __name__ == "__main__":
-	parseData()
+	parseData(filename)

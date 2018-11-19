@@ -62,12 +62,14 @@ def allowed_file(filename):
 def upload_file():
 	if request.method == 'POST':
 		file = request.files['file']
+		zipfilename = str(request.files['filename'])
+		tmpfilename = zipfilename.split('.')[0]
 		if file and allowed_file(file.filename):
 			try:
-				if os.path.isdir(os.path.join(UPLOAD_FOLDER,'experiments')):
-					shutil.rmtree(os.path.join(UPLOAD_FOLDER,'experiments'))
-				if os.path.exists(os.path.join(UPLOAD_FOLDER,'experiments.zip')):
-					os.remove(os.path.join(UPLOAD_FOLDER,'experiments.zip'))
+				if os.path.isdir(os.path.join(UPLOAD_FOLDER,tmpfilename)):
+					shutil.rmtree(os.path.join(UPLOAD_FOLDER,tmpfilename))
+				if os.path.exists(os.path.join(UPLOAD_FOLDER,zipfilename)):
+					os.remove(os.path.join(UPLOAD_FOLDER,zipfilename))
 			except OSError as e:
 				print ("Error: %s - %s." % (e.filename, e.strerror))		
 			filename = secure_filename(file.filename)
@@ -80,7 +82,8 @@ def upload_file():
 @app.route('/fileparse', methods=['GET','POST'])
 def fileparse():
 	if request.method == 'POST':
-		return(parse.parseData())
+		filename = request.form['filename']
+		return(parse.parseData(filename))
 
 @app.route('/downloadlog', methods=['POST'])
 def downloadlog():
@@ -258,9 +261,9 @@ def expDetails(mexpid):
 		myexp = db.engine.execute("select * from timingprofile where expid= "+mexpid).fetchall()[0]
 	except IndexError:
 		return render_template('error.html')
-	mypelayout = db.engine.execute("select * from pelayout where expid= "+mexpid).fetchall()[0]
-	myruntime = db.session.execute("select * from runtime where expid= "+mexpid).fetchall()
-	ranks = db.session.execute("select rank from model_timing where expid= "+mexpid).fetchall()
+	mypelayout = db.engine.execute("select * from pelayout where expid= "+mexpid).fetchall()
+	myruntime = db.engine.execute("select * from runtime where expid= "+mexpid).fetchall()
+	ranks = db.engine.execute("select rank from model_timing where expid= "+mexpid).fetchall()
 	colorDict = {}
 	for i in range(len(runtimeSvg.default_args['comps'])):
 		colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
