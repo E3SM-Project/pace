@@ -16,10 +16,10 @@ from minio import Minio
 from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
 
 # main
-def parseData(zipfilename):
+def parseData(zipfilename,user):
 	# open file to write pace report
 	old_stdout = sys.stdout
-	logfilename = 'pace-'+str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))+'.log'
+	logfilename = 'pace-'+str(user)+'-'+str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))+'.log'
 	logfile = PACE_LOG_DIR + logfilename
 	log_file = open(logfile,'w')
 	sys.stdout = log_file
@@ -628,4 +628,4 @@ def insertTiming(mtFile,expID,db):
 	return
 
 if __name__ == "__main__":
-	parseData(filename)
+	parseData(filename,user)
