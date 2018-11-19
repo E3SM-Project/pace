@@ -87,7 +87,8 @@ def upload_file():
 def fileparse():
 	if request.method == 'POST':
 		filename = request.form['filename']
-		return(parse.parseData(filename))
+		user = request.form['user']
+		return(parse.parseData(filename,user))
 
 @app.route('/downloadlog', methods=['POST'])
 def downloadlog():
