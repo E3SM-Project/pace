@@ -77,9 +77,14 @@
         <p>Themes: <select style="width:65%" id="colorSThemes" onchange="mplContainer.style.display = (this.selectedIndex == this.children.length-1?'block':'none');colorSelect.swapTheme(this.selectedIndex)"></select></p>
         <span id="mplContainer" style="display:none">
             For a color reference, <a href = "https://matplotlib.org/gallery/color/colormap_reference.html">click here</a>
-            <span>
+            <span style="display:inline-block">
                 <input id="mplSearchInput" class="form-control" placeholder="Search...">
             </span>
+            <select id="mplColorSelect" style="width:20%">
+                <option>5</option>
+                <option selected>10</option>
+                <option>20</option>
+            </select>
         </span>
         <button onclick="colorSelect.addColor()">Add</button><button onclick="colorSelect.swapTheme(colorSThemes.selectedIndex)">Reset</button>
         <span id="colorInputContainer">

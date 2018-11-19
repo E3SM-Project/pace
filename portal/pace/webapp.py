@@ -215,11 +215,13 @@ def getMplColor(mplName,colorCount = 10):
     if mplName in mplColors:
         targetColor = cm.get_cmap(mplName)
         colorList = []
-        colorAdd = 1.0 / int(colorCount)
-        currColor = colorAdd
+        colorAdd = 1.0
+        if colorCount > 1:
+            colorAdd /= int(colorCount-1)
+        currColor = 0
 
-        while currColor < 1+colorAdd:
-            # print (currColor)
+        for i in range(colorCount):
+            print (currColor)
             colorList.append( to_hex(to_rgb(targetColor(currColor))) )
             currColor+=colorAdd
         #Reverse the list to be compatible with the mtViewer
@@ -247,6 +249,7 @@ def queryMpl(mplName):
                     results[i] = tmp
                     break
     return json.dumps(results)
+
 #Depcricated version of the search page
 """@app.route("/exps")
 def expsList():

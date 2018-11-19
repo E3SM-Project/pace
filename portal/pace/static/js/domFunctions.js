@@ -544,7 +544,7 @@ var colorSelect = {
 var colorSearchPredict = new predictiveSearch.element(mplSearchInput,"csp");
 mplSearchInput.onkeydown = evt=>{
     if(evt.key == "Enter" && colorSearchPredict.allowEnter)
-        colorSelect.getMplTheme(mplSearchInput.value)
+        colorSelect.getMplTheme(mplSearchInput.value,mplColorSelect.children[mplColorSelect.selectedIndex].innerHTML);
     colorSearchPredict.keydownListener(evt);
 };
 
