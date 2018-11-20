@@ -9,6 +9,14 @@ var dlMouseDown = false;
 var dlBarMouseDown = false;
 var dlCurrWidth = dataList.style.width;
 
+//This is a quick function to help look for cookies. It's general enough for use anywhere else if needed.
+//Regex is required for use, see: https://www.w3schools.com/jsref/jsref_obj_regexp.asp
+var cookieSearch = regex=>{
+    let result = document.cookie.split(";").find(e=>regex.test(e));
+    if(result)
+        return result.split("=")[1];
+}
+
 //adjust the size of the dataList to reflect the graph's height:
 window.onresize = function(){
     if(typeof(paceLoadResize)!=undefined && document.getElementsByClassName("loadScreen").length!=0)
@@ -69,6 +77,13 @@ window.onmousemove = function(){
         dataInfo.style.left = (currWidthTemp + 30) + "px";
         backButton.style.left = (currWidthTemp + 30) + "px";
     }
+}
+
+smoothColorsCheck.onclick = function(){
+    smoothColors = this.checked;
+    document.cookie = "smoothColors="+(smoothColors?1:0)+";path=/summary/";
+    colorChart(colorSetting);
+    resultChart.update()
 }
 
 //The following is functionality for dataList to slide in and out:
@@ -359,7 +374,7 @@ var dmObj={
                     dmObj.percentage+=4;
                 else dmObj.percentage-=4;
                 //Body Colors:
-                this.colorElements([[document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar,dataList,colorSelectDiv]],"backgroundColor",this.bgcolor);
+                this.colorElements([[document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar,dataList]],"backgroundColor",this.bgcolor);
                 //textColor
                 this.colorElements([[listContent,quickSearchBar],
                 document.getElementsByTagName("h2"),
@@ -389,18 +404,6 @@ var dmObj={
             }
         });
 
-    },
-    //Check to see what mode the user was on last time the page loaded.
-    checkCookies:function(){
-        let cookies = document.cookie.split(";");
-        let cookieRegex = /darkMode/;
-        let result = false;
-        cookies.forEach(element=>{
-            if(cookieRegex.test(element)){
-                if(element.split("=")[1]=='1') result=true;
-            }
-        });
-        return result;
     }
 };
 var resizeChartVal = 1;
@@ -459,27 +462,19 @@ function metaOpenClose(openClose=false,metaArray){
 
 //The interface for the color selection:
 var colorSelect = {
-    display:false,
-    toggle:function(){
-        this.display = !this.display;
-        if(this.display)
-            colorSelectDiv.style.display = "initial";
-        $("#colorSelectDiv").animate({opacity:(colorSelectDiv.style.opacity != "1"?"1":"0")},300,()=>{if(!colorSelect.display) colorSelectDiv.style.display = "none";});
-    },
-    addColor:function(color="#FF0000",deletable = true,refresh = true){
-        newColor = document.createElement("div");
-        newColor.innerHTML+=`<input type="color" value="`+color+`" class="colorInput" onchange="colorSelect.saveColorConfig()"/>`+(deletable?`<button class="btn btn-default" onclick="setTimeout(()=>colorSelect.saveColorConfig(),10);this.parentElement.outerHTML='';">X</button>`:'');
-        colorInputContainer.appendChild(newColor);
-        
-        if(refresh)
-            this.saveColorConfig();
-    },
+    themes:[
+        {name:"Default Theme",values:["#0000FF","#00FF00","#FF0000"]},
+        {name:"Fall",values:["#66ff33","#FFFF00","#FF8000","#663300"]},
+        {name:"Frost",values:["#FFFFFF","#00ffff"]},
+        {name:"Tuxedo",values:["#FFFFFF","#000000"]},
+        {name:"Red on yellow kill a fellow...",values:["#FFF000","#FF0000","#000000"]},
+        {name:"The Legendary KC",values:["#b138ff", "#26003e"]},
+    ],
     //Set the colors upon a change. This also get's saved to cookies.
-    saveColorConfig:function(updateChart = true){
+    saveColorConfig:function(updateChart = true,theme = this.themes[colorSThemes.selectedIndex].values){
         hexArray = [];
-        colorList = colorSelectDiv.getElementsByClassName("colorInput");
-        for(let i=0;i<colorList.length;i++)
-            hexArray.push(colorList[i].value);
+        for(let i=0;i<theme.length;i++)
+            hexArray.push(theme[i]);
         colorConfig = hex2RgbArray(hexArray);
         //In the event that you can't load the chart yet, this is usefull:
         if(updateChart){
@@ -490,75 +485,26 @@ var colorSelect = {
         document.cookie = "barTheme="+colorSThemes.selectedIndex+cookiePath;
         document.cookie = "barColors="+hexArray.join()+cookiePath;
     },
-    themes:[
-        {name:"Default",values:["#0000FF","#00FF00","#FF0000"]},
-        {name:"Fall",values:["#66ff33","#FFFF00","#FF8000","#663300"]},
-        {name:"Frost",values:["#FFFFFF","#00ffff"]},
-        {name:"Tuxedo",values:["#FFFFFF","#000000"]},
-        {name:"Red on yellow kill a fellow...",values:["#FFF000","#FF0000","#000000"]},
-        {name:"The Legendary KC",values:["#b138ff", "#26003e"]},
-        {name:"matplotlib colormaps",values:["#0000FF","#00FF00","#FF0000"]}
-    ],
-    loadThemes:function(){
-        this.themes.forEach(theme=>{
-            colorSThemes.innerHTML+="<option"+(theme == this.themes[0]?" selected":"")+">"+theme.name+"</option>"
-        });
-    },
-    //Changed the currently used theme; it can either be one from this scope (specify the index) or a custom array.
-    swapTheme:function(srcObj,updateChart = true){
-        currColors = document.getElementsByClassName("colorInput");
-        if(currColors.length > 0)
-            colorInputContainer.innerHTML="";
-        //Load colors for customizing:
-        let colorDelete = false;
-        
-        (typeof(srcObj) == "object"?srcObj:this.themes[srcObj].values).forEach(color=>{
-            colorSelect.addColor(color,colorDelete,false);
-            colorDelete = true;
-        });
-        colorSelect.saveColorConfig(updateChart);
-    },
-    //This is a quick function to help look for cookies. It's general enough for use anywhere else if needed.
-    //Regex is required for use, see: https://www.w3schools.com/jsref/jsref_obj_regexp.asp
-    cookieSearch:regex=>document.cookie.split(";").find(e=>regex.test(e)),
+
+    loadThemes:function(){this.themes.forEach(theme=>colorSThemes.innerHTML+="<option"+(theme == this.themes[0]?" selected":"")+">"+theme.name+"</option>")},
+
     restoreCookies:function(){
         let cookieList = [
-            this.cookieSearch(/barTheme/),
-            this.cookieSearch(/barColors/)
+            cookieSearch(/barTheme/),
+            cookieSearch(/barColors/)
         ];
         if(cookieList[0] && cookieList[1]){
-            colorSThemes.selectedIndex = cookieList[0].split("=")[1]*1;
-            this.swapTheme(cookieList[1].split("=")[1].split(","),false);
+            colorSThemes.selectedIndex = cookieList[0]*1;
+            this.saveColorConfig(false,cookieList[1].split(","));
         }
-        else colorSelect.swapTheme(0,false);
+        else colorSelect.saveColorConfig(false);
     },
     getMplTheme:function(name,colorCount = 10){
         $.get("/ajax/getMplColor/"+name+"/"+colorCount,data=>{
             colorArray = JSON.parse(data);
             if(colorArray.length == 0)
                 alert("Color not found...");
-            else this.swapTheme(colorArray);
+            else this.saveColorConfig(true,colorArray);
         });
     }
 }
-
-var colorSearchPredict = new predictiveSearch.element(mplSearchInput,"csp");
-mplSearchInput.onkeydown = evt=>{
-    if(evt.key == "Enter" && colorSearchPredict.allowEnter)
-        colorSelect.getMplTheme(mplSearchInput.value,mplColorSelect.children[mplColorSelect.selectedIndex].innerHTML);
-    colorSearchPredict.keydownListener(evt);
-};
-
-mplSearchInput.onkeyup = evt=>{
-    colorSearchPredict.keyupListener(evt);
-    if(mplSearchInput.value!="")
-        $.get("/ajax/queryMpl/"+mplSearchInput.value,data=>colorSearchPredict.refreshKeywords(JSON.parse(data)) );
-    else colorSearchPredict.pTextMenu.style.display="none";
-}
-
-mplSearchInput.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("csp"),150);
-mplColorSelect.onchange = ()=>{
-    if(mplSearchInput.value!='')
-        mplSearchInput.onkeydown({key:'Enter'});
-}
-colorSearchPredict.pTextMenu.style.width = "100%";

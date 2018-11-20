@@ -5,7 +5,9 @@
 $(document).ready(()=>{
     colorSelect.loadThemes();
     colorSelect.restoreCookies();
-    mplContainer.style.display = (colorSThemes.selectedIndex == colorSThemes.children.length-1?'block':'none');
+
+    smoothColorsCheck.checked = Boolean(cookieSearch(/smoothColors/)*1);
+    smoothColors = smoothColorsCheck.checked;
 
     var threadList = undefined;
     var onMtPage = true;
@@ -23,8 +25,8 @@ $(document).ready(()=>{
 
     //Change the footer due to weird happenings on mobile:
     document.getElementsByClassName("footer")[0].style.zIndex = "-1";
-    dmObj.toggle(dmObj.checkCookies());
-    dmCheck.checked = dmObj.checkCookies();
+    dmCheck.checked = Boolean(cookieSearch(/darkMode/)*1);
+    dmObj.toggle(dmCheck.checked);
     animate();
     if(expData!=undefined){
         for(let i=0;i<expData.length;i++){
