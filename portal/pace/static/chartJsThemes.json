@@ -1,0 +1,11 @@
+[
+    {"name":"Default Theme","values":["#0000FF","#00FF00","#FF0000"]},
+    {"name":"Fall","values":["#66ff33","#FFFF00","#FF8000","#663300"]},
+    {"name":"Frost","values":["#FFFFFF","#00ffff"]},
+    {"name":"Tuxedo","values":["#FFFFFF","#000000"]},
+    {"name":"Red on yellow kill a fellow...","values":["#FFF000","#FF0000","#000000"]},
+    {"name":"The Legendary KC","values":["#b138ff", "#26003e"]},
+    {"name":"Jet","values":["#000080", "#0000ff", "#0060ff", "#00d4ff", "#4dffaa", "#aaff4d", "#ffe600", "#ff7a00", "#ff1300", "#800000"]},
+    {"name":"Gnuplot","values":["#000000", "#5400a2", "#7703fa", "#9309dd", "#aa1659", "#be2c00", "#d04c00", "#e17900", "#f1b400", "#ffff00"]},
+    {"name":"Gnuplot2","values":["#000000", "#000070", "#0000e0", "#4200ff", "#9a0cf3", "#f546b9", "#ff7e81", "#ffb847", "#fff00f", "#ffffff"]}
+]

@@ -462,14 +462,7 @@ function metaOpenClose(openClose=false,metaArray){
 
 //The interface for the color selection:
 var colorSelect = {
-    themes:[
-        {name:"Default Theme",values:["#0000FF","#00FF00","#FF0000"]},
-        {name:"Fall",values:["#66ff33","#FFFF00","#FF8000","#663300"]},
-        {name:"Frost",values:["#FFFFFF","#00ffff"]},
-        {name:"Tuxedo",values:["#FFFFFF","#000000"]},
-        {name:"Red on yellow kill a fellow...",values:["#FFF000","#FF0000","#000000"]},
-        {name:"The Legendary KC",values:["#b138ff", "#26003e"]},
-    ],
+    themes:[],
     //Set the colors upon a change. This also get's saved to cookies.
     saveColorConfig:function(updateChart = true,theme = this.themes[colorSThemes.selectedIndex].values){
         hexArray = [];
@@ -508,3 +501,5 @@ var colorSelect = {
         });
     }
 }
+
+$.get("/static/chartJsThemes.json",data=>colorSelect.themes = data);

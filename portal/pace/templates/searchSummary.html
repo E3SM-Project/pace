@@ -30,15 +30,15 @@
 
 {% block content %}
 <div id="scatterContainer">
-    <button id="clearDataButton" class="btn btn-default" style="float:left">Clear</button>
-    <div style="display:inline-block;margin-left:32%">Order By:<select id="orderBySelect" class="form-control" style="width:10em;float:right;margin-left:5px">
+    <!--<button id="clearDataButton" class="btn btn-default" style="float:left">Clear</button>-->
+    <div style="display:inline-block;margin-left:16%">Color By:<select id="orderBySelect" class="form-control" style="width:10em;float:right;margin-left:5px">
         <option selected value="machine">Machine</option>
         <option value="user">User</option>
         <option value="compset">Compset</option>
         <option value="res">Res</option>
     </select></div>
     <div id="scatterInputContainer" style="display:inline-block;float:right;">
-        <input id="scatterDataInput" class="form-control" placeholder="Add more data"/>
+        <!--<input id="scatterDataInput" class="form-control" placeholder="Add more data"/>-->
     </div>
     <canvas id="summaryChartTag"></canvas>
 </div>
@@ -50,7 +50,7 @@
 <script>
 var noData = true;
 //predictive search for input box:
-scatterInputPredict = new predictiveSearch.element(scatterDataInput,"sip");
+/*scatterInputPredict = new predictiveSearch.element(scatterDataInput,"sip");
 scatterDataInput.onkeydown = evt=>{
 	if(evt.key == "Enter" && scatterInputPredict.allowEnter)
         initQuery(scatterDataInput.value);
@@ -63,15 +63,15 @@ scatterDataInput.onkeyup = evt=>{
         $.get(detectRootUrl()+"ajax/similarDistinct/"+scatterInputPredict.inputWords[scatterInputPredict.wordIndex],data=>scatterInputPredict.refreshKeywords(JSON.parse(data)));
 	else scatterInputPredict.pTextMenu.style.display="none";
 }
-scatterDataInput.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("sip"),150);
+scatterDataInput.onblur = ()=>setTimeout(()=>predictiveSearch.menuBlur("sip"),150);*/
 
-clearDataButton.onclick = ()=>{
+/*clearDataButton.onclick = ()=>{
     summaryChart.resetData();
     summaryChart.chart.update();
     history.pushState('','',detectRootUrl()+'searchSummary/');
     queryHistory = [];
     noData=true
-}
+}*/
 
 orderBySelect.onchange = ()=>{
     summaryChart.resetData();
