@@ -1,7 +1,7 @@
 //Author: Zachary Mitchell
-//Purpose: The javascript for searchSummary.html
+//Purpose: The javascript for the search summary found on the homepage. Originally, this was on a page of it's own, but it makes more sense to combine it with the search page.
 
-var queryHistory = [];
+var lastQuery = "";
 var bubbleRadius = 15;
 var bubbleGrow = true;
 Chart.defaults.global.defaultFontSize = 16;

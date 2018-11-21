@@ -18,7 +18,7 @@ function searchAndCheck(sq = searchQuery ){
 	}
 	else moreBtn.style.display = "none";
 	},orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked);
-	if(queryHistory[queryHistory.length]!=searchQuery)
+	if(lastQuery!=searchQuery)
 		summaryChart.resetData();
 		initQuery(searchQuery);
 		
@@ -79,14 +79,12 @@ function sortOrderToggle(){
 var noData = true;
 summaryOrderBy.onchange = ()=>{
     summaryChart.resetData();
-    oldHistory = queryHistory.slice();
-    queryHistory=[];
     summaryChart.config.label.val=summaryOrderBy.children[summaryOrderBy.selectedIndex].value;
-    oldHistory.forEach(element=>initQuery(element));
+    initQuery(lastQuery);
     summaryChart.chart.update();
 }
 
-function checkArray(value,srcArray = queryHistory){
+function checkArray(value,srcArray){
     for(let i=0;i<srcArray.length;i++){
         if (value == srcArray[i])
             return false;
@@ -101,16 +99,14 @@ function initQuery(userInput){
         queryList = [];
         userQuery = userInput.split("|");
         userQuery.forEach(element=>{
-            if(checkArray(element) && checkArray(element,queryList))
+            if(checkArray(element,queryList))
                 queryList.push(element);
         });
         if(queryList.length!=0){
             resultQuery = queryList.join("|");
             summaryChart.addData(resultQuery);
             noData = false;
-            queryList.forEach(element=>{
-                queryHistory.push(element);
-            });
+            lastQuery = resultQuery;
         }
     }
 }
