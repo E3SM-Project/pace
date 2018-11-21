@@ -7,7 +7,10 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.widgets.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/extras/jquery.tablesorter.pager.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
 	<script src="/static/js/predictiveSearch.js"></script>
+	<script src="/static/js/colorTools.js"></script>
+<script src="/static/js/searchSummary.js"></script>
     <link rel="stylesheet" href="/static/css/searchPage.css"/>
 {% endblock %}
 
@@ -34,11 +37,22 @@
 
 	</tbody>
 </table>
-<p style="margin-bottom:3em">
-	<a id="sSummaryLink" style="float:left"><button title="View a summary of experiments based on your search." class="btn btn-dark">Summary</button></a>
+<p>
+	<button title="View a summary of experiments based on your search." class="btn btn-dark" onclick="$(scatterContainer).toggle();">Summary</button>
 	<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>Compare</button></a>
 	<a><button class="btn btn-primary btn-dark" id='searchViewBtn' disabled>View</button></a>
 </p>
+<div id="scatterContainer">
+    <div style="display:inline-block;margin-left:16%">Color By:<select id="summaryOrderBy" class="form-control" style="width:10em;float:right;margin-left:5px">
+        <option selected value="machine">Machine</option>
+        <option value="user">User</option>
+        <option value="compset">Compset</option>
+        <option value="res">Res</option>
+    </select></div>
+    <div id="scatterInputContainer" style="display:inline-block;float:right;">
+    </div>
+    <canvas id="summaryChartTag"></canvas>
+</div>
 <div class="table-responsive-lg">
 <table id="expTable" class="table table-sm table-hover table table-striped">
 <thead class="thead-light">

@@ -46,14 +46,14 @@ var bChartObj = function(id,config){
                     scaleLabel:{
                         display:true,
                         labelString:this.config.y.label?this.config.y.label:
-                        typof(this.config.y.val) == "function"?this.config.y.val():
+                        typeof(this.config.y.val) == "function"?this.config.y.val():
                         this.config.y.val
                     }}],
                 xAxes:[{
                     scaleLabel:{
                         display:true,
                         labelString:this.config.x.label?this.config.x.label:
-                        typof(this.config.x.val) == "function"?this.config.x.val():
+                        typeof(this.config.x.val) == "function"?this.config.x.val():
                         this.config.x.val
                     }}]
             }
