@@ -1,10 +1,15 @@
 #Author: Zachary Mitchell
 #Purpose: parse files that come from GPTL (https://jmrosinski.github.io/GPTL/) to create a programatic representation of the output.
-import types,json
+import types,json,os.path
+from os import listdir
 valueList=[
     ["on","called","recurse","wallClock","max","min","utrOverhead"],
     ["processes","threads","count","walltotal","wallmax","wallmax_proc","wallmax_thrd","wallmin","wallmin_proc","wallmin_thrd"]
 ]
+
+#This is a list of configurations that tell the parser how to read specific GPTL files
+parserConfigs = {}
+
 class timeNode(object):
     #Without this, a reeealy weird scoping problem happens; not sure why.
     def __init__(self):
@@ -13,6 +18,50 @@ class timeNode(object):
         self.values={}
         self.children=[]
         self.parent = self #Should this refer to itself... or have none?
+
+"""This loads either a single json file or a group via a directory string.
+if files is a string, then it will look for your file/folder, and load the config(s) as long as each extension ends with .json
+file objects are accepted as well.
+inserting a list prompts the config to go through a loop that accepts any of the three argument types (file,folder,object)
+"""
+def loadConfig(files,appendDefaults = False):
+    #A configuration can be used in the short-term, or throughout the time this script is kept imported (e.g for a flask application ;P).
+    #This allows for custom configurations without taking up ram from the system.
+    targetConfig = {}
+    if appendDefaults:
+        targetConfig = parserConfigs
+    #To stay "dry", here are some nested functions to avoid repetetiveness:
+
+    #Add json to targetConfig
+    def appendJson(jsonFile):
+        srcJson = json.loads(jsonFile.read())
+        for key in srcJson.keys():
+            if key not in targetConfig.keys():
+                targetConfig[key] = srcJson[key]
+    #Check if this is a valid json file
+    def isJsonFile(path):
+        jsonTest = path.rsplit(".",1)
+        return os.path.isfile(path) and len(jsonTest) > 1 and jsonTest[1] == "json"
+
+    fileList = []
+    if type(files) == types.ListType:
+        fileList = files
+    else:
+        fileList.append(files)
+    for element in fileList:
+        if type(element) == types.FileType:
+            appendJson(element)
+        elif type(element) == types.StringType:
+            #Figure out if it's a directory or not:
+            if isJsonFile(element):
+                appendJson(open(element))
+            elif os.path.isdir(element):
+                for filePath in listdir(element):
+                    print(element+"/"+filePath)
+                    if isJsonFile(element+"/"+filePath):
+                        appendJson(open(element+"/"+filePath))
+    if not appendDefaults:
+        return targetConfig
 
 def getData(src):
     #Check if src is a string, otherwise attempt to read from a file object:
@@ -29,11 +78,11 @@ def getData(src):
     #There appears to be multiple threads in some files, let's figure out where they are, then re-read the file:
     currLine = sourceFile.readline()
     while not currLine == "":
+        lineCount+=1
         if "Stats for thread" in currLine:
-            threadIndexes.append(lineCount+3)
+            threadIndexes.append(lineCount+2)
         elif "GLOBAL STATISTICS" in currLine:
             isStat=True #we found a statistics file instead of a regular file.
-        lineCount+=1
         if isStat and "name" in currLine:
             threadIndexes.append(lineCount+1)
         currLine = sourceFile.readline()
