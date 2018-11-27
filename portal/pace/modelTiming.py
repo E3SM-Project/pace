@@ -19,17 +19,21 @@ class timeNode(object):
         self.children=[]
         self.parent = self #Should this refer to itself... or have none?
 
-"""This loads either a single json file or a group via a directory string.
-if files is a string, then it will look for your file/folder, and load the config(s) as long as each extension ends with .json
-file objects are accepted as well.
-inserting a list prompts the config to go through a loop that accepts any of the three argument types (file,folder,object)
-"""
-def loadConfig(files,appendDefaults = False):
+
+def loadConfig(files,appendLocation = None):
+    """
+    "files": directory path, json file, file object. OR list of any of the former.
+    appendLocation: "default", dictionary
+    
+    This function sets up one or more configuration files for use in describing a GPTL file.
+    """
     #A configuration can be used in the short-term, or throughout the time this script is kept imported (e.g for a flask application ;P).
     #This allows for custom configurations without taking up ram from the system.
     targetConfig = {}
-    if appendDefaults:
+    if appendLocation == "default":
         targetConfig = parserConfigs
+    elif not appendLocation == None:
+        targetConfig = appendLocation
     #To stay "dry", here are some nested functions to avoid repetetiveness:
 
     #Add json to targetConfig
@@ -60,9 +64,11 @@ def loadConfig(files,appendDefaults = False):
                     print(element+"/"+filePath)
                     if isJsonFile(element+"/"+filePath):
                         appendJson(open(element+"/"+filePath))
-    if not appendDefaults:
-        return targetConfig
+    return targetConfig
 
+#def detectMtFile(fileObj,config = parserConfigs):
+"""This returns the matching configuration of this file, along with the proper indexes to start getting the file's lines"""
+    
 def getData(src):
     #Check if src is a string, otherwise attempt to read from a file object:
     sourceFile=None

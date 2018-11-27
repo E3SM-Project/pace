@@ -427,7 +427,8 @@ dataInfo.onwheel = function(evt){
     }
 }
 
-//I disovered a bug in google chrome! Until it's fixed, here's something to properly render the metatable.
+/*There's a bug (either in google chrome or in this metaOpenClose) that stretches the metatable after closing it.
+I'm guessing this is a chrome bug, since the debugger doesn't show values being changed in any way. The below function fixes this issue.*/
 function metaContainerChromeFix(){
     if(isChrome && metaTable.style.display == "none"){
         metaInfoContainer.style.display="none";
