@@ -19,6 +19,8 @@ import modelTiming as mt
 #modelTiming database information:
 from pace_common import *
 
+from sqlalchemy.exc import SQLAlchemyError
+
 ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
 
 # Uploading file
@@ -536,16 +538,19 @@ def searchPrediction(keyword):
 @app.route("/svg/runtime/<int:expid>")
 def getRuntimeSvg(expid):
     resultElement = {}
-    runtimeQuery = db.engine.execute("select * from runtime where expid = "+str(expid)).fetchall()
-    for element in runtimeQuery:
-        #These Decimal objects don't have "precision" values, while the ones in searchCore do... :/ [probably because of how these were queried]
-        resultElement[element.component] = {"seconds":float(element.seconds),"model_years":float(element.model_years),"model_day":float(element.model_day)}
-    for key in resultElement.keys():
-        peQuery = db.engine.execute("select root_pe,tasks from pelayout where expid = "+str(expid)+" and component like '%%"+key+"%%'").fetchall()
-        if len(peQuery) > 0:
-            resultElement[key]["root_pe"] = peQuery[0].root_pe
-            resultElement[key]["tasks"] = peQuery[0].tasks -1
-    if len(resultElement.keys()) > 0:
-        return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")
-    else:
+    try:
+        runtimeQuery = db.engine.execute("select * from runtime where expid = "+str(expid)).fetchall()
+        for element in runtimeQuery:
+            #These Decimal objects don't have "precision" values, while the ones in searchCore do... :/ [probably because of how these were queried]
+            resultElement[element.component] = {"seconds":float(element.seconds),"model_years":float(element.model_years),"model_day":float(element.model_day)}
+        for key in resultElement.keys():
+            peQuery = db.engine.execute("select root_pe,tasks from pelayout where expid = "+str(expid)+" and component like '%%"+key+"%%'").fetchall()
+            if len(peQuery) > 0:
+                resultElement[key]["root_pe"] = peQuery[0].root_pe
+                resultElement[key]["tasks"] = peQuery[0].tasks -1
+        if len(resultElement.keys()) > 0:
+            return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")
+        else:
+            return render_template('error.html'), 404
+    except SQLAlchemyError:
         return render_template('error.html'), 404
