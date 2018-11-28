@@ -1,0 +1,9 @@
+{
+    "testFile":[{
+        "names":["val1","val2","val3"],
+        "altNames":["val1","val2","val3"],
+        "startMarker":["The thing:",2],
+        "fileIdentifiers":["12341234"],
+        "rootParent":4
+    }]
+}
