@@ -1,7 +1,7 @@
 # modelTiming.py configuration files
 These files tell modelTiming.py what to look for in a GPTL file in order to describe what it is, as well as parse it. They allow a user to make their own "GPTL-like" files.
 
-For an example of how to make/use one, see [The sample config](./testConfig.json), and [The sample file](./testFile.stf)
+For an example of how to make/use one, see [The sample config](./testConfig.json), and [The sample file](./testFile.txt)
 
 # Requirements:
 A single file is written in JSON. It starts with an object containing names of categories that a configuration could fall into (e.g this project was desgined to look at E3SM model timing files, so they fall under the category `e3sm`). That category in itself is an object containing a list of configurations, each with the following properties:
