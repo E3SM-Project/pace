@@ -1,0 +1,16 @@
+{
+"e3sm":[{
+        "names":["On","Called","Wallclock","max","min","UTR Overhead"],
+        "altNames":["on","called","recurse","wallClock","max","min","utrOverhead"],
+        "startMarker":["Stats for thread",2],
+        "fileIdentifiers":["Stats for thread"],
+        "rootParent":2
+    },
+    {
+        "names":["process","threads","count","walltotal","wallmax","wallmin"],
+        "altNames":["processes","threads","count","walltotal","wallmax","wallmax_proc","wallmax_thrd","wallmin","wallmin_proc","wallmin_thrd"],
+        "startMarker":["name",1],
+        "fileIdentifiers":["GLOBAL STATISTICS"],
+        "rootParent":0
+    }]
+}
