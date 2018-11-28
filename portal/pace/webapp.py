@@ -211,8 +211,6 @@ def expDetails(mexpid):
     return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks,chartColors = json.dumps(colorDict))
 
 #Directly import colors from matplotlib! There are allot of colors available, so why not? :D
-@app.route("/ajax/getMplColor/<mplName>")
-@app.route("/ajax/getMplColor/<mplName>/<int:colorCount>")
 def getMplColor(mplName,colorCount = 10):
     if mplName in mplColors:
         targetColor = cm.get_cmap(mplName)
@@ -231,26 +229,6 @@ def getMplColor(mplName,colorCount = 10):
         return json.dumps(colorList)
     else:
         return "[]"
-
-@app.route("/ajax/queryMpl/<mplName>")
-def queryMpl(mplName):
-    ezPattern = re.compile(mplName)
-    results = []
-    for name in mplColors:
-        if re.search(ezPattern,name) or name == mplName:
-            results.append(name)
-    sortPattern = re.compile("\\b"+mplName)
-    for i in range(len(results)):
-        if(re.search(sortPattern,results[i])):
-            # print(results[i])
-            for j in range(len(results)):
-                if not results[j] == results[i] and not re.search(sortPattern,results[j]):
-                    # print("replace:"+results[j])
-                    tmp = results[j]
-                    results[j] = results[i]
-                    results[i] = tmp
-                    break
-    return json.dumps(results)
 
 #Depcricated version of the search page
 """@app.route("/exps")

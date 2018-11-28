@@ -1,5 +1,5 @@
 //Author: Zachary Mitchell
-//Purpose: The javascript for the search summary found on the homepage. Originally, this was on a page of it's own, but it makes more sense to combine it with the search page.
+//Purpose: The core functionality for the search summary chart found on the homepage. Originally, this was on a page of it's own, but it makes more sense to combine it with the search page.
 
 var lastQuery = "";
 var bubbleRadius = 15;

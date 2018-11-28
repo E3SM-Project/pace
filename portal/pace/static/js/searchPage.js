@@ -1,5 +1,9 @@
 //Author: Zachary Mitchell
-//Purpose: The javaScript for search.html. Moved here due to the large size.
+/*Purpose: These functions handle a variety of functionality for searchPage.html. Most of the content are DOM event listeners, but other things include:
+	* A higher level function for search queries
+	* A high-level function for adding data to the searchSummary chart
+	* search prediction for the search bar
+*/
 
 window.onresize = ()=>{
 	if(window.innerWidth < 1060)
