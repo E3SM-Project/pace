@@ -203,7 +203,7 @@ def parseNode(lineInput,config,currLine=0,parent=None):
     childrenIndex = currLine+1
     if currLine < (len(lineInput)-1):
         while countSpaces(lineInput[childrenIndex]) > parentSpaceCount:
-            if countSpaces(lineInput[childrenIndex]) == parentSpaceCount+2:
+            if countSpaces(lineInput[childrenIndex]) == parentSpaceCount+config["rootParent"]:
                 childNode = parseNode(lineInput,config,childrenIndex,resultNode)
                 resultNode.children.append(childNode)
             childrenIndex+=1
