@@ -26,6 +26,7 @@
                     <option value="sum" selected>Sum</option>
                     <option value="avg">Average</option>
                 </select>
+                <select id="colorSThemes" onchange="colorSelect.saveColorConfig()"></select>
             </td>
             <td>
                 <button id="compareButton" onclick="compDivObj.toggle()">Compare</button>
@@ -35,7 +36,8 @@
                 <div id="advContainer" style="display:none">
                     <div class="checkboxRow" style="display:inline-block">
                         <input type="checkbox" onclick="stackedCharts = this.checked;mtViewer.loadChart();" checked/>Stacked bars<br>
-                        <input id="dmCheck" type="checkbox" onclick="dmObj.toggle(this.checked)"/>Dark Mode
+                        <input id="dmCheck" type="checkbox" onclick="dmObj.toggle(this.checked)"/>Dark Mode<br>
+                        <input id="smoothColorsCheck" type="checkbox"/>Smooth Colors
                     </div>
                     <span id="quickSearchContainer">
                     <input type="text" id="quickSearchBar" placeholder="Quick Search" class="form-control"/>
@@ -50,18 +52,16 @@
                             <option value=-2>Off</option>
                         </select>
                     </span>
-                    <button onclick="colorSelect.toggle()">Set Colors</button>
                 </div>
             </td>
-            <td>
-            </td>
-            <td><span id="metaInfoContainer"><span id="metaInfoTxt" style="margin:20px"></span></span></td>
+            <td style="margin-bottom:1.7em"><span id="metaInfoContainer"><span id="metaInfoTxt" style="margin:20px"></span><span></td>
             </tr>
             </tbody>
         </table>
         <div id="zoomDiv"><button onclick="resizeChartVal=(resizeChartVal <=1?1:resizeChartVal-25);resizeChart(resizeChartVal)">-</button><button onclick="resizeChartVal+=25;resizeChart(resizeChartVal)">+</button></div>
         <div id="dataInfo"><div id="chartResizeContainer"><canvas id="chartTag"></canvas></div></div>
         <div id="dlDisplayButton" onclick="dlSlide()"></div>
+        <div id="dlResizeBar" onmousedown="arguments[0].preventDefault();dlMouseDown = true; dlBarMouseDown = true;" onmouseup="dlMouseDown=false;dlBarMouseDown = false;"></div>
         <div id="dataList">
             <button id="summaryButton">Summary</button>
             <div style= "margin-left: -6px;" id="listContent"></div>
@@ -69,14 +69,10 @@
         <button id="backButton"><-Back</button>
     </div>
     <div id="compareSelectDiv">
-    <h2>Select the threads you wish to compare.</h2><br>
-    <p><button onclick='compDivObj.makeExp()'>Add</button></p>
-    <div id="compDivBody"></div>
-    <p style="text-align:center"><button id="compareGo" onclick="compDivObj.scan()">Go!</button></p>
-    </div>
-    <div id="colorSelectDiv">
-        <h5>Change the default colors. They are used from least to greatest in the order listed.</h5>
-        <button onclick="colorSelect.addColor()">Add</button>
+        <h2>Select the threads you wish to compare.</h2><br>
+        <p><button onclick='compDivObj.makeExp()'>Add</button></p>
+        <div id="compDivBody"></div>
+        <p style="text-align:center"><button id="compareGo" onclick="compDivObj.scan()">Go!</button></p>
     </div>
 {% endblock %}
 

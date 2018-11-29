@@ -12,12 +12,14 @@ import urllib
 from sqlalchemy.orm import sessionmaker
 from __init__ import db
 import os, shutil, distutils
+import re
 
 #Model Timing Library:
 import modelTiming as mt
 #modelTiming database information:
 from pace_common import *
 
+from sqlalchemy.exc import SQLAlchemyError
 #github imports
 import binascii
 from rauth import OAuth2Service
@@ -42,6 +44,12 @@ from datastructs import *
 
 #Runtime image generator: by donahue5 (Modified for use on PACE)
 import pe_layout_timings as runtimeSvg
+
+#This is for querying colors:
+from matplotlib.colors import to_rgb,to_hex
+import matplotlib.cm as cm
+
+mplColors = cm.datad.keys()
 
 # Home page
 @app.route("/")
@@ -75,7 +83,7 @@ def upload_file():
 				if os.path.exists(os.path.join(UPLOAD_FOLDER,zipfilename)):
 					os.remove(os.path.join(UPLOAD_FOLDER,zipfilename))
 			except OSError as e:
-				print ("Error: %s - %s." % (e.filename, e.strerror))		
+				print ("Error: %s - %s." % (e.filename, e.strerror))
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(UPLOAD_FOLDER, filename))
 			return('complete')
@@ -219,7 +227,7 @@ def summaryHtml(expID,rank,compare="",threads=""):
 
 
 #A rest-like API that retrives a model-timing tree in JSON from the database
-@app.route("/summaryQuery/<expID>/<rank>/",methods=["GET"])
+@app.route("/summaryQuery/<int:expID>/<rank>/",methods=["GET"])
 def summaryQuery(expID,rank):
     resultNodes=""
     compset = "N/A"
@@ -235,14 +243,14 @@ def summaryQuery(expID,rank):
     elif expID == "-2":
         resultNodes = mt.parse(basePath+"model_timing_stats")
     else:
-        resultNodes = json.loads(db.engine.execute("select jsonVal from model_timing where expid = "+expID+ " and rank = '"+rank+"'").fetchall()[0].jsonVal)
+        resultNodes = db.engine.execute("select jsonVal from model_timing where expid = "+str(expID)+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
         #Get user and machine information:
-        tpData = db.engine.execute("select compset,res from timingprofile where expid = "+expID).fetchall()
+        tpData = db.engine.execute("select compset,res from timingprofile where expid = "+str(expID)).fetchall()
         compset,res = tpData[0].compset,tpData[0].res
 
     if rank == 'stats':
         #Grab processes > 1 second:
-        nodeTemp = resultNodes
+        nodeTemp = json.loads(resultNodes)
         newJson = []
         for node in nodeTemp[0]:
             if node["values"]["wallmax"] > 0:
@@ -257,9 +265,9 @@ def summaryQuery(expID,rank):
         #Grab the top twenty nodes:
         while not len(newJson) == 50:
             newJson.pop()
-        resultNodes = [newJson]
-    return json.dumps({"obj":resultNodes,"meta":{"expid":expID,"rank":rank,"compset":compset,"res":res} })
-@app.route("/exp-details/<mexpid>")
+        resultNodes = json.dumps([newJson])
+    return  '{{"obj":{0},"meta":{{"expid":"{1}","rank":"{2}","compset":"{3}","res":"{4}"}} }}'.format(resultNodes,expID,rank,compset,res)
+@app.route("/exp-details/<int:mexpid>")
 def expDetails(mexpid):
 	myexp = None
 	try:
@@ -308,7 +316,8 @@ def note(expID):
 			return redirect('/exp-details/'+str(expID))
 	else:
 		return redirect('/login')
-#Depcricated version of the search page
+
+#Depcrecated version of the search page
 """@app.route("/exps")
 def expsList():
     myexps = []
@@ -350,15 +359,21 @@ def advSearch(searchQuery):
 def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList = None,getRanks = True):
     resultItems = []
     filteredItems = []
-    variableList = ["user","expid","machine","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","compset","exp_date","res","timingprofile.case","init_time","run_time"]
-    specificVariables = variableList
-    if not whiteList == None:
-        specificVariables = whiteList
+
+    #Variable names are split into non-string and string respectively; this is to help improve search results during a basic search.
+    variableList=[
+        ["expid","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","init_time","run_time"],
+        ["user","machine","compset","exp_date","res","timingprofile.case"]
+    ]
+
+    specificVariables = whiteList
+    if whiteList == None:
+        specificVariables = variableList[0] + variableList[1]
 
     #This should be an easy way to determine if something's in the list
     if orderBy == "case":
         orderBy = "timingprofile.case"
-    elif orderBy not in variableList:
+    elif orderBy not in variableList[0] + variableList[1]:
         orderBy = "expid"
     #Only asc and desc are allowed:
     if ascDsc not in ["asc","desc"]:
@@ -425,7 +440,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
             else:
                 elementStr = ' like "%%'+syntax[1]+'%%"'
 
-            if syntax[0] in variableList:
+            if syntax[0] in variableList[0] + variableList[1]:
                 strList.append(syntax[0]+elementStr)
             elif syntax[0] == "case":
                 strList.append('timingprofile.case '+elementStr)
@@ -451,16 +466,23 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
         #Remove empty strings: (spaces on the client side)
         while '' in termList:
             termList.remove('')
-        print(termList)
-        
+        #print(termList)
+
         if(len(termList) > 0):
             queryStr = "select " + str(specificVariables).strip("[]").replace("'","") + " from timingprofile where "
             for term in termList:
+                #This controlls whether or not to search through number-based or string based variables:
+                targetIndex = 0
+                try:
+                    decimal(term)
+                except:
+                    targetIndex+=1
+
                 if not term == termList[0]:
                     queryStr+=" and "
                 queryStr+='( '
                 firstValue = True
-                for word in variableList:
+                for word in variableList[targetIndex]:
                     if not firstValue:
                         queryStr+=" or "
                     #Equal an exact string if $ is at the beginning:
@@ -470,7 +492,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
                         queryStr+=word+' like "%%'+term+'%%"'
                     firstValue = False
                 queryStr +=" )"
-    
+
             queryStr+=" order by "+orderBy+" "+ascDsc
             if limit:
                 queryStr+=" limit "+limit
@@ -578,20 +600,22 @@ def searchPrediction(keyword):
     return json.dumps(resultWords)
 
 #This generates an svg graph of runtime information. It makes use of an algorhythm created by donahue5 (modified to work with this project)
-@app.route("/svg/runtime/<expid>")
+@app.route("/svg/runtime/<int:expid>")
 def getRuntimeSvg(expid):
     resultElement = {}
     try:
-        #Complexity for the expid was added on purpose so that the program wouldn't run if it wasn't a number...
-        runtimeQuery = db.engine.execute("select * from runtime where expid = "+str(int(expid))).fetchall()
+        runtimeQuery = db.engine.execute("select * from runtime where expid = "+str(expid)).fetchall()
         for element in runtimeQuery:
             #These Decimal objects don't have "precision" values, while the ones in searchCore do... :/ [probably because of how these were queried]
             resultElement[element.component] = {"seconds":float(element.seconds),"model_years":float(element.model_years),"model_day":float(element.model_day)}
         for key in resultElement.keys():
-            peQuery = db.engine.execute("select root_pe,tasks from pelayout where expid = "+expid+" and component like '%%"+key+"%%'").fetchall()
+            peQuery = db.engine.execute("select root_pe,tasks from pelayout where expid = "+str(expid)+" and component like '%%"+key+"%%'").fetchall()
             if len(peQuery) > 0:
                 resultElement[key]["root_pe"] = peQuery[0].root_pe
                 resultElement[key]["tasks"] = peQuery[0].tasks -1
-    except ValueError:
-        return render_template("error.html"),404
-    return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")
+        if len(resultElement.keys()) > 0:
+            return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")
+        else:
+            return render_template('error.html'), 404
+    except SQLAlchemyError:
+        return render_template('error.html'), 404

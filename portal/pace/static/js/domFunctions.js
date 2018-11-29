@@ -6,7 +6,16 @@ var dlLock = true; //Locks dataList in place. If it slides back, so will dataInf
 var dlShow = true;
 //These are for data list event listeners:
 var dlMouseDown = false;
+var dlBarMouseDown = false;
 var dlCurrWidth = dataList.style.width;
+
+//This is a quick function to help look for cookies. It's general enough for use anywhere else if needed.
+//Regex is required for use, see: https://www.w3schools.com/jsref/jsref_obj_regexp.asp
+var cookieSearch = regex=>{
+    let result = document.cookie.split(";").find(e=>regex.test(e));
+    if(result)
+        return result.split("=")[1];
+}
 
 //adjust the size of the dataList to reflect the graph's height:
 window.onresize = function(){
@@ -15,7 +24,17 @@ window.onresize = function(){
     dataList.style.height = dataList.style.height;
     dlDisplayButton.style.height = dataList.style.height;
     clearTimeout(triggerResize);
-    triggerResize=setTimeout(()=>dataList.style.height = dataInfo.style.height,10)
+    triggerResize=setTimeout(()=>{
+        dataList.style.height = dataInfo.style.height
+        dlResizeBar.style.height = dataList.style.height;
+        dlResizeBar.style.left = dataInfo.style.left;
+        //Datalist and dataInfo wind up using three different units for resizing! ...This changes the measurement again because dataInfo doesn't want to align with datalist otherwise XP
+        if(dataInfo.style.width[dataInfo.style.width.length-1] !="%"){
+            dataInfo.style.width = (window.innerWidth *.77) / 13 + "em";
+            dataInfo.style.left = (window.innerWidth *.22) / 13 + "em";
+            backButton.style.left = dataInfo.style.left;
+        }
+    },10);
 
     //Normally, 1 em = 16px, but 13 seems to work better for this scenario :P (See: https://kyleschaeffer.com/development/css-font-size-em-vs-px-vs-pt-vs/)
     if(dlLock){
@@ -45,13 +64,26 @@ dataList.onmouseup = function(){
     dlMouseDown = false
 }
 
-dataList.onmousemove = function(){
+window.onmousemove = function(){
+    if(dlBarMouseDown)
+        dataList.style.width = ( (arguments[0].x-32)/13)+'em';
     if(dlLock && dlMouseDown && dataList.style.width !=dlCurrWidth){
         dlCurrWidth = dataList.style.width;
-        dataInfo.style.width = (window.innerWidth - dataList.style.width.replace("px","")*1) + "px";
-        dataInfo.style.left = ((dataList.style.width.replace("px","")*1) + 30) + "px";
-        backButton.style.left = ((dataList.style.width.replace("px","")*1) + 30) + "px";
+        //This value is for converting back to px:
+        let currWidthTemp = (/em/.test(dlCurrWidth)?dlCurrWidth.replace("em","")*13:dlCurrWidth.replace("px","")*1);
+
+        dlResizeBar.style.left = (currWidthTemp+25)+"px";
+        dataInfo.style.width = (window.innerWidth - currWidthTemp) + "px";
+        dataInfo.style.left = (currWidthTemp + 30) + "px";
+        backButton.style.left = (currWidthTemp + 30) + "px";
     }
+}
+
+smoothColorsCheck.onclick = function(){
+    smoothColors = this.checked;
+    document.cookie = "smoothColors="+(smoothColors?1:0)+";path=/summary/";
+    colorChart(colorSetting);
+    resultChart.update()
 }
 
 //The following is functionality for dataList to slide in and out:
@@ -64,6 +96,12 @@ function dlSlide(listFB = !dlShow,infoFB){
     let leftValue = isChrome?"22%":"27%";
     $(dataInfo).animate((infoFB?{left:leftValue,width:isChrome?"77%":"75%"}:{left:"2%",width:"99%"} ),250);
     $(backButton).animate((infoFB?{left:leftValue}:{left:"2%"} ),250);
+    if(!listFB)
+        dlResizeBar.style.display="none";
+    else{
+        dlResizeBar.style.display="";
+        dlResizeBar.style.left = leftValue;
+    }
 }
 
 function toggleDlLock(tf = !dlLock){
@@ -245,6 +283,7 @@ threadSelect.onchange = function(){
     currExp.currThread = threadSelect.children[threadSelect.selectedIndex].value;
     listContent.innerHTML = "";
     listContent.appendChild(currExp.nodeDomList[currExp.currThread]);
+    mtViewer.closeDlList();
     summaryButton.click();
 }
 
@@ -261,14 +300,17 @@ var compDivObj = {
             $("#compareSelectDiv").animate({opacity:(compareSelectDiv.style.opacity != "1"?"1":"0")},300,()=>{if(!compDivObj.display) compareSelectDiv.style.display = "none";});
     },
     makeExp:function(){
-        let resultString = "<div class='compareDiv'><p style='text-align:right;'><button onclick='this.parentElement.parentElement.outerHTML=\"\";compDivObj.expCountCheck();'>X</button></p><select onchange='compDivObj.updateThreads(this)'>";
+        let resultElement = document.createElement("div");
+        resultElement.className="compareDiv";
+        let resultString = "<p style='text-align:right;'><button class='btn btn-default' onclick='this.parentElement.parentElement.outerHTML=\"\";compDivObj.expCountCheck();'>X</button></p><select onchange='compDivObj.updateThreads(this)'>";
             expList.forEach(exp=>{
                 resultString+="<option>"+exp.name+"_"+exp.rank+"</option>"
             });
             resultString+="</select><select>";
             expList[0].timeNodes.forEach((element,index)=>resultString+="<option value='"+index+"'>Thread "+index+"</option>");
-        resultString+="</select></div>";
-        compDivBody.innerHTML+=resultString;
+        resultString+="</select>";
+        resultElement.innerHTML=resultString;
+        compDivBody.appendChild(resultElement);
         this.expCountCheck();
     },
     //This name is weird XP
@@ -322,7 +364,7 @@ var dmObj={
     toggle:function(tf){
         this.on = tf;
         //Change cookies:
-        document.cookie = "darkMode="+(tf?1:0)+"; path="+detectRootUrl().replace("https://pace.ornl.gov","")+"summary/";
+        document.cookie = "darkMode="+(tf?1:0)+"; path=/summary/";
         clearInterval(dmObj.interval);
         lsBackground.style.backgroundColor = (tf?"rgb(25,25,25)":"white");
         dmObj.interval = setInterval(()=>{
@@ -332,7 +374,7 @@ var dmObj={
                     dmObj.percentage+=4;
                 else dmObj.percentage-=4;
                 //Body Colors:
-                this.colorElements([[document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar,dataList,colorSelectDiv]],"backgroundColor",this.bgcolor);
+                this.colorElements([[document.body,compareSelectDiv,document.getElementsByClassName("searchMenu")[0],quickSearchBar,dataList]],"backgroundColor",this.bgcolor);
                 //textColor
                 this.colorElements([[listContent,quickSearchBar],
                 document.getElementsByTagName("h2"),
@@ -362,18 +404,6 @@ var dmObj={
             }
         });
 
-    },
-    //Check to see what mode the user was on last time the page loaded.
-    checkCookies:function(){
-        let cookies = document.cookie.split(";");
-        let cookieRegex = /darkMode/;
-        let result = false;
-        cookies.forEach(element=>{
-            if(cookieRegex.test(element)){
-                if(element.split("=")[1]=='1') result=true;
-            }
-        });
-        return result;
     }
 };
 var resizeChartVal = 1;
@@ -397,10 +427,30 @@ dataInfo.onwheel = function(evt){
     }
 }
 
+/*There's a bug (either in google chrome or in this metaOpenClose) that stretches the metatable after closing it.
+I'm guessing this is a chrome bug, since the debugger doesn't show values being changed in any way. The below function fixes this issue.*/
+function metaContainerChromeFix(){
+    if(isChrome && metaTable.style.display == "none"){
+        metaInfoContainer.style.display="none";
+        setTimeout(()=>metaInfoContainer.style.display="inline",10);
+    }
+}
+
 //Open and close the meta-info box
-function metaOpenClose(openClose=false,compset,res,expid){
-    if(compset && res && expid){
-        let outStr = "Compset: <a href='"+detectRootUrl()+"advsearch/compset:"+compset+"'>"+compset+"</a> Res: <a href='"+detectRootUrl()+"advsearch/res:"+res+"'>"+res+"</a> (<a href='"+detectRootUrl()+"exp-details/"+expid+"'>Details</a>)";
+function metaOpenClose(openClose=false,metaArray){
+    if(metaArray){
+        let outStr=""
+        if(metaArray.length > 1){
+            outStr = `<span onclick='$(metaTable).slideToggle(200,metaContainerChromeFix)' style='cursor:pointer'>Click to view more details about these experiments.</span>
+            <div id='metaTable' style="display:none;text-align:left;margin-left:25%"><table><thead><tr><th>Compset</th><th>Res</th><th>Expid</th></tr></thead><tbody>`;
+            metaArray.forEach(exp=>{
+                outStr+="<tr><td>"+exp.compset+"</td><td>"+exp.res+"</td><td><a href='"+detectRootUrl()+"exp-details/"+exp.name+"'>"+exp.name+"</a></td></tr></div>";
+            });
+            outStr+="</tbody></table>"
+        }
+        else{
+            outStr = "Compset: <a href='"+detectRootUrl()+"advsearch/compset:"+metaArray[0].compset+"'>"+metaArray[0].compset+"</a> Res: <a href='"+detectRootUrl()+"advsearch/res:"+metaArray[0].res+"'>"+metaArray[0].res+"</a> (<a href='"+detectRootUrl()+"exp-details/"+metaArray[0].name+"'>Details</a>)";
+        }
         $(metaInfoTxt.parentElement).slideUp(200);
         setTimeout(()=>metaInfoTxt.innerHTML = outStr,metaInfoTxt.innerHTML == ""?0:200);
         $(metaInfoTxt.parentElement).slideDown(200);
@@ -413,31 +463,44 @@ function metaOpenClose(openClose=false,compset,res,expid){
 
 //The interface for the color selection:
 var colorSelect = {
-    display:false,
-    toggle:function(){
-        this.display = !this.display;
-        if(this.display)
-            colorSelectDiv.style.display = "initial";
-        $("#colorSelectDiv").animate({opacity:(colorSelectDiv.style.opacity != "1"?"1":"0")},300,()=>{if(!colorSelect.display) colorSelectDiv.style.display = "none";});
-    },
-    addColor:function(color="#FF0000",deletable = true,refresh = true){
-        newColor = document.createElement("div");
-        newColor.innerHTML+=`<input type="color" value="`+color+`" class="colorInput" onchange="colorSelect.saveColorConfig()"/>`+(deletable?`<button class="btn btn-default" onclick="setTimeout(()=>colorSelect.saveColorConfig(),10);this.parentElement.outerHTML='';">X</button>`:'');
-        colorSelectDiv.appendChild(newColor);
-        
-        if(refresh)
-            this.saveColorConfig();
-    },
-    saveColorConfig:function(updateChart = true){
+    themes:[],
+    //Set the colors upon a change. This also get's saved to cookies.
+    saveColorConfig:function(updateChart = true,theme = this.themes[colorSThemes.selectedIndex].values){
         hexArray = [];
-        colorList = colorSelectDiv.getElementsByClassName("colorInput");
-        for(let i=0;i<colorList.length;i++)
-            hexArray.push(colorList[i].value);
+        for(let i=0;i<theme.length;i++)
+            hexArray.push(theme[i]);
         colorConfig = hex2RgbArray(hexArray);
         //In the event that you can't load the chart yet, this is usefull:
         if(updateChart){
             colorChart();
             resultChart.update();
         }
+        let cookiePath=";path=/summary/";
+        document.cookie = "barTheme="+colorSThemes.selectedIndex+cookiePath;
+        document.cookie = "barColors="+hexArray.join()+cookiePath;
+    },
+
+    loadThemes:function(){this.themes.forEach(theme=>colorSThemes.innerHTML+="<option"+(theme == this.themes[0]?" selected":"")+">"+theme.name+"</option>")},
+
+    restoreCookies:function(){
+        let cookieList = [
+            cookieSearch(/barTheme/),
+            cookieSearch(/barColors/)
+        ];
+        if(cookieList[0] && cookieList[1]){
+            colorSThemes.selectedIndex = cookieList[0]*1;
+            this.saveColorConfig(false,cookieList[1].split(","));
+        }
+        else colorSelect.saveColorConfig(false);
+    },
+    getMplTheme:function(name,colorCount = 10){
+        $.get("/ajax/getMplColor/"+name+"/"+colorCount,data=>{
+            colorArray = JSON.parse(data);
+            if(colorArray.length == 0)
+                alert("Color not found...");
+            else this.saveColorConfig(true,colorArray);
+        });
     }
 }
+
+$.get("/static/chartJsThemes.json",data=>colorSelect.themes = data);

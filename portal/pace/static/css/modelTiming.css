@@ -29,7 +29,7 @@ ul{
 #backButton{
     position: absolute;
     left:27%;
-    z-index: 0;
+    z-index: 3;
 }
 #zoomDiv{
     float:right;
@@ -39,6 +39,7 @@ ul{
     height:1.7em;
     margin-right:5px;
     padding-top:0px;
+    z-index: 2;
 }
 
 #mtMain{
@@ -62,6 +63,7 @@ ul{
     font-family:arial;
     text-align:center;
     overflow-y:scroll;
+    z-index:3;
 }
 .compareDiv{
     width:10em;
@@ -82,11 +84,18 @@ ul{
     display:inline-block;
 }
 
+#metaTable tr td{
+    display:table-cell;
+    border:5px solid transparent;
+}
+
 #metaInfoContainer{
     text-align:center;
     background-color:lightgray;
     border-radius:20px;
-    display:none
+    display:none;
+    position:absolute;
+    z-index: 4;
 }
 
 #quickSearchContainer{
@@ -112,18 +121,11 @@ ul{
     max-width: inherit;
 }
 
-#colorSelectDiv{
-    width:20%;
-    height:20%;
+#dlResizeBar{
+    /* background-color:black; */
+    width:2em;
+    left:20em;
     position:absolute;
-    top:20%;
-    left:80%;
-    box-shadow:0px 5px 5px gray;
-    background-color:white;
-    opacity:0;
-    display:none;
-    border-radius:10px;
-    font-family:arial;
-    text-align:center;
-    overflow-y:scroll;
+    cursor:ew-resize;
+    z-index: 3;
 }

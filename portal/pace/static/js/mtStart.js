@@ -3,13 +3,11 @@
 
 //Fire up the summary:
 $(document).ready(()=>{
-    //Load colors for customizing:
-    let colorDelete = false;
-    ["#0000FF","#00FF00","#FF0000"].forEach(color=>{
-        colorSelect.addColor(color,colorDelete,false);
-        colorDelete = true;
-    });
-    colorSelect.saveColorConfig(false);
+    colorSelect.loadThemes();
+    colorSelect.restoreCookies();
+
+    smoothColorsCheck.checked = Boolean(cookieSearch(/smoothColors/)*1);
+    smoothColors = smoothColorsCheck.checked;
 
     var threadList = undefined;
     var onMtPage = true;
@@ -25,11 +23,10 @@ $(document).ready(()=>{
     quickSearchContainer.children[0].style.width="15em";
     quickSearchContainer.getElementsByClassName("pTextMenu")[0].style.width="15em";
 
-    //Change the footer to fixed due to weird happenings on mobile:
-    document.getElementsByClassName("footer")[0].style.position="fixed";
+    //Change the footer due to weird happenings on mobile:
     document.getElementsByClassName("footer")[0].style.zIndex = "-1";
-    dmObj.toggle(dmObj.checkCookies());
-    dmCheck.checked = dmObj.checkCookies();
+    dmCheck.checked = Boolean(cookieSearch(/darkMode/)*1);
+    dmObj.toggle(dmCheck.checked);
     animate();
     if(expData!=undefined){
         for(let i=0;i<expData.length;i++){

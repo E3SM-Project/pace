@@ -51,3 +51,28 @@
     float:right;
     margin-right:5px;
 }
+
+/*Search summary content:*/
+#scatterContainer{
+    display:none;
+}
+#summaryChartTag{
+    background-image:url(/static/img/ornlLeaf.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: auto;
+}
+@media screen and (min-width:1100px){
+    #scatterContainer{
+        max-width:75%;
+    }
+    #summaryChartTag{
+        margin-left:13%;
+    }
+    #clearDataButton{
+        margin-left:15%;
+    }
+    #scatterInputContainer{
+        margin-right:-11.5%;
+    }
+}

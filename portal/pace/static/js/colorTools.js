@@ -2,7 +2,7 @@
 //Purpose: These originally come from modelTiming.js; they're designed to help make colors easier.
 
 //return an rgb-based color string based on a percentage provided by the user:
-function percentToColor(percentage=50,transparency=false,returnType=0,colors=[[0,0,255],[0,255,0],[255,0,0]]){
+function percentToColor(percentage=50,transparency=false,returnType=0,colors=[[0,0,255],[0,255,0],[255,0,0]],smoothColors = true){
     //We need a minimum of two colors; if There isn't two, we just make the second one the first:
     if (colors.length == 0 || typeof(colors) != "object"){
         console.error("A minimum of 1-2 colors is required via array format (e.g [r,g,b])");
@@ -25,10 +25,13 @@ function percentToColor(percentage=50,transparency=false,returnType=0,colors=[[0
             else break;
         }
     let resultColor=colors[colorIndex].slice();
-    let colorPercent = .01 * ( (100 / subtractValue) * (subtractValue-difference));
-    if(percentage!=100){
-        for(let i=0;i<resultColor.length;i++){
-            resultColor[i]-=Math.floor( (resultColor[i] - colors[colorIndex+1][i]) * colorPercent );
+    //This makes a smooth transition
+    if(smoothColors){
+        let colorPercent = .01 * ( (100 / subtractValue) * (subtractValue-difference));
+        if(percentage!=100){
+            for(let i=0;i<resultColor.length;i++){
+                resultColor[i]-=Math.floor( (resultColor[i] - colors[colorIndex+1][i]) * colorPercent );
+            }
         }
     }
     //This value is optional; if returnType is > 0, you optionally get the raw values as well.

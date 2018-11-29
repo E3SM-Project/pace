@@ -1,0 +1,1 @@
+This is where logs get archived. This text file is here so the directory will appear on github.

@@ -1,5 +1,9 @@
 //Author: Zachary Mitchell
-//Purpose: The javaScript for search.html. Moved here due to the large size.
+/*Purpose: These functions handle a variety of functionality for searchPage.html. Most of the content are DOM event listeners, but other things include:
+	* A higher level function for search queries
+	* A high-level function for adding data to the scatterplot
+	* search prediction for the search bar
+*/
 
 window.onresize = ()=>{
 	if(window.innerWidth < 1060)
@@ -13,18 +17,22 @@ function searchAndCheck(sq = searchQuery ){
 	searchObj.search(sq,searchObj.limit,()=>{
 	if(searchObj.searchData.length == searchObj.limit){
 	 searchObj.limit*=2;
+	 if(moreBtn.style.display == "none")
+	 	moreBtn.style.display = "";
 	}
 	else moreBtn.style.display = "none";
-
 	},orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked);
+	if(lastQuery!=searchQuery)
+		summaryChart.resetData();
+		initQuery(searchQuery);
+		
 	let newLink = detectRootUrl() +(sq == "*"?"":"search/"+sq);
 	if(newLink != window.location.href)
-	
 		history.pushState("","",newLink);
-	sSummaryLink.href=detectRootUrl()+"searchSummary/"+sq;
 
 	if(sq!="*")
 		homeSearchBar.value = sq;
+
 }
 
 //predictive search + home search functionality:
@@ -33,8 +41,8 @@ homeSearchBar.onkeydown = evt=>{
 	if(evt.key == "Enter" && homeSearchPredict.allowEnter){
 		searchObj.limit = 10;
 		if(homeSearchBar.value!=''){
-			searchAndCheck(homeSearchBar.value);
 			searchQuery = homeSearchBar.value;
+			searchAndCheck(homeSearchBar.value);
 		}
 	}
 	homeSearchPredict.keydownListener(evt);
@@ -71,8 +79,45 @@ function sortOrderToggle(){
 	searchObj.search((homeSearchBar.value!=''?homeSearchBar.value:'*'),searchObj.limit,undefined,orderBySelect.children[orderBySelect.selectedIndex].value,ascCheck.checked)
 }
 
+//This is For the search summary:
+var noData = true;
+summaryOrderBy.onchange = ()=>{
+    summaryChart.resetData();
+    summaryChart.config.label.val=summaryOrderBy.children[summaryOrderBy.selectedIndex].value;
+    initQuery(lastQuery);
+    summaryChart.chart.update();
+}
+
+function checkArray(value,srcArray){
+    for(let i=0;i<srcArray.length;i++){
+        if (value == srcArray[i])
+            return false;
+    }
+    return true;
+}
+
+//Lets check for duplicates; if we don't find anything, the query is ignored.
+//If this check is somehow bypassed, there's also protection over the server B)
+function initQuery(userInput){
+    if(userInput!=""){
+        queryList = [];
+        userQuery = userInput.split("|");
+        userQuery.forEach(element=>{
+            if(checkArray(element,queryList))
+                queryList.push(element);
+        });
+        if(queryList.length!=0){
+            resultQuery = queryList.join("|");
+            summaryChart.addData(resultQuery);
+            noData = false;
+            lastQuery = resultQuery;
+        }
+    }
+}
+
 $(document).ready(function(){
 	window.onresize();
+	summaryChart = new bChartObj("summaryChartTag");
 	searchAndCheck();
 	/*$("#expTable").tablesorter({
 		widthFixed: false

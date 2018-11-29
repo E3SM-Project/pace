@@ -9,10 +9,11 @@ var expList = [];
 //A backlog of things to do when all experiments are retrieved. It is cleared out afterwards.
 var expGetCount = 0;
 var expGetFunc = [];
-var colorSetting = -1;
 
 //The default color configuration, setting this to undefined will make the mtViewer use the defaults in percentToColor()
 var colorConfig = [];
+var colorSetting = -1;
+var smoothColors = false;
 
 //This will be where we look for a specific node. (Making the structured time-node into something linear at the same time)
 function addressTable(vals=undefined,jsonArray=false,srcExp,thread = -1){
@@ -34,8 +35,15 @@ function addressTable(vals=undefined,jsonArray=false,srcExp,thread = -1){
         }
     }
     if(vals)
-        newAddressTable.addVals(vals,jsonArray)
-
+    newAddressTable.addVals(vals,jsonArray)
+    
+    newAddressTable.noChildren = true;
+    for(let i=0;i<newAddressTable.length;i++){
+        if(newAddressTable[i].children.length > 0){
+            newAddressTable.noChildren = false;
+            break;
+        }
+    }
     return newAddressTable
 }
 
@@ -111,7 +119,8 @@ function expDownloadDefault(){
     updateExpSelect();
     animate(false);
     currExp.view();
-    metaOpenClose(true,currExp.compset,currExp.res,currExp.name);
+    metaOpenClose(true,[currExp]);
+    mtViewer.closeDlList();
     //Construct a new url for browser display:
     let newUrl = detectRootUrl()+"summary/";
     let idStr = "";
@@ -135,8 +144,9 @@ function switchExperiment(index = expSelect.selectedIndex){
     if(currExp.currentEntry == undefined)
         summaryButton.click();
     else mtViewer.loadChart();
+    mtViewer.closeDlList();
     resultChart.options.title.text=currExp.name +": "+currExp.rank+ " (Thread "+currExp.currThread+")";
-    metaOpenClose(true,currExp.compset,currExp.res,currExp.name);
+    metaOpenClose(true,[currExp]);
 
     let newUrl = detectRootUrl()+"summary/";
     let idStr = "";
@@ -291,7 +301,7 @@ function makeGraphBar(nodeIn,valIn="nodes",dataIndex=0,stackOffset=0){
 }
 
 //Chart coloring is handled here so resultChart isn't colored more than once:
-function colorChart(mode=-1,colorList = colorConfig){
+function colorChart(mode=-1,colorList = colorConfig,smoothTransition = smoothColors){
     //Clear the current colors:
     resultChart.data.datasets.forEach(e=>{
         e.backgroundColor=[];
@@ -331,7 +341,7 @@ function colorChart(mode=-1,colorList = colorConfig){
             let colorPercentages = arrayToPercentages(colorSumlist);
             for(let i=0;i<resultChart.data.datasets.length;i++){
                 for(let j=0;j<resultChart.data.datasets[i].data.length;j++){
-                    let colorData = percentToColor(colorPercentages[j],.2,2,colorList);
+                    let colorData = percentToColor(colorPercentages[j],.2,2,colorList,smoothTransition);
                     resultChart.data.datasets[i].backgroundColor.push(colorData[0]);
                     resultChart.data.datasets[i].borderColor.push(percentToColor(50,.2,0,[colorData[1],[0,0,0]]));
                 }
@@ -345,7 +355,7 @@ function colorChart(mode=-1,colorList = colorConfig){
                     colorSumlist.push(resultChart.data.datasets[j].data[i]);
                 let colorPercentages = arrayToPercentages(colorSumlist);
                 for(let j=0;j<resultChart.data.datasets.length;j++){
-                    let colorData = percentToColor(colorPercentages[j],.2,2,colorList);
+                    let colorData = percentToColor(colorPercentages[j],.2,2,colorList,smoothTransition);
                     resultChart.data.datasets[j].backgroundColor.push(colorData[0]);
                     resultChart.data.datasets[j].borderColor.push(percentToColor(50,.2,0,[colorData[1],[0,0,0]]));
                 }
@@ -379,7 +389,7 @@ function colorChart(mode=-1,colorList = colorConfig){
             //Now to actually color each bar:
             mtViewer.currExp().currentEntry.children.forEach((exp,index)=>{
                 resultChart.data.datasets.forEach(dataSet=>{
-                    let colorData = percentToColor(resultPercentages[valPool["e"+exp.srcExp.name].index],.2,2,colorList);
+                    let colorData = percentToColor(resultPercentages[valPool["e"+exp.srcExp.name].index],.2,2,colorList,smoothTransition);
                     dataSet.backgroundColor[index] = colorData[0];
                     dataSet.borderColor[index] = percentToColor(50,.2,0,[colorData[1],[0,0,0]]);
                 });
@@ -390,7 +400,7 @@ function colorChart(mode=-1,colorList = colorConfig){
             //Color everything randomly:
             resultChart.data.datasets.forEach(dset=>{
                 for(let i=0;i<dset.data.length;i++){
-                    let rndColor = percentToColor(Math.floor(Math.random()*100),.2,2,colorList);
+                    let rndColor = percentToColor(Math.floor(Math.random()*100),.2,2,colorList,smoothTransition);
                     dset.backgroundColor.push(rndColor[0]);
                     dset.borderColor.push(percentToColor(50,.2,0,[rndColor[1],[0,0,0]]));
                 }
@@ -451,6 +461,13 @@ var mtViewer = {
                 setTimeout(()=>comparisonMode.viewChart(processId),10);
             else setTimeout(()=>changeGraph({children:[currExp.nodeTableList[currExp.currThread][processId]]}),10);
         }
+    },
+    //If the data list has no children, close it. If it's not mobile, there's a chance somebody would use the data list...
+    closeDlList:()=>{
+        if(currExp.nodeTableList[currExp.currThread].noChildren)
+            dlSlide(dlShow = false);
+        else if(window.innerWidth > 700)
+            dlSlide(dlShow = true);
     }
 }
 
@@ -620,7 +637,6 @@ var comparisonMode = {
             expNameSort[node.name].push(node);
         },
     start:function(){
-        metaOpenClose();
         if(this.exp.timeNodes[0].length == 0){
             alert("Error: there's nothing to compare.");
             comparisonMode.finish();
@@ -643,10 +659,15 @@ var comparisonMode = {
                     let newLink = detectRootUrl()+"summary/";
                     let idStr="";
                     let rankStr="";
+
+                    let metaArray = [];
                     this.activeExps.forEach(expArray=>{
                         idStr+=(idStr == ""?"":",")+expArray[0].name;
                         rankStr+=(rankStr == ""?"":",")+expArray[0].rank;
+                        metaArray.push(expArray[0]);
                     });
+                    metaOpenClose(true,metaArray);
+                    mtViewer.closeDlList();
                     history.pushState("","",newLink+idStr+"/"+rankStr+"/compare/"+(compare?window.location.hash:"#summary"));
                 },10);
             },10);

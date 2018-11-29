@@ -1,7 +1,7 @@
 //Author: Zachary Mitchell
-//Purpose: The javascript for searchSummary.html
+//Purpose: The core functionality for the search summary chart found on the homepage. Originally, this was on a page of it's own, but it makes more sense to combine it with the search page.
 
-var queryHistory = [];
+var lastQuery = "";
 var bubbleRadius = 15;
 var bubbleGrow = true;
 Chart.defaults.global.defaultFontSize = 16;
@@ -33,8 +33,7 @@ var bChartObj = function(id,config){
             label:{val:"machine"},
             y:{val:"model_throughput",label:"SYPD"},
             x:{val:"total_pes_active",label:"Total PEs"},
-            r:{val:15,hardCoded:true
-            }
+            r:{val:15,hardCoded:true}
         }
     }
 
@@ -47,14 +46,14 @@ var bChartObj = function(id,config){
                     scaleLabel:{
                         display:true,
                         labelString:this.config.y.label?this.config.y.label:
-                        typof(this.config.y.val) == "function"?this.config.y.val():
+                        typeof(this.config.y.val) == "function"?this.config.y.val():
                         this.config.y.val
                     }}],
                 xAxes:[{
                     scaleLabel:{
                         display:true,
                         labelString:this.config.x.label?this.config.x.label:
-                        typof(this.config.x.val) == "function"?this.config.x.val():
+                        typeof(this.config.x.val) == "function"?this.config.x.val():
                         this.config.x.val
                     }}]
             }
