@@ -271,17 +271,17 @@ def summaryQuery(expID,rank):
 def expDetails(mexpid):
 	myexp = None
 	try:
-		myexp = db.engine.execute("select * from timingprofile where expid= "+mexpid).fetchall()[0]
+		myexp = db.engine.execute("select * from timingprofile where expid= "+ str(mexpid) ).fetchall()[0]
 	except IndexError:
 		return render_template('error.html')
-	mypelayout = db.engine.execute("select * from pelayout where expid= "+mexpid).fetchall()
-	myruntime = db.engine.execute("select * from runtime where expid= "+mexpid).fetchall()
-	ranks = db.engine.execute("select rank from model_timing where expid= "+mexpid).fetchall()
+	mypelayout = db.engine.execute("select * from pelayout where expid= "+ str(mexpid) ).fetchall()
+	myruntime = db.engine.execute("select * from runtime where expid= "+ str(mexpid) ).fetchall()
+	ranks = db.engine.execute("select rank from model_timing where expid= "+ str(mexpid) ).fetchall()
 	colorDict = {}
 	for i in range(len(runtimeSvg.default_args['comps'])):
 		colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
 	try:
-		noteexp = db.engine.execute("select * from additionalnote where expid= "+mexpid).fetchall()[0]
+		noteexp = db.engine.execute("select * from additionalnote where expid= "+ str(mexpid) ).fetchall()[0]
 		note = noteexp.note
 	except IndexError:
 		note=""
