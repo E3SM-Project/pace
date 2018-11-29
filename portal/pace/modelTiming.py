@@ -6,7 +6,7 @@ from os import listdir
 #This is a list of configurations that tell the parser how to read specific GPTL files
 parserConfigs = {
 "e3sm":[{
-        "names":["On","Called","Wallclock","max","min","UTR Overhead"],
+        "names":["On","Called","Recurse","Wallclock","max","min","UTR Overhead"],
         "altNames":["on","called","recurse","wallClock","max","min","utrOverhead"],
         "startMarker":["Stats for thread",2],
         "fileIdentifiers":["Stats for thread"],

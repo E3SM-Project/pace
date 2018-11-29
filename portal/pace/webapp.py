@@ -279,6 +279,11 @@ def summaryQuery(expID,rank):
             newJson.pop()
         resultNodes = json.dumps([newJson])
     return  '{{"obj":{0},"meta":{{"expid":"{1}","rank":"{2}","compset":"{3}","res":"{4}"}} }}'.format(resultNodes,expID,rank,compset,res)
+
+@app.route("/flamegraph/<int:expid>/<rank>")
+def flameGraph(expid,rank):
+    return render_template("flameGraph.html",expid=expid,rank=rank)
+
 @app.route("/exp-details/<int:mexpid>")
 def expDetails(mexpid):
 	myexp = None

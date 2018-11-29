@@ -1,0 +1,35 @@
+<head>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/spiermar/d3-flame-graph@2.0.3/dist/d3-flamegraph.css">
+</head>
+<body>
+  <div id="chart"></div>
+  <script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/spiermar/d3-flame-graph@2.0.3/dist/d3-flamegraph.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript">
+    var flamegraph = d3.flamegraph().width(960);
+
+    function mtToFlame(obj){
+        let result = {
+            "name":obj.name,
+            "value":obj.values.wallClock,
+            "children":[]
+        };
+        if(obj.children.length > 0)
+            obj.children.forEach(child=>result.children.push(mtToFlame(child)));
+        return result;
+    }
+
+    $.get("/summaryQuery/{{expid}}/{{rank}}",data=>{
+        testData = JSON.parse(data);
+        let grandTotal = 0;
+        testData.obj[0].forEach(child=>{
+            grandTotal+=child.values.wallClock;
+        });
+        result = mtToFlame({name:testData.meta.expid+"_"+testData.meta.rank+"( "+testData.meta.compset+","+testData.meta.res+" )",values:{wallClock:grandTotal},children:testData.obj[0]});
+        console.log(result);
+        d3.select("#chart").datum(result).call(flamegraph);
+    });
+    </script>
+</body>
