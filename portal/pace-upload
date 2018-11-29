@@ -71,14 +71,14 @@ def zipSubdir(zfname, path):
 	return
 
 # upload experiment files
-def uploadExp(uploadfile):
+def uploadExp(uploadfile, uploadUser):
 	# error check empty file
 	if(os.path.exists(uploadfile)):
 		if(os.stat(uploadfile).st_size!=0):
 			print bcolors.LIGHTGREY + ('Uploading...') + bcolors.ENDC
 			# open zip to be uploaded
 			fin = open(uploadfile, 'rb')			
-			files = {'file': fin}
+			files = {'file': fin, 'filename':uploadfile}
 			try:
 				# request for connection to server
 				r = requests.post(uploadurl, files=files)
@@ -88,7 +88,7 @@ def uploadExp(uploadfile):
 				fin.close()
 			if r.text == 'complete':
 				print bcolors.LIGHTGREY + ('Parsing experiments...') + bcolors.ENDC
-				req = requests.post(parseurl)
+				req = requests.post(parseurl, data={'filename':uploadfile,'user':uploadUser})
 				flaglist = (req.text).split("/") # req.text = success/message-timestamp.log
 				if flaglist[0] == 'success':
 					print bcolors.OKGREEN + ('Parse Success') + bcolors.ENDC
@@ -198,7 +198,7 @@ def gitAuthenticate(token):
 		print bcolors.FAIL+'ERROR: Github authentication failed, Invalid Token.'+bcolors.ENDC
 		exit()
 	validUser = authenticateUser(user)
-	return (validUser)
+	return (validUser, user)
 
 # create new token for the user
 def createtoken():
@@ -247,9 +247,9 @@ def createconfigfile(user,token,configFile):
 # authenticate user
 def userAuth():
 	token = getGitToken()
-	isSuccess = gitAuthenticate(token)
+	isSuccess, user = gitAuthenticate(token)
 	if isSuccess == True:
-		return
+		return (user)
 	else:
 		exit()
 
@@ -266,25 +266,24 @@ def downloadlog(filename):
 # main 
 def main():
 	# parse argument
-	result=parseArguments()
+	result = parseArguments()
 	if result.source == None:
 		print bcolors.WARNING + 'USAGE: pace-upload [--help/-h] [--exp-dir/-ed SOURCE] [--perf-archive/-pa SOURCE] [--application/-a {e3sm}]'  + bcolors.ENDC	
 		exit()
 	expfile = 0
-	userAuth()
+	user = userAuth()
 	try:
-		zfname = 'experiments'
 		expfile = result.source
-		tmpfile = 'pace-exps-' + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
-	
+		tmpfile = 'pace-exps-' + str(user) + '-' + datetime.now().strftime('%Y-%m-%d-%H%M%S')
+		zfname = tmpfile
 		# If path is not empty, and is a directory
 		if(expfile!=''):
 			if (result.application=='e3sm' and isValidE3SMexp(expfile,tmpfile)==True): 	
 				# aggregate all file
 				zipSubdir(zfname,tmpfile)
-				uploadfile='experiments.zip'
+				uploadfile=str(zfname)+str('.zip')
 				# upload experiment file		
-				uploadExp(uploadfile)
+				uploadExp(uploadfile,user)
 				# remove temporary aggregated file
 				os.remove(uploadfile)
 				distutils.dir_util.remove_tree(tmpfile)

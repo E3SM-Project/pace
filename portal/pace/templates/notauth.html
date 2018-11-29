@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+
+{% block topcontent %}
+{% endblock topcontent %}
+
+<h3 style="text-align:center">Additional Note For Experiment {{expid}} </h3>
+<p style = "text-align:center;margin-top:40px">
+<textarea rows="4" cols="50" style="resize:both" maxlength="16000000" id="note" name="note" class="form-control">User NOT AUTHORIZED to add/edit</textarea>
+<br>
+<a href="/"><input type="button" value="Home" class="btn btn-light"/>
+</a>
+</p>
+<script>
+history.replaceState("","","/notauthorize")
+</script>
+{% endblock %}
