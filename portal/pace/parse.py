@@ -16,10 +16,10 @@ from minio import Minio
 from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
 
 # main
-def parseData(zipfilename,user):
+def parseData(zipfilename,uploaduser):
 	# open file to write pace report
 	old_stdout = sys.stdout
-	logfilename = 'pace-'+str(user)+'-'+str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))+'.log'
+	logfilename = 'pace-'+str(uploaduser)+'-'+str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))+'.log'
 	logfile = PACE_LOG_DIR + logfilename
 	log_file = open(logfile,'w')
 	sys.stdout = log_file
@@ -89,7 +89,7 @@ def parseData(zipfilename,user):
 		print (' ')
 		print ('**************************************************')
 		# insert experiments for given files
-		isSuccess.append(insertExperiment(allfile[i],readmefile[i],timingfile[i],gitdescribefile[i],db,fpath))
+		isSuccess.append(insertExperiment(allfile[i],readmefile[i],timingfile[i],gitdescribefile[i],db,fpath, uploaduser))
 		print ('**************************************************')
 		print (' ')
 	
@@ -167,7 +167,7 @@ def convertPathtofile(path):
 # function to check duplicate experiments (check based on user,machinr,exp_date,case)
 def checkDuplicateExp(euser,emachine,ecurr, ecase):
 	eexp_date = changeDateTime(ecurr)
-	flag=Timingprofile.query.filter_by(user=euser,machine=emachine,case=ecase,exp_date=eexp_date ).first()
+	flag=E3SMexp.query.filter_by(user=euser,machine=emachine,case=ecase,exp_date=eexp_date ).first()
 	if flag is None:
 		return(False)
 	else:
@@ -241,10 +241,10 @@ def parseModelVersion(gitfile):
 	return version
 
 # This function provides pathway to files for their respective parser function and finally stores in database
-def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
+def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath, uploaduser):
 
 	# returns expid if success else returns False
-	forexpid = parseE3SMtiming(filename,readmefile,gitfile,db,fpath)
+	forexpid = parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser)
 	if forexpid == False:
 		return False
 	print ('* Parsing: '+ convertPathtofile(timingfile))
@@ -284,7 +284,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath):
 	return (True) 
 
 # parse e3sm files
-def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
+def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 	# open file
 	if filename.endswith('.gz'):
 		parseFile=gzip.open(filename,'rb')
@@ -473,7 +473,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 		print ('    -Complete')
 
 		# insert timingprofile 
-		new_experiment = Timingprofile(case=timingProfileInfo['case'],
+		new_experiment = E3SMexp(case=timingProfileInfo['case'],
 						lid=timingProfileInfo['lid'],
 						machine=timingProfileInfo['machine'],
 						caseroot=timingProfileInfo['caseroot'],
@@ -496,11 +496,12 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath):
 						init_time=timingProfileInfo['init_time'],
 						run_time=timingProfileInfo['run_time'],
 						final_time=timingProfileInfo['final_time'],
-						version = expversion)
+						version = expversion,
+						upload_by = uploaduser)
 		db.session.add(new_experiment)
 
 		# table has to have a same experiment id
-		forexpid = Timingprofile.query.order_by(Timingprofile.expid.desc()).first()
+		forexpid = E3SMexp.query.order_by(E3SMexp.expid.desc()).first()
 
 		#insert pelayout
 		i=0
