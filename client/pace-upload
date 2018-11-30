@@ -301,7 +301,7 @@ def main():
 			print(bcolors.FAIL + 'ERROR: %s is empty' %expfile + bcolors.ENDC)
 			exit()
 	except:
-		print(bcolors.FAIL + 'ERROR: Something Unexpected happened with %s' %expfile + bcolors.ENDC)
+		print(bcolors.FAIL + 'ERROR: Something unexpected happened with %s' %expfile + bcolors.ENDC)
 		exit()
 
 if __name__ == "__main__":
