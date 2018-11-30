@@ -1,15 +1,18 @@
-<head>
+{% extends "layout.html" %}
+{% block topscripts %}
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/spiermar/d3-flame-graph@2.0.3/dist/d3-flamegraph.css">
-</head>
-<body>
-  <div id="chart"></div>
+{% endblock %}
+{% block content %}
+  <div id="chartContainer" style="margin-left:10%;z-index:1;margin-bottom:10%"></div>
+
   <script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/spiermar/d3-flame-graph@2.0.3/dist/d3-flamegraph.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script type="text/javascript">
-    var flamegraph = d3.flamegraph().width(960);
-
+    var flamegraphList = [];
+    var dataList = [];
+    var resizeTimeout;
     function mtToFlame(obj){
         let result = {
             "name":obj.name,
@@ -20,16 +23,42 @@
             obj.children.forEach(child=>result.children.push(mtToFlame(child)));
         return result;
     }
+{
+    let expid = [{{expid}}];
+    let rank = [{{rank}}];
+    for(let i=0;i<expid.length;i++){
+        $.get("/summaryQuery/"+expid[i]+"/"+rank[i],data=>{
+            let queryData = JSON.parse(data);
+            //Make a new flamegraph along with a div to go with it:
+            flamegraphList.push(d3.flamegraph().width(window.innerWidth * .8));
+            //The index is here just in case we run into some kind of async problem:
+            let currIndex = flamegraphList.length -1;
+            let newDiv = document.createElement("div");
+            chartContainer.appendChild(newDiv);
 
-    $.get("/summaryQuery/{{expid}}/{{rank}}",data=>{
-        testData = JSON.parse(data);
-        let grandTotal = 0;
-        testData.obj[0].forEach(child=>{
-            grandTotal+=child.values.wallClock;
+            let grandTotal = 0;
+            queryData.obj[0].forEach(child=>{
+                grandTotal+=child.values.wallClock;
+            });
+            let result = mtToFlame({name:queryData.meta.expid+"_"+queryData.meta.rank+" ( "+queryData.meta.compset+","+queryData.meta.res+" )",values:{wallClock:grandTotal},children:queryData.obj[0]});
+            dataList.push(result);
+            d3.select(newDiv).datum(result).call(flamegraphList[currIndex]);
         });
-        result = mtToFlame({name:testData.meta.expid+"_"+testData.meta.rank+"( "+testData.meta.compset+","+testData.meta.res+" )",values:{wallClock:grandTotal},children:testData.obj[0]});
-        console.log(result);
-        d3.select("#chart").datum(result).call(flamegraph);
-    });
+    }
+}
+
+function resizeGraphs(){
+    for(let i=0;i<flamegraphList.length;i++){
+        flamegraphList[i].width(window.innerWidth * .8);
+        d3.select(chartContainer.children[i]).datum(dataList[i]).call(flamegraphList[i]);
+    }
+}
+
+window.onresize = ()=>{
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(()=>{
+        resizeGraphs();
+    },400);
+}
     </script>
-</body>
+{% endblock %}
