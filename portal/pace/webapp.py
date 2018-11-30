@@ -245,7 +245,7 @@ def summaryQuery(expID,rank):
     else:
         resultNodes = db.engine.execute("select jsonVal from model_timing where expid = "+str(expID)+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
         #Get user and machine information:
-        tpData = db.engine.execute("select compset,res from timingprofile where expid = "+str(expID)).fetchall()
+        tpData = db.engine.execute("select compset,res from e3smexp where expid = "+str(expID)).fetchall()
         compset,res = tpData[0].compset,tpData[0].res
 
     if rank == 'stats':
@@ -271,7 +271,7 @@ def summaryQuery(expID,rank):
 def expDetails(mexpid):
 	myexp = None
 	try:
-		myexp = db.engine.execute("select * from timingprofile where expid= "+ str(mexpid) ).fetchall()[0]
+		myexp = db.engine.execute("select * from e3smexp where expid= "+ str(mexpid) ).fetchall()[0]
 	except IndexError:
 		return render_template('error.html')
 	mypelayout = db.engine.execute("select * from pelayout where expid= "+ str(mexpid) ).fetchall()
@@ -281,7 +281,7 @@ def expDetails(mexpid):
 	for i in range(len(runtimeSvg.default_args['comps'])):
 		colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
 	try:
-		noteexp = db.engine.execute("select * from additionalnote where expid= "+ str(mexpid) ).fetchall()[0]
+		noteexp = db.engine.execute("select * from expnotes where expid= "+ str(mexpid) ).fetchall()[0]
 		note = noteexp.note
 	except IndexError:
 		note=""
@@ -297,11 +297,11 @@ def note(expID):
 	if userlogin == True:
 		if request.method == "GET":
 			try:
-				myexpid = db.engine.execute("select * from timingprofile where expid= "+expID).fetchall()[0]
+				myexpid = db.engine.execute("select * from e3smexp where expid= "+expID).fetchall()[0]
 			except IndexError:
 				return render_template('error.html')
 			try:
-				myexp = db.engine.execute("select * from additionalnote where expid= "+expID).fetchall()[0]
+				myexp = db.engine.execute("select * from expnotes where expid= "+expID).fetchall()[0]
 				note = myexp.note
 			except IndexError:
 				note=""
@@ -309,10 +309,10 @@ def note(expID):
 		elif request.method == "POST":
 			note = request.form['note']		
 			try:
-				myexp = db.engine.execute("select * from additionalnote where expid= "+expID).fetchall()[0]
-				db.engine.execute("update additionalnote set note =\'"+str(note)+"\' where expid = " +expID)
+				myexp = db.engine.execute("select * from expnotes where expid= "+expID).fetchall()[0]
+				db.engine.execute("update expnotes set note =\'"+str(note)+"\' where expid = " +expID)
 			except IndexError:
-				db.engine.execute("insert into additionalnote(expid,note) values ("+expID+",\'"+str(note)+"\')")
+				db.engine.execute("insert into expnotes(expid,note) values ("+expID+",\'"+str(note)+"\')")
 			return redirect('/exp-details/'+str(expID))
 	else:
 		return redirect('/login')
@@ -350,7 +350,7 @@ def searchPage(searchQuery="*",isHomePage=False):
 def advSearch(searchQuery):
     return searchPage(searchQuery,False)
 
-#This is a rest-like API that gives information about queried experiments from the timingprofile table.
+#This is a rest-like API that gives information about queried experiments from the e3smexp table.
 @app.route("/ajax/search/<searchTerms>")
 @app.route("/ajax/search/<searchTerms>/<limit>")
 @app.route("/ajax/search/<searchTerms>/<limit>/")
@@ -363,7 +363,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
     #Variable names are split into non-string and string respectively; this is to help improve search results during a basic search.
     variableList=[
         ["expid","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","init_time","run_time"],
-        ["user","machine","compset","exp_date","res","timingprofile.case"]
+        ["user","machine","compset","exp_date","res","e3smexp.case"]
     ]
 
     specificVariables = whiteList
@@ -372,7 +372,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
 
     #This should be an easy way to determine if something's in the list
     if orderBy == "case":
-        orderBy = "timingprofile.case"
+        orderBy = "e3smexp.case"
     elif orderBy not in variableList[0] + variableList[1]:
         orderBy = "expid"
     #Only asc and desc are allowed:
@@ -417,7 +417,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
 
     #The original version of searchCore did not have these three functions separated... this is for cleaner code XP
     def searchAll(termString):
-        queryStr = "select "+str(specificVariables).strip("[]").replace("'","")+" from timingprofile order by "+orderBy+" "+ascDsc
+        queryStr = "select "+str(specificVariables).strip("[]").replace("'","")+" from e3smexp order by "+orderBy+" "+ascDsc
         if limit:
             queryStr+=" limit "+limit
         allResults = db.engine.execute(queryStr).fetchall()
@@ -443,8 +443,8 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
             if syntax[0] in variableList[0] + variableList[1]:
                 strList.append(syntax[0]+elementStr)
             elif syntax[0] == "case":
-                strList.append('timingprofile.case '+elementStr)
-        compiledString = "select " + str(specificVariables).strip("[]").replace("'","") + " from timingprofile where "
+                strList.append('e3smexp.case '+elementStr)
+        compiledString = "select " + str(specificVariables).strip("[]").replace("'","") + " from e3smexp where "
         for i in range(len(strList)):
             compiledString+=strList[i]
             if not i==len(strList) - 1:
@@ -469,7 +469,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
         #print(termList)
 
         if(len(termList) > 0):
-            queryStr = "select " + str(specificVariables).strip("[]").replace("'","") + " from timingprofile where "
+            queryStr = "select " + str(specificVariables).strip("[]").replace("'","") + " from e3smexp where "
             for term in termList:
                 #This controlls whether or not to search through number-based or string based variables:
                 targetIndex = 0
@@ -546,12 +546,12 @@ def specificSearch(query,whiteList = "total_pes_active,model_throughput,machine,
 def searchSummary(query = ""):
     return render_template("searchSummary.html",query=query)
 
-#Get a specific list of elements from timingprofile. Only specific elements are allowed, so users cannot grab everything.
+#Get a specific list of elements from e3smexp. Only specific elements are allowed, so users cannot grab everything.
 @app.route("/ajax/getDistinct/<entry>")
 def getDistinct(entry):
     queryList = []
     if entry in ["machine","user"]:
-        distQuery = db.engine.execute("select distinct "+entry+" from timingprofile order by "+entry).fetchall()
+        distQuery = db.engine.execute("select distinct "+entry+" from e3smexp order by "+entry).fetchall()
         for element in distQuery:
             queryList.append(element[entry])
     return json.dumps(queryList)
@@ -577,13 +577,13 @@ def searchPrediction(keyword):
     #The keyword is designed to be a single word without any potential database loopholes:
     keyword = keyword.replace("\\c","").replace(";","").replace(" ","")
     #Grab elements based on these columns:
-    columnNames = ["user","machine","expid","compset","res","timingprofile.case"]
+    columnNames = ["user","machine","expid","compset","res","e3smexp.case"]
     resultWords = []
     for column in columnNames:
         colName = column
         if "." in column:
             colName = colName.split(".")[1]
-        distQuery = db.engine.execute("select distinct "+column+" from timingprofile where "+column+" like '"+keyword+"%%' limit 10").fetchall()
+        distQuery = db.engine.execute("select distinct "+column+" from e3smexp where "+column+" like '"+keyword+"%%' limit 10").fetchall()
         for element in distQuery:
             resultWords.append(str(element[colName]))
     #Sort them by similar name:

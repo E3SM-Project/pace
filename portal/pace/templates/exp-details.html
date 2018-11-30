@@ -56,8 +56,7 @@ Summary Charts: {% for rank in ranks -%}<a href="/summary/{{expid}}/{{rank.rank}
 <br>
 Additional Notes:
 </code>
-<textarea style="resize:both" id="note" name="note" class="form-control" readonly>{{note}}</textarea><a href="/note/{{exp.expid}}"><input style = "text-align:center;width:100%" value="Add/Edit" class="btn btn-light"/><br>
-<a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
+<textarea style="resize:both" id="note" name="note" class="form-control" readonly>{{note}}</textarea><p style="text-align:center;margin-top:5px"><a href="/note/{{exp.expid}}"><input type="button" style = "text-align:center" value="Add/Edit" class="btn btn-outline-secondary"/><br></p><a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
            </pre>
         </td>
         <td class="inBlock">
