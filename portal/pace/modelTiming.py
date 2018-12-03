@@ -227,6 +227,22 @@ def parseThread(thread,config):
             resultThreads.append(parseThread(element,config))
         return resultThreads
 
+def typeResolver(mtObj):
+    """This function is designed to bridge the gap between JSON and mt classes. It shouldn't need to be used often, but if you don't know what your input will be, just use this.
+    
+    The function returns a dictionary of values that come from either timeNode objects, or json files.
+    """
+    output = {"name":None,"values":None,"children":None}
+    if type(mtObj) == types.DictType:
+            output["name"] = mtObj["name"]
+            output["children"] = mtObj["children"]
+            output["values"] = mtObj["values"]
+    else:
+        output["name"] = mtObj.name
+        output["children"] = mtObj.children
+        output["values"] = mtObj.values
+    return output
+
 #Return a node with the first instance of the requested name; this function only works with parsed nodes.
 def searchNode(nodeIn,name):
     #A little tweak to make things compatible with lists...
@@ -236,18 +252,19 @@ def searchNode(nodeIn,name):
     else:
         nodeList.append(nodeIn)
 
-    for node in nodeList:   
+    for node in nodeList:
         #Check if the very node we're on is the one being searched for:
-        if node.name == name:
+        if typeResolver(node)["name"] == name:
             return node
         else:
             #Check if each child has the correct name:
-            for child in node.children:
-                if child.name == name:
+            for child in typeResolver(node)["children"]:
+                resolveDict = typeResolver(child)
+                if resolveDict["name"] == name:
                     return child
-                elif len(child.children) > 0:
+                elif len(resolveDict["children"]) > 0:
                     searchedNode = searchNode(child,name)
-                    if searchedNode.name == name:
+                    if typeResolver(searchedNode)["name"] == name:
                         return searchedNode
     return nodeIn
 
