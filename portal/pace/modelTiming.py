@@ -228,7 +228,7 @@ def parseThread(thread,config):
         return resultThreads
 
 def typeResolver(mtObj):
-    """This function is designed to bridge the gap between JSON and mt classes. It shouldn't need to be used often, but if you don't know what your input will be, just use this.
+    """This function is designed to bridge the gap between parsed JSON and mt classes. It shouldn't need to be used often, but if you don't know what your input will be, just use this.
     
     The function returns a dictionary of values that come from either timeNode objects, or json files.
     """
