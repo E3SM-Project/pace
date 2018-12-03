@@ -1,6 +1,13 @@
 {% extends "layout.html" %}
 {% block topscripts %}
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/spiermar/d3-flame-graph@2.0.3/dist/d3-flamegraph.css">
+  <style>
+  .flameContainer{
+      border:2px solid #343a40;
+      margin-bottom:5px;
+      border-radius:10px;
+  }
+  </style>
 {% endblock %}
 {% block content %}
   <div id="chartContainer" style="margin-left:10%;z-index:1;margin-bottom:10%"></div>
@@ -24,24 +31,41 @@
             obj.children.forEach(child=>result.children.push(mtToFlame(child)));
         return result;
     }
+
+    var customTip = {
+    //This was directly coppied from: https://github.com/spiermar/d3-flame-graph/blob/master/src/flamegraph.js (Differences: syntax changes + a different string for our specific project)
+        format:function(val){
+            let result = (""+val).split(".");
+            if(result.length > 1)
+                return result[0]+"."+result[1].substr(0,3);
+            return result[0];
+        },
+        labelHandler: d=>(d.data.n || d.data.name) + ' (' + customTip.format( (100 * (d.x1 - d.x0) ) )+ '%, WallClock: ' + (d.v || d.value) + ')',
+
+      tip: d3.tip().direction('s').offset([8, 0]).attr('class', 'd3-flame-graph-tip').html(function (d) { return customTip.labelHandler(d) })
+    }
+
 {
     let expid = [{{expid}}];
     let rank = [{{rank}}];
     for(let i=0;i<expid.length;i++){
         $.get("/summaryQuery/"+expid[i]+"/"+rank[i],data=>{
             let queryData = JSON.parse(data);
+            let name = queryData.meta.expid+"_"+queryData.meta.rank+" ( "+queryData.meta.compset+","+queryData.meta.res+" )";
             //Make a new flamegraph along with a div to go with it:
-            flamegraphList.push(d3.flamegraph().width(window.innerWidth * .8));
+            flamegraphList.push(d3.flamegraph().width(window.innerWidth * .8).title(name).tooltip(customTip.tip));
             //The index is here just in case we run into some kind of async problem:
             let currIndex = flamegraphList.length -1;
             let newDiv = document.createElement("div");
+            newDiv.className="flameContainer";
+            newDiv.style.width = (window.innerWidth * .803)+"px";
             chartContainer.appendChild(newDiv);
 
             let grandTotal = 0;
             queryData.obj[0].forEach(child=>{
                 grandTotal+=child.values.wallClock;
             });
-            let result = mtToFlame({name:queryData.meta.expid+"_"+queryData.meta.rank+" ( "+queryData.meta.compset+","+queryData.meta.res+" )",values:{wallClock:grandTotal},children:queryData.obj[0]});
+            let result = mtToFlame({name:name,values:{wallClock:grandTotal},children:queryData.obj[0]});
             dataList.push(result);
             d3.select(newDiv).datum(result).call(flamegraphList[currIndex]);
         });
@@ -52,6 +76,7 @@ function resizeGraphs(){
     for(let i=0;i<flamegraphList.length;i++){
         flamegraphList[i].width(window.innerWidth * .8);
         d3.select(chartContainer.children[i]).datum(dataList[i]).call(flamegraphList[i]);
+        chartContainer.children[i].style.width = (window.innerWidth * .803)+"px";
     }
 }
 
