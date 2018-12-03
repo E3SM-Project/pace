@@ -104,6 +104,7 @@ venv.bak/
 .mypy_cache/
 
 # PACE specific
+portal/upload
 .pacerc
 portal/reload-gunicorn.sh
 portal/start-gunicorn.sh
