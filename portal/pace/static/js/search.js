@@ -132,7 +132,7 @@ var searchObj = {
         for(let i=0;i<this.rankData.length;i++){
             for(let j=0;j<this.rankData[i][0].length;j++){
                 if(this.rankData[i][1][j]){
-                    this.disableViewBtn(false);
+                    this.disableBtn("searchViewBtn",false);
                     if(this.rankData[i][0][j] == "stats")
                         foundStats = true;
                     else foundRegular = true;
@@ -143,15 +143,20 @@ var searchObj = {
             }
         }
         if(foundStats && foundRegular)
-            this.disableCompareBtn(true);
+            this.disableBtn("searchCompareBtn",true);
         else if(foundStats || foundRegular){
-            this.disableCompareBtn(rankCount > 1?false:true);
-            this.disableViewBtn(false);
+            this.disableBtn("searchCompareBtn",rankCount > 1?false:true);
+            this.disableBtn("searchViewBtn",false);
         }
         else{
-            this.disableCompareBtn(true);
-            this.disableViewBtn(true);
+            this.disableBtn("searchCompareBtn",true);
+            this.disableBtn("searchViewBtn",true);
         }
+        //Flame button:
+        if(foundStats || !foundRegular)
+            this.disableBtn("searchFlameBtn",true);
+        else if(foundRegular)
+            this.disableBtn("searchFlameBtn",false);
 
         //Scan through everything and dump it into a url.
         searchViewBtn.onclick = undefined;
@@ -171,6 +176,7 @@ var searchObj = {
         totalString+=expStr+"/"+rankStr+"/";
         if(!searchViewBtn.disabled) searchViewBtn.parentElement.href=totalString;
         if(!searchCompareBtn.disabled) searchCompareBtn.parentElement.href=totalString+"compare/";
+        if(!searchFlameBtn.disabled) searchFlameBtn.parentElement.href = totalString.replace("summary/","flamegraph/");
     },
     moreClick:function(element){
         let more = element.getElementsByClassName("moreContainer")[0];
@@ -179,15 +185,11 @@ var searchObj = {
         button.innerHTML = (button.innerHTML == "More"?"Less":"More");
 
     },
-    disableCompareBtn:function(tf){
-        searchCompareBtn.disabled = tf;
-        if(tf) searchCompareBtn.parentElement.href = "";
-        searchCompareBtn.className = (tf?"btn btn-primary btn-dark":"btn btn-primary btn-success");
-    },
-    disableViewBtn:function(tf){
-        searchViewBtn.disabled = tf;
-        if(!tf) searchViewBtn.parentElement.href = "";
-        searchViewBtn.className = (tf?"btn btn-primary btn-dark":"btn btn-primary btn-success");
+    disableBtn:function(btnString,tf){
+        srcBtn = document.getElementById(btnString);
+        srcBtn.disabled = tf;
+        if(tf) srcBtn.parentElement.href = "";
+        srcBtn.className = (tf?"btn btn-primary btn-dark":"btn btn-primary btn-success");
     },
     expDetails:(expid)=>{
         location.assign(detectRootUrl()+"exp-details/"+expid);

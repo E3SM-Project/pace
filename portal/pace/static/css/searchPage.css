@@ -47,7 +47,7 @@
     }
 }
 
-#searchCompareBtn,#searchViewBtn{
+#searchCompareBtn,#searchViewBtn,#searchFlameBtn{
     float:right;
     margin-right:5px;
 }
