@@ -9,7 +9,8 @@
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/spiermar/d3-flame-graph@2.0.3/dist/d3-flamegraph.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script type="text/javascript">
+    <script>
+    $(".container")[0].style.marginLeft="unset";
     var flamegraphList = [];
     var dataList = [];
     var resizeTimeout;
@@ -55,8 +56,11 @@ function resizeGraphs(){
 }
 
 window.onresize = ()=>{
+    $(".container")[0].style.marginLeft="auto";
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(()=>{
+        //This snippet takes off the large left margin from pace.css (High resolutions will look strange otherwise)
+        $(".container")[0].style.marginLeft="unset";
         resizeGraphs();
     },400);
 }
