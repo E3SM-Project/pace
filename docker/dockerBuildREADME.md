@@ -26,6 +26,7 @@ docker run --name paceminio -e MINIO_ACCESS_KEY=accessKey -e MINIO_SECRET_KEY=se
     * *Omitting this step (or if the bind-mount is empty) lets you insert everything for the pacerc via arguments in the following command. Omitting the arguments fills the pacerc in with a default configuration.*
         * Defaults for database information: root,1234,pace,pacedb
         * Defaults for the minio information: minioftw,12345678,paceminio
+        * **Github** authentication is also required. There are no default values, but their names are `githubapp_client_id` and `githubapp_secret_key`
 4. Create your conatiner through the following command:
 ```bash
 docker run --name nameOfPaceContainer -p 80:80 -d --link pacedb:mysql -v /path/to/rcdir:/pace/docker/rc --link paceminio:minio/minio pace

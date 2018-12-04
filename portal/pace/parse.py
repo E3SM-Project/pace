@@ -15,6 +15,8 @@ import io
 from minio import Minio
 from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
 
+PACE_LOG_DIR,EXP_DIR,UPLOAD_FOLDER = getDirectories()
+
 # main
 def parseData(zipfilename,uploaduser):
 	# open file to write pace report

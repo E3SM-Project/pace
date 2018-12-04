@@ -34,15 +34,6 @@ PACE_USER = 'yourusername'
 LAST_MODIFIED_VER = "$Rev$"
 PACE_VER = ''
 
-# PACE Report directory 
-PACE_LOG_DIR ='/pace/assets/static/logs/'
-
-# Raw data directory
-EXP_DIR='/pace/assets/static/data/'
-
-# upload directory
-UPLOAD_FOLDER = '/pace/prod/portal/upload'
-
 ### Helper functions etc... ####
 # Colors for console text
 class bcolors:
@@ -57,6 +48,14 @@ class bcolors:
 
 def getPACEUser():
 	return PACE_USER
+
+def getDirectories():
+	# PACE Report directory PACE_LOG_DIR
+	# Raw data directory EXP_DIR
+	# upload directory UPLOAD_FOLDER
+	if os.getenv("PACE_DOCKER_INSTANCE"):
+		return "/pace/portal/pace/static/logs/","/pace/portal/pace/static/data/","/pace/portal/upload/"
+	return '/pace/assets/static/logs/','/pace/assets/static/data/','/pace/prod/portal/upload'
 
 # Every file/tool will have a different last modified version in rep
 # Hence parameterizing this to get lastVer (auto-expanded svn keyword Rev) as argument 
