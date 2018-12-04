@@ -201,6 +201,10 @@ def uploadlogin():
 def page_not_found(error):
 	return render_template('error.html'), 404
 
+@app.route("/searchTutorial/")
+def searchTutorial():
+    return render_template("searchTutorial.html")
+
 #Model Timing web-interface.
 @app.route("/summary/<expID>/<rank>/<compare>/<threads>/")
 @app.route("/summary/<expID>/<rank>/<compare>/")

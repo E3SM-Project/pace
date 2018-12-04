@@ -7,7 +7,8 @@ import ConfigParser
 #These can be changed out for any other values one might want
 rcValues = {
     "PACE":["username","password","db","host"],
-    "MINIO":["minio_access_key","minio_secret_key","minio_url"]
+    "MINIO":["minio_access_key","minio_secret_key","minio_url"],
+    "GITHUBAPP":["githubapp_client_id","github_secret_key"]
 }
 
 usrRcVals = ConfigParser.RawConfigParser()
