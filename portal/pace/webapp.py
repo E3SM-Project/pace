@@ -42,8 +42,11 @@ from werkzeug.utils import secure_filename
 import os
 from datastructs import *
 
-#Runtime image generator: by donahue5 (Modified for use on PACE)
+#These charts were modified for use on PACE
+#Runtime image generator: by donahue5
 import pe_layout_timings as runtimeSvg
+#Atmosphere chart: by Peter Caldwell
+import plot_timing as atmosSvg
 
 #This is for querying colors:
 from matplotlib.colors import to_rgb,to_hex
@@ -369,10 +372,10 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
     resultItems = []
     filteredItems = []
 
-    #Variable names are split into non-string and string respectively; this is to help improve search results during a basic search.
+    #Variable names are split into non-string and string respectively. This is because mysql doesn't like comparing strings with numbers. It should therfore be able to fix exact matches, as there is only a string-to-string comparison
     variableList=[
         ["expid","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","init_time","run_time"],
-        ["user","machine","compset","exp_date","res","e3smexp.case"]
+        ["user","machine","compset","exp_date","res","e3smexp.case","upload_by"]
     ]
 
     specificVariables = whiteList
@@ -628,3 +631,14 @@ def getRuntimeSvg(expid):
             return render_template('error.html'), 404
     except SQLAlchemyError:
         return render_template('error.html'), 404
+
+@app.route("/svg/atmos/<expid>/<rank>")
+def getAtmosSvg(expid,rank):
+    expidList = expid.split(",")
+    rankList = rank.split(",")
+    threadList = []
+    for i in range(len(expidList)):
+        #Indexing is really weird here (Technically 3 dimensions XP)
+        resultThread = json.loads( db.engine.execute("select jsonVal from model_timing where expid = "+str(expidList[i])+" and rank = '"+rankList[i]+"'").fetchall()[0][0])[0]
+        threadList.append( [expidList[i],resultThread] )
+    return Response(atmosSvg.render(threadList).read(),mimetype="image/svg+xml")
