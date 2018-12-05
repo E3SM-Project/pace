@@ -473,7 +473,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		print ('    -Complete')
 
 		# insert timingprofile 
-		new_experiment = E3SMexp(case=timingProfileInfo['case'],
+		new_e3sm_experiment = E3SMexp(case=timingProfileInfo['case'],
 						lid=timingProfileInfo['lid'],
 						machine=timingProfileInfo['machine'],
 						caseroot=timingProfileInfo['caseroot'],
@@ -498,11 +498,21 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 						final_time=timingProfileInfo['final_time'],
 						version = expversion,
 						upload_by = uploaduser)
-		db.session.add(new_experiment)
+		db.session.add(new_e3sm_experiment)
 
 		# table has to have a same experiment id
 		forexpid = E3SMexp.query.order_by(E3SMexp.expid.desc()).first()
-
+		
+		new_experiment = Exp(expid=forexpid.expid,
+						user=timingProfileInfo['user'],
+						machine=timingProfileInfo['machine'],
+						exp_date=changeDateTime(timingProfileInfo['curr']),
+						upload_by = uploaduser,
+						exp_name=timingProfileInfo['case'],
+						total_pes_active=timingProfileInfo['total_pes'],
+						run_time=timingProfileInfo['run_time'],
+						mpi_tasks_per_node=timingProfileInfo['mpi_task'])
+		db.session.add(new_experiment)
 		#insert pelayout
 		i=0
 		while i < len(componentTable):
