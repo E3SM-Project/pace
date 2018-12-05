@@ -361,19 +361,15 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
     filteredItems = []
 
     #Variable names are split into non-string and string respectively; this is to help improve search results during a basic search.
-    variableList=[
-        ["expid","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","init_time","run_time"],
-        ["user","machine","compset","exp_date","res","e3smexp.case"]
-    ]
+    variableList=["expid","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","init_time","run_time","user","machine","compset","exp_date","res","e3smexp.case"]
 
     specificVariables = whiteList
     if whiteList == None:
-        specificVariables = variableList[0] + variableList[1]
-
+	specificVariables = variableList
     #This should be an easy way to determine if something's in the list
     if orderBy == "case":
         orderBy = "e3smexp.case"
-    elif orderBy not in variableList[0] + variableList[1]:
+    elif orderBy not in variableList:
         orderBy = "expid"
     #Only asc and desc are allowed:
     if ascDsc not in ["asc","desc"]:
@@ -440,7 +436,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
             else:
                 elementStr = ' like "%%'+syntax[1]+'%%"'
 
-            if syntax[0] in variableList[0] + variableList[1]:
+            if syntax[0] in variableList:
                 strList.append(syntax[0]+elementStr)
             elif syntax[0] == "case":
                 strList.append('e3smexp.case '+elementStr)
@@ -471,18 +467,12 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
         if(len(termList) > 0):
             queryStr = "select " + str(specificVariables).strip("[]").replace("'","") + " from e3smexp where "
             for term in termList:
-                #This controlls whether or not to search through number-based or string based variables:
-                targetIndex = 0
-                try:
-                    decimal(term)
-                except:
-                    targetIndex+=1
 
                 if not term == termList[0]:
                     queryStr+=" and "
                 queryStr+='( '
                 firstValue = True
-                for word in variableList[targetIndex]:
+                for word in variableList:
                     if not firstValue:
                         queryStr+=" or "
                     #Equal an exact string if $ is at the beginning:
