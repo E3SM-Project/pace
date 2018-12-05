@@ -191,8 +191,6 @@ def render(runtimeIn,opt_dict = None):
     fileObj = StringIO.StringIO()
     plt.savefig(fileObj,dpi=400,bbox_inches='tight',facecolor="#00000000")
     fileObj.seek(0)
-    plt.show()
-    plt.close()
     return fileObj
 ###                               END Code                                  ###
 ###############################################################################
