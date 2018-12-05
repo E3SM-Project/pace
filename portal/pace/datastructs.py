@@ -4,6 +4,19 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.mysql import MEDIUMTEXT,INTEGER,DECIMAL
 from datetime import datetime
 
+class Exp(db.Model):
+	__tablename__ = 'exp'
+	expid = db.Column(INTEGER(unsigned=True), primary_key=True, index=True) 
+	user = db.Column(db.String(25),nullable=False, index=True)
+	machine = db.Column(db.String(25), nullable=False, index=True)
+	exp_date = db.Column(db.DateTime,nullable=False)
+	upload_date = db.Column(db.DateTime,default=datetime.utcnow)
+	upload_by = db.Column(db.String(25),nullable=False, default='sarat')
+	exp_name = db.Column(db.String(100),nullable=False, index=True)
+	total_pes_active = db.Column(INTEGER(unsigned=True), nullable=False)
+	run_time = db.Column(DECIMAL(20,3,unsigned=True), nullable=False)
+	mpi_tasks_per_node = db.Column(INTEGER(unsigned=True), nullable=False)
+
 class E3SMexp(db.Model):
 	__tablename__ = 'e3smexp'
 	expid = db.Column(INTEGER(unsigned=True), primary_key=True, index=True)     
@@ -72,3 +85,9 @@ class Expnotes(db.Model):
 	id = db.Column(INTEGER(unsigned=True), primary_key=True, index=True)
 	expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'), nullable=False, index=True)
 	note = db.Column(MEDIUMTEXT, nullable=False)
+
+class useralias(db.Model):
+	__tablename__ = 'useralias'
+	id = db.Column(INTEGER(unsigned=True), primary_key=True,autoincrement=True)
+	user = db.Column(db.String(25),nullable=False, index=True)
+	alias = db.Column(db.String(25),nullable=False)
