@@ -486,7 +486,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
                 #This controlls whether or not to search through number-based or string based variables:
                 targetIndex = 0
                 try:
-                    decimal(term)
+                    float(term.strip("$"))
                 except:
                     targetIndex+=1
 
