@@ -648,13 +648,5 @@ def getRuntimeSvg(expid):
 
 @app.route("/svg/atmos/<expid>/")
 def getAtmosSvg(expid):
-    expidList = expid.split(",")
-    threadList = []
-    try:
-        for i in range(len(expidList)):
-            #Indexing is really weird here (Technically 3 dimensions XP)
-            resultThread = json.loads( db.engine.execute("select jsonVal from model_timing where expid = "+str( int(expidList[i]) )+" and rank = 'stats'").fetchall()[0][0])[0]
-            threadList.append( [expidList[i],resultThread] )
-        return Response(atmosSvg.render(threadList).read(),mimetype="image/svg+xml")
-    except ValueError:
-        return render_template('error.html'), 404
+    #More content coming soon...
+    return render_template('error.html'), 404
