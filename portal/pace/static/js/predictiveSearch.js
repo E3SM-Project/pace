@@ -51,7 +51,7 @@ var predictiveSearch = {
                     case " ":
                     //This is a function created from a string! This trick helps with scoping issues when giving the user some feedback when pressing tab.
                     let funcStr = "predictiveSearch.pool['"+this.targetId+"'].pTextMenu.style.display='none'";
-                    setTimeout(funcStr,120);
+                    setTimeout(funcStr,delayDisplay?120:0);
                     this.allowEnter = true;
                 }
                 if( (evt.key == "ArrowDown" || evt.key == "ArrowUp") && this.pTextMenu.style.display!="none" && this.ptmValues.length > 0){
