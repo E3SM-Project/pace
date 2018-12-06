@@ -24,6 +24,7 @@ var predictiveSearch = {
         this.enabled = true;
         //Event Listeners:
         this.keydownListener = evt=>{
+            delayDisplay = false;
             if (this.enabled){
                 if(this.targetIn.value == "")
                     this.pTextMenu.style.display="none";
@@ -38,16 +39,25 @@ var predictiveSearch = {
                         if(this.highlightIndex === undefined)
                             this.highlightIndex = 0;
                     case "Enter":
-                        if(this.targetIn.value!="" && this.pTextMenu.style.display!="none")
+                        if(this.targetIn.value!="" && this.pTextMenu.style.display!="none" && this.highlightIndex > -1 )
                             this.applyText();
+                        else if(evt.key == "Tab"){
+                            this.highlightIndex = 0;
+                            this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "lightgray";
+                            this.applyText();
+                            delayDisplay = true;
+                        }
                     case "Escape":
                     case " ":
-                    this.pTextMenu.style.display="none";
+                    //This is a function created from a string! This trick helps with scoping issues when giving the user some feedback when pressing tab.
+                    let funcStr = "predictiveSearch.pool['"+this.targetId+"'].pTextMenu.style.display='none'";
+                    setTimeout(funcStr,120);
                     this.allowEnter = true;
                 }
                 if( (evt.key == "ArrowDown" || evt.key == "ArrowUp") && this.pTextMenu.style.display!="none" && this.ptmValues.length > 0){
                     this.allowEnter = false;
-                    this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "";
+                    if(this.highlightIndex > -1)
+                        this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "";
                     this.highlightIndex = (evt.key == "ArrowDown"? this.highlightIndex+1:this.highlightIndex-1);
                     if(this.highlightIndex == this.ptmValues.length)
                         this.highlightIndex--;
@@ -94,8 +104,8 @@ var predictiveSearch = {
                     this.pTextMenu.style.display="block";
                     this.allowEnter = false;
                     if(this.ptmValues.length > 0){
-                        this.highlightIndex = 0
-                        this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "lightgray";
+                        this.highlightIndex = -1
+                        //this.pTextMenu.children[this.highlightIndex].style.backgroundColor = "lightgray";
                     }
                 }
             }
