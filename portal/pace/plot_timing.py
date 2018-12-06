@@ -37,8 +37,10 @@ timerNames = {
 }
 
 def render(threadList):
-    #2.5*len(threadList)
-    pl.figure(figsize=[5,5])
+    chartWidth = 2*len(threadList)
+    if len(threadList) <= 2:
+        chartWidth = 5
+    pl.figure(figsize=[chartWidth,5])
     #pl.subplots_adjust(left=0.18)
 
     #This is the width of one bar
@@ -58,12 +60,11 @@ def render(threadList):
         #Each key in here is based on timerNames. The variable is refreshed per-file.
         timerValues = {}
         for key in timerNames.keys():
-            print(searchNode(exp[1],timerNames[key]))
+            # print(searchNode(exp[1],timerNames[key]))
             targetTimerVals = searchNode(exp[1],timerNames[key])["values"]
-            for val in ["wallClock","wallmax"]:
-                if val in targetTimerVals.keys():
-                    timerValues[key] = targetTimerVals[val]
-                    #print(timerValues[key])
+            if "wallmax" in targetTimerVals.keys():
+                timerValues[key] = targetTimerVals["wallmax"]
+                #print(timerValues[key])
 
 
         #SANITY CHECKS THAT THE MAIN PARTS WE MEASURE SUM TO THE TOTAL TIME SPENT:
@@ -90,23 +91,31 @@ def render(threadList):
                 partsList.append(element)
 
         parts=np.array(partsList)/timerValues["tot_time"]
-        # print(parts)
+        #print(parts)
+
+        spacing = .5
+        if len(threadList) > 2:
+            spacing = .3
 
         for k in range(1,len(parts)): #start at 1 so parts[0]='start w/ zero stack' works.
-            L.append(pl.bar([ (.5*ind) ],parts[k],width,bottom=np.sum(parts[0:k]),color=cols[k-1]))
+            L.append(pl.bar([ spacing*ind ],parts[k],width,bottom=np.sum(parts[0:k]),color=cols[k-1]))
             #pl.text(0.5*ind,0.5*parts[k]+np.sum(parts[0:k]),legs[k-1],fontsize=12,fontweight='demi')
 
-        L.append(pl.bar([ (.5*ind) ],1,width,bottom=np.sum(parts),color='k'))
+        #This appears to be on purpose, if all other processes don't add up to 1, this fills the rest of the chart up.
+        L.append(pl.bar([spacing*ind ],1,width,bottom=np.sum(parts),color='k'))
         #/ len(threadList)
     pl.legend(L,legs)
     pl.ylabel('Frac Time in Routine')
-    pl.axis([-0.2,1.7,0,1.5])
+    pl.axis([-0.2,1.7,0,1])
 
     #The labels will be the short names for the res
     labelPush = -.2
     for exp in threadList:
         pl.text(labelPush,pl.axis()[3]+0.03,exp[0],fontsize=16)
-        labelPush+=.5
+        if len(threadList) == 2:
+            labelPush+=.5
+        else:
+            labelPush+=.3
 
     pl.xticks([])
 

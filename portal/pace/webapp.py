@@ -589,7 +589,7 @@ def searchPrediction(keyword):
     #The keyword is designed to be a single word without any potential database loopholes:
     keyword = keyword.replace("\\c","").replace(";","").replace(" ","")
     #Grab elements based on these columns:
-    columnNames = ["user","machine","expid","compset","res","e3smexp.case"]
+    columnNames = ["user","machine","expid","compset","res","e3smexp.case","upload_by"]
     resultWords = []
     for column in columnNames:
         colName = column
@@ -597,14 +597,16 @@ def searchPrediction(keyword):
             colName = colName.split(".")[1]
         distQuery = db.engine.execute("select distinct "+column+" from e3smexp where "+column+" like '"+keyword+"%%' limit 10").fetchall()
         for element in distQuery:
-            resultWords.append(str(element[colName]))
+            if not element[colName] in resultWords:
+                resultWords.append(str(element[colName]))
     #Sort them by similar name:
+    # keywordReg = re.compile(keyword)
     # for i in range(len(resultWords)):
-    #     if keyword[0] == resultWords[i][0]:
+    #     if keywordReg.search(resultWords[i][0]):
     #         for j in range(len(resultWords)):
     #             print(j)
     #             # or charCompare(resultWords[i],resultWords[j]
-    #             if not keyword[0] == resultWords[j][0]:
+    #             if not keywordReg.search(resultWords[j][0]):
     #                 temp = resultWords[j]
     #                 resultWords[j] = resultWords[i]
     #                 resultWords[i]=temp
@@ -632,13 +634,15 @@ def getRuntimeSvg(expid):
     except SQLAlchemyError:
         return render_template('error.html'), 404
 
-@app.route("/svg/atmos/<expid>/<rank>")
-def getAtmosSvg(expid,rank):
+@app.route("/svg/atmos/<expid>/")
+def getAtmosSvg(expid):
     expidList = expid.split(",")
-    rankList = rank.split(",")
     threadList = []
-    for i in range(len(expidList)):
-        #Indexing is really weird here (Technically 3 dimensions XP)
-        resultThread = json.loads( db.engine.execute("select jsonVal from model_timing where expid = "+str(expidList[i])+" and rank = '"+rankList[i]+"'").fetchall()[0][0])[0]
-        threadList.append( [expidList[i],resultThread] )
-    return Response(atmosSvg.render(threadList).read(),mimetype="image/svg+xml")
+    try:
+        for i in range(len(expidList)):
+            #Indexing is really weird here (Technically 3 dimensions XP)
+            resultThread = json.loads( db.engine.execute("select jsonVal from model_timing where expid = "+str( int(expidList[i]) )+" and rank = 'stats'").fetchall()[0][0])[0]
+            threadList.append( [expidList[i],resultThread] )
+        return Response(atmosSvg.render(threadList).read(),mimetype="image/svg+xml")
+    except ValueError:
+        return render_template('error.html'), 404
