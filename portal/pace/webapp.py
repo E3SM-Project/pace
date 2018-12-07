@@ -140,9 +140,11 @@ def callback():
 	code = request.args['code']
 	state = request.args['state'].encode('utf-8')
 	# Validate state param to prevent CSRF
-	if state != session['oauth_state']:
+	try:
+		if state != session['oauth_state']:
+			return render_template('error.html')
+	except:
 		return render_template('error.html')
-
 	# Request access token
 	auth_session = github.get_auth_session(data={'code': code})
 	session['access_token'] = auth_session.access_token
@@ -181,7 +183,9 @@ def logout():
 		# Delete session data
 		session.pop('username')
 		session.pop('access_token')
-		session['login']=False
+		session.pop('login')
+		session.pop('oauth_state')
+		session.pop('expid')
 	except KeyError:
 		return redirect('/')
 	return redirect('/')
@@ -311,6 +315,42 @@ def expDetails(mexpid):
 		note=""
 	return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks,chartColors = json.dumps(colorDict),note=note)
 
+@app.route("/useralias/<user>")
+def useralias(user):
+	try:
+		validuser=db.engine.execute("select * from authusers where user='"+str(user)+"\'").fetchall()[0]
+	except IndexError:
+		return render_template('error.html')
+	try:
+		alias=db.engine.execute("select alias from useralias where user='"+str(user)+"\'").fetchall()
+	except IndexError:
+		alias=""	
+	return render_template('useralias.html',alias = alias, user = user)
+
+@app.route("/useraliasdelete", methods=['POST'])
+def useraliasdelete():
+	if request.method=='POST':
+		user = request.form['user']
+		alias = request.form['delete']
+		try:			
+			db.engine.execute("delete from useralias where alias='"+alias+"\'")
+		except:
+			return render_template('error.html')
+		return redirect('/useralias/'+str(user))
+	if request.method=='GET':
+		return render_template('error.html')
+@app.route("/useraliasadd", methods=['POST','GET'])
+def useraliasadd():
+	if request.method=='POST':
+		user = request.form['user']
+		alias = request.form['alias']
+		try:
+			db.engine.execute("insert into useralias(user,alias) values ('"+user+"\',\'"+alias+"\')")
+		except:
+			return render_template('error.html')
+		return redirect('/useralias/'+str(user))
+	if request.method=='GET':
+		return render_template('error.html')
 @app.route("/note/<expID>", methods=["GET","POST"])
 def note(expID):
 	session['expid']=expID
