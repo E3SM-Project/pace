@@ -47,7 +47,7 @@
     }
 }
 
-#searchCompareBtn,#searchViewBtn,#searchFlameBtn{
+.graphButtons{
     float:right;
     margin-right:5px;
 }

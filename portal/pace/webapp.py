@@ -45,8 +45,6 @@ from datastructs import *
 #These charts were modified for use on PACE
 #Runtime image generator: by donahue5
 import pe_layout_timings as runtimeSvg
-#Atmosphere chart: by Peter Caldwell
-import plot_timing as atmosSvg
 
 #This is for querying colors:
 from matplotlib.colors import to_rgb,to_hex
@@ -235,7 +233,8 @@ def summaryHtml(expID,rank,compare="",threads=""):
 
 #A rest-like API that retrives a model-timing tree in JSON from the database
 @app.route("/summaryQuery/<int:expID>/<rank>/",methods=["GET"])
-def summaryQuery(expID,rank):
+@app.route("/summaryQuery/<int:expID>/<rank>/<getFullStats>",methods=["GET"])
+def summaryQuery(expID,rank,getFullStats = ""):
     resultNodes=""
     compset = "N/A"
     res="N/A"
@@ -255,7 +254,7 @@ def summaryQuery(expID,rank):
         tpData = db.engine.execute("select compset,res from e3smexp where expid = "+str(expID)).fetchall()
         compset,res = tpData[0].compset,tpData[0].res
 
-    if rank == 'stats':
+    if rank == 'stats' and not getFullStats == "getFullStats":
         #Grab processes > 1 second:
         nodeTemp = json.loads(resultNodes)
         newJson = []
@@ -634,7 +633,6 @@ def getRuntimeSvg(expid):
     except SQLAlchemyError:
         return render_template('error.html'), 404
 
-@app.route("/svg/atmos/<expid>/")
-def getAtmosSvg(expid):
-    #More content coming soon...
-    return render_template('error.html'), 404
+@app.route("/atmos/<expids>/")
+def atmosChart(expids):
+    return render_template("atmos.html",expids = expids)
