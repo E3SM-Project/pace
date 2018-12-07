@@ -38,13 +38,13 @@
 	</tbody>
 </table>
 <p>
-	<button title="View a summary of experiments based on your search." class="btn btn-primary" onclick="$(scatterContainer).toggle();">Summary</button>
+	<button title="View a summary of experiments based on your search." class="btn btn-primary" onclick="$(scatterContainer).toggle();">Scatter Plot</button>
 	<span class="graphButtons">
 		Graphs: 
-		<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>Comparison</button></a>
-		<a><button class="btn btn-primary btn-dark" id='searchAtmBtn' disabled>Atm</button></a>
-		<a><button class="btn btn-primary btn-dark" id='searchViewBtn' disabled>Tree</button></a>
-		<a><button class="btn btn-primary btn-dark" id='searchFlameBtn' disabled>Flame</button></a>
+		<a><button title="Select few ranks across experiments for a flame graph" class="btn btn-primary btn-dark" id='searchFlameBtn' disabled>Flame</button></a>
+		<a><button title="Select few ranks or stats data across experiments for recursive tree graph" class="btn btn-primary btn-dark" id='searchViewBtn' disabled>Tree</button></a>
+		<a><button title="Select stats data from experiment(s) for Atm time distribution" class="btn btn-primary btn-dark" id='searchAtmBtn' disabled>Atm</button></a>
+		<a><button title="Select few ranks across experiments to compare." class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>Comparison</button></a>
 	</span>
 </p>
 <div id="scatterContainer">
