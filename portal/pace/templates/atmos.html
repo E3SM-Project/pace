@@ -9,7 +9,7 @@
 <script src="/static/js/mtGeneralTools.js"></script>
 {% endblock %}
 {% block content %}
-<p style="text-align:center"><select class="form-control" style="width:unset;display:inline-block" id="themeSelect" onchange="colorAtmos(this.selectedIndex);resultChart.update()"></select></p>
+<p style="text-align:center">Color Theme: &nbsp; <select class="form-control" style="width:unset;display:inline-block" id="themeSelect" onchange="colorAtmos(this.selectedIndex);resultChart.update()"></select></p>
 <canvas id="chartTag"></canvas>
 <script>
 expidList = "{{expids}}".split(",");
