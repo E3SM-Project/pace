@@ -205,18 +205,14 @@ var chartSettings = {
             }
             else if (activeElement.length>0){
                 let evtData = comparisonEvt(activeElement);
-                let changeExp = confirm("Clicking Ok will take you to "+evtData.spefExp.name+" (Thread "+evtData.targetNode.thread+") process \""+evtData.targetNode.name+".");
-                if(changeExp){
-                    //console.log(evtData.nodeObject.name);
-                    evtData.spefExp.currThread = evtData.targetNode.thread;
-                    evtData.spefExp.currentEntry = evtData.targetNode;
-                    currExp = evtData.spefExp;
-                    setTimeout(()=>comparisonMode.finish(),10);
-                    for(let i=0;i<expSelect.children.length;i++){
-                        if(expSelect.children[i].innerHTML == evtData.spefExp.name)
-                            expSelect.selectedIndex = i;
-                    }
-                }
+                let timeNode = document.getElementById(evtData.targetNode.name).getElementsByTagName('ul')[0];
+                parentPath(evtData.targetNode).forEach((listName)=>{
+                    let listElement = document.getElementById(listName).getElementsByTagName('ul');
+                    if(listElement.length > 0)
+                        listElement[0].style.display="";
+                });
+                if(okToClick && timeNode!=undefined)
+                    timeNode.click();
             }
         },
         scales: {
@@ -480,7 +476,7 @@ var colorSelect = {
         document.cookie = "barColors="+hexArray.join()+cookiePath;
     },
 
-    loadThemes:function(){this.themes.forEach(theme=>colorSThemes.innerHTML+="<option"+(theme == this.themes[0]?" selected":"")+">"+theme.name+"</option>")},
+    loadThemes:function(){this.themes.forEach(theme=>colorSThemes.innerHTML+="<option"+(theme == this.themes[1]?" selected":"")+">"+theme.name+"</option>")},
 
     restoreCookies:function(){
         let cookieList = [
