@@ -142,8 +142,10 @@ var searchObj = {
                     break;
             }
         }
-        if(foundStats && foundRegular)
+        if(foundStats && foundRegular){
             this.disableBtn("searchCompareBtn",true);
+            this.disableBtn("searchFlameBtn",true);
+        }
         else if(foundStats || foundRegular){
             this.disableBtn("searchCompareBtn",rankCount > 1?false:true);
             this.disableBtn("searchViewBtn",false);
@@ -157,6 +159,10 @@ var searchObj = {
             this.disableBtn("searchFlameBtn",true);
         else if(foundRegular)
             this.disableBtn("searchFlameBtn",false);
+
+        //AtmBtn:
+        this.disableBtn("searchAtmBtn",foundStats && !foundRegular?false:true);
+        
 
         //Scan through everything and dump it into a url.
         searchViewBtn.onclick = undefined;
@@ -173,6 +179,7 @@ var searchObj = {
                 }
             }
         }
+        if(!searchAtmBtn.disabled) searchAtmBtn.parentElement.href = totalString.replace("summary/","atmos/") + expStr;
         totalString+=expStr+"/"+rankStr+"/";
         if(!searchViewBtn.disabled) searchViewBtn.parentElement.href=totalString;
         if(!searchCompareBtn.disabled) searchCompareBtn.parentElement.href=totalString+"compare/";

@@ -38,10 +38,14 @@
 	</tbody>
 </table>
 <p>
-	<button title="View a summary of experiments based on your search." class="btn btn-dark" onclick="$(scatterContainer).toggle();">Summary</button>
-	<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>Compare</button></a>
-	<a><button class="btn btn-primary btn-dark" id='searchViewBtn' disabled>View</button></a>
-	<a><button class="btn btn-primary btn-dark" id='searchFlameBtn' disabled>Flame</button></a>
+	<button title="View a summary of experiments based on your search." class="btn btn-primary" onclick="$(scatterContainer).toggle();">Summary</button>
+	<span class="graphButtons">
+		Graphs: 
+		<a><button class="btn btn-primary btn-dark" id='searchCompareBtn' disabled>Comparison</button></a>
+		<a><button class="btn btn-primary btn-dark" id='searchAtmBtn' disabled>Atm</button></a>
+		<a><button class="btn btn-primary btn-dark" id='searchViewBtn' disabled>Tree</button></a>
+		<a><button class="btn btn-primary btn-dark" id='searchFlameBtn' disabled>Flame</button></a>
+	</span>
 </p>
 <div id="scatterContainer">
     <div style="display:inline-block;margin-left:16%">Color By:<select id="summaryOrderBy" class="form-control" style="width:10em;float:right;margin-left:5px">
