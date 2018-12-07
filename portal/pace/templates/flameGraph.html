@@ -40,10 +40,10 @@
         format:function(val){
             let result = (""+val).split(".");
             if(result.length > 1)
-                return result[0]+"."+result[1].substr(0,3);
+                return result[0]+"."+result[1].substr(0,2);
             return result[0];
         },
-        labelHandler: d=>(d.data.n || d.data.name) + ' (' + customTip.format( (100 * (d.x1 - d.x0) ) )+ '%, WallClock: ' + (d.v || d.value) + ')',
+        labelHandler: d=>(d.data.n || d.data.name) + ' (' + customTip.format( (100 * (d.x1 - d.x0) ) )+ '%, WallClock: ' + customTip.format( (d.v || d.value) ) + ')',
 
       tip: d3.tip().direction('s').offset([8, 0]).attr('class', 'd3-flame-graph-tip').html(function (d) { return customTip.labelHandler(d) })
     }
