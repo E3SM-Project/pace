@@ -159,8 +159,20 @@ def callback():
 		return render_template('notauth.html')
 	else:
 		session['login']=True
-		return redirect('/note/'+str(session['expid']))
+		try:
+			redirectlink='/note/'+str(session['expid'])
+		except KeyError:
+			redirectlink='/'
+		return redirect(redirectlink)
 
+@app.route('/islogin')
+def islogin():
+	try:
+		islogin=session['login']
+		username = session['username']
+		return (username)
+	except:
+		return ('')
 
 @app.route('/logout')
 def logout():

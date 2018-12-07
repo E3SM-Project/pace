@@ -12,6 +12,7 @@
   <!-- Custom styles for this template -->
   <link rel="stylesheet" type="text/css" href="/static/css/pace.css" />
   <link rel="stylesheet" type="text/css" href="/static/css/predictiveText.css" />
+  <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.5.0/css/all.css' integrity='sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU' crossorigin='anonymous'>
 
   <script src="/static/js/detectRootUrl.js"></script>
   <script></script>
@@ -62,6 +63,15 @@
       </li>
       <a href="/about" class="nav-link">About</a>
     </ul>
+	<a href="/login" id='login' style='display:none'><button class="btn btn-outline-secondary" style="width:86px;" >Login</button></a>
+  <div class="dropdown" id='profile' style='display:none'>
+   <button class="btn btn-outline-secondary btn-lg dropdown-toggle fas fa-user-cog" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">    
+  </button>
+  <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+    <a class="dropdown-item" href='/search/upload_by:' id='userprofile'>My profile</a>
+    <a class="dropdown-item" href='/logout'>Logout</a>
+  </div>
+</div>
     <form class="form-inline my-2 my-lg-0" style="display:none">
       <span><input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" id="searchBar"></span>
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="searchButton">Search</button>
@@ -138,7 +148,14 @@
     searchButton.onclick = evt=>{
       searchEvt(evt);
     }
-
+    $.get('/islogin',function(data){
+        if (data == ''){
+	    login.style.display='';
+	}else{
+	    profile.style.display='';
+	    userprofile.href+=data
+	}
+})
     //predictive search functionality:
     //This search bar has been depricated, but it's here if you need to enable it:
     /*searchPredict = new predictiveSearch.element(searchBar,"sb");
