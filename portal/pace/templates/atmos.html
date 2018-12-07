@@ -17,9 +17,20 @@ expidList = "{{expids}}".split(",");
 var labels=['Convect','CLUBB','Aerosol','Micro','Rad','Phys Aft Sfc','Dyn','Phys/Dyn Coupling','Hist','Other'];
 var resultChart = new Chart(chartTag,{
     type:"bar",
-    data:{labels:expidList},
     options: {
-        plugins:{stacked100: { enable: true }}
+        plugins:{stacked100: { enable: true }},
+        scales: {
+                yAxes:[{
+                    scaleLabel:{
+                        display:true,
+                        labelString:"%ATM Runtime"
+                    }}],
+                xAxes:[{
+                    scaleLabel:{
+                        display:true,
+                        labelString:"Experiment"
+                    }}]
+        }
     }
 });
 
@@ -30,7 +41,7 @@ colorThemes = undefined;
 $.get("/static/chartJsThemes.json",data=>{
     colorThemes = data
     //Setup the select tag:
-    colorThemes.forEach( (e,index)=>themeSelect.innerHTML+="<option value='"+index+"'>"+e.name+"</option>");
+    colorThemes.forEach( (e,index)=>themeSelect.innerHTML+="<option "+(index == 1?"selected":"")+" value='"+index+"'>"+e.name+"</option>");
 });
 
 //When this strikes 0, everything gets rendered:
@@ -40,6 +51,7 @@ expidList.forEach(expid=>{
     $.get("/summaryQuery/"+expid+"/stats/getFullStats",data=>{
         resultData = JSON.parse(data);
         tableList.push(new addressTable(resultData.obj[0],true,undefined,0) );
+        resultChart.data.labels.push(resultData.meta.expid + " (Res: "+resultData.meta.res+", Compset:"+resultData.meta.compset+")");
         dataCountdown--;
         if(dataCountdown === 0){
             renderData();
@@ -51,15 +63,15 @@ var addressList = ["a:moist_convection","a:macrop_tend",["a:microp_aero_run","a:
 //Array.map lets you create a new array based on the properties of another array.
 var colorPercentages = arrayToPercentages(addressList.map((e,index)=>index+1),true);
 
-function colorAtmos(themeIndex = 0){
+function colorAtmos(themeIndex = themeSelect.selectedIndex){
     var selectedTheme = hex2RgbArray(colorThemes[themeIndex].values);
     for(let i=0;i<resultChart.data.datasets.length;i++){
         resultChart.data.datasets[i].backgroundColor = [];
         resultChart.data.datasets[i].borderColor = [];
         for(let j=0;j<resultChart.data.datasets[i].data.length;j++){
-            let colorData = percentToColor(colorPercentages[i],.2,2,selectedTheme);
+            let colorData = percentToColor(colorPercentages[i],false,2,selectedTheme,false);
             resultChart.data.datasets[i].backgroundColor.push(colorData[0]);
-            resultChart.data.datasets[i].borderColor.push(percentToColor(50,.2,0,[selectedTheme,colorData[1]] ) );
+            resultChart.data.datasets[i].borderColor.push(percentToColor(50,false,0,[selectedTheme,colorData[1]],false ) );
         }
     }
 
@@ -83,7 +95,7 @@ tableList.forEach((e,index)=>{
     resultChart.data.datasets[addrIndex].data.push(number);
     });
 });
-colorAtmos(0);
+colorAtmos();
 resultChart.update();
 }
 </script>

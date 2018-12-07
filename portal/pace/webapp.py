@@ -202,9 +202,9 @@ def uploadlogin():
 def page_not_found(error):
 	return render_template('error.html'), 404
 
-@app.route("/searchTutorial/")
-def searchTutorial():
-    return render_template("searchTutorial.html")
+@app.route("/quickStart/")
+def quickStart():
+    return render_template("quickStart.html")
 
 #Model Timing web-interface.
 @app.route("/summary/<expID>/<rank>/<compare>/<threads>/")
@@ -374,7 +374,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
     #Variable names are split into non-string and string respectively. This is because mysql doesn't like comparing strings with numbers. It should therfore be able to fix exact matches, as there is only a string-to-string comparison
     variableList=[
         ["expid","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","init_time","run_time"],
-        ["user","machine","compset","exp_date","res","e3smexp.case","upload_by"]
+        ["user","machine","compset","exp_date","res","e3smexp.case"]
     ]
 
     specificVariables = whiteList
