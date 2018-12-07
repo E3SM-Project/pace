@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% block content %}
+
+{% block topcontent %}
+{% endblock topcontent %}
+
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <h2 style="text-align:center">My Alias</h2>
+              
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Alias</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+    <form action="/useraliasdelete" method="POST">
+	<input type='hidden' name='user' value='{{user}}'></input>
+      {% for i in alias -%}<tr>
+        <td>{{i[0]}}</td>
+        <td><button name='delete' type="submit" value='{{i[0]}}' class="btn btn-danger" style="width:75px">Delete</button></td>
+      </tr>{%- endfor %}
+</form>
+      <form action="/useraliasadd" method="POST">
+	<input type='hidden' name='user' value='{{user}}'></input>
+	<tr>
+        <td><input type="text" class="form-control" placeholder="Alias" name='alias' style="width:200px"></input></td>
+        <td><button type="submit" class="btn btn-success" style="width:75px" name='add'>Add</button></td>
+      </tr>
+	</form>
+    </tbody>
+  </table>
+ </form>
+</div>
+
+</body>
+
+{% endblock %}
