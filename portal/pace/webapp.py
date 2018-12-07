@@ -36,6 +36,7 @@ github = OAuth2Service(
 
 
 ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
+PACE_LOG_DIR,EXP_DIR,UPLOAD_FOLDER = getDirectories()
 
 # Uploading file
 from werkzeug.utils import secure_filename
