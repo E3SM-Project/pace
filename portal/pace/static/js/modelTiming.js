@@ -154,7 +154,7 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
         //Make more lists:
         if(node.children.length>0){
             listElement.appendChild(htmlList(node.children,scope,currScope+1));
-            listElement.getElementsByTagName("span")[0].style.backgroundColor=percentToColor(percentList[percentIndex],.2,0,colorConfig);
+            listElement.getElementsByTagName("span")[0].style.backgroundColor=percentToColor(percentList[percentIndex],.4,0,colorConfig);
             if(currScope >= scope[0] && currScope<=scope[1])
                 listElement.getElementsByTagName("ul")[0].style.display="none";
         }
@@ -311,9 +311,9 @@ function colorChart(mode=-1,colorList = colorConfig,smoothTransition = smoothCol
             let colorPercentages = arrayToPercentages(colorSumlist);
             for(let i=0;i<resultChart.data.datasets.length;i++){
                 for(let j=0;j<resultChart.data.datasets[i].data.length;j++){
-                    let colorData = percentToColor(colorPercentages[j],.2,2,colorList,smoothTransition);
+                    let colorData = percentToColor(colorPercentages[j],.4,2,colorList,smoothTransition);
                     resultChart.data.datasets[i].backgroundColor.push(colorData[0]);
-                    resultChart.data.datasets[i].borderColor.push(percentToColor(50,.2,0,[colorData[1],[0,0,0]]));
+                    resultChart.data.datasets[i].borderColor.push(percentToColor(50,.4,0,[colorData[1],[0,0,0]]));
                 }
             }
         break;
@@ -325,9 +325,9 @@ function colorChart(mode=-1,colorList = colorConfig,smoothTransition = smoothCol
                     colorSumlist.push(resultChart.data.datasets[j].data[i]);
                 let colorPercentages = arrayToPercentages(colorSumlist);
                 for(let j=0;j<resultChart.data.datasets.length;j++){
-                    let colorData = percentToColor(colorPercentages[j],.2,2,colorList,smoothTransition);
+                    let colorData = percentToColor(colorPercentages[j],.4,2,colorList,smoothTransition);
                     resultChart.data.datasets[j].backgroundColor.push(colorData[0]);
-                    resultChart.data.datasets[j].borderColor.push(percentToColor(50,.2,0,[colorData[1],[0,0,0]]));
+                    resultChart.data.datasets[j].borderColor.push(percentToColor(50,.4,0,[colorData[1],[0,0,0]]));
                 }
             }
         break;
@@ -359,9 +359,9 @@ function colorChart(mode=-1,colorList = colorConfig,smoothTransition = smoothCol
             //Now to actually color each bar:
             mtViewer.currExp().currentEntry.children.forEach((exp,index)=>{
                 resultChart.data.datasets.forEach(dataSet=>{
-                    let colorData = percentToColor(resultPercentages[valPool["e"+exp.srcExp.name].index],.2,2,colorList,smoothTransition);
+                    let colorData = percentToColor(resultPercentages[valPool["e"+exp.srcExp.name].index],.4,2,colorList,smoothTransition);
                     dataSet.backgroundColor[index] = colorData[0];
-                    dataSet.borderColor[index] = percentToColor(50,.2,0,[colorData[1],[0,0,0]]);
+                    dataSet.borderColor[index] = percentToColor(50,.4,0,[colorData[1],[0,0,0]]);
                 });
             });
             
@@ -370,9 +370,9 @@ function colorChart(mode=-1,colorList = colorConfig,smoothTransition = smoothCol
             //Color everything randomly:
             resultChart.data.datasets.forEach(dset=>{
                 for(let i=0;i<dset.data.length;i++){
-                    let rndColor = percentToColor(Math.floor(Math.random()*100),.2,2,colorList,smoothTransition);
+                    let rndColor = percentToColor(Math.floor(Math.random()*100),.4,2,colorList,smoothTransition);
                     dset.backgroundColor.push(rndColor[0]);
-                    dset.borderColor.push(percentToColor(50,.2,0,[rndColor[1],[0,0,0]]));
+                    dset.borderColor.push(percentToColor(50,.4,0,[rndColor[1],[0,0,0]]));
                 }
             });
     }
