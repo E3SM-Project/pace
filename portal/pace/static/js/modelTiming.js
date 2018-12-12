@@ -54,6 +54,7 @@ function experiment(timeNodes,config){
     this.valueNames.forEach(name=>this.valueSelectInner+="<option "+(name=="wallClock" || name=="wallmax"?"selected":"")+" value='"+name+"'>"+name+"</option>");
     this.currentEntry = {children:this.timeNodes[this.currThread],name:"summaryButton"};
 
+    //Change all lists on the page to show information about this experiment.
     this.view = function(){
         threadSelect.innerHTML = this.threadSelectInner;
         valueName.innerHTML = this.valueSelectInner;
@@ -63,6 +64,8 @@ function experiment(timeNodes,config){
 
 }
 
+//This handles everything for downloading new experiments. When downloading's complete, you can even run a custom function for every experiment downloaded.
+//Because of AJAX, this function can be runned asynchronously, which allows you to download multiple experiments at once.
 function getExperiment(expSrc,extSrc,funcPush = expDownloadDefault){
     expGetCount++;
     if(funcPush)
@@ -108,6 +111,8 @@ function expDownloadDefault(){
     expSelect.selectedIndex = expList.length-1;
     }
 
+//A high-level function that completely swaps the view from one experiment to another (including datalist,dataInfo, browser history, etc.)
+//In other words: use this when swapping experiments, it's your go-to.
 function switchExperiment(index = expSelect.selectedIndex){
     currExp = (typeof(index) == "object"?index:expList[index]);
     currExp.view();
@@ -166,6 +171,7 @@ function htmlList(jsonList,scope=[0,0],currScope=0){
 }
 
 //This is reserved for an htmlList element. It's here so that functions arn't called on the spot and take up more memory.
+//Upon clicking a tag in dataList, the chart will show the associated timer, and the tag will bolden to emphasize it's children can be shown/hidden upon a second click.
 function htmlList_onClick(context){
     targetExp = mtViewer.currExp();
     if(targetExp.currentEntry!=undefined && targetExp.currentEntry.name == context.id && targetExp.nodeTableList[targetExp.currThread][context.id].children.length > 0){
@@ -401,9 +407,11 @@ function parentPath(nodeIn,currValues=[]){
         return currValues
 }
 
-//This object aims to unify common atributes between regular mode and comparison mode. So many methods for tying up both were littered across the code, so this should clean it up!
+//This object aims to unify common atributes between regular mode and comparison mode. Many methods for tying up both were littered across the code, so this should clean it up!
 var mtViewer = {
+    //Show the current experiment regardless of mode.
     currExp:()=>comparisonMode.on?comparisonMode.exp:currExp,
+    //Return the experiment list for the associated mode.
     expList:()=>{
         if(comparisonMode.on){
             newExpList = [];
@@ -414,6 +422,7 @@ var mtViewer = {
         }
         else return expList;
     },
+    //Show the chart data depending on which mode the user is on.
     loadChart:function(processId = mtViewer.currExp().currentEntry.name){
         targetExp = this.currExp();
         //Display appropriate graph info:
@@ -441,6 +450,8 @@ var mtViewer = {
     }
 }
 
+//Comparison mode is a beast of its own! If the user wants to compare multiple experiments, this mode ties eveything in this viewer together to make that possible.
+//The mtViewer was originally designed for viewing single experiments at once. To view multiple experiments, this object creates an entirely new environment that makes use of existing structures from single experiment viewing.
 var comparisonMode = {
     on:false,
     exp:undefined,
@@ -540,9 +551,7 @@ var comparisonMode = {
                             }
                         });
                     });
-
                     compiledResult.push({name:element,children:this.genList(childElements)});
-
                 }
             });
             return compiledResult;
@@ -606,6 +615,7 @@ var comparisonMode = {
             expNameSort[node.name] = [];
             expNameSort[node.name].push(node);
         },
+    //Start the comparison! Modify the page layout to work with this mode.
     start:function(){
         if(this.exp.timeNodes[0].length == 0){
             alert("Error: there's nothing to compare.");

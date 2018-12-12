@@ -27,6 +27,7 @@ $(document).ready(()=>{
     document.getElementsByClassName("footer")[0].style.zIndex = "-1";
     dmCheck.checked = Boolean(cookieSearch(/darkMode/)*1);
     dmObj.toggle(dmCheck.checked);
+    //Start the loading screen and grab the experiments specified by the url (technically the array on modelTiming.html):
     animate();
     if(expData!=undefined){
         for(let i=0;i<expData.length;i++){
@@ -57,6 +58,7 @@ $(document).ready(()=>{
             }
         }
     }
-    else getExperiment(-1,"0000");
+    //If you somehow magically get to this page without an experiment (:O), then here's something so the page doesn't break:
+    else getExperiment(-1,"0");
     window.onresize();
 });

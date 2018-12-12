@@ -11,3 +11,8 @@
 #metaInfoContainer span{
     margin:20px;
 }
+
+#metaTable tr td{
+    display:table-cell;
+    border:10px solid transparent;
+}

@@ -6,6 +6,7 @@ var searchObj = {
     rankData:[],
     lastRankIndex:[0,0],
     afterFunctions:[],
+    //The low-level function that is called for starting a search. When search data is received, it changes all data on the table (and internally) to reflect the results.
     search:function(searchStr,limit = this.limit,afterFunc,orderBy,ascDsc=false){
         console.log("%cHELLOOO!!","font-size:175%"); //This is VERY important part of the function.
         searchBody.innerHTML="";
@@ -36,6 +37,7 @@ var searchObj = {
             });
         }*/
         $.get(detectRootUrl()+"ajax/search/"+searchStr.replace(" ","+")+"/"+limit+(orderBy?"/"+orderBy+"/"+(ascDsc?"asc":"desc"):""),(data)=>{
+        //Create the page now that the data was received:
         let resultData = JSON.parse(data)
         this.searchData = resultData[0];
         this.rankData = resultData[1];
@@ -162,7 +164,6 @@ var searchObj = {
 
         //AtmBtn:
         this.disableBtn("searchAtmBtn",foundStats && !foundRegular?false:true);
-        
 
         //Scan through everything and dump it into a url.
         searchViewBtn.onclick = undefined;
@@ -192,6 +193,7 @@ var searchObj = {
         button.innerHTML = (button.innerHTML == "More"?"Less":"More");
 
     },
+    //Disable a button on the search page:
     disableBtn:function(btnString,tf){
         srcBtn = document.getElementById(btnString);
         srcBtn.disabled = tf;

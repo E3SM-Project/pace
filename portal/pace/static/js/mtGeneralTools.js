@@ -3,7 +3,8 @@
 
 var isChrome = /Chrome/.test(navigator.appVersion);
 
-//This will be where we look for a specific node. (Making the structured time-node into something linear at the same time)
+//The address table makes it easy to call any timer through just it's name (instead of going through the tree yourself). It also shaves off time by referencing it's source experiment and thread in each timer.
+//(Original comment)This will be where we look for a specific node. (Making the structured time-node into something linear at the same time)
 function addressTable(vals=undefined,jsonArray=false,srcExp,thread = -1){
     let newAddressTable = [];
     //It appears that all names for nodes are unique! Let's make use of that...
