@@ -2,6 +2,7 @@
     Purpose:Create a new chart for atmosphere experiments that rounds each bar to 100% (Through chartJS!)#}
 {% extends "layout.html" %}
 {% block topscripts %}
+<link rel="stylesheet" type="text/css" href="/static/css/mtGeneral.css" />
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
 <script src="https://y-takey.github.io/chartjs-plugin-stacked100/plugin.js"></script>
@@ -9,7 +10,10 @@
 <script src="/static/js/mtGeneralTools.js"></script>
 {% endblock %}
 {% block content %}
-<p style="text-align:center">Color Theme: &nbsp; <select class="form-control" style="width:unset;display:inline-block" id="themeSelect" onchange="colorAtmos(this.selectedIndex);resultChart.update()"></select></p>
+<p style="text-align:center">
+<span style="float:left">Color Theme: &nbsp; <select class="form-control" style="width:unset;display:inline-block" id="themeSelect" onchange="colorAtmos(this.selectedIndex);resultChart.update()"></select></span>
+<span id="metaInfoContainer"><span></span></span>
+</p>
 <canvas id="chartTag"></canvas>
 <script>
 expidList = "{{expids}}".split(",");
@@ -37,6 +41,7 @@ var resultChart = new Chart(chartTag,{
 });
 
 var tableList = [];
+var metaInfoObjs = [];
 
 //Get the themes for chartJs
 colorThemes = undefined;
@@ -53,10 +58,12 @@ expidList.forEach(expid=>{
     $.get("/summaryQuery/"+expid+"/stats/getFullStats",data=>{
         resultData = JSON.parse(data);
         tableList.push(new addressTable(resultData.obj[0],true,undefined,0) );
-        resultChart.data.labels.push(resultData.meta.expid + " (Res: "+resultData.meta.res+", Compset:"+resultData.meta.compset+")");
+        resultChart.data.labels.push(resultData.meta.expid);
+        metaInfoObjs.push({name:resultData.meta.expid,res:resultData.meta.res,compset:resultData.meta.compset});
         dataCountdown--;
         if(dataCountdown === 0){
             renderData();
+            metaOpenClose(true,metaInfoObjs);
         }
     });
 });
@@ -73,7 +80,7 @@ function colorAtmos(themeIndex = themeSelect.selectedIndex){
         for(let j=0;j<resultChart.data.datasets[i].data.length;j++){
             let colorData = percentToColor(colorPercentages[i],false,2,selectedTheme,false);
             resultChart.data.datasets[i].backgroundColor.push(colorData[0]);
-            resultChart.data.datasets[i].borderColor.push(percentToColor(50,false,0,[selectedTheme,colorData[1]],false ) );
+            resultChart.data.datasets[i].borderColor.push(percentToColor(50,false,0,[selectedTheme,colorData[1]],true ) );
         }
     }
 

@@ -59,7 +59,7 @@ var bChartObj = function(id,config){
             }
         }
     });
-
+    //Upon clicking a bubble in the chart, a new tab will open based on the expid of that point in the graph.
     this.click = evt=>{
         let evtVars = this.chart.getElementAtEvent(evt);
         if(evtVars[0])

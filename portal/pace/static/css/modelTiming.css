@@ -76,26 +76,13 @@ ul{
 #nodeId{
     font-family: monospace;
     position:absolute;
-    background-color:lightgray;
+    background-color:#CCCCCC99;
     border-radius:5px;
+    z-index:2;
 }
 
 #mtOptions tr td{
     display:inline-block;
-}
-
-#metaTable tr td{
-    display:table-cell;
-    border:5px solid transparent;
-}
-
-#metaInfoContainer{
-    text-align:center;
-    background-color:lightgray;
-    border-radius:20px;
-    display:none;
-    position:absolute;
-    z-index: 4;
 }
 
 #quickSearchContainer{
