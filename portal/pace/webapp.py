@@ -632,8 +632,10 @@ def usersRedirect(user):
 @app.route("/benchmarks/<keyword>")
 def benchmarksRedirect(keyword):
     splitStr = keyword.split(" ")
-    return searchPage("compset:"+splitStr[0]+" res:"+splitStr[1],False)
-
+    if splitStr[0] in ["FC5AV1C-H01A", "GMPAS-IAF"]:
+      return searchPage("compset:"+splitStr[0]+" res:"+splitStr[1],False)
+    else:
+      return render_template('error.html')
 
 #This is designed for the search bar on the website. It predicts what a user may be looking for based on where the dev specifies to search.
 @app.route("/ajax/similarDistinct/<keyword>")
