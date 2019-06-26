@@ -219,9 +219,9 @@ def uploadlogin():
 def page_not_found(error):
 	return render_template('error.html'), 404
 
-@app.route("/quickStart/")
-def quickStart():
-    return render_template("quickStart.html")
+@app.route("/searchTips/")
+def searchTips():
+    return render_template("searchTips.html")
 
 #Model Timing web-interface.
 @app.route("/summary/<expID>/<rank>/<compare>/<threads>/")
