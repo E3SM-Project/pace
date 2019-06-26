@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Performance Analytics For Climate Experiments (PACE) is a project designed to visualize performance data created by the E3SM Project (Energy Exascale Earth System Model)"/>
+  <meta name="description" content="Performance Analytics For Computational Experiments (PACE) is a framework to aggregate and visualize performance data of scientific applications like E3SM (Energy Exascale Earth System Model)."/>
   <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
   <!-- <base href="https://pace.ornl.gov/dev3/" target="_self"> -->
 
@@ -19,7 +19,7 @@
   <script></script>
   {% block topscripts %}
   {% endblock %}
-  <title> {% block title %} Performance Analytics for Climate Experiments (PACE) {% endblock %} </title>
+  <title> {% block title %} Performance Analytics for Computational Experiments (PACE) {% endblock %} </title>
 </head>
 
 <body>
@@ -53,7 +53,7 @@
        <a class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Resources</a>
           <div class="dropdown-menu">
             <a class="dropdown-item" href="/upload-howto">How-to Upload</a>
-            <a class="dropdown-item" href="/quickStart">Quick Start</a>
+            <a class="dropdown-item" href="/searchTips">Search Tips</a>
 
             <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Demos</a>
             <div class="dropdown-menu">
@@ -84,7 +84,7 @@
   <main role="main" class="container">
     <div class="pace-main-content">
 	<br>
-    <h2 style="text-align:center"> Performance Analytics for Climate Experiments (PACE)</h2>
+    <h2 style="text-align:center"> Performance Analytics for Computational Experiments (PACE)</h2>
 	<br>
 	<!-- <p style="border:1px solid darkgrey;border-radius:1px" /> -->
       {% block content %}

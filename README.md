@@ -1,9 +1,9 @@
-Performance Analytics for Climate Experiments (PACE)
+Performance Analytics for Computational Experiments (PACE)
 ================================================================================
 
-PACE is a collection of tools to summarize performance data collected from 
-E3SM experiements to derive insights and make them accessible through a
-web portal.
+PACE is a framework designed to aggregate and summarize performance data collected 
+from scientific applications like E3SM to derive insights and make them accessible 
+through a web portal.
 
 Quick Start
 --------------------------------------------------------------------------------
