@@ -3,6 +3,9 @@
 import types,json,os.path
 from os import listdir
 
+# BUGFIX: Sarat (June 23, 2019)
+# GPTL timing file output for model_timing_stats has changed. There was an additional column called "on".
+# That had to be added to the second block below to fix issue.
 #This is a list of configurations that tell the parser how to read specific GPTL files
 parserConfigs = {
 "e3sm":[{
@@ -13,8 +16,8 @@ parserConfigs = {
         "rootParent":2
     },
     {
-        "names":["process","threads","count","walltotal","wallmax","wallmin"],
-        "altNames":["processes","threads","count","walltotal","wallmax","wallmax_proc","wallmax_thrd","wallmin","wallmin_proc","wallmin_thrd"],
+        "names":["On","process","threads","count","walltotal","wallmax","wallmin"],
+        "altNames":["on", "processes","threads","count","walltotal","wallmax","wallmax_proc","wallmax_thrd","wallmin","wallmin_proc","wallmin_thrd"],
         "startMarker":["name",1],
         "fileIdentifiers":["GLOBAL STATISTICS"],
         "rootParent":0
@@ -296,6 +299,8 @@ def parse(fileIn,configList = parserConfigs,returnLayer=2):
     if returnLayer == 0:
         return nodeLines
     resultThreads = parseThread(nodeLines,config)
+    # print "Debug: parse thread done"
     if returnLayer == 1:
         return resultThreads
     return toJson(resultThreads)
+
