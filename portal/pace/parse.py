@@ -14,6 +14,7 @@ import modelTiming as mt
 import io
 from minio import Minio
 from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
+from sqlalchemy.exc import SQLAlchemyError
 
 PACE_LOG_DIR,EXP_DIR,UPLOAD_FOLDER = getDirectories()
 
@@ -220,7 +221,7 @@ def parseReadme(readmefilename):
 		fileIn.close()		
 		return False
 	except :
-		print ('    ERROR: Something is worng with %s' %convertPathtofile(readmefilename))
+		print ('    ERROR: Something is wrong with %s' %convertPathtofile(readmefilename))
 		fileIn.close()
 		return False
 	fileIn.close()	
@@ -305,36 +306,88 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 	word=''
 	print ('* Parsing: '+convertPathtofile(filename))
 	try:
+		count = 0
 		for line in parseFile:
+			count = count + 1
+			# print str(count) + line
 			if line!='\n':
 				# find values for given keys
 				if len(timingProfileInfo)<12:		
-					word=line.split(None,3)
-					if word[0]=='Case':
-						timingProfileInfo['case']=word[2]
-					elif word[0]=='LID':
-						timingProfileInfo['lid']=word[2]
-					elif word[0]=='Machine':
-						timingProfileInfo['machine']=word[2]
-					elif word[0]=='Caseroot':
-						timingProfileInfo['caseroot']=word[2]
-					elif word[0]=='Timeroot':
-						timingProfileInfo['timeroot']=word[2]
-					elif word[0]=='User':
-						timingProfileInfo['user']=word[2]
-					elif word[0]=='Curr':
-						timingProfileInfo['curr']=word[3]
-					elif word[0]=='grid':
-						timingProfileInfo['long_res']=word[2]
-					elif word[0]=='compset':
-						timingProfileInfo['long_compset']=word[2]
-					elif word[0]=='stop_option':
-						timingProfileInfo['stop_option']=word[2]
-						newWord=word[3].split(" ")	
-						timingProfileInfo['stop_n']=newWord[2]		
-					elif word[0]=='run_length':
-						newWord=word[3].split(" ")
-						timingProfileInfo['run_length']=word[2]
+					word=line.split(':', 2)
+					# if 'Case' in word[0]:
+					# You can't use if 'Case' in word[0] as that would also match caseroot
+					# This was a pretty difficult to debug bug - Sarat April 4, 2019.
+					if word[0].strip() =='Case':
+						timingProfileInfo['case']=word[1].strip()
+						# print timingProfileInfo['case']
+					elif 'LID' in word[0]:
+						timingProfileInfo['lid']=word[1].strip()
+						# print timingProfileInfo['lid']
+					elif 'Machine' in word[0]:
+						timingProfileInfo['machine']=word[1].strip()
+						# print timingProfileInfo['machine']
+					elif 'Caseroot' in word[0]:
+					# elif word[0].strip() == 'Caseroot':
+					# elif word[0]=='Caseroot':
+						timingProfileInfo['caseroot']=word[1].strip()
+						# print timingProfileInfo['caseroot']
+					elif 'Timeroot' in word[0]:
+						timingProfileInfo['timeroot']=word[1].strip()
+						# print timingProfileInfo['timeroot']
+					elif 'User' in word[0]:
+						timingProfileInfo['user']=word[1].strip()
+						# print timingProfileInfo['user']
+					elif 'Curr' in word[0]:
+						newWord = line.split(None,3)
+						timingProfileInfo['curr']=newWord[3].strip()
+						# print timingProfileInfo['curr']
+					elif 'grid' in word[0]:
+						timingProfileInfo['long_res']=word[1].strip()
+						# print timingProfileInfo['long_res']
+					elif 'compset' in word[0]:
+						timingProfileInfo['long_compset']=word[1].strip()
+						# print timingProfileInfo['long_compset']
+					elif 'stop' in word[0]:
+						# stop option or stop_option : ndays, stop_n = 20
+						newWord=word[1].split(",")
+						timingProfileInfo['stop_option']=newWord[0].strip()
+						# print timingProfileInfo['stop_option']
+						if 'stop_n' in newWord[1]:
+							newWord2 = newWord[1].split('=')
+							timingProfileInfo['stop_n'] = newWord2[1].strip()
+							# print timingProfileInfo['stop_n']
+					elif 'length' in word[0]:
+						#   run length  : 20 days (19.9166666667 for ocean)
+						newWord=word[1].split("(")
+						# Now you get 20 days etc
+						newWord2=newWord[0].strip().split(" ")
+						timingProfileInfo['run_length']=newWord2[0]
+						# print timingProfileInfo['run_length']
+					# if word[0]=='Case':
+					# 	timingProfileInfo['case']=word[2]
+					# elif word[0]=='LID':
+					# 	timingProfileInfo['lid']=word[2]
+					# elif word[0]=='Machine':
+					# 	timingProfileInfo['machine']=word[2]
+					# elif word[0]=='Caseroot':
+					# 	timingProfileInfo['caseroot']=word[2]
+					# elif word[0]=='Timeroot':
+					# 	timingProfileInfo['timeroot']=word[2]
+					# elif word[0]=='User':
+					# 	timingProfileInfo['user']=word[2]
+					# elif word[0]=='Curr':
+					# 	timingProfileInfo['curr']=word[3]
+					# elif word[0]=='grid':
+					# 	timingProfileInfo['long_res']=word[2]
+					# elif word[0]=='compset':
+					# 	timingProfileInfo['long_compset']=word[2]
+					# elif word[0]=='stop_option':
+					# 	timingProfileInfo['stop_option']=word[2]
+					# 	newWord=word[3].split(" ")
+					# 	timingProfileInfo['stop_n']=newWord[2]
+					# elif word[0]=='run_length':
+					# 	newWord=word[3].split(" ")
+					# 	timingProfileInfo['run_length']=word[2]
 				
 				flagrun=False
 				flaginit=False
@@ -384,7 +437,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		# check if this is duplicate experiment 
 		duplicateFlag = checkDuplicateExp(timingProfileInfo['user'],timingProfileInfo['machine'],timingProfileInfo['curr'],timingProfileInfo['case'])
 		if duplicateFlag is True:
-			print ('    -[Warining]: Duplicate Experiment, ' + convertPathtofile(filename))
+			print ('    -[Warning]: Duplicate Experiment, ' + convertPathtofile(filename))
 			db.session.close()
 			return (False) # This skips this experiment and moves to next
 	
@@ -397,7 +450,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		parseFile.close()
 		return (False) # skips this experiment
 	except :
-		print ('    ERROR: Something is worng with %s' %convertPathtofile(filename))
+		print ('    ERROR: Something is wrong with %s' %convertPathtofile(filename))
 		parseFile.close()
 		return (False) # skips this experiment	
 
@@ -474,6 +527,8 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		expversion = parseModelVersion(gitfile)
 		print ('    -Complete')
 
+		# print "Debug info:"
+		# print timingProfileInfo
 		# insert timingprofile 
 		new_e3sm_experiment = E3SMexp(case=timingProfileInfo['case'],
 						lid=timingProfileInfo['lid'],
@@ -501,10 +556,12 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 						version = expversion,
 						upload_by = uploaduser)
 		db.session.add(new_e3sm_experiment)
-
 		# table has to have a same experiment id
 		forexpid = E3SMexp.query.order_by(E3SMexp.expid.desc()).first()
-		
+		# Following direct sql query returns already committed data in database and not the current exp being added
+		# myexpid = db.engine.execute("select expid from e3smexp order by e3smexp.expid desc limit 1").fetchall() 
+		# print "New expid: " + str(forexpid.expid)
+
 		new_experiment = Exp(expid=forexpid.expid,
 						user=timingProfileInfo['user'],
 						machine=timingProfileInfo['machine'],
@@ -539,17 +596,28 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 						model_years=runTimeTable[i+3])
 			db.session.add(new_runtime)
 			i=i+4
+		# print "added runtime"
 		return (forexpid)
 	except IndexError as e:
 		print ('    ERROR: %s' %e)
+		# Sarat: Rollback added to avoid auto-incrementing expid for failed uploads
+		# Check if rollback doesn't cause issues with skipping incomplete exps
+		db.session.rollback()
 		parseFile.close()
 		return (False) # skips this experiment
 	except KeyError as e:
 		print ('    ERROR: Missing data %s' %e)
+		db.session.rollback()
+		parseFile.close()
+		return (False) # skips this experiment
+	except SQLAlchemyError as e:
+		error = str(e.__dict__['orig'])
+		print ('    SQL ERROR: %s' %e)
+		db.session.rollback()
 		parseFile.close()
 		return (False) # skips this experiment
 	except :
-		print ('    ERROR: Something is worng with %s' %convertPathtofile(filename))
+		print ('    ERROR: something is wrong with %s' %convertPathtofile(filename))
 		db.session.rollback()
 		parseFile.close()
 		return (False) # skips this experiment	
@@ -623,20 +691,31 @@ def insertTiming(mtFile,expID,db):
 				elif underScore[len(underScore)-1] == "stats":
 					rankStr = underScore[len(underScore)-1]
 				#This is a file we want! Let's save it:
+				# print "DEBUG: insertTiming before add: " + rankStr + " element : " + str(element)
+				# If code crashes here, check if GPTL output file format has changed
+				# Modify corresponding modelTiming.parse function
 				new_modeltiming = ModelTiming(expid=expID, jsonVal=mt.parse(sourceFile.extractfile(element)),rank=rankStr)
+				# print "DEBUG: insertTiming before dbsession add: " + rankStr + " element : " + str(element)
 				db.session.add(new_modeltiming)
+	except SQLAlchemyError as e:
+		error = str(e.__dict__['orig'])
+		print ('    SQL ERROR: %s' %e)
+		db.session.rollback()
+		return (False) # skips this experiment
 	except IndexError as e:
 		print ('    ERROR: %s' %e)
-		parseFile.close()
+		sourceFile.close()
+		db.session.rollback()
 		return (False) # skips this experiment
 	except KeyError as e:
 		print ('    ERROR: Missing data %s' %e)
-		parseFile.close()
+		sourceFile.close()
+		db.session.rollback()
 		return (False) # skips this experiment
 	except :
-		print ('    ERROR: Something is worng with %s' %convertPathtofile(mtFile))
+		print ('    ERROR: Something is wrong with %s' %convertPathtofile(mtFile))
 		db.session.rollback()
-		parseFile.close()
+		sourceFile.close()
 		return (False) # skips this experiment	
 	return
 
