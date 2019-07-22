@@ -17,7 +17,7 @@ chmod +x ./pace-upload
 <br>
 </code>
 </p>
-This is a Python-based tool that can be executed directly (./pace-upload) once you download and make it executable. 
+This is a Python-based tool that can be executed directly (./pace-upload) once you download and make it executable. The system-wide Python 2.x installation on Summit/Theta/Cori/Compy has the requisite 'requests' module to enable this tool to work. 
 <br>
 It presently handles uploading user data in performance archive directories from all E3SM supported machines. The server checks for duplicates while processing uploaded data.
 <br>
@@ -62,7 +62,9 @@ NERSC: /project/projectdirs/acme/performance_archive
 <br>
        or /project/projectdirs/&lt;project name&gt;/performance_archive
 <li>
-ALCF: /projects/ClimateEnergy/performance_archive
+ALCF: /projects/ClimateEnergy_3/performance_archive
+<br>
+       or  /projects/OceanClimate_2/performance_archive
 <br>
        or  /projects/&lt;project name&gt;/performance_archive
 <li>
@@ -70,6 +72,13 @@ OLCF: /lustre/atlas/proj-shared/cli115/performance_archive
 <br>
        or /lustre/atlas/proj-shared/&lt;project name&gt;/performance_archive
 </li>
+<li>
+Compy: /compyfs/performance_archive/
+</li>
+<li>
+Anvil: /lcrc/group/acme/performance_archive/
+</li>
+
 
 <br>
 Structure within performance archive directory:
