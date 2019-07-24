@@ -94,11 +94,11 @@ tableList.forEach((e,index)=>{
     //console.log(e);
     if(typeof(address) == "string"){
         //console.log(e[address]);
-        number = e[address].values.walltotal;
+        number = e[address].values.wallmax;
         //console.log(number);
     }
     else if(typeof(address) == "object")
-        address.forEach(str=>number+=e[str].values.walltotal);
+        address.forEach(str=>number+=e[str].values.wallmax);
     if(!resultChart.data.datasets[addrIndex])
         resultChart.data.datasets[addrIndex] = {label:labels[addrIndex],data:[],backgroundColor:[],borderColor:[]};
 
