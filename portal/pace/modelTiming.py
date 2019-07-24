@@ -7,6 +7,7 @@ from os import listdir
 # GPTL timing file output for model_timing_stats has changed. There was an additional column called "on".
 # That had to be added to the second block below to fix issue.
 #This is a list of configurations that tell the parser how to read specific GPTL files
+# Reference: https://github.com/E3SM-Project/pace/blob/master/portal/pace/mtConfig/specification.md
 parserConfigs = {
 "e3sm":[{
         "names":["On","Called","Recurse","Wallclock","max","min","UTR Overhead"],
