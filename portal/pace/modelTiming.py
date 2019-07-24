@@ -16,7 +16,7 @@ parserConfigs = {
         "rootParent":2
     },
     {
-        "names":["On","process","threads","count","walltotal","wallmax","wallmin"],
+        "names":["on","process","threads","count","walltotal","wallmax","wallmin"],
         "altNames":["on", "processes","threads","count","walltotal","wallmax","wallmax_proc","wallmax_thrd","wallmin","wallmin_proc","wallmin_thrd"],
         "startMarker":["name",1],
         "fileIdentifiers":["GLOBAL STATISTICS"],
