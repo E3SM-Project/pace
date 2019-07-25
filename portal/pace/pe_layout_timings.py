@@ -130,6 +130,7 @@ def render(runtimeIn,opt_dict = None):
     ## Build figure
     fig = plt.figure(figsize=[16,10])
     ax  = fig.add_subplot(111)
+    # ax.add_artist(patches.Rectangle((0,0),1.0,1.0,fill=False,hatch='//'))
     ax.add_artist(patches.Rectangle((0,0),1.0,1.0,fill=False))
     ## Each component is built as a rectangle patch with
     ## width=pe_layout and height=runtime
