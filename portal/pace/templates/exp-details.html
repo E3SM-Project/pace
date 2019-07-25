@@ -43,7 +43,6 @@ Version: {{exp.version}}
 Run_time: {{ exp.run_time }} sec
 Init time: {{ exp.init_time }} sec
 Final_time: {{ exp.final_time }} sec
-Throughput: {{exp.model_throughput}} SYPD
 Total PEs: {{exp.total_pes_active}}
 Model cost: {{exp.model_cost}} pe-hrs/sim_year
 
@@ -51,8 +50,20 @@ Run length: {{exp.run_length}} days
 Stop_n: {{exp.stop_n}}
 Stop Option: {{ exp.stop_option}}
 MPI tasks/node: {{exp.mpi_tasks_per_node}}
-Summary Charts: {% for rank in ranks -%}<a href="/summary/{{expid}}/{{rank.rank}}">{{rank.rank}}</a> &nbsp;
+
+<br>
+<b>Model Throughput</b>: {{exp.model_throughput}} SYPD
+<br>
+
+<b>Graphs:</b>
+<a href="/summary/{{expid}}/stats">Summary Global statistics</a>
+<br>
+Tree graph : {% for rank in ranks -%}<a href="/summary/{{expid}}/{{rank.rank}}">Rank {{rank.rank}}</a> &nbsp;
             {%- endfor %}
+Flame graph : {% for rank in ranks -%}<a href="/flamegraph/{{expid}}/{{rank.rank}}">Rank {{rank.rank}}</a> &nbsp;
+            {%- endfor %}
+<a href="/atmos/{{exp.expid}}">Atm process distribution</a> 
+<br>
 <br>
 Additional Notes:
 </code>
@@ -66,13 +77,13 @@ Additional Notes:
             <table class="runtimeTable">
                 <thead>
                     <tr>
-                    <th>Color</th><th>Component</th><th>Run time(s)</th>
+                    <th>Color</th><th>Component</th><th>Run time(s)</th><th>Throughput(SYPD)</th>
                     </tr>
                 </thead>
                 <tbody>
                 {%for element in runtime%}
                 <tr>
-                    <td class='colorElement'></td><td class='elementName'>{{element.component}}</td><td>{{element.seconds}}</td>
+                    <td class='colorElement'></td><td class='elementName'>{{element.component}}</td><td>{{element.seconds}}</td><td>{{element.model_years}}</td>
                 </tr>
                 {%endfor%}
                 </tbody>
