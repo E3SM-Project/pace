@@ -304,7 +304,7 @@ def expDetails(mexpid):
 		return render_template('error.html')
 	mypelayout = db.engine.execute("select * from pelayout where expid= "+ str(mexpid) ).fetchall()
 	myruntime = db.engine.execute("select * from runtime where expid= "+ str(mexpid) ).fetchall()
-	ranks = db.engine.execute("select rank from model_timing where expid= "+ str(mexpid) ).fetchall()
+	ranks = db.engine.execute("select rank from model_timing where rank!= 'stats' and expid= "+ str(mexpid) + "order by cast(rank as int)" ).fetchall()
 	colorDict = {}
 	for i in range(len(runtimeSvg.default_args['comps'])):
 		colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
@@ -591,7 +591,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
     if getRanks:
         for item in filteredItems:
             itemRanks = []
-            queryResults = db.engine.execute("select rank from model_timing where expid = "+str(item["expid"])).fetchall()
+            queryResults = db.engine.execute("select rank from model_timing where expid = " + str(item["expid"]) + " order by cast(rank as int)" ).fetchall()
             for result in queryResults:
                 itemRanks.append(result.rank)
             rankList.append([itemRanks,[]])
