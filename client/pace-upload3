@@ -1,0 +1,308 @@
+#! /usr/bin/env python3
+# @file: pace-upload
+# @brief: Client-side tool (Python 3) to upload experiment data to PACE.
+# @author: Gaurab KC, Sarat Sreepathi (sarat@ornl.gov)
+# @docs: Refer https://pace.ornl.gov/upload-howto
+# @version: 2.0
+# @date: 2019-06-26
+
+# imports
+import argparse
+import requests
+import sys
+import json
+import os, shutil, distutils
+from os.path import expanduser
+from distutils import dir_util
+import zipfile, tarfile
+import getpass
+import stat
+import socket
+from stat import *
+from datetime import datetime
+from configparser import RawConfigParser
+from urllib.parse import urljoin
+
+# base url
+baseurl = "https://pace.ornl.gov/"
+
+# api for github
+GITHUB_API = 'https://api.github.com'
+
+# server connection url
+uploadurl = baseurl+str("upload")
+
+# server connection url
+parseurl = baseurl+str("fileparse")
+
+# authenticuser url
+authurl = baseurl+str("userauth")
+
+# color class
+class bcolors:
+	HEADER = '\033[95m'
+	OKBLUE = '\033[94m'
+	OKGREEN = '\033[92m'
+	WARNING = '\033[93m'
+	FAIL = '\033[91m'
+	ENDC = '\033[0m'
+	BOLD = '\033[1m'
+	UNDERLINE = '\033[4m'
+	DARKGREY = '\033[90m'
+	LIGHTGREY = '\033[37m'
+
+# argumented parser
+def parseArguments(): 
+	parser = argparse.ArgumentParser(description="PACE upload tool.")
+	# Argument parser for E3SM experiments
+	parser.add_argument('--exp-dir','-ed', action='store', dest='source', help="Root directory containing experiment(s) results. Handles multiple experiment directories under root")
+	parser.add_argument('--perf-archive','-pa', action='store', dest='source', help="Root directory containing performance archive. Handles multiple performance archive directories under root")
+	parser.add_argument('--application', '-a', help="Application name", default='e3sm', choices=['e3sm'])
+	args = parser.parse_args()
+	return args
+
+# Aggregate into zip for given directory path
+def zipSubdir(zfname, path):
+	print(bcolors.LIGHTGREY + ('Compressing valid experiments') + '...' + bcolors.ENDC)
+	zf = zipfile.ZipFile("%s.zip" % (zfname), "w", zipfile.ZIP_DEFLATED, allowZip64 = True)
+	abs_src = os.path.abspath(path)
+	for root,dirs,files in os.walk(path):
+		for file in files:
+			absname = os.path.abspath(os.path.join(root, file))
+			arcname = zfname + "/" + absname[len(abs_src) + 1:]
+			zf.write(absname,arcname)
+	zf.close()
+	print(bcolors.OKGREEN + ('Compression Success') + bcolors.ENDC)
+	print (" ")
+	return
+
+# upload experiment files
+def uploadExp(uploadfile, uploadUser):
+	# error check empty file
+	if(os.path.exists(uploadfile)):
+		if(os.stat(uploadfile).st_size!=0):
+			print(bcolors.LIGHTGREY + ('Uploading...') + bcolors.ENDC)
+			# open zip to be uploaded
+			fin = open(uploadfile, 'rb')			
+			files = {'file': fin, 'filename':uploadfile}
+			try:
+				# request for connection to server
+				r = requests.post(uploadurl, files=files)
+				print(bcolors.OKGREEN + ('Upload Success') + bcolors.ENDC)
+				print (" ")
+			finally:
+				fin.close()
+			if r.text == 'complete':
+				print(bcolors.LIGHTGREY + ('Parsing experiments...') + bcolors.ENDC)
+				req = requests.post(parseurl, data={'filename':uploadfile,'user':uploadUser})
+				flaglist = (req.text).split("/") # req.text = success/message-timestamp.log
+				if flaglist[0] == 'success':
+					print(bcolors.OKGREEN + ('Parse Success') + bcolors.ENDC)
+				else:
+					print(bcolors.FAIL + ('ERROR: Check %s' %flaglist[1]) + bcolors.ENDC)
+				print(" ")
+				print(bcolors.LIGHTGREY + ('Downloading Report log...') + bcolors.ENDC)
+				try:
+					downloadlog(flaglist[1])
+					print(bcolors.OKGREEN + ('Download Success') + bcolors.ENDC)
+					print(bcolors.BOLD + ('Report saved as: \'' + str(flaglist[1])+'\'') + bcolors.ENDC)
+				except IOError as e:
+					print(bcolors.FAIL + ('ERROR: %s' %e) + bcolors.ENDC)
+				print(" ")
+			print (" ")			
+		else:
+			print(bcolors.FAIL +('Error: Unable to upload, %s is empty' %uploadfile)+bcolors.ENDC)
+			exit()
+	else:
+		print(bcolors.FAIL+('Error: Unable to upload %s, No such file' %uploadfile)+bcolors.ENDC)
+		exit()
+
+# validate E3SM experiment
+def isValidE3SMexp(expfile,tmpfile):
+	# validation flag
+	modeltimefile = False
+	e3smtimefile = False
+	gitverfile = False
+	completeexp = False
+	# lists to store complete experiment paths	
+	explist = []
+	print(bcolors.LIGHTGREY + ('Validating Experiments in %s' %expfile) + '...' + bcolors.ENDC)
+	if os.path.exists(expfile):
+		# iterate to check for timing files
+		for path, subdirs, files in os.walk(expfile):
+			for name in files:
+				# experiment is incomplete when there are no file containing "timing.*" and "e3sm_timing.*"			
+				if name.startswith("timing."):			
+					modeltimefile=True
+				if name.startswith("e3sm_timing."):
+					e3smtimefile=True
+				if name.startswith("GIT_DESCRIBE."):
+					gitverfile=True
+				if e3smtimefile == True and modeltimefile == True and gitverfile == True:
+					completeexp=True
+					explist.append(path)
+					e3smtimefile = False
+					modeltimefile = False
+					gitverfile =False
+				
+	else:
+		print(bcolors.FAIL +('Error: No Such Directory %s' %expfile)+bcolors.ENDC)
+		exit()	
+
+	# for complete experiments 
+	if completeexp == True:
+		i=0
+		# make sure temporary folder does not exists and copy them into temporary folder
+		if (os.path.exists(tmpfile)):
+			distutils.dir_util.remove_tree(tmpfile)
+		for f in explist:
+			distutils.dir_util.copy_tree(f,tmpfile+'/exp'+str(i))
+			i=i+1
+		print(bcolors.OKGREEN + ('Validation Success') + bcolors.ENDC)
+		print (" ")
+		return(True)
+	else:
+		print(bcolors.FAIL + ('ERROR: Not a valid E3SM experiment') + bcolors.ENDC)
+		return(False)
+
+# validate Fusion experiment
+def isValidFusionExp(expfile):
+	return False	
+
+# read token from config file if it exists else create new
+def getGitToken():
+	configFile = os.path.join(expanduser("~"),'.pacecc')
+	if os.path.isfile(configFile):
+		user,token = readconfigfile(configFile)
+	else:
+		user,token = createtoken()
+		createconfigfile(user,token,configFile)
+	return (token)
+
+# authenticate user based upon valid users
+def authenticateUser(user):
+	print(bcolors.LIGHTGREY + ('Authorizing %s for PACE' %user) + '...' + bcolors.ENDC)
+	data = {'user':user}
+	r = requests.post(authurl,data=data)
+	if r.text == "validuser":
+		print (" ")
+		print((bcolors.LIGHTGREY +"* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"+ bcolors.ENDC))
+		print((bcolors.OKGREEN +"			Welcome to PACE %s" %user+ bcolors.ENDC))
+		print (" ")
+		return (True)
+	else:
+		print((bcolors.FAIL+("ERROR: %s NOT AUTHORIZED for PACE" %user)+bcolors.ENDC))
+		return (False)
+
+# authenticate token with github
+def gitAuthenticate(token):
+	try:
+		headers = {'Authorization': 'token ' + token}
+		login = requests.get('https://api.github.com/user', headers=headers)
+		user = login.json()['login']
+	except KeyError:
+		print(bcolors.FAIL+'ERROR: Github authentication failed, Invalid Token.'+bcolors.ENDC)
+		exit()
+	validUser = authenticateUser(user)
+	return (validUser, user)
+
+# create new token for the user
+def createtoken():
+	#User Input
+	username = input(bcolors.BOLD + 'Github username: '+ bcolors.ENDC)
+	password = getpass.getpass(bcolors.BOLD + 'Github password: '+ bcolors.ENDC)
+	url = urljoin(GITHUB_API, 'authorizations')
+	payload = {}
+	payload['note'] = 'PACE user - ' + str(socket.gethostname()) + '-' + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+	res = requests.post(
+    	url,
+    	auth = (username, password),
+    	data = json.dumps(payload),
+    	)
+	j = json.loads(res.text)
+	if res.status_code >= 400:
+	    msg = j.get('message','UNDEFINED ERROR (no error description from server)')
+	    print(bcolors.FAIL + 'ERROR: %s' % msg + bcolors.ENDC)
+	    exit()
+	token = j['token']
+	print((bcolors.OKGREEN +"Github login success" + bcolors.ENDC))
+	print (" ")
+	return (username,token)
+
+# read from config file
+def readconfigfile(configFile):
+	parser = RawConfigParser()
+	parser.read(configFile)
+	myUser = parser.get('GITHUB','username')
+	myToken = parser.get('GITHUB','token')
+	return (myUser,myToken)
+
+# create new config file
+def createconfigfile(user,token,configFile):
+	parser = RawConfigParser()
+	parser.add_section('GITHUB')
+	parser.set('GITHUB','username',user)
+	parser.set('GITHUB','token',token)
+	filename=open(configFile,'w')
+	parser.write(filename)
+	print(bcolors.LIGHTGREY + 'Config file \".pacecc\" created' + bcolors.ENDC)
+	print (" ")
+	return
+
+# authenticate user
+def userAuth():
+	token = getGitToken()
+	isSuccess, user = gitAuthenticate(token)
+	if isSuccess == True:
+		return (user)
+	else:
+		exit()
+
+# Downloads pace report from server
+def downloadlog(filename):
+	downloadurl = baseurl+str("downloadlog")
+	data = {'filename':filename}
+	req = requests.post(downloadurl,data=data)
+	f = open(filename,'w')
+	f.write(req.text)
+	f.close()
+	return
+	
+# main 
+def main():
+	# parse argument
+	result = parseArguments()
+	if result.source == None:
+		print(bcolors.WARNING + 'USAGE: pace-upload [--help/-h] [--exp-dir/-ed SOURCE] [--perf-archive/-pa SOURCE] [--application/-a {e3sm}]'  + bcolors.ENDC)	
+		exit()
+	expfile = 0
+	user = userAuth()
+	try:
+		expfile = result.source
+		tmpfile = 'pace-exps-' + str(user) + '-' + datetime.now().strftime('%Y-%m-%d-%H%M%S')
+		zfname = tmpfile
+		# If path is not empty, and is a directory
+		if(expfile!=''):
+			if (result.application=='e3sm' and isValidE3SMexp(expfile,tmpfile)==True): 	
+				# aggregate all file
+				zipSubdir(zfname,tmpfile)
+				uploadfile=str(zfname)+str('.zip')
+				# upload experiment file		
+				uploadExp(uploadfile,user)
+				# remove temporary aggregated file
+				os.remove(uploadfile)
+				distutils.dir_util.remove_tree(tmpfile)
+			elif (result.application=='fusion' and isValidFusionExp(expfile)==True):
+				exit()		
+			else:
+				exit()
+		else:
+			print((bcolors.FAIL + 'ERROR: %s is empty' %expfile + bcolors.ENDC))
+			exit()
+	except:
+		print((bcolors.FAIL + 'ERROR: Something unexpected happened with %s' %expfile + bcolors.ENDC))
+		exit()
+
+if __name__ == "__main__":
+	main()
+
