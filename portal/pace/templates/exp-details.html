@@ -67,7 +67,11 @@ Flame graph : {% for rank in ranks -%}<a href="/flamegraph/{{expid}}/{{rank.rank
 <br>
 Additional Notes:
 </code>
-<textarea style="resize:both" id="note" name="note" class="form-control" readonly>{{note}}</textarea><p style="text-align:center;margin-top:5px"><a href="/note/{{exp.expid}}"><input type="button" style = "text-align:center" value="Add/Edit" class="btn btn-outline-secondary"/><br></p><a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
+<textarea style="resize:both" id="note" name="note" class="form-control" readonly>{{note}}</textarea><p style="text-align:center;margin-top:5px"><a href="/note/{{exp.expid}}"><input type="button" style = "text-align:center" value="Add/Edit" class="btn btn-outline-secondary"/><br></p>
+<!--Static file loc on web server-->
+<!--<a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>-->
+<!--From file server-->
+<a href="https://pacefs.ornl.gov/e3sm/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
            </pre>
         </td>
         <td class="inBlock">
