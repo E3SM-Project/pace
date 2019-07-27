@@ -270,8 +270,14 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath, uploaduser
 	try:	
 		db.session.commit()
 		print ('    -Complete')
+	except SQLAlchemyError as e:
+		error = str(e.__dict__['orig'])
+		print ('    SQL ERROR: %s' %e)
+		db.session.rollback()
+		return (False) # skips this experiment
 	except:
 		db.session.rollback()
+		return (False) # skips this experiment
 
 	# write basic summary in report
 	print (' ')
