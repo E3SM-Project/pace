@@ -8,8 +8,8 @@ A single file is written in JSON. It starts with an object containing names of c
 
 Value | Syntax/variable type | Description
 ------|----------------------|------------
-names | *Array of strings* | list of names for each value (in order) These are the exact names printed from gptl, and can be used to search for a file type. Not all names need to be here, and the list itself can even be left empty. *The more names inserted here, the easier it is to detect the file.*
-altNames | *Array of strings* | **(Required)** Names the parser uses when exporting the GPTL files to other formats. They need to be the exact number of variables displayed in the file per row (Not including name)
+fileCols | *Array of strings* | list of names for each value (in order) These are the exact names printed from gptl, and can be used to search for a file type. Not all names need to be here, and the list itself can even be left empty. *The more names inserted here, the easier it is to detect the file.*
+outCols | *Array of strings* | **(Required)** Names the parser uses when exporting the GPTL files to other formats. They need to be the exact number of variables displayed in the file per row (Not including name)
 startMarker | `["marker",1]` | Look for index 1, if you find it, jump <index 2> lines down to start reading the information for that thread.
 fileIdentifiers | *Array of strings* | These tell the parser if this configuration matches the file it's looking at. If one is found, it will use this configuration as the reference to read in the data.
 rootParent | integer | This is the minimum indention the process list uses to display its data.
