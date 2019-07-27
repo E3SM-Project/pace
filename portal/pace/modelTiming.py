@@ -1,24 +1,36 @@
-#Author: Zachary Mitchell
-#Purpose: parse files that come from GPTL (https://jmrosinski.github.io/GPTL/) to create a programatic representation of the output.
+##
+# @file modelTiming.py
+# @brief Parse files that come from GPTL into JSON for storing in DB.
+# @author Zachary Mitchell, Sarat Sreepathi
+# @version 2.0
+# @date 2019-07-26
+
 import types,json,os.path
 from os import listdir
 
-# BUGFIX: Sarat (June 23, 2019)
-# GPTL timing file output for model_timing_stats has changed. There was an additional column called "on".
-# That had to be added to the second block below to fix issue.
 #This is a list of configurations that tell the parser how to read specific GPTL files
 # Reference: https://github.com/E3SM-Project/pace/blob/master/portal/pace/mtConfig/specification.md
+# Sarat (July 26, 2019): Changed variable names (names,altNames)->(fileCols,outCols) to avoid confusion.
 parserConfigs = {
 "e3sm":[{
-        "names":["On","Called","Recurse","Wallclock","max","min","UTR Overhead"],
-        "altNames":["on","called","recurse","wallClock","max","min","utrOverhead"],
+        "fileCols":["On","Called","Recurse","Wallclock","max","min","UTR Overhead"],
+        "outCols":["on","called","recurse","wallClock","max","min","utrOverhead"],
         "startMarker":["Stats for thread",2],
         "fileIdentifiers":["Stats for thread"],
         "rootParent":2
     },
+    # GPTL timing stats v2 (new col added 'on')
     {
-        "names":["on","process","threads","count","walltotal","wallmax","wallmin"],
-        "altNames":["on", "processes","threads","count","walltotal","wallmax","wallmax_proc","wallmax_thrd","wallmin","wallmin_proc","wallmin_thrd"],
+        "fileCols":["on", "process","threads","count","walltotal","wallmax","wallmin"],
+        "outCols":["on", "processes","threads","count","walltotal","wallmax","wallmax_proc","wallmax_thrd","wallmin","wallmin_proc","wallmin_thrd"],
+        "startMarker":["name",1],
+        "fileIdentifiers":["'on' indicates whether the timer was active during output", "GLOBAL STATISTICS"],
+        "rootParent":0
+    },
+    # GPTL timing stats v1 (org)
+    {
+        "fileCols":["process","threads","count","walltotal","wallmax","wallmin"],
+        "outCols":["processes","threads","count","walltotal","wallmax","wallmax_proc","wallmax_thrd","wallmin","wallmin_proc","wallmin_thrd"],
         "startMarker":["name",1],
         "fileIdentifiers":["GLOBAL STATISTICS"],
         "rootParent":0
@@ -87,6 +99,17 @@ def detectMtFile(fileObj,configList = parserConfigs):
     threadIndexes=[]
     currLine = ""
     targetConfig = None
+
+    # For each config, check file match and column names match
+    # Initialize matching file scores and column scores to zero for each configuration
+    filescore = []
+    colscore = []
+    for key in configList.keys():
+        for config in configList[key]:
+            myconfigIdx = configList[key].index(config)
+            filescore.append(0)
+            colscore.append(0)
+
     #There appears to be multiple threads in some files, let's figure out where they are, then re-read the file:
     currLine = fileObj.readline()
     while not currLine == "":
@@ -95,18 +118,26 @@ def detectMtFile(fileObj,configList = parserConfigs):
         if targetConfig == None:
             for key in configList.keys():
                 for config in configList[key]:
-                    #Check to see if any of the file Identifiers showed up in this line:
+                    myconfigIdx = configList[key].index(config)
+                    #Check to see if all of the file Identifiers showed up in this line:
                     for fileID in config["fileIdentifiers"]:
+                        # print "Checking identifier :" + fileID
+                        # print "currLine: " + currLine
                         if fileID in currLine:
-                            targetConfig = config
-                            break
-                    #Next check to see if all the names from the config appear in the line:
-                    score = 0
-                    for name in config["names"]:
+                            filescore[myconfigIdx] += 1
+                            # print fileID + " is present, filescore: " + str(filescore)
+                    # Reset column match score for every line and every config iteration
+                    # check to see if all the fileCols from the config appear in the line:
+                    colscore[myconfigIdx] = 0
+                    for name in config["fileCols"]:
                         if name in currLine:
-                            # print(name)
-                            score+=1
-                    if score == len(config["names"]):
+                            colscore[myconfigIdx] += 1
+                    # If specific configuration matches file identifiers (filescore) and columns (colscore)
+                    # then we found a match
+                    if colscore[myconfigIdx] == len(config["fileCols"]) and \
+                        filescore[myconfigIdx] == len(config["fileIdentifiers"]):
+                        # print "match filescore: " + str(filescore[myconfigIdx])
+                        # print "match colscore: " + str(colscore[myconfigIdx])
                         targetConfig = config
                         break
         if not targetConfig == None:
@@ -116,6 +147,8 @@ def detectMtFile(fileObj,configList = parserConfigs):
         currLine = fileObj.readline()
     #Reset the file & read from the new thread indexes
     fileObj.seek(0,0)
+    # DEBUG: Start here to check which parser config is being used
+    print "DEBUG: GPTL parser config: " + str(targetConfig)
     return threadIndexes,targetConfig
     
 def getData(src,configList = parserConfigs):
@@ -194,13 +227,13 @@ def parseNode(lineInput,config,currLine=0,parent=None):
         word = wordCheck.strip("()\n")
         if word not in ["","\n"]:
             if word not in ["-","y"]:
-                resultNode.values[config["altNames"][valueCount]] = float(word.strip(')\n')) #The logic gate above fails to catch parenthesis with newlines, so this is here XP
+                resultNode.values[config["outCols"][valueCount]] = float(word.strip(')\n')) #The logic gate above fails to catch parenthesis with newlines, so this is here XP
                 valueCount+=1
             else:
                 tf = False
                 if word == 'y':
                     tf=True
-                resultNode.values[config["altNames"][valueCount]] = tf
+                resultNode.values[config["outCols"][valueCount]] = tf
                 valueCount+=1
     #Try to find children until the indentation in the file no longer matches a child
     parentSpaceCount = countSpaces(lineInput[currLine])
