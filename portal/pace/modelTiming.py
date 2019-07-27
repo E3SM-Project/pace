@@ -110,7 +110,6 @@ def detectMtFile(fileObj,configList = parserConfigs):
             filescore.append(0)
             colscore.append(0)
 
-    #There appears to be multiple threads in some files, let's figure out where they are, then re-read the file:
     currLine = fileObj.readline()
     while not currLine == "":
         lineCount+=1
@@ -140,6 +139,15 @@ def detectMtFile(fileObj,configList = parserConfigs):
                         # print "match colscore: " + str(colscore[myconfigIdx])
                         targetConfig = config
                         break
+        currLine = fileObj.readline()
+
+    # Reset the file to find the thread indexes
+    # There appears to be multiple threads in some files, let's figure out where they are, then re-read the file:
+    fileObj.seek(0,0)
+    lineCount = 0
+    currLine = fileObj.readline()
+    while not currLine == "":
+        lineCount+=1
         if not targetConfig == None:
             #Look for threadIndexes:
             if targetConfig["startMarker"][0] in currLine:
@@ -149,6 +157,7 @@ def detectMtFile(fileObj,configList = parserConfigs):
     fileObj.seek(0,0)
     # DEBUG: Start here to check which parser config is being used
     print "DEBUG: GPTL parser config: " + str(targetConfig)
+    print "DEBUG: GPTL thread indexes: " + str(threadIndexes)
     return threadIndexes,targetConfig
     
 def getData(src,configList = parserConfigs):
