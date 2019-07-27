@@ -20,7 +20,7 @@ class Exp(db.Model):
 class E3SMexp(db.Model):
 	__tablename__ = 'e3smexp'
 	expid = db.Column(INTEGER(unsigned=True), primary_key=True, index=True)     
-	case = db.Column(db.String(100),nullable=False, index=True)
+	case = db.Column(db.String(200),nullable=False, index=True)
 	lid = db.Column(db.String(50), nullable=False)
 	machine = db.Column(db.String(25), nullable=False, index=True)
 	caseroot = db.Column(db.String(250),nullable=False)	
@@ -39,7 +39,7 @@ class E3SMexp(db.Model):
 	mpi_tasks_per_node = db.Column(INTEGER(unsigned=True), nullable=False)
 	pe_count_for_cost_estimate = db.Column(INTEGER(unsigned=True), nullable=False)
 	model_cost = db.Column(DECIMAL(20,2,unsigned=True), nullable=False)
-	model_throughput = db.Column(DECIMAL(10,2,unsigned=True), nullable=False)
+	model_throughput = db.Column(DECIMAL(20,2,unsigned=True), nullable=False)
 	actual_ocn_init_wait_time = db.Column(DECIMAL(10,3,unsigned=True), nullable=False)
 	init_time = db.Column(DECIMAL(10,3,unsigned=True), nullable=False)
 	run_time = db.Column(DECIMAL(20,3,unsigned=True), nullable=False)
