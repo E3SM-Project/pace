@@ -51,7 +51,7 @@ function metaOpenClose(openClose=false,metaArray){
         let outStr=""
         if(metaArray.length > 1){
             outStr = `<span onclick='$(metaTable).slideToggle(200,metaContainerChromeFix)' style='cursor:pointer'>Click to view more details about these experiments.</span>
-            <div id='metaTable' style="display:none;text-align:left;margin-left:25%"><table><thead><tr><th>Compset</th><th>Res</th><th>Expid</th></tr></thead><tbody>`;
+            <div id='metaTable' style="display:none;text-align:left;margin-left:5%"><table><thead><tr><th>Compset</th><th>Res</th><th>Expid</th></tr></thead><tbody>`;
             metaArray.forEach(exp=>{
                 outStr+="<tr><td>"+exp.compset+"</td><td>"+exp.res+"</td><td><a href='"+detectRootUrl()+"exp-details/"+exp.name+"'>"+exp.name+"</a></td></tr></div>";
             });
