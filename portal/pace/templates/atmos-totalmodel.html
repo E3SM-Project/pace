@@ -118,15 +118,13 @@ tableList.forEach((e,index)=>{
     timer.push( otherAtm );
     // console.log (otherAtm);
 
-    // totalModel = e["CPL:RUN_LOOP"].values.wallmax ;
-    // remaining = totalModel - totalAtm;
-    // timer.push( remaining );
+    totalModel = e["CPL:RUN_LOOP"].values.wallmax ;
+    remaining = totalModel - totalAtm;
+    timer.push( remaining );
+    //console.log (remaining);
 
-    // console.log (remaining);
     // console.log (timer);
-
-    // for ( let j = 0; j < 11; j++) {
-    for ( let j = 0; j < 10; j++) {
+    for ( let j = 0; j < 11; j++) {
         // set chart label first to create javascript array element
         if(!resultChart.data.datasets[j])
             resultChart.data.datasets[j] = {label:labels[j],data:[],backgroundColor:[],borderColor:[]};
