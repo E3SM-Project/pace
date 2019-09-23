@@ -293,7 +293,7 @@ def summaryQuery(expID,rank,getFullStats = ""):
 
 @app.route("/flamegraph/<expid>/<rank>/")
 def flameGraph(expid,rank):
-    return render_template("flameGraph.html",expid=expid,rank=rank)
+    return render_template("flameGraph.html",expid=expid,rank=rank.split(','))
 
 @app.route("/exp-details/<int:mexpid>")
 def expDetails(mexpid):

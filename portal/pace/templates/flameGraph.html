@@ -50,7 +50,10 @@
 
 {
     let expid = [{{expid}}];
-    let rank = [{{rank}}];
+    // Certain ranks start with zero like 0320 which will be treated as octal if taken as numbers
+    // So ensure that they are treated as strings
+    let rank = [{% for myrank in rank -%}"{{myrank}}",{% endfor -%}];
+    //let rank = [{{rank}}];
     for(let i=0;i<expid.length;i++){
         $.get("/summaryQuery/"+expid[i]+"/"+rank[i],data=>{
             let queryData = JSON.parse(data);
