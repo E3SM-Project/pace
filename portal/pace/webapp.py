@@ -35,7 +35,8 @@ github = OAuth2Service(
     base_url='https://api.github.com/')
 
 
-ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
+# ALLOWED_EXTENSIONS = set(['zip', 'tgz', 'gz', 'tar','txt'])
+ALLOWED_EXTENSIONS = set(['zip'])
 PACE_LOG_DIR,EXP_DIR,UPLOAD_FOLDER = getDirectories()
 
 # Uploading file
@@ -107,7 +108,11 @@ def downloadlog():
 		msgfile = request.form['filename']
 		filelink = ('/pace/assets/static/logs/'+str(msgfile))
 		try:
-			return send_file(filelink,attachment_filename='message.log')
+			matchobj = re.match("^pace-.*\.log$", msgfile)
+			if matchobj: 
+				return send_file(filelink,attachment_filename='message.log')
+			else : 
+				return render_template('error.html')
 		except Exception as e:
 			return str(e)
 
@@ -190,29 +195,29 @@ def logout():
 		return redirect('/')
 	return redirect('/')
 
-@app.route("/uploadlogin", methods=['GET','POST'])
-def uploadlogin():
-	if request.method == 'POST':
-		admin = request.form['name']
-		admin_pass = request.form['pass']
-		a=admin+admin_pass
-		z=int(len(a))
-		b=''
-		for i in range(z):
-			b = b + chr(ord(a[i]) + 2)
-		c=b+a
-		y=int(len(c))
-		d=''
-		for i in range(y):
-			d = d + chr(ord(c[i])+1)
-		f=open('/pace/dev1/portal/pace/pass.txt','r')
-		for line in f:
-			admin = line.split(None,1)[0]
-			print(admin)
-			if admin==d:
-				return("ok")
-
-		return("not")
+# @app.route("/uploadlogin", methods=['GET','POST'])
+# def uploadlogin():
+# 	if request.method == 'POST':
+# 		admin = request.form['name']
+# 		admin_pass = request.form['pass']
+# 		a=admin+admin_pass
+# 		z=int(len(a))
+# 		b=''
+# 		for i in range(z):
+# 			b = b + chr(ord(a[i]) + 2)
+# 		c=b+a
+# 		y=int(len(c))
+# 		d=''
+# 		for i in range(y):
+# 			d = d + chr(ord(c[i])+1)
+# 		f=open('/pace/dev1/portal/pace/pass.txt','r')
+# 		for line in f:
+# 			admin = line.split(None,1)[0]
+# 			print(admin)
+# 			if admin==d:
+# 				return("ok")
+# 
+# 		return("not")
 
 # Error handler
 @app.errorhandler(404)
@@ -406,7 +411,10 @@ def expsAjax(pageNum):
 @app.route("/search/<searchQuery>")
 def searchPage(searchQuery="*",isHomePage=False):
     homePageStr = False
-    return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';",homePage = isHomePage)
+    if bool(re.match('^[a-zA-Z0-9-\. \*_\$i\:\|]+$', searchQuery)):
+        return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';",homePage = isHomePage)
+    else:
+        return render_template('error.html')
 
 #A redirect to /search/<searchQuery>/advsearch
 #This is depricated, but here in case we have old urls:
@@ -623,11 +631,17 @@ def getDistinct(entry):
 #These three redirect to the search page with their respective category.
 @app.route("/platforms/<platform>/")
 def platformsRedirect(platform):
-    return searchPage("machine:"+platform,False)
+    if bool(re.match('^[a-zA-Z0-9-_]+$', platform)):
+        return searchPage("machine:"+platform,False)
+    else:
+        return render_template('error.html')
 
 @app.route("/users/<user>/")
 def usersRedirect(user):
-    return searchPage("user:"+user,False)
+    if bool(re.match('^[a-zA-Z0-9-_]+$', user)):
+        return searchPage("user:"+user,False)
+    else:
+        return render_template('error.html')
 
 @app.route("/benchmarks/<keyword>")
 def benchmarksRedirect(keyword):
