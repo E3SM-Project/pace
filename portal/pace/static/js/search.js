@@ -87,7 +87,11 @@ var searchObj = {
             let checkMoreStr = "<div><div style='display:none' class='moreContainer'>";
             let foundMore = false;
             searchObj.rankData[index][0].forEach( rank=>{
-                outputStr= "<input type='checkbox' onchange='searchObj.scanChecks()' style='margin-right:3px'/><a href='"+detectRootUrl()+"summary/"+element.expid+"/"+rank+"' title='View this experiment.'><b>"+rank+"</b></a></br>"; 
+                if(rank == "stats" )
+                    mylabel = "Global Stats";
+                else
+                    mylabel = "Rank " + rank;
+                outputStr= "<input type='checkbox' onchange='searchObj.scanChecks()' style='margin-right:3px'/><a href='"+detectRootUrl()+"summary/"+element.expid+"/"+rank+"' title='View this experiment.'>"+mylabel+"</a></br>";
                 if(rank == "stats" || rank == "0")
                     checkStr+=outputStr;
                 else {
