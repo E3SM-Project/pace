@@ -428,6 +428,7 @@ def advSearch(searchQuery):
 @app.route("/ajax/search/<searchTerms>/<limit>/")
 @app.route("/ajax/search/<searchTerms>/<limit>/<orderBy>")
 @app.route("/ajax/search/<searchTerms>/<limit>/<orderBy>/<ascDsc>")
+# Think if you want to specify default limit
 def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList = None,getRanks = True):
     resultItems = []
     filteredItems = []
@@ -435,7 +436,7 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
     #Variable names are split into non-string and string respectively. This is because mysql doesn't like comparing strings with numbers. It should therfore be able to fix exact matches, as there is only a string-to-string comparison
     variableList=[
         ["expid","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","init_time","run_time"],
-        ["user","machine","compset","exp_date","res","e3smexp.case"]
+        ["user","machine","compset","exp_date","res","e3smexp.case","lid"]
     ]
 
     specificVariables = whiteList
