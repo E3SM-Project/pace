@@ -75,6 +75,7 @@ Additional Notes:
 <a href="https://pacefs.ornl.gov/e3sm/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
            </pre>
         </td>
+
         <td class="inBlock">
             <img id="runtimeImg"/>
         </td>
@@ -95,6 +96,31 @@ Additional Notes:
             </table>
         </td>
         </tr>
+
+        <tr>
+        <td class="inBlock">
+            <b>Model Input files</b>
+            <br>
+            XML Inputs: 
+            <br>
+            {%for name in xmls%}
+            <a href="/xmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
+            {%endfor%}
+
+            Namelist Inputs:
+            <br>
+            {%for name in nmls%}
+            <a href="/nmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
+            {%endfor%}
+
+            RC Inputs:
+            <br>
+            {%for name in rcs%}
+            <a href="/rcviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
+            {%endfor%}
+            <br>
+        </td>
+    </tr>
     </tbody>
 </table>
 
