@@ -303,8 +303,14 @@ def flameGraph(expid,rank):
 @app.route("/exp-details/<int:mexpid>")
 def expDetails(mexpid):
 	myexp = None
+	myxmls = None
+	mynmls = None
+	myrcs = None
 	try:
 		myexp = db.engine.execute("select * from e3smexp where expid= "+ str(mexpid) ).fetchall()[0]
+		myxmls = db.engine.execute("select name from xml_inputs where expid= "+ str(mexpid) ).fetchall()
+		mynmls = db.engine.execute("select name from namelist_inputs where expid= "+ str(mexpid) ).fetchall()
+		myrcs = db.engine.execute("select name from rc_inputs where expid= "+ str(mexpid) ).fetchall()
 	except IndexError:
 		return render_template('error.html')
 	mypelayout = db.engine.execute("select * from pelayout where expid= "+ str(mexpid) ).fetchall()
@@ -318,7 +324,10 @@ def expDetails(mexpid):
 		note = noteexp.note
 	except IndexError:
 		note=""
-	return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid,ranks = ranks,chartColors = json.dumps(colorDict),note=note)
+	return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
+            ranks = ranks,chartColors = json.dumps(colorDict),note=note, \
+            xmls = myxmls, nmls = mynmls, rcs = myrcs \
+            )
 
 @app.route("/useralias/<user>")
 def useralias(user):
@@ -658,7 +667,7 @@ def searchPrediction(keyword):
     #The keyword is designed to be a single word without any potential database loopholes:
     keyword = keyword.replace("\\c","").replace(";","").replace(" ","")
     #Grab elements based on these columns:
-    columnNames = ["user","machine","expid","compset","res","e3smexp.case","upload_by"]
+    columnNames = ["user","machine","expid","compset","res","e3smexp.case","lid"]
     resultWords = []
     for column in columnNames:
         colName = column
@@ -706,3 +715,18 @@ def getRuntimeSvg(expid):
 @app.route("/atmos/<expids>/")
 def atmosChart(expids):
     return render_template("atmos.html",expids = expids)
+
+@app.route("/xmlviewer/<int:mexpid>/<mname>")
+def xmlViewer(mexpid, mname):
+    data = db.engine.execute("select data from xml_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
+    return render_template("json.html", myjson = data[0])
+
+@app.route("/nmlviewer/<int:mexpid>/<mname>")
+def nmlViewer(mexpid, mname):
+    data = db.engine.execute("select data from namelist_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
+    return render_template("json.html", myjson = data[0])
+
+@app.route("/rcviewer/<int:mexpid>/<mname>")
+def rcViewer(mexpid, mname):
+    data = db.engine.execute("select data from rc_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
+    return render_template("json.html", myjson = data[0])
