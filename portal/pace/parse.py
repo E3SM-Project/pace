@@ -202,13 +202,14 @@ def convertPathtofile(path):
 		return path
 
 # function to check duplicate experiments (check based on user,machinr,exp_date,case)
+# Returns (True, expid) if duplicate exists, else (False, None)
 def checkDuplicateExp(euser,emachine,ecurr, ecase):
 	eexp_date = changeDateTime(ecurr)
-	flag=E3SMexp.query.filter_by(user=euser,machine=emachine,case=ecase,exp_date=eexp_date ).first()
-	if flag is None:
-		return(False)
+	exp=E3SMexp.query.filter_by(user=euser,machine=emachine,case=ecase,exp_date=eexp_date ).first()
+	if exp is None:
+		return(False,None)
 	else:
-		return(True)
+		return(True,exp.expid)
 
 # parser for readme file
 def parseReadme(readmefilename):
@@ -480,9 +481,9 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 					break
 
 		# check if this is duplicate experiment 
-		duplicateFlag = checkDuplicateExp(timingProfileInfo['user'],timingProfileInfo['machine'],timingProfileInfo['curr'],timingProfileInfo['case'])
+		(duplicateFlag, existingExpid) = checkDuplicateExp(timingProfileInfo['user'],timingProfileInfo['machine'],timingProfileInfo['curr'],timingProfileInfo['case'])
 		if duplicateFlag is True:
-			print ('    -[Warning]: Duplicate Experiment, ' + convertPathtofile(filename))
+			print ('    -[NOTE]: Duplicate of Experiment : ' + existingExpid)
 			db.session.close()
 			# Set success to True as the experiment already exists in database
 			successFlag = True
