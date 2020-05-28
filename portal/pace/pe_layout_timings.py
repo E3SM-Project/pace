@@ -9,7 +9,7 @@ Routine to create a block figure of the E3SM runtime results taken from the
 case_scripts/timing/acme*** file produced by the model.
 
 There are a handful of options that need to be set (see below):
-    
+
 For questions or comments contact: donahue5@llnl.gov
 """
 
@@ -22,7 +22,7 @@ import matplotlib as mpl
 mpl.use("svg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from matplotlib.pyplot import cm 
+from matplotlib.pyplot import cm
 import datetime
 #If converting this to python 3, use io.StringIO (if supported by python 3's matplotlib)
 import StringIO
@@ -65,7 +65,7 @@ class pe_component(object):
             #print(self.name+": "+str([self.values["root_pe"],self.root_task_sum]))
     def __str__(self):
         print self.name
-    
+
     def add2plot(self,ax,bdims,displayLabel):
         self.plot_patch = patches.Rectangle(bdims[0:2], bdims[2],bdims[3],color=self.color)
         self.plot_patch.set_clip_on(False)
@@ -164,7 +164,7 @@ def render(runtimeIn,opt_dict = None):
         if cc.values["seconds"] < (TOT.values["seconds"] * 0.01):
             displayLabel = False
         cc.add2plot(ax,[bx,by,bw,bh],displayLabel)
-        
+
         if max_pe>1e5:
             layout = "%s\n%s: (%6d,%6d)" %(layout,cc.name,cc.values["root_pe"],\
                               cc.root_task_sum)
