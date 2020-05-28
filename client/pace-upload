@@ -209,18 +209,18 @@ def gitAuthenticate(token):
 # create new token for the user
 def createtoken():
     #User Input
-        username = raw_input(bcolors.BOLD + 'Github username: '+ bcolors.ENDC)
-        password = getpass.getpass(bcolors.BOLD + 'Github password: '+ bcolors.ENDC)
-        url = urljoin(GITHUB_API, 'authorizations')
-        payload = {}
-        payload['note'] = 'PACE user - ' + str(socket.gethostname()) + '-' + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
-        res = requests.post(
-            url,
-            auth = (username, password),
-            data = json.dumps(payload),
-            )
+    username = raw_input(bcolors.BOLD + 'Github username: '+ bcolors.ENDC)
+    password = getpass.getpass(bcolors.BOLD + 'Github password: '+ bcolors.ENDC)
+    url = urljoin(GITHUB_API, 'authorizations')
+    payload = {}
+    payload['note'] = 'PACE user - ' + str(socket.gethostname()) + '-' + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+    res = requests.post(
+        url,
+        auth = (username, password),
+        data = json.dumps(payload),
+        )
 
-        j = json.loads(res.text)
+    j = json.loads(res.text)
     if res.status_code >= 400:
         msg = j.get('message','UNDEFINED ERROR (no error description from server)')
         print bcolors.FAIL + 'ERROR: %s' % msg + bcolors.ENDC
