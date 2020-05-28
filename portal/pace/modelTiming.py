@@ -51,7 +51,7 @@ def loadConfig(files,appendLocation = None):
     """
     "files": directory path, json file, file object. OR list of any of the former.
     appendLocation: "default", dictionary
-    
+
     This function sets up one or more configuration files for use in describing a GPTL file.
     """
     #A configuration can be used in the short-term, or throughout the time this script is kept imported (e.g for a flask application ;P).
@@ -159,7 +159,7 @@ def detectMtFile(fileObj,configList = parserConfigs):
     #print "DEBUG: GPTL parser config: " + str(targetConfig)
     #print "DEBUG: GPTL thread indexes: " + str(threadIndexes)
     return threadIndexes,targetConfig
-    
+
 def getData(src,configList = parserConfigs):
     #Check if src is a string, otherwise attempt to read from a file object:
     sourceFile=None
@@ -275,7 +275,7 @@ def parseThread(thread,config):
 
 def typeResolver(mtObj):
     """This function is designed to bridge the gap between parsed JSON and mt classes. It shouldn't need to be used often, but if you don't know what your input will be, just use this.
-    
+
     The function returns a dictionary of values that come from either timeNode objects, or json files.
     """
     output = {"name":None,"values":None,"children":None}
