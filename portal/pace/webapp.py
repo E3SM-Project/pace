@@ -719,14 +719,20 @@ def atmosChart(expids):
 @app.route("/xmlviewer/<int:mexpid>/<mname>")
 def xmlViewer(mexpid, mname):
     data = db.engine.execute("select data from xml_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
+    if data is None:
+        return render_template('error.html')
     return render_template("json.html", myjson = data[0])
 
 @app.route("/nmlviewer/<int:mexpid>/<mname>")
 def nmlViewer(mexpid, mname):
     data = db.engine.execute("select data from namelist_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
+    if data is None:
+        return render_template('error.html')
     return render_template("json.html", myjson = data[0])
 
 @app.route("/rcviewer/<int:mexpid>/<mname>")
 def rcViewer(mexpid, mname):
     data = db.engine.execute("select data from rc_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
+    if data is None:
+        return render_template('error.html')
     return render_template("json.html", myjson = data[0])
