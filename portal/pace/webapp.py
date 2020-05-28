@@ -75,154 +75,154 @@ def allowed_file(filename):
 # Store file in server
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
-	if request.method == 'POST':
-		file = request.files['file']
-		zipfilename = str(request.files['filename'])
-		tmpfilename = zipfilename.split('.')[0]
-		if file and allowed_file(file.filename):
-			try:
-				if os.path.isdir(os.path.join(UPLOAD_FOLDER,tmpfilename)):
-					shutil.rmtree(os.path.join(UPLOAD_FOLDER,tmpfilename))
-				if os.path.exists(os.path.join(UPLOAD_FOLDER,zipfilename)):
-					os.remove(os.path.join(UPLOAD_FOLDER,zipfilename))
-			except OSError as e:
-				print ("Error: %s - %s." % (e.filename, e.strerror))
-			filename = secure_filename(file.filename)
-			file.save(os.path.join(UPLOAD_FOLDER, filename))
-			return('complete')
-		else:
-			return ('Error Uploading file, Try again')
-	return render_template('upload.html')
+    if request.method == 'POST':
+        file = request.files['file']
+        zipfilename = str(request.files['filename'])
+        tmpfilename = zipfilename.split('.')[0]
+        if file and allowed_file(file.filename):
+            try:
+                if os.path.isdir(os.path.join(UPLOAD_FOLDER,tmpfilename)):
+                    shutil.rmtree(os.path.join(UPLOAD_FOLDER,tmpfilename))
+                if os.path.exists(os.path.join(UPLOAD_FOLDER,zipfilename)):
+                    os.remove(os.path.join(UPLOAD_FOLDER,zipfilename))
+            except OSError as e:
+                print ("Error: %s - %s." % (e.filename, e.strerror))
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            return('complete')
+        else:
+            return ('Error Uploading file, Try again')
+    return render_template('upload.html')
 
 @app.route('/fileparse', methods=['GET','POST'])
 def fileparse():
-	if request.method == 'POST':
-		filename = request.form['filename']
-		user = request.form['user']
-		return(parse.parseData(filename,user))
+    if request.method == 'POST':
+        filename = request.form['filename']
+        user = request.form['user']
+        return(parse.parseData(filename,user))
 
 @app.route('/downloadlog', methods=['POST'])
 def downloadlog():
-	from flask import send_file
-	if request.method == 'POST':
-		msgfile = request.form['filename']
-		filelink = ('/pace/assets/static/logs/'+str(msgfile))
-		try:
-			matchobj = re.match("^pace-.*\.log$", msgfile)
-			if matchobj: 
-				return send_file(filelink,attachment_filename='message.log')
-			else : 
-				return render_template('error.html')
-		except Exception as e:
-			return str(e)
+    from flask import send_file
+    if request.method == 'POST':
+        msgfile = request.form['filename']
+        filelink = ('/pace/assets/static/logs/'+str(msgfile))
+        try:
+            matchobj = re.match("^pace-.*\.log$", msgfile)
+            if matchobj: 
+                return send_file(filelink,attachment_filename='message.log')
+            else : 
+                return render_template('error.html')
+        except Exception as e:
+            return str(e)
 
 @app.route("/userauth", methods=['GET','POST'])
 def userauth():
-	if request.method == 'POST':
-		username = request.form['user']
-		searchuser = Authusers.query.filter_by(user=username).first()
-		db.session.close()
-		if searchuser is None:
-			return ("invaliduser")
-		else:
-			return ("validuser")
+    if request.method == 'POST':
+        username = request.form['user']
+        searchuser = Authusers.query.filter_by(user=username).first()
+        db.session.close()
+        if searchuser is None:
+            return ("invaliduser")
+        else:
+            return ("validuser")
 
 @app.route('/login')
 def login():
 
-	# Generte and store a state in session before calling authorize_url
-	if 'oauth_state' not in session:
-		session['oauth_state'] = binascii.hexlify(os.urandom(24))
+    # Generte and store a state in session before calling authorize_url
+    if 'oauth_state' not in session:
+        session['oauth_state'] = binascii.hexlify(os.urandom(24))
 
-	# For unauthorized users, show link to sign in
-	authorize_url = github.get_authorize_url(scope='', state=session['oauth_state'])
-	return redirect(authorize_url)
+    # For unauthorized users, show link to sign in
+    authorize_url = github.get_authorize_url(scope='', state=session['oauth_state'])
+    return redirect(authorize_url)
 
 
 @app.route('/callback')
 def callback():
-	#OAuth callback from GitHub
-	code = request.args['code']
-	state = request.args['state'].encode('utf-8')
-	# Validate state param to prevent CSRF
-	try:
-		if state != session['oauth_state']:
-			return render_template('error.html')
-	except:
-		return render_template('error.html')
-	# Request access token
-	auth_session = github.get_auth_session(data={'code': code})
-	session['access_token'] = auth_session.access_token
+    #OAuth callback from GitHub
+    code = request.args['code']
+    state = request.args['state'].encode('utf-8')
+    # Validate state param to prevent CSRF
+    try:
+        if state != session['oauth_state']:
+            return render_template('error.html')
+    except:
+        return render_template('error.html')
+    # Request access token
+    auth_session = github.get_auth_session(data={'code': code})
+    session['access_token'] = auth_session.access_token
 
-	# Call API to retrieve username.
-	# `auth_session` is a wrapper object of requests with oauth access token
-	r = auth_session.get('/user')
-	session['username'] = r.json()['login']
-	searchuser = Authusers.query.filter_by(user=session['username']).first()
-	db.session.close()
-	if searchuser is None:
-		session['login']=False
-		session.pop('username')
-		session.pop('access_token')
-		return render_template('notauth.html')
-	else:
-		session['login']=True
-		try:
-			redirectlink='/note/'+str(session['expid'])
-		except KeyError:
-			redirectlink='/'
-		return redirect(redirectlink)
+    # Call API to retrieve username.
+    # `auth_session` is a wrapper object of requests with oauth access token
+    r = auth_session.get('/user')
+    session['username'] = r.json()['login']
+    searchuser = Authusers.query.filter_by(user=session['username']).first()
+    db.session.close()
+    if searchuser is None:
+        session['login']=False
+        session.pop('username')
+        session.pop('access_token')
+        return render_template('notauth.html')
+    else:
+        session['login']=True
+        try:
+            redirectlink='/note/'+str(session['expid'])
+        except KeyError:
+            redirectlink='/'
+        return redirect(redirectlink)
 
 @app.route('/islogin')
 def islogin():
-	try:
-		islogin=session['login']
-		username = session['username']
-		return (username)
-	except:
-		return ('')
+    try:
+        islogin=session['login']
+        username = session['username']
+        return (username)
+    except:
+        return ('')
 
 @app.route('/logout')
 def logout():
-	try:
-		# Delete session data
-		session.pop('username')
-		session.pop('access_token')
-		session.pop('login')
-		session.pop('oauth_state')
-		session.pop('expid')
-	except KeyError:
-		return redirect('/')
-	return redirect('/')
+    try:
+        # Delete session data
+        session.pop('username')
+        session.pop('access_token')
+        session.pop('login')
+        session.pop('oauth_state')
+        session.pop('expid')
+    except KeyError:
+        return redirect('/')
+    return redirect('/')
 
 # @app.route("/uploadlogin", methods=['GET','POST'])
 # def uploadlogin():
-# 	if request.method == 'POST':
-# 		admin = request.form['name']
-# 		admin_pass = request.form['pass']
-# 		a=admin+admin_pass
-# 		z=int(len(a))
-# 		b=''
-# 		for i in range(z):
-# 			b = b + chr(ord(a[i]) + 2)
-# 		c=b+a
-# 		y=int(len(c))
-# 		d=''
-# 		for i in range(y):
-# 			d = d + chr(ord(c[i])+1)
-# 		f=open('/pace/dev1/portal/pace/pass.txt','r')
-# 		for line in f:
-# 			admin = line.split(None,1)[0]
-# 			print(admin)
-# 			if admin==d:
-# 				return("ok")
+#     if request.method == 'POST':
+#         admin = request.form['name']
+#         admin_pass = request.form['pass']
+#         a=admin+admin_pass
+#         z=int(len(a))
+#         b=''
+#         for i in range(z):
+#             b = b + chr(ord(a[i]) + 2)
+#         c=b+a
+#         y=int(len(c))
+#         d=''
+#         for i in range(y):
+#             d = d + chr(ord(c[i])+1)
+#         f=open('/pace/dev1/portal/pace/pass.txt','r')
+#         for line in f:
+#             admin = line.split(None,1)[0]
+#             print(admin)
+#             if admin==d:
+#                 return("ok")
 # 
-# 		return("not")
+#         return("not")
 
 # Error handler
 @app.errorhandler(404)
 def page_not_found(error):
-	return render_template('error.html'), 404
+    return render_template('error.html'), 404
 
 @app.route("/searchTips/")
 def searchTips():
@@ -302,98 +302,98 @@ def flameGraph(expid,rank):
 
 @app.route("/exp-details/<int:mexpid>")
 def expDetails(mexpid):
-	myexp = None
-	myxmls = None
-	mynmls = None
-	myrcs = None
-	try:
-		myexp = db.engine.execute("select * from e3smexp where expid= "+ str(mexpid) ).fetchall()[0]
-		myxmls = db.engine.execute("select name from xml_inputs where expid= "+ str(mexpid) ).fetchall()
-		mynmls = db.engine.execute("select name from namelist_inputs where expid= "+ str(mexpid) ).fetchall()
-		myrcs = db.engine.execute("select name from rc_inputs where expid= "+ str(mexpid) ).fetchall()
-	except IndexError:
-		return render_template('error.html')
-	mypelayout = db.engine.execute("select * from pelayout where expid= "+ str(mexpid) ).fetchall()
-	myruntime = db.engine.execute("select * from runtime where expid= "+ str(mexpid) ).fetchall()
-	ranks = db.engine.execute("select rank from model_timing where rank!= 'stats' and expid= "+ str(mexpid) + " order by cast(rank as int)" ).fetchall()
-	colorDict = {}
-	for i in range(len(runtimeSvg.default_args['comps'])):
-		colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
-	try:
-		noteexp = db.engine.execute("select * from expnotes where expid= "+ str(mexpid) ).fetchall()[0]
-		note = noteexp.note
-	except IndexError:
-		note=""
-	return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
+    myexp = None
+    myxmls = None
+    mynmls = None
+    myrcs = None
+    try:
+        myexp = db.engine.execute("select * from e3smexp where expid= "+ str(mexpid) ).fetchall()[0]
+        myxmls = db.engine.execute("select name from xml_inputs where expid= "+ str(mexpid) ).fetchall()
+        mynmls = db.engine.execute("select name from namelist_inputs where expid= "+ str(mexpid) ).fetchall()
+        myrcs = db.engine.execute("select name from rc_inputs where expid= "+ str(mexpid) ).fetchall()
+    except IndexError:
+        return render_template('error.html')
+    mypelayout = db.engine.execute("select * from pelayout where expid= "+ str(mexpid) ).fetchall()
+    myruntime = db.engine.execute("select * from runtime where expid= "+ str(mexpid) ).fetchall()
+    ranks = db.engine.execute("select rank from model_timing where rank!= 'stats' and expid= "+ str(mexpid) + " order by cast(rank as int)" ).fetchall()
+    colorDict = {}
+    for i in range(len(runtimeSvg.default_args['comps'])):
+        colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
+    try:
+        noteexp = db.engine.execute("select * from expnotes where expid= "+ str(mexpid) ).fetchall()[0]
+        note = noteexp.note
+    except IndexError:
+        note=""
+    return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
             ranks = ranks,chartColors = json.dumps(colorDict),note=note, \
             xmls = myxmls, nmls = mynmls, rcs = myrcs \
             )
 
 @app.route("/useralias/<user>")
 def useralias(user):
-	try:
-		validuser=db.engine.execute("select * from authusers where user='"+str(user)+"\'").fetchall()[0]
-	except IndexError:
-		return render_template('error.html')
-	try:
-		alias=db.engine.execute("select alias from useralias where user='"+str(user)+"\'").fetchall()
-	except IndexError:
-		alias=""	
-	return render_template('useralias.html',alias = alias, user = user)
+    try:
+        validuser=db.engine.execute("select * from authusers where user='"+str(user)+"\'").fetchall()[0]
+    except IndexError:
+        return render_template('error.html')
+    try:
+        alias=db.engine.execute("select alias from useralias where user='"+str(user)+"\'").fetchall()
+    except IndexError:
+        alias=""    
+    return render_template('useralias.html',alias = alias, user = user)
 
 @app.route("/useraliasdelete", methods=['POST'])
 def useraliasdelete():
-	if request.method=='POST':
-		user = request.form['user']
-		alias = request.form['delete']
-		try:			
-			db.engine.execute("delete from useralias where alias='"+alias+"\'")
-		except:
-			return render_template('error.html')
-		return redirect('/useralias/'+str(user))
-	if request.method=='GET':
-		return render_template('error.html')
+    if request.method=='POST':
+        user = request.form['user']
+        alias = request.form['delete']
+        try:            
+            db.engine.execute("delete from useralias where alias='"+alias+"\'")
+        except:
+            return render_template('error.html')
+        return redirect('/useralias/'+str(user))
+    if request.method=='GET':
+        return render_template('error.html')
 @app.route("/useraliasadd", methods=['POST','GET'])
 def useraliasadd():
-	if request.method=='POST':
-		user = request.form['user']
-		alias = request.form['alias']
-		try:
-			db.engine.execute("insert into useralias(user,alias) values ('"+user+"\',\'"+alias+"\')")
-		except:
-			return render_template('error.html')
-		return redirect('/useralias/'+str(user))
-	if request.method=='GET':
-		return render_template('error.html')
+    if request.method=='POST':
+        user = request.form['user']
+        alias = request.form['alias']
+        try:
+            db.engine.execute("insert into useralias(user,alias) values ('"+user+"\',\'"+alias+"\')")
+        except:
+            return render_template('error.html')
+        return redirect('/useralias/'+str(user))
+    if request.method=='GET':
+        return render_template('error.html')
 @app.route("/note/<expID>", methods=["GET","POST"])
 def note(expID):
-	session['expid']=expID
-	try:
-		userlogin = session['login']
-	except KeyError:
-		return redirect('/login')
-	if userlogin == True:
-		if request.method == "GET":
-			try:
-				myexpid = db.engine.execute("select * from e3smexp where expid= "+expID).fetchall()[0]
-			except IndexError:
-				return render_template('error.html')
-			try:
-				myexp = db.engine.execute("select * from expnotes where expid= "+expID).fetchall()[0]
-				note = myexp.note
-			except IndexError:
-				note=""
-			return render_template('note.html', note = note, expid = expID)
-		elif request.method == "POST":
-			note = request.form['note']		
-			try:
-				myexp = db.engine.execute("select * from expnotes where expid= "+expID).fetchall()[0]
-				db.engine.execute("update expnotes set note =\'"+str(note)+"\' where expid = " +expID)
-			except IndexError:
-				db.engine.execute("insert into expnotes(expid,note) values ("+expID+",\'"+str(note)+"\')")
-			return redirect('/exp-details/'+str(expID))
-	else:
-		return redirect('/login')
+    session['expid']=expID
+    try:
+        userlogin = session['login']
+    except KeyError:
+        return redirect('/login')
+    if userlogin == True:
+        if request.method == "GET":
+            try:
+                myexpid = db.engine.execute("select * from e3smexp where expid= "+expID).fetchall()[0]
+            except IndexError:
+                return render_template('error.html')
+            try:
+                myexp = db.engine.execute("select * from expnotes where expid= "+expID).fetchall()[0]
+                note = myexp.note
+            except IndexError:
+                note=""
+            return render_template('note.html', note = note, expid = expID)
+        elif request.method == "POST":
+            note = request.form['note']        
+            try:
+                myexp = db.engine.execute("select * from expnotes where expid= "+expID).fetchall()[0]
+                db.engine.execute("update expnotes set note =\'"+str(note)+"\' where expid = " +expID)
+            except IndexError:
+                db.engine.execute("insert into expnotes(expid,note) values ("+expID+",\'"+str(note)+"\')")
+            return redirect('/exp-details/'+str(expID))
+    else:
+        return redirect('/login')
 
 #Depcrecated version of the search page
 """@app.route("/exps")
@@ -411,7 +411,7 @@ def expsAjax(pageNum):
     myexps = db.session.query(Timingprofile).order_by(Timingprofile.expid.desc())[pageNum * EXPS_PER_RQ : (pageNum + 1) * EXPS_PER_RQ]
     pruned_data = {"numRows": numexps, "data": []}
     for exp in myexps:
-	# var row = [o.expid,o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.grid];
+    # var row = [o.expid,o.user,o.machine,o.total_pes_active,o.run_length,o.model_throughput,o.mpi_tasks_per_node,o.compset,o.grid];
         pruned_data["data"].append({"expid": exp.expid, "user": exp.user, "machine": exp.machine, "total_pes_active": exp.total_pes_active, "run_length": exp.run_length, "model_throughput": exp.model_throughput, "mpi_tasks_per_node": str(exp.mpi_tasks_per_node), "compset": exp.compset, "grid": exp.grid})
     return make_response(json.dumps(pruned_data))"""
 
