@@ -109,9 +109,9 @@ def downloadlog():
         filelink = ('/pace/assets/static/logs/'+str(msgfile))
         try:
             matchobj = re.match("^pace-.*\.log$", msgfile)
-            if matchobj: 
+            if matchobj:
                 return send_file(filelink,attachment_filename='message.log')
-            else : 
+            else :
                 return render_template('error.html')
         except Exception as e:
             return str(e)
@@ -216,7 +216,7 @@ def logout():
 #             print(admin)
 #             if admin==d:
 #                 return("ok")
-# 
+#
 #         return("not")
 
 # Error handler
@@ -338,7 +338,7 @@ def useralias(user):
     try:
         alias=db.engine.execute("select alias from useralias where user='"+str(user)+"\'").fetchall()
     except IndexError:
-        alias=""    
+        alias=""
     return render_template('useralias.html',alias = alias, user = user)
 
 @app.route("/useraliasdelete", methods=['POST'])
@@ -346,7 +346,7 @@ def useraliasdelete():
     if request.method=='POST':
         user = request.form['user']
         alias = request.form['delete']
-        try:            
+        try:
             db.engine.execute("delete from useralias where alias='"+alias+"\'")
         except:
             return render_template('error.html')
@@ -385,7 +385,7 @@ def note(expID):
                 note=""
             return render_template('note.html', note = note, expid = expID)
         elif request.method == "POST":
-            note = request.form['note']        
+            note = request.form['note']
             try:
                 myexp = db.engine.execute("select * from expnotes where expid= "+expID).fetchall()[0]
                 db.engine.execute("update expnotes set note =\'"+str(note)+"\' where expid = " +expID)
