@@ -55,7 +55,7 @@ def parseData(zipfilename,uploaduser):
 	log_file = open(logfile,'w')
 	sys.stdout = log_file
 	print ("* * * * * * * * * * * * * * PACE Report * * * * * * * * * * * * * *")
-	try:	
+	try:
 		fpath=UPLOAD_FOLDER
 		# Extract aggregated zip files
 		zip_ref=zipfile.ZipFile(os.path.join(fpath,zipfilename),'r')
@@ -101,18 +101,6 @@ def parseData(zipfilename,uploaduser):
 						readmefile.append(os.path.join(path, name))
 					if name.startswith("GIT_DESCRIBE."):
 						gitdescribefile.append(os.path.join(path, name))
-	except IOError as e:
-		print ('[ERROR]: %s' % e.strerror)
-		removeFolder(UPLOAD_FOLDER,zipfilename)
-		sys.stdout = old_stdout
-		log_file.close()
-		return ('ERROR/'+str(logfilename))
-	except OSError as e:
-		print ('[ERROR]: %s' % e.strerror)
-		removeFolder(UPLOAD_FOLDER,zipfilename)
-		sys.stdout = old_stdout
-		log_file.close()
-		return ('ERROR/'+str(logfilename))
 	# boolean list
 	isSuccess=[]
 	# parse and store timing profile file in a database
@@ -128,6 +116,24 @@ def parseData(zipfilename,uploaduser):
 	removeFolder(UPLOAD_FOLDER,zipfilename)
 	sys.stdout = old_stdout
 	log_file.close()
+	except IOError as e:
+		print ('[ERROR]: %s' % e.strerror)
+		removeFolder(UPLOAD_FOLDER,zipfilename)
+		sys.stdout = old_stdout
+		log_file.close()
+		return ('ERROR/'+str(logfilename))
+	except OSError as e:
+		print ('[ERROR]: %s' % e.strerror)
+		removeFolder(UPLOAD_FOLDER,zipfilename)
+		sys.stdout = old_stdout
+		log_file.close()
+		return ('ERROR/'+str(logfilename))
+	except :
+		print ('[ERROR]: Other error during upload')
+		removeFolder(UPLOAD_FOLDER,zipfilename)
+		sys.stdout = old_stdout
+		log_file.close()
+		return ('ERROR/'+str(logfilename))
 	# check parse status, returns status with report
 	if False in isSuccess:
 		return('fail/'+str(logfilename))
@@ -272,23 +278,25 @@ def parseModelVersion(gitfile):
 	return version
 
 # This function provides pathway to files for their respective parser function and finally stores in database
-def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath, uploaduser):
-
-	# returns expid if success else returns False
-	forexpid = parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser)
-	if forexpid == False:
+def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser):
+	# returns True if successful or if duplicate exp already in database
+	(successFlag, duplicateFlag, currExpObj) = parseE3SMtiming(filename,readmefile,gitfile,db,fpath,uploaduser)
+	# If this is a duplicate experiment, return True as we won't need to parse rest of this exp files
+	if duplicateFlag == True:
+		return True
+	if successFlag == False:
 		return False
 	print ('* Parsing: '+ convertPathtofile(timingfile))
 
 	# insert modelTiming
-	isSuccess = insertTiming(timingfile,forexpid.expid,db)
+	isSuccess = insertTiming(timingfile,currExpObj.expid,db)
 	if isSuccess == False:
 		return False	
 	print ('    -Complete')
 
 	# store raw data (In server and Minio)
 	print ('* Storing Experiment in file server')
-	isSuccess = zipFolder(forexpid.lid,forexpid.user,forexpid.expid,fpath)
+	isSuccess = zipFolder(currExpObj.lid,currExpObj.user,currExpObj.expid,fpath)
 	if isSuccess == False:
 		return False	
 	print ('    -Complete')
@@ -302,26 +310,31 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath, uploaduser
 		error = str(e.__dict__['orig'])
 		print ('    SQL ERROR: %s' %e)
 		db.session.rollback()
-		return (False) # skips this experiment
+		return False # skips this experiment
 	except:
 		db.session.rollback()
-		return (False) # skips this experiment
+		return False # skips this experiment
 
 	# write basic summary in report
 	print (' ')
 	print ('----- Experiment Summary -----')
-	print ('- Experiment ID (ExpID): '+str(forexpid.expid))
-	print ('- User: '+str(forexpid.user))
-	print ('- Machine: '+str(forexpid.machine))
-	print ('- Web Link: '+str('https://pace.ornl.gov/exp-details/')+str(forexpid.expid))
+	print ('- Experiment ID (ExpID): '+str(currExpObj.expid))
+	print ('- User: '+str(currExpObj.user))
+	print ('- Machine: '+str(currExpObj.machine))
+	print ('- Web Link: '+str('https://pace.ornl.gov/exp-details/')+str(currExpObj.expid))
 	print ('------------------------------')
 	print (' ')
 	# close session	
 	db.session.close()
-	return (True) 
+	return True
 
-# parse e3sm files
+# Parse e3sm files
+# Returns tuple (successFlag, duplicateFlag, currExpObj)
 def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
+    # Flags are set to False at beginning, success is marked True only at the end
+	successFlag = False
+	duplicateFlag = False
+	currExpObj = None
 	# open file
 	if filename.endswith('.gz'):
 		parseFile=gzip.open(filename,'rb')
@@ -334,8 +347,6 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 	componentTable=[]
 	# list to store runtime table
 	runTimeTable=[]
-	# boolean flag
-	duplicateFlag=False
 	# tmp var for parsing purpose
 	word=''
 	print ('* Parsing: '+convertPathtofile(filename))
@@ -473,20 +484,22 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		if duplicateFlag is True:
 			print ('    -[Warning]: Duplicate Experiment, ' + convertPathtofile(filename))
 			db.session.close()
-			return (False) # This skips this experiment and moves to next
+			# Set success to True as the experiment already exists in database
+			successFlag = True
+			return (successFlag, duplicateFlag, currExpObj) # This skips this experiment and moves to next
 	
 	except IndexError as e:
 		print ('    ERROR: %s' %e)
 		parseFile.close()
-		return (False) # skips this experiment
+		return (successFlag, duplicateFlag, currExpObj) # skips this experiment
 	except KeyError as e:
 		print ('    ERROR: Missing data %s' %e)
 		parseFile.close()
-		return (False) # skips this experiment
+		return (successFlag, duplicateFlag, currExpObj) # skips this experiment
 	except :
 		print ('    ERROR: Something is wrong with %s' %convertPathtofile(filename))
 		parseFile.close()
-		return (False) # skips this experiment	
+		return (successFlag, duplicateFlag, currExpObj) # skips this experiment	
 
 	parseFile.close()
 	
@@ -553,7 +566,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		print ('* Parsing: '+convertPathtofile(readmefile))
 		readmeparse = parseReadme(readmefile)
 		if readmeparse == False:
-			return (False) #this skips the experiment
+			return (successFlag, duplicateFlag, currExpObj) #this skips the experiment
 		print ('    -Complete')
 
 		# parse GIT_DESCRIBE file
@@ -591,12 +604,12 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 						upload_by = uploaduser)
 		db.session.add(new_e3sm_experiment)
 		# table has to have a same experiment id
-		forexpid = E3SMexp.query.order_by(E3SMexp.expid.desc()).first()
+		currExpObj = E3SMexp.query.order_by(E3SMexp.expid.desc()).first()
 		# Following direct sql query returns already committed data in database and not the current exp being added
 		# myexpid = db.engine.execute("select expid from e3smexp order by e3smexp.expid desc limit 1").fetchall() 
-		# print "New expid: " + str(forexpid.expid)
+		# print "New expid: " + str(currExpObj.expid)
 
-		new_experiment = Exp(expid=forexpid.expid,
+		new_experiment = Exp(expid=currExpObj.expid,
 						user=timingProfileInfo['user'],
 						machine=timingProfileInfo['machine'],
 						exp_date=changeDateTime(timingProfileInfo['curr']),
@@ -609,7 +622,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		#insert pelayout
 		i=0
 		while i < len(componentTable):
-			new_pelayout = Pelayout(expid=forexpid.expid,
+			new_pelayout = Pelayout(expid=currExpObj.expid,
 						component=componentTable[i],
 						comp_pes=componentTable[i+1],
 						root_pe=componentTable[i+2],
@@ -623,7 +636,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		#insert run time
 		i=0
 		while i < len(runTimeTable):
-			new_runtime = Runtime(expid=forexpid.expid,
+			new_runtime = Runtime(expid=currExpObj.expid,
 						component=runTimeTable[i],
 						seconds=runTimeTable[i+1],
 						model_day=runTimeTable[i+2],
@@ -631,30 +644,32 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 			db.session.add(new_runtime)
 			i=i+4
 		# print "added runtime"
-		return (forexpid)
+        # Set return flag to True once all processing is complete.
+		successFlag = True
+		return (successFlag, duplicateFlag, myexpid)
 	except IndexError as e:
 		print ('    ERROR: %s' %e)
 		# Sarat: Rollback added to avoid auto-incrementing expid for failed uploads
 		# Check if rollback doesn't cause issues with skipping incomplete exps
 		db.session.rollback()
 		parseFile.close()
-		return (False) # skips this experiment
+		return (successFlag, duplicateFlag, myexpid) # skips this experiment
 	except KeyError as e:
 		print ('    ERROR: Missing data %s' %e)
 		db.session.rollback()
 		parseFile.close()
-		return (False) # skips this experiment
+		return (successFlag, duplicateFlag, myexpid) # skips this experiment
 	except SQLAlchemyError as e:
 		error = str(e.__dict__['orig'])
 		print ('    SQL ERROR: %s' %e)
 		db.session.rollback()
 		parseFile.close()
-		return (False) # skips this experiment
+		return (successFlag, duplicateFlag, myexpid) # skips this experiment
 	except :
 		print ('    ERROR: something is wrong with %s' %convertPathtofile(filename))
 		db.session.rollback()
 		parseFile.close()
-		return (False) # skips this experiment	
+		return (successFlag, duplicateFlag, myexpid) # skips this experiment
 
 # removes temporary folders in server
 def removeFolder(removeroot,filename):
