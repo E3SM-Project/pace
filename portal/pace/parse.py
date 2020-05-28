@@ -138,7 +138,7 @@ def parseData(zipfilename,uploaduser):
         log_file.close()
         return ('ERROR/'+str(logfilename))
     except Exception as e:
-        print ('[ERROR]: %s' % e.strerror)
+        print ('[ERROR]: %s' %e)
         print ('[ERROR]: Other error during upload')
         removeFolder(UPLOAD_FOLDER,zipfilename)
         sys.stdout = old_stdout
@@ -262,7 +262,7 @@ def parseReadme(readmefilename):
         fileIn.close()
         return False
     except Exception as e:
-        print ('[ERROR]: %s' % e.strerror)
+        print ('[ERROR]: %s' %e)
         print ('    ERROR: Something is wrong with %s' %convertPathtofile(readmefilename))
         fileIn.close()
         return False
@@ -320,7 +320,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
         db.session.rollback()
         return False # skips this experiment
     except Exception as e:
-        print ('[ERROR]: %s' % e.strerror)
+        print ('[ERROR]: %s' %e)
         db.session.rollback()
         return False # skips this experiment
 
@@ -773,7 +773,7 @@ def insertTiming(mtFile,expID,db):
         db.session.rollback()
         return (False) # skips this experiment
     except Exception as e:
-        print ('[ERROR]: %s' % e.strerror)
+        print ('[ERROR]: %s' % e)
         print ('    ERROR: Something is wrong with %s' %convertPathtofile(mtFile))
         db.session.rollback()
         sourceFile.close()
