@@ -162,7 +162,7 @@ def isValidE3SMexp(expfile,tmpfile):
         print (" ")
         return(True)
     else:
-        print bcolors.FAIL + ('ERROR: Not a valid E3SM experiment') + bcolors.ENDC
+        print bcolors.WARNING + ('WARNING: Not a valid E3SM experiment') + bcolors.ENDC
         return(False)
 
 # validate Fusion experiment
@@ -300,8 +300,8 @@ def main():
         else:
             print(bcolors.FAIL + 'ERROR: %s is empty' %expfile + bcolors.ENDC)
             exit()
-    except:
-        print(bcolors.FAIL + 'ERROR: Something unexpected happened with %s' %expfile + bcolors.ENDC)
+    except Exception as e:
+        print(bcolors.WARNING + 'Warning: unexpected exception %s' %e + bcolors.ENDC)
         exit()
 
 if __name__ == "__main__":
