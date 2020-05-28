@@ -79,10 +79,10 @@ def parseData(zipfilename,uploaduser):
 		dic1=[]
 		tmpfilename = zipfilename.split('.')[0]
 		for i in os.listdir(fpath):
-			if i == tmpfilename:	
+			if i == tmpfilename:
 				dic1.append(i)
 
-		# "e3sm_timing." file list		
+		# "e3sm_timing." file list
 		allfile=[]
 		# "timing." file list
 		timingfile=[]
@@ -90,14 +90,14 @@ def parseData(zipfilename,uploaduser):
 		readmefile=[]
 		# "GIT_DESCRIBE." file list
 		gitdescribefile=[]
-		# go through all directories and grab certain files for parsing		
+		# go through all directories and grab certain files for parsing
 		for i in range(len(dic1)):
 			root=os.path.join(fpath,dic1[i])
 			for path, subdirs, files in os.walk(root):
 				for name in files:
 					if name.startswith("timing."):
 						timingfile.append(os.path.join(path, name))
-					if name.startswith("e3sm_timing."):		
+					if name.startswith("e3sm_timing."):
 						allfile.append(os.path.join(path, name))
 					if name.startswith("README.case."):
 						readmefile.append(os.path.join(path, name))
@@ -227,7 +227,7 @@ def parseReadme(readmefilename):
 	resultElement = {}
 	commandLine = None
 	flag=False
-	try:	
+	try:
 		for commandLine in fileIn:
 			word=commandLine.split(" ")
 			for element in word:
@@ -246,7 +246,7 @@ def parseReadme(readmefilename):
 						resultElement["date"] = commandLine.split(": ",1)[0].strip(":")
 					break
 			# job done after finding elements res, compset
-			if 'res' and 'compset' in resultElement.keys():		
+			if 'res' and 'compset' in resultElement.keys():
 				break
 		# this case only runs if element 'res','compset' exists else throws keyError
 		if resultElement['res'] is None:
@@ -259,14 +259,14 @@ def parseReadme(readmefilename):
 		return False
 	except IndexError as e:
 		print ('[ERROR]: %s in file %s' %(e,convertPathtofile(readmefilename)))
-		fileIn.close()		
+		fileIn.close()
 		return False
 	except Exception as e:
 		print ('[ERROR]: %s' % e.strerror)
 		print ('    ERROR: Something is wrong with %s' %convertPathtofile(readmefilename))
 		fileIn.close()
 		return False
-	fileIn.close()	
+	fileIn.close()
 	return resultElement
 
 # parser for GIT_DESCRIBE file
@@ -299,19 +299,19 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
 	# insert modelTiming
 	isSuccess = insertTiming(timingfile,currExpObj.expid,db)
 	if isSuccess == False:
-		return False	
+		return False
 	print ('    -Complete')
 
 	# store raw data (In server and Minio)
 	print ('* Storing Experiment in file server')
 	isSuccess = zipFolder(currExpObj.lid,currExpObj.user,currExpObj.expid,fpath)
 	if isSuccess == False:
-		return False	
+		return False
 	print ('    -Complete')
 
 	# try commit if not, rollback
-	print ('* Storing Experiment Data in Database') 
-	try:	
+	print ('* Storing Experiment Data in Database')
+	try:
 		db.session.commit()
 		print ('    -Complete')
 	except SQLAlchemyError as e:
@@ -333,7 +333,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
 	print ('- Web Link: '+str('https://pace.ornl.gov/exp-details/')+str(currExpObj.expid))
 	print ('------------------------------')
 	print (' ')
-	# close session	
+	# close session
 	db.session.close()
 	return True
 
@@ -350,7 +350,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 	else:
 		parseFile=open(filename,'rb')
 
-	# dictionary to store timingprofile 	
+	# dictionary to store timingprofile
 	timingProfileInfo={}
 	# list to store component table
 	componentTable=[]
@@ -366,7 +366,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 			# print str(count) + line
 			if line!='\n':
 				# find values for given keys
-				if len(timingProfileInfo)<12:		
+				if len(timingProfileInfo)<12:
 					word=line.split(':', 2)
 					# if 'Case' in word[0]:
 					# You can't use if 'Case' in word[0] as that would also match caseroot
@@ -442,7 +442,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 					# elif word[0]=='run_length':
 					# 	newWord=word[3].split(" ")
 					# 	timingProfileInfo['run_length']=word[2]
-				
+
 				flagrun=False
 				flaginit=False
 				flagfinal=False
@@ -488,7 +488,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 				elif len(timingProfileInfo)>=20:
 					break
 
-		# check if this is duplicate experiment 
+		# check if this is duplicate experiment
 		(duplicateFlag, existingExpid) = checkDuplicateExp(timingProfileInfo['user'],timingProfileInfo['machine'],timingProfileInfo['curr'],timingProfileInfo['case'])
 		if duplicateFlag is True:
 			print ('    -[NOTE]: Duplicate of Experiment : ' + str(existingExpid) )
@@ -496,7 +496,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 			# Set success to True as the experiment already exists in database
 			successFlag = True
 			return (successFlag, duplicateFlag, currExpObj) # This skips this experiment and moves to next
-	
+
 	except IndexError as e:
 		print ('    ERROR: %s' %e)
 		parseFile.close()
@@ -509,10 +509,10 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		print ('    ERROR: %s' %e)
 		print ('    ERROR: Something is wrong with %s' %convertPathtofile(filename))
 		parseFile.close()
-		return (successFlag, duplicateFlag, currExpObj) # skips this experiment	
+		return (successFlag, duplicateFlag, currExpObj) # skips this experiment
 
 	parseFile.close()
-	
+
 	# open file again to parse component and runtime tables
 	try:
 		if filename.endswith('.gz'):
@@ -534,7 +534,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 					componentTableSuccess = True
 				# parse runtime table and store in a list
 				elif firstWord == 'TOT':
-					for j in range(11):	
+					for j in range(11):
 						component=lines[i+j].split()
 						if component[1]=='Run':
 							runTimeTable.append(component[0])
@@ -555,7 +555,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		# parse component table
 		resultlist=tableParse(tablelist)
 		parseFile.close()
-		
+
 		# store component table values in a list
 		for i in range(len(tablelist)):
 			tmpthread1=resultlist[i]['component']
@@ -569,7 +569,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 			componentTable.append(change[1])
 			componentTable.append(resultlist[i]['instances'])
 			componentTable.append(resultlist[i]['stride'])
-	
+
 		print ('    -Complete')
 
 		# parse README.docs file
@@ -586,7 +586,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 
 		# print "Debug info:"
 		# print timingProfileInfo
-		# insert timingprofile 
+		# insert timingprofile
 		new_e3sm_experiment = E3SMexp(case=timingProfileInfo['case'],
 						lid=timingProfileInfo['lid'],
 						machine=timingProfileInfo['machine'],
@@ -616,7 +616,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		# table has to have a same experiment id
 		currExpObj = E3SMexp.query.order_by(E3SMexp.expid.desc()).first()
 		# Following direct sql query returns already committed data in database and not the current exp being added
-		# myexpid = db.engine.execute("select expid from e3smexp order by e3smexp.expid desc limit 1").fetchall() 
+		# myexpid = db.engine.execute("select expid from e3smexp order by e3smexp.expid desc limit 1").fetchall()
 		# print "New expid: " + str(currExpObj.expid)
 
 		new_experiment = Exp(expid=currExpObj.expid,
@@ -640,7 +640,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 						threads=componentTable[i+4],
 						instances=componentTable[i+5],
 						stride=componentTable[i+6])
-			db.session.add(new_pelayout)	
+			db.session.add(new_pelayout)
 			i=i+7
 
 		#insert run time
@@ -689,13 +689,13 @@ def removeFolder(removeroot,filename):
 		os.remove(os.path.join(removeroot,filename))
 	except OSError as e:
 		print ("    Error: %s - %s." % (e.filename, e.strerror))
-	
+
 	return
 
 # aggregate files and store in file server
 def zipFolder(exptag,exptaguser,exptagid,fpath):
-	try:	
-		expname=0	
+	try:
+		expname=0
 		root=fpath
 		for path, subdirs, files in os.walk(root):
 			for name in subdirs:
@@ -708,12 +708,12 @@ def zipFolder(exptag,exptaguser,exptagid,fpath):
 						return False
 	except IOError as e:
 		print ('    ERROR: %s' %e)
-		return False	
+		return False
 	return True
 
 # function to store files into file server
 def uploadMinio(EXP_DIR,expname):
-	# get minio credentials 
+	# get minio credentials
 	myAkey,mySkey, myMiniourl = getMiniokey()
 	# Initialize minioClient with an endpoint and access/secret keys.
 	minioSecure=True
@@ -724,7 +724,7 @@ def uploadMinio(EXP_DIR,expname):
 		if not minioClient.bucket_exists("e3sm"):
 			minioClient.make_bucket("e3sm")
 		minioClient.fput_object('e3sm', expname+'.zip', os.path.join(EXP_DIR,expname)+'.zip')
-	except ResponseError as err:     
+	except ResponseError as err:
 		print('    ERROR: Failed to upload to file server %s' %err)
 		return (False)
 	return True
@@ -777,7 +777,7 @@ def insertTiming(mtFile,expID,db):
 		print ('    ERROR: Something is wrong with %s' %convertPathtofile(mtFile))
 		db.session.rollback()
 		sourceFile.close()
-		return (False) # skips this experiment	
+		return (False) # skips this experiment
 	return
 
 if __name__ == "__main__":
