@@ -50,10 +50,12 @@ PACE_LOG_DIR,EXP_DIR,UPLOAD_FOLDER = getDirectories()
 def parseData(zipfilename,uploaduser):
 	# open file to write pace report
 	old_stdout = sys.stdout
+	old_stderr = sys.stderr
 	logfilename = 'pace-'+str(uploaduser)+'-'+str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))+'.log'
-	logfile = PACE_LOG_DIR + logfilename
-	log_file = open(logfile,'w')
+	logfilepath = PACE_LOG_DIR + logfilename
+	log_file = open(logfilepath,'w')
 	sys.stdout = log_file
+	sys.stderr = log_file
 	print ("* * * * * * * * * * * * * * PACE Report * * * * * * * * * * * * * *")
 	try:
 		fpath=UPLOAD_FOLDER
@@ -101,44 +103,48 @@ def parseData(zipfilename,uploaduser):
 						readmefile.append(os.path.join(path, name))
 					if name.startswith("GIT_DESCRIBE."):
 						gitdescribefile.append(os.path.join(path, name))
-	# boolean list
-	isSuccess=[]
-	# parse and store timing profile file in a database
-	for i in range(len(allfile)):
-		print (' ')
-		print ('**************************************************')
-		# insert experiments for given files
-		isSuccess.append(insertExperiment(allfile[i],readmefile[i],timingfile[i],gitdescribefile[i],db,fpath, uploaduser))
-		print ('**************************************************')
-		print (' ')
-	
-	# remove uploaded experiments
-	removeFolder(UPLOAD_FOLDER,zipfilename)
-	sys.stdout = old_stdout
-	log_file.close()
+		# boolean list
+		isSuccess=[]
+		# parse and store timing profile file in a database
+		for i in range(len(allfile)):
+			print (' ')
+			print ('**************************************************')
+			# insert experiments for given files
+			isSuccess.append(insertExperiment(allfile[i],readmefile[i],timingfile[i],gitdescribefile[i],db,fpath,uploaduser))
+			print ('**************************************************')
+			print (' ')
+		# remove uploaded experiments
+		removeFolder(UPLOAD_FOLDER,zipfilename)
+		sys.stdout = old_stdout
+		sys.stderr = old_stderr
+		log_file.close()
+		# check parse status, returns status with report
+		if False in isSuccess:
+			return('fail/'+str(logfilename))
+		else:
+			return('success/'+str(logfilename))
 	except IOError as e:
 		print ('[ERROR]: %s' % e.strerror)
 		removeFolder(UPLOAD_FOLDER,zipfilename)
 		sys.stdout = old_stdout
+		sys.stderr = old_stderr
 		log_file.close()
 		return ('ERROR/'+str(logfilename))
 	except OSError as e:
 		print ('[ERROR]: %s' % e.strerror)
 		removeFolder(UPLOAD_FOLDER,zipfilename)
 		sys.stdout = old_stdout
+		sys.stderr = old_stderr
 		log_file.close()
 		return ('ERROR/'+str(logfilename))
-	except :
+	except Exception as e:
+		print ('[ERROR]: %s' % e.strerror)
 		print ('[ERROR]: Other error during upload')
 		removeFolder(UPLOAD_FOLDER,zipfilename)
 		sys.stdout = old_stdout
+		sys.stderr = old_stderr
 		log_file.close()
 		return ('ERROR/'+str(logfilename))
-	# check parse status, returns status with report
-	if False in isSuccess:
-		return('fail/'+str(logfilename))
-	else:
-		return('success/'+str(logfilename))
 
 # removes unwanted spaces (dedicated for parsing model_timing files)
 def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
@@ -255,7 +261,8 @@ def parseReadme(readmefilename):
 		print ('[ERROR]: %s in file %s' %(e,convertPathtofile(readmefilename)))
 		fileIn.close()		
 		return False
-	except :
+	except Exception as e:
+		print ('[ERROR]: %s' % e.strerror)
 		print ('    ERROR: Something is wrong with %s' %convertPathtofile(readmefilename))
 		fileIn.close()
 		return False
@@ -312,7 +319,8 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
 		print ('    SQL ERROR: %s' %e)
 		db.session.rollback()
 		return False # skips this experiment
-	except:
+	except Exception as e:
+		print ('[ERROR]: %s' % e.strerror)
 		db.session.rollback()
 		return False # skips this experiment
 
@@ -483,7 +491,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		# check if this is duplicate experiment 
 		(duplicateFlag, existingExpid) = checkDuplicateExp(timingProfileInfo['user'],timingProfileInfo['machine'],timingProfileInfo['curr'],timingProfileInfo['case'])
 		if duplicateFlag is True:
-			print ('    -[NOTE]: Duplicate of Experiment : ' + existingExpid)
+			print ('    -[NOTE]: Duplicate of Experiment : ' + str(existingExpid) )
 			db.session.close()
 			# Set success to True as the experiment already exists in database
 			successFlag = True
@@ -497,7 +505,8 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		print ('    ERROR: Missing data %s' %e)
 		parseFile.close()
 		return (successFlag, duplicateFlag, currExpObj) # skips this experiment
-	except :
+	except Exception as e:
+		print ('    ERROR: %s' %e)
 		print ('    ERROR: Something is wrong with %s' %convertPathtofile(filename))
 		parseFile.close()
 		return (successFlag, duplicateFlag, currExpObj) # skips this experiment	
@@ -647,30 +656,31 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 		# print "added runtime"
         # Set return flag to True once all processing is complete.
 		successFlag = True
-		return (successFlag, duplicateFlag, myexpid)
+		return (successFlag, duplicateFlag, currExpObj)
 	except IndexError as e:
 		print ('    ERROR: %s' %e)
 		# Sarat: Rollback added to avoid auto-incrementing expid for failed uploads
 		# Check if rollback doesn't cause issues with skipping incomplete exps
 		db.session.rollback()
 		parseFile.close()
-		return (successFlag, duplicateFlag, myexpid) # skips this experiment
+		return (successFlag, duplicateFlag, currExpObj) # skips this experiment
 	except KeyError as e:
 		print ('    ERROR: Missing data %s' %e)
 		db.session.rollback()
 		parseFile.close()
-		return (successFlag, duplicateFlag, myexpid) # skips this experiment
+		return (successFlag, duplicateFlag, currExpObj) # skips this experiment
 	except SQLAlchemyError as e:
 		error = str(e.__dict__['orig'])
 		print ('    SQL ERROR: %s' %e)
 		db.session.rollback()
 		parseFile.close()
-		return (successFlag, duplicateFlag, myexpid) # skips this experiment
-	except :
+		return (successFlag, duplicateFlag, currExpObj) # skips this experiment
+	except Exception as e:
+		print ('    ERROR: %s' %e)
 		print ('    ERROR: something is wrong with %s' %convertPathtofile(filename))
 		db.session.rollback()
 		parseFile.close()
-		return (successFlag, duplicateFlag, myexpid) # skips this experiment
+		return (successFlag, duplicateFlag, currExpObj) # skips this experiment
 
 # removes temporary folders in server
 def removeFolder(removeroot,filename):
@@ -762,7 +772,8 @@ def insertTiming(mtFile,expID,db):
 		sourceFile.close()
 		db.session.rollback()
 		return (False) # skips this experiment
-	except :
+	except Exception as e:
+		print ('[ERROR]: %s' % e.strerror)
 		print ('    ERROR: Something is wrong with %s' %convertPathtofile(mtFile))
 		db.session.rollback()
 		sourceFile.close()
