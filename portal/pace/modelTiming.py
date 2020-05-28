@@ -156,8 +156,8 @@ def detectMtFile(fileObj,configList = parserConfigs):
     #Reset the file & read from the new thread indexes
     fileObj.seek(0,0)
     # DEBUG: Start here to check which parser config is being used
-    print "DEBUG: GPTL parser config: " + str(targetConfig)
-    print "DEBUG: GPTL thread indexes: " + str(threadIndexes)
+    #print "DEBUG: GPTL parser config: " + str(targetConfig)
+    #print "DEBUG: GPTL thread indexes: " + str(threadIndexes)
     return threadIndexes,targetConfig
     
 def getData(src,configList = parserConfigs):
