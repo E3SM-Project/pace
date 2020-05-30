@@ -158,11 +158,11 @@ def isValidE3SMexp(expfile,tmpfile):
         for f in explist:
             distutils.dir_util.copy_tree(f,tmpfile+'/exp'+str(i))
             i=i+1
-        print bcolors.OKGREEN + ('Validation Success') + bcolors.ENDC
+        print bcolors.OKGREEN + ('Validation Success. Found ') + str(i) + " exps to upload." + bcolors.ENDC
         print (" ")
         return(True)
     else:
-        print bcolors.WARNING + ('WARNING: Not a valid E3SM experiment') + bcolors.ENDC
+        print bcolors.WARNING + ('NOTE: No completed E3SM experiments found.') + bcolors.ENDC
         return(False)
 
 # validate Fusion experiment
