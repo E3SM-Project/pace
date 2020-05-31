@@ -23,6 +23,7 @@ from sqlalchemy.exc import SQLAlchemyError
 #github imports
 import binascii
 from rauth import OAuth2Service
+from . import tabulatorjson
 
 GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET = getGithubkey()
 
@@ -726,9 +727,11 @@ def xmlViewer(mexpid, mname):
 @app.route("/nmlviewer/<int:mexpid>/<mname>")
 def nmlViewer(mexpid, mname):
     data = db.engine.execute("select data from namelist_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
+    tabledata = tabulatorjson.nestedjson2tabulator(data[0])
     if data is None:
         return render_template('error.html')
-    return render_template("tabulator.html", myjson = data[0])
+    return render_template("tabulator.html", myjson = tabledata)
+    # return render_template("json.html", myjson = tabledata)
 
 @app.route("/rcviewer/<int:mexpid>/<mname>")
 def rcViewer(mexpid, mname):
