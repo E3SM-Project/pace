@@ -691,7 +691,7 @@ def searchPrediction(keyword):
     #                 break
     return json.dumps(resultWords)
 
-#This generates an svg graph of runtime information. It makes use of an algorhythm created by donahue5 (modified to work with this project)
+#This generates an svg graph of runtime information. It is adapted from Donahue's script.
 @app.route("/svg/runtime/<int:expid>")
 def getRuntimeSvg(expid):
     resultElement = {}
@@ -728,7 +728,7 @@ def nmlViewer(mexpid, mname):
     data = db.engine.execute("select data from namelist_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
     if data is None:
         return render_template('error.html')
-    return render_template("json.html", myjson = data[0])
+    return render_template("tabulator.html", myjson = data[0])
 
 @app.route("/rcviewer/<int:mexpid>/<mname>")
 def rcViewer(mexpid, mname):
