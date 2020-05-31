@@ -120,10 +120,11 @@ def render(runtimeIn,opt_dict = None):
     TOT = pe_component("TOT",runtimeIn["TOT"])
     for ii in range(len(opt_dict['comps'])):
         cc = opt_dict.get('comps')[ii]
-        node = pe_component(cc,runtimeIn[cc])
-        node.color = next(opt_dict.get('color'))
-        node.fullstop = opt_dict.get('fullstop')[ii]
-        comp_data.append(node)
+        if cc in runtimeIn:
+            node = pe_component(cc,runtimeIn[cc])
+            node.color = next(opt_dict.get('color'))
+            node.fullstop = opt_dict.get('fullstop')[ii]
+            comp_data.append(node)
         max_pe = np.amax([max_pe,node.root_task_sum])
     if max_pe == 0:
         max_pe =1
