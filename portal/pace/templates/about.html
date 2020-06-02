@@ -16,39 +16,46 @@ img{
 <img src="/static/img/paceLogo.svg"/></p>
 <h2>About</h2>
 <p>
-PACE is a framework designed to aggregate and summarize performance data collected from scientific applications like E3SM to derive insights and make them accessible through a web portal.
-<br> The <a href="https://e3sm.org"><i>Energy Exascale Earth System Model</i> <b>(E3SM)</b></a> is a high-resolution coupled Earth system model that is designed to address energy-related science challenges
-while efficiently utilizing Department of Energy (DOE) supercomputers.
-<br> <b>PACE</b> enables climate scientists to view executive summary of E3SM experiments' performance and interactively deep-dive as desired.
+PACE is a web-enabled framework that summarizes performance data collected from <a href="https://e3sm.org"><i>Energy Exascale Earth System Model</i> <b>(E3SM)</b></a> experiments to derive insights and presents them through a portal. 
+<br>
+PACE serves as a central hub of E3SM performance data and facilitates tracking performance benchmarks and simulation campaigns of interest. 
+<br> 
+It enables interactive exploration including deep-dive into performance of different parallel processes and threads. 
+<br>
+PACE is designed to help identify bottlenecks and targets for performance engineering and optimization as well as drive research on load balancing and process layouts.
+
 </p>
 <h2> Architecture </h2>
 <p>
-    <img src="/static/img/workflow.png"/><br>
-    Domain or computer scientists export experiment data from a computational platform (e.g., Summit)  to PACE using an upload tool. PACE processes and ingests that information into the backend database. Finally, an user can interactively explore the performance data through the web portal. 
-</p>
-<h3> Visualization Pipeline </h3>
-<p>
-    <img src="/static/img/domConnection.svg"/><br>
-    Upon selection of a specific experiment, PACE reads the detailed timing profile to generate the process tree in a format suitable for visualization via the web portal. 
+<a href="/static/img/pace_arch.svg"><img src="/static/img/pace_arch.svg"/></a><br>
+    Performance data from simulations executed on supported supercomputers is automatically uploaded to PACE. 
+<br>
+    PACE processes and ingests that information into the backend database. Finally, an user can interactively explore the performance data through the web portal. 
 </p>
 <br>
 
 <h3> Development Team </h3>
 <p>
 <br>
-<a href="https://sarats.com">Sarat Sreepathi</a> , Oak Ridge National Laboratory, sarat@ornl.gov
+<a href="https://sarats.com">Sarat Sreepathi</a> , Oak Ridge National Laboratory, sarat@ornl.gov.
 <br>
-In collaboration with students:
+In collaboration with:
 <br>
-Zachary Mitchell, Pellissippi State Community College
+Youngsung Kim, Oak Ridge National Laboratory.
 <br>
-Gaurab KC, University of Tennessee, Knoxville
+<b>Past Students</b>: 
 <br>
-Thanks to Aaron Donahue and Peter Caldwell for sharing their process layout and atmosphere sub-component timing scripts.
+Zachary Mitchell, Pellissippi State Community College.
+<br>
+Gaurab KC, University of Tennessee, Knoxville.
+<br>
 
 <h3> Acknowledgments </h3>
 This research was supported as part of the E3SM project, funded by the U.S. Department of Energy, Office of Science, Office of Biological and Environmental Research.
 The students' work was partially supported by an appointment to the Science Education and Workforce Development Programs at Oak Ridge National Laboratory, administered by ORISE through the U.S. Department of Energy Oak Ridge Institute for Science and Education.
 This research used resources of the Compute and Data Environment for Science (CADES) at the Oak Ridge National Laboratory, which is supported by the Office of Science of the U.S. Department of Energy under Contract No. DE-AC05-00OR22725.
+
+<br>
+Thanks to Aaron Donahue and Peter Caldwell for sharing their process layout and atmosphere sub-component timing scripts.
 
 {% endblock %}
