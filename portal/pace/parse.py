@@ -19,6 +19,7 @@ from sqlalchemy.exc import SQLAlchemyError
 import tarfile
 from os.path import abspath, realpath, dirname, join as joinpath
 from sys import stderr
+import inputFileParser
 
 resolved = lambda x: realpath(abspath(x))
 
@@ -304,13 +305,14 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
 
     # store raw data (In server and Minio)
     print ('* Storing Experiment in file server')
-    isSuccess = zipFolder(currExpObj.lid,currExpObj.user,currExpObj.expid,fpath)
+    (isSuccess,zipFileFullPath) = zipFolder(currExpObj.lid,currExpObj.user,currExpObj.expid,fpath)
     if isSuccess == False:
         return False
     print ('    -Complete')
 
     # try commit if not, rollback
     print ('* Storing Experiment Data in Database')
+
     try:
         db.session.commit()
         print ('    -Complete')
@@ -335,6 +337,17 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
     print (' ')
     # close session
     db.session.close()
+
+    print ('* Parsing E3SM Input files')
+    # Needs expid changes to be committed to database
+    # We need to add .zip to zipFileFullPath 
+    zipFileFullName = zipFileFullPath + ".zip"
+    returnValue = inputFileParser.insertInputs(zipFileFullName, sys.stdout, sys.stderr)
+    if returnValue != 0:
+        print ('[ERROR] Problem parsing model inputs')
+        return False
+    print ('    -Complete')
+
     return True
 
 # Parse e3sm files
@@ -701,15 +714,16 @@ def zipFolder(exptag,exptaguser,exptagid,fpath):
             for name in subdirs:
                 if name.startswith('CaseDocs.'+str(exptag)):
                     expname = 'exp-'+exptaguser+'-'+str(exptagid)
-                    shutil.make_archive(os.path.join(EXP_DIR,expname),'zip',path)
+                    zipFileFullPath = os.path.join(EXP_DIR,expname)
+                    shutil.make_archive(zipFileFullPath,'zip',path)
                     # upload files into file server
                     isSuccess=uploadMinio(EXP_DIR,expname)
                     if isSuccess == False:
-                        return False
+                        return (False,zipFileFullPath)
     except IOError as e:
         print ('    ERROR: %s' %e)
-        return False
-    return True
+        return (False,zipFileFullPath)
+    return (True,zipFileFullPath)
 
 # function to store files into file server
 def uploadMinio(EXP_DIR,expname):
