@@ -15,7 +15,7 @@
 {% block content %}
 <h2>Advanced search</h2>
 <p>In addition to normal searches, you can also perform advanced searches that assist in narrowing down results. To start, type in a category (name, machine, etc). Next, type <code><b>:</b></code> followed by the keyword you wish to search for. </p>
-<code>user:sarat machine:titan</code>
+<code>user:sarat machine:summit</code>
 <h3>List of available categories</h3>
 <table>
     <tbody>
@@ -25,9 +25,11 @@
 <h2>Other Options</h2>
 <ul>
     <li>In a typical search, the search engine looks for values similar to the keywords entered. Prepending <code><b>$</b></code> to a keyword indicates you're looking for an <i>exact match</i>, and only shows results with that exact value. This tends to be more effective on advanced searches.</li>
-    <li>More than one search can be performed at a time in the search box. <i>Use the vertial line/pipe</i> (<code><b>|</b></code>) after each search to chain results together. The search engine will make sure everything is unique.<br><br>
-    In this example, one search is looking for users with the name "sarat", and a completely separate search is looking only for names matching "worley". Both results are displayed on the homepage table after the searches are complete.<br>
+    <li>More than one search can be performed at a time in the search box. <i>Use the vertial line/pipe</i> (<code><b>|</b></code>) after each search to chain results together.<br>
+    For instance, if you wish to search for experiments by user "sarat" and another search for user "worley", this can be a compounded search using the following syntax.<br>
     <code>user:sarat | user:worley</code>
+    <br>
+    These compound search queries are useful to setup experiment comparisons.
     </li>
 </ul>
 
