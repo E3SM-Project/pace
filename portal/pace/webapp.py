@@ -24,6 +24,7 @@ from sqlalchemy.exc import SQLAlchemyError
 import binascii
 from rauth import OAuth2Service
 from . import tabulatorjson
+from . import xmljson2tabulator
 
 GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET = getGithubkey()
 
@@ -723,7 +724,7 @@ def xmlViewer(mexpid, mname):
     data = db.engine.execute("select data from xml_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
     if data is None:
         return render_template('error.html')
-    # tabledata = tabulatorjson.nestedjson2tabulator(data[0])
+    # tabledata = xmljson2tabulator.xmljson2tabulator(data[0])
     # return render_template("tabulator.html", myjson = tabledata)
     return render_template("json.html", myjson = data[0])
 
