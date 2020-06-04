@@ -441,7 +441,8 @@ def advSearch(searchQuery):
 @app.route("/ajax/search/<searchTerms>/<limit>/<orderBy>")
 @app.route("/ajax/search/<searchTerms>/<limit>/<orderBy>/<ascDsc>")
 # Think if you want to specify default limit
-def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList = None,getRanks = True):
+# Sarat: Note taht limit is expecting a string here
+def searchCore(searchTerms,limit = "50",orderBy="exp_date",ascDsc="desc",whiteList = None,getRanks = True):
     resultItems = []
     filteredItems = []
 
@@ -624,7 +625,9 @@ def searchCore(searchTerms,limit = False,orderBy="expid",ascDsc="desc",whiteList
 @app.route("/ajax/specificSearch/<query>/<whiteList>")
 def specificSearch(query,whiteList = "total_pes_active,model_throughput,machine,run_time,expid"):
     whiteListArray = str(whiteList.replace("\\c","").replace(";","")).split(",")
-    return json.dumps(json.loads(searchCore(query,False,"","",whiteListArray,False))[0])
+    # Scatter plot uses this interface to request data for plotting, specific default limit of 50
+    # Note: limit is expecting a string value
+    return json.dumps(json.loads(searchCore(query,"50","","",whiteListArray,False))[0])
 
 @app.route("/searchSummary/")
 @app.route("/searchSummary/<query>")
