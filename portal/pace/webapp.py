@@ -62,7 +62,8 @@ def homePage():
 
 @app.route("/about")
 def aboutPage():
-    return render_template("about.html")
+    numexps = db.engine.execute("select count(expid) from e3smexp ").first()[0]
+    return render_template("about.html", nexps = numexps)
 
 @app.route("/upload-howto")
 def uploadhowto():
@@ -722,14 +723,16 @@ def xmlViewer(mexpid, mname):
     data = db.engine.execute("select data from xml_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
     if data is None:
         return render_template('error.html')
+    # tabledata = tabulatorjson.nestedjson2tabulator(data[0])
+    # return render_template("tabulator.html", myjson = tabledata)
     return render_template("json.html", myjson = data[0])
 
 @app.route("/nmlviewer/<int:mexpid>/<mname>")
 def nmlViewer(mexpid, mname):
     data = db.engine.execute("select data from namelist_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
-    tabledata = tabulatorjson.nestedjson2tabulator(data[0])
     if data is None:
         return render_template('error.html')
+    tabledata = tabulatorjson.nestedjson2tabulator(data[0])
     return render_template("tabulator.html", myjson = tabledata)
     # return render_template("json.html", myjson = tabledata)
 
@@ -738,4 +741,6 @@ def rcViewer(mexpid, mname):
     data = db.engine.execute("select data from rc_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
     if data is None:
         return render_template('error.html')
+    # tabledata = tabulatorjson.nestedjson2tabulator(data[0])
+    # return render_template("tabulator.html", myjson = tabledata)
     return render_template("json.html", myjson = data[0])
