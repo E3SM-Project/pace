@@ -334,15 +334,18 @@ def expDetails(mexpid):
 
 @app.route("/useralias/<user>")
 def useralias(user):
-    try:
-        validuser=db.engine.execute("select * from authusers where user='"+str(user)+"\'").fetchall()[0]
-    except IndexError:
+    if bool(re.match('^[a-zA-Z0-9-_]+$', user)):
+        try:
+            validuser=db.engine.execute("select * from authusers where user='"+str(user)+"\'").fetchall()[0]
+        except IndexError:
+            return render_template('error.html')
+        try:
+            alias=db.engine.execute("select alias from useralias where user='"+str(user)+"\'").fetchall()
+        except IndexError:
+            alias=""
+        return render_template('useralias.html',alias = alias, user = user)
+    else:
         return render_template('error.html')
-    try:
-        alias=db.engine.execute("select alias from useralias where user='"+str(user)+"\'").fetchall()
-    except IndexError:
-        alias=""
-    return render_template('useralias.html',alias = alias, user = user)
 
 @app.route("/useraliasdelete", methods=['POST'])
 def useraliasdelete():
