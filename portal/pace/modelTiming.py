@@ -11,6 +11,7 @@ from os import listdir
 #This is a list of configurations that tell the parser how to read specific GPTL files
 # Reference: https://github.com/E3SM-Project/pace/blob/master/portal/pace/mtConfig/specification.md
 # Sarat (July 26, 2019): Changed variable names (names,altNames)->(fileCols,outCols) to avoid confusion.
+# startMarker second attribute refers to number of lines to skip before data starts
 parserConfigs = {
 "e3sm":[{
         "fileCols":["On","Called","Recurse","Wallclock","max","min","UTR Overhead"],
@@ -150,14 +151,17 @@ def detectMtFile(fileObj,configList = parserConfigs):
         lineCount+=1
         if not targetConfig == None:
             #Look for threadIndexes:
-            if targetConfig["startMarker"][0] in currLine:
+            # Old check below matches more than desired: say name in a_i:read_namelist
+            #if targetConfig["startMarker"][0] in currLine:
+            if currLine.startswith(targetConfig["startMarker"][0]):
                 threadIndexes.append(lineCount+targetConfig["startMarker"][1])
+                # print threadIndexes
         currLine = fileObj.readline()
     #Reset the file & read from the new thread indexes
     fileObj.seek(0,0)
     # DEBUG: Start here to check which parser config is being used
-    #print "DEBUG: GPTL parser config: " + str(targetConfig)
-    #print "DEBUG: GPTL thread indexes: " + str(threadIndexes)
+    # print "DEBUG: GPTL parser config: " + str(targetConfig)
+    # print "DEBUG: GPTL thread indexes: " + str(threadIndexes)
     return threadIndexes,targetConfig
 
 def getData(src,configList = parserConfigs):
@@ -177,8 +181,18 @@ def getData(src,configList = parserConfigs):
         firstItr = True
         while True:
             lineCount+=1
+            # Debug
+            # print lineCount
             currLine = sourceFile.readline()
+            # Debug
+            # print currLine
             if lineCount >= line:
+                # Sarat (added Nov 22, 2020): To address an infinite loop while handling certain model_global_stats files.
+                # Current parser was unable to detect end of file
+                # From https://docs.python.org/3.6/tutorial/inputoutput.html#methods-of-file-objects
+                # if f.readline() returns an empty string, the end of the file has been reached, while a blank line is represented by '\n', a string containing only a single newline.
+                if currLine=="":
+                    break
                 if countSpaces(currLine) == 0 and currLine=="\n": #This is true when we run out of needed data.
                     break
                 #this became a little meta, so here's a reference in order to continue indexing:
@@ -270,6 +284,7 @@ def parseThread(thread,config):
     elif type(thread[0][0]) == types.ListType:
         resultThreads=[]
         for element in thread:
+            # print (element)
             resultThreads.append(parseThread(element,config))
         return resultThreads
 
