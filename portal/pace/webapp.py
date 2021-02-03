@@ -102,6 +102,9 @@ def fileparse():
     if request.method == 'POST':
         filename = request.form['filename']
         user = request.form['user']
+        if not bool(re.match('^[a-zA-Z0-9-_]+$', user)):
+            return
+        # TODO: Check user and filename
         return(parse.parseData(filename,user))
 
 @app.route('/downloadlog', methods=['POST'])
@@ -111,7 +114,8 @@ def downloadlog():
         msgfile = request.form['filename']
         filelink = ('/pace/assets/static/logs/'+str(msgfile))
         try:
-            matchobj = re.match("^pace-.*\.log$", msgfile)
+            # TODO: Get more tighter check
+            matchobj = re.match("^pace-[a-zA-Z0-9\-:]+\.log$", msgfile)
             if matchobj:
                 return send_file(filelink,attachment_filename='message.log')
             else :
@@ -123,6 +127,9 @@ def downloadlog():
 def userauth():
     if request.method == 'POST':
         username = request.form['user']
+        # TODO: check user
+        if not bool(re.match('^[a-zA-Z0-9-_]+$', user)):
+            return ("invaliduser")
         searchuser = Authusers.query.filter_by(user=username).first()
         db.session.close()
         if searchuser is None:
@@ -260,6 +267,7 @@ def summaryHtml(expID,rank,compare="",threads=""):
 @app.route("/summaryQuery/<int:expID>/<rank>/",methods=["GET"])
 @app.route("/summaryQuery/<int:expID>/<rank>/<getFullStats>",methods=["GET"])
 def summaryQuery(expID,rank,getFullStats = ""):
+    # TODO: Check rank
     resultNodes=""
     compset = "N/A"
     res="N/A"
@@ -299,9 +307,11 @@ def summaryQuery(expID,rank,getFullStats = ""):
         resultNodes = json.dumps([newJson])
     return  '{{"obj":{0},"meta":{{"expid":"{1}","rank":"{2}","compset":"{3}","res":"{4}"}} }}'.format(resultNodes,expID,rank,compset,res)
 
-@app.route("/flamegraph/<expid>/<rank>/")
+@app.route("/flamegraph/<int:expid>/<rank>/")
 def flameGraph(expid,rank):
-    return render_template("flameGraph.html",expid=expid,rank=rank.split(','))
+    # TODO: Check rank
+    if bool(re.match('^[0-9,]+$', rank)):
+      return render_template("flameGraph.html",expid=expid,rank=rank.split(','))
 
 @app.route("/exp-details/<int:mexpid>")
 def expDetails(mexpid):
@@ -352,6 +362,10 @@ def useraliasdelete():
     if request.method=='POST':
         user = request.form['user']
         alias = request.form['delete']
+        if not bool(re.match('^[a-zA-Z0-9-_]+$', user)):
+            return render_template('error.html')
+        if not bool(re.match('^[a-zA-Z0-9-_.]+$', alias)):
+            return render_template('error.html')
         try:
             db.engine.execute("delete from useralias where alias='"+alias+"\'")
         except:
@@ -364,6 +378,10 @@ def useraliasadd():
     if request.method=='POST':
         user = request.form['user']
         alias = request.form['alias']
+        if not bool(re.match('^[a-zA-Z0-9-_]+$', user)):
+            return render_template('error.html')
+        if not bool(re.match('^[a-zA-Z0-9-_.]+$', alias)):
+            return render_template('error.html')
         try:
             db.engine.execute("insert into useralias(user,alias) values ('"+user+"\',\'"+alias+"\')")
         except:
@@ -371,7 +389,7 @@ def useraliasadd():
         return redirect('/useralias/'+str(user))
     if request.method=='GET':
         return render_template('error.html')
-@app.route("/note/<expID>", methods=["GET","POST"])
+@app.route("/note/<int:expID>", methods=["GET","POST"])
 def note(expID):
     session['expid']=expID
     try:
@@ -381,11 +399,11 @@ def note(expID):
     if userlogin == True:
         if request.method == "GET":
             try:
-                myexpid = db.engine.execute("select * from e3smexp where expid= "+expID).fetchall()[0]
+                myexpid = db.engine.execute("select * from e3smexp where expid= "+str(expID)).fetchall()[0]
             except IndexError:
                 return render_template('error.html')
             try:
-                myexp = db.engine.execute("select * from expnotes where expid= "+expID).fetchall()[0]
+                myexp = db.engine.execute("select * from expnotes where expid= "+ str(expID)).fetchall()[0]
                 note = myexp.note
             except IndexError:
                 note=""
@@ -393,10 +411,10 @@ def note(expID):
         elif request.method == "POST":
             note = request.form['note']
             try:
-                myexp = db.engine.execute("select * from expnotes where expid= "+expID).fetchall()[0]
-                db.engine.execute("update expnotes set note =\'"+str(note)+"\' where expid = " +expID)
+                myexp = db.engine.execute("select * from expnotes where expid= "+ str(expID)).fetchall()[0]
+                db.engine.execute("update expnotes set note =\'"+str(note)+"\' where expid = " + str(expID))
             except IndexError:
-                db.engine.execute("insert into expnotes(expid,note) values ("+expID+",\'"+str(note)+"\')")
+                db.engine.execute("insert into expnotes(expid,note) values ("+ str(expID) +",\'"+str(note)+"\')")
             return redirect('/exp-details/'+str(expID))
     else:
         return redirect('/login')
@@ -444,11 +462,15 @@ def advSearch(searchQuery):
 @app.route("/ajax/search/<searchTerms>/<limit>/<orderBy>")
 @app.route("/ajax/search/<searchTerms>/<limit>/<orderBy>/<ascDsc>")
 # Think if you want to specify default limit
-# Sarat: Note taht limit is expecting a string here
+# Sarat: Note that limit is expecting a string here
 def searchCore(searchTerms,limit = "50",orderBy="exp_date",ascDsc="desc",whiteList = None,getRanks = True):
     resultItems = []
     filteredItems = []
 
+    # * is an acceptable search term especially for getting home page results
+    # \s is the whitespace character
+    # if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| ]+$', searchTerms)):
+        # return 
     #Variable names are split into non-string and string respectively. This is because mysql doesn't like comparing strings with numbers. It should therfore be able to fix exact matches, as there is only a string-to-string comparison
     variableList=[
         ["expid","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","init_time","run_time"],
@@ -508,7 +530,7 @@ def searchCore(searchTerms,limit = "50",orderBy="exp_date",ascDsc="desc",whiteLi
     def searchAll(termString):
         queryStr = "select "+str(specificVariables).strip("[]").replace("'","")+" from e3smexp order by "+orderBy+" "+ascDsc
         if limit:
-            queryStr+=" limit "+limit
+            queryStr+=" limit "+ str(limit)
         allResults = db.engine.execute(queryStr).fetchall()
         for result in allResults:
             resultItems.append(result)
@@ -664,6 +686,8 @@ def usersRedirect(user):
 
 @app.route("/benchmarks/<keyword>")
 def benchmarksRedirect(keyword):
+    if not bool(re.match('^[\sa-zA-Z0-9 \-\._]+$', keyword)):
+        return render_template('error.html')
     splitStr = keyword.split(" ")
     if splitStr[0] in ["FC5AV1C-H01A", "GMPAS-IAF"]:
       return searchPage("compset:"+splitStr[0]+" res:"+splitStr[1],False)
@@ -673,6 +697,8 @@ def benchmarksRedirect(keyword):
 #This is designed for the search bar on the website. It predicts what a user may be looking for based on where the dev specifies to search.
 @app.route("/ajax/similarDistinct/<keyword>")
 def searchPrediction(keyword):
+    if not bool(re.match('^[a-zA-Z0-9\-. *_$:\|]+$', keyword)):
+        return render_template('error.html')
     #The keyword is designed to be a single word without any potential database loopholes:
     keyword = keyword.replace("\\c","").replace(";","").replace(" ","")
     #Grab elements based on these columns:
@@ -723,10 +749,15 @@ def getRuntimeSvg(expid):
 
 @app.route("/atmos/<expids>/")
 def atmosChart(expids):
+    #TODO: Check
+    # if not bool(re.match('^[0-9,]+[0-9]+$', expids)):
+        # return render_template('error.html')
     return render_template("atmos.html",expids = expids)
 
 @app.route("/xmlviewer/<int:mexpid>/<mname>")
 def xmlViewer(mexpid, mname):
+    if not bool(re.match('^[a-zA-Z0-9-_.]+$', mname)):
+        return render_template('error.html')
     data = db.engine.execute("select data from xml_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
     if data is None:
         return render_template('error.html')
@@ -736,6 +767,8 @@ def xmlViewer(mexpid, mname):
 
 @app.route("/nmlviewer/<int:mexpid>/<mname>")
 def nmlViewer(mexpid, mname):
+    if not bool(re.match('^[a-zA-Z0-9-_.]+$', mname)):
+        return render_template('error.html')
     data = db.engine.execute("select data from namelist_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
     if data is None:
         return render_template('error.html')
@@ -745,6 +778,8 @@ def nmlViewer(mexpid, mname):
 
 @app.route("/rcviewer/<int:mexpid>/<mname>")
 def rcViewer(mexpid, mname):
+    if not bool(re.match('^[a-zA-Z0-9-_.]+$', mname)):
+        return render_template('error.html')
     data = db.engine.execute("select data from rc_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
     if data is None:
         return render_template('error.html')
