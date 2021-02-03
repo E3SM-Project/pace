@@ -128,7 +128,7 @@ def userauth():
     if request.method == 'POST':
         username = request.form['user']
         # TODO: check user
-        if not bool(re.match('^[a-zA-Z0-9-_]+$', user)):
+        if not bool(re.match('^[a-zA-Z0-9-_]+$', username)):
             return ("invaliduser")
         searchuser = Authusers.query.filter_by(user=username).first()
         db.session.close()
@@ -469,8 +469,8 @@ def searchCore(searchTerms,limit = "50",orderBy="exp_date",ascDsc="desc",whiteLi
 
     # * is an acceptable search term especially for getting home page results
     # \s is the whitespace character
-    # if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| ]+$', searchTerms)):
-        # return 
+    if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| ]+$', searchTerms)):
+        return None
     #Variable names are split into non-string and string respectively. This is because mysql doesn't like comparing strings with numbers. It should therfore be able to fix exact matches, as there is only a string-to-string comparison
     variableList=[
         ["expid","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","init_time","run_time"],
