@@ -686,12 +686,12 @@ def specificSearch(query,whitelist = "total_pes_active,model_throughput,machine,
     # Note: limit is expecting a string value
     return json.dumps(json.loads(searchCore(query,50,"","",whiteListArray,False))[0])
 
-@app.route("/searchSummary/")
-@app.route("/searchSummary/<query>")
-def searchSummary(query = ""):
-    if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +]+$', query)):
-      return render_template('error.html')
-    return render_template("searchSummary.html",query=query)
+#@app.route("/searchSummary/")
+#@app.route("/searchSummary/<query>")
+#def searchSummary(query = ""):
+#    if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +]+$', query)):
+#      return render_template('error.html')
+#    return render_template("searchSummary.html",query=query)
 
 #Get a specific list of elements from e3smexp. Only specific elements are allowed, so users cannot grab everything.
 @app.route("/ajax/getDistinct/<entry>")
