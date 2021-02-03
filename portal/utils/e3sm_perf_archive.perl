@@ -24,7 +24,7 @@ jobs into time-stamped directory for permanent archiving.
 
 If it does not already exist, create a directory with the name 
 
-  performance_archive_<project_space_name>_<year>_<month>_<day>
+  performance_archive_<system>_<project_space_name>_<year>_<month>_<day>_<hour>_<min>_<sec>
 
 Next, move performance data for completed or failed jobs 
 into the new directory, preserving the same directory
@@ -68,7 +68,8 @@ exit 0;
 
 sub main {
 
-  # define variables
+  # Define variables.
+  my $timestamp;
   my $i;
   my $arg_flag;
   my $host;
@@ -87,6 +88,9 @@ sub main {
   my $yday;
   my $isdst;
   my $calyear;
+  my $twodigitsec;
+  my $twodigitmin;
+  my $twodigithour;
   my $twodigitday;
   my $twodigitmonth;
   my $new_archive_name;
@@ -112,11 +116,13 @@ sub main {
   my $job_statsf_readable;
   my @squeueall_field;
   my $thisfeatures;
+  my $thisexechost;
   my $thiscompleted;
   my $CaseStatusf;
   my @jlidfiles;
   my $thisjobstat;
 
+  $timestamp = "unset";
   for (my $i=0; $i <= $#ARGV; $i+=2){
     $arg_flag = $ARGV[$i];
     if (($arg_flag =~ m/^-h$/) || ($arg_flag =~ m/^--help$/)){
@@ -126,30 +132,39 @@ sub main {
 perl e3sm_perf_archive.perl
 
 within the top level of a performance_archive at NERSC, 
-at ALCF, at OLCF, on Anvil, or on Compy
+at ALCF, at OLCF, on Anvil, on Chrysalis, or on Compy
 
 Purpose:
 Tool to aid in the permanent archiving of E3SM performance data.
 
 If it does not already exist, create a directory with the name 
 
-  performance_archive_<project_space_name>_<year>_<month>_<day>
+  performance_archive_<system>_<project_space_name>_<year>_<month>_<day>_<hour>_<min>_<sec>
 
 Next, move performance data for completed or failed jobs 
 into the new directory, preserving the same directory
 structure (name/case name/job id). This uses system job monitoring
 tools to identify which jobs are still running (so that
 associated data are not moved). For centers with multiple systems, 
-e.g. NERSC, this tool will need to be run once on each system
-front end for the given performance_archive directory if multiple
+this tool will need to be run once on each system front end for
+the given performance_archive directory if multiple
 systems save performance data in the same directory.
 
 Optional arguments:
 
   -h, --help      show this help message and exit 
-
+  -t, --timestamp specify the timestamp (<year>_<month>_<day>_<hour>_<min>_<sec>)
+                  to use in the name of the performance_archive directory. The
+                  input is checked that it satisfies the general format, and aborts
+                  otherwise. (Default is to use the script execution local time.) 
 \n";
       exit;
+    }elsif(($arg_flag =~ m/^--timestamp$/) || ($arg_flag =~ m/^-t$/)){
+      $timestamp = $ARGV[++$i];
+      if ($timestamp !~ m/^(\d+)\_(\d+)\_(\d+)\_(\d+)\_(\d+)\_(\d+)$/){
+        print "Error: timestamp input (\"$timestamp\") does not match required format\n";
+        exit;
+      }
     }
   }
 
@@ -159,6 +174,10 @@ Optional arguments:
     $system = "anvil";
     $center = "anvil";
   } 
+  elsif ($host =~ m/^chrlogin\S*/){
+    $system = "chrysalis";
+    $center = "chrysalis";
+  }
   elsif ($host =~ m/^compy\S*/){
     $system = "compy";
     $center = "compy";
@@ -166,10 +185,6 @@ Optional arguments:
   elsif ($host =~ m/^cori\S*/){
     $system = "cori";
     $center = "cori";
-  } 
-  elsif ($host =~ m/^edison\S*/){
-    $system = "edison";
-    $center = "cori_edison";
   } 
   elsif ($host =~ m/^login\S*/){
     $system = "summit";
@@ -179,16 +194,8 @@ Optional arguments:
     $system = "theta";
     $center = "theta";
   } 
-  elsif ($host =~ m/^titan\S*/){
-    $system = "titan";
-    $center = "eos_titan";
-  }
-  elsif ($host =~ m/^eos\S*/){
-    $system = "eos";
-    $center = "eos_titan";
-  }
   else{
-    die "ERROR: Can only be used on a supported system: anvil, compy, cori-haswell, cori-knl, edison, eos, summit, theta, titan";
+    die "ERROR: Can only be used on a supported system: anvil, chrysalis, compy, cori-haswell, cori-knl, summit, theta";
   }
 
 # print "$system\n";
@@ -197,12 +204,12 @@ Optional arguments:
 
 # print "$performance_archive\n";
 
-  if ($system =~ m/cori|edison/){
+  if ($system =~ m/cori/){
     if ($performance_archive =~ m/^\/global\/cfs\/cdirs\/\S*/){
       @path = split(/\//,$performance_archive);
       $project_space = $path[4];
     }else{
-      die "ERROR: On Cori or Edison, must be in a /global/cfs/cdirs/ subdirectory for this script to work";
+      die "ERROR: On Cori, must be in a /global/cfs/cdirs/ subdirectory for this script to work";
       exit;
     }
   }elsif ($system =~ m/anvil/){
@@ -211,6 +218,14 @@ Optional arguments:
       $project_space = $path[3];
     }else{
       die "ERROR: On Anvil, must be in a /lcrc/group/ subdirectory for this script to work";
+      exit;
+    }
+  }elsif ($system =~ m/chrysalis/){
+    if ($performance_archive =~ m/^\/lcrc\/group\/\S*/){
+      @path = split(/\//,$performance_archive);
+      $project_space = $path[3];
+    }else{
+      die "ERROR: On Chrysalis, must be in a /lcrc/group/ subdirectory for this script to work";
       exit;
     }
   }elsif ($system =~ m/compy/){
@@ -236,23 +251,21 @@ Optional arguments:
       die "ERROR: On Theta, must be in a /lus/theta-fs0/projects/ subdirectory for this script to work";
       exit;
     }
-  }elsif ($system =~ m/eos|titan/){
-    if ($performance_archive =~ m/^\/lustre\/atlas\d\/\S*/){
-      @path = split(/\//,$performance_archive);
-      $project_space = $path[3];
-    }else{
-      die "ERROR: On Eos or Titan, must be in a /lustre/atlas1/ or /lustre/atlas2/ subdirectory for this script to work";
-      exit;
-    }
   }
 
 # print "$project_space\n";
 
-  ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
-  $calyear = $year + 1900;
-  $twodigitday = sprintf("%02d", $mday);
-  $twodigitmonth = sprintf("%02d", $mon+1);
-  $new_archive_name = "performance\_archive\_$center\_$project_space\_$calyear\_$twodigitmonth\_$twodigitday";
+  if ($timestamp =~ m/unset/){
+    ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
+    $twodigitsec = sprintf("%02d", $sec);
+    $twodigitmin = sprintf("%02d", $min);
+    $twodigithour = sprintf("%02d", $hour);
+    $twodigitday = sprintf("%02d", $mday);
+    $twodigitmonth = sprintf("%02d", $mon+1);
+    $calyear = $year + 1900;
+    $timestamp = "$calyear\_$twodigitmonth\_$twodigitday\_$twodigithour\_$twodigitmin\_$twodigitsec";
+  }
+  $new_archive_name = "performance\_archive\_$center\_$project_space\_$timestamp";
 
   if (-e $new_archive_name){
     if (!(-d $new_archive_name)){
@@ -264,6 +277,7 @@ Optional arguments:
 
   $new_archive_directory = "$performance_archive/$new_archive_name";
   $mode = 0775;
+  $mode = $mode | 02000;  # Set group sticky bit.
   chmod $mode, "$new_archive_directory";
 
   print "Creating/Using $new_archive_directory\n";
@@ -312,22 +326,26 @@ Optional arguments:
 
           chdir "$thiscase_directory/$thisjlid" || next JLIDSLOOP;
           $thisjlid_directory = cwd();
-          # Verify job id from job_statsf file
-          if ($system =~ m/anvil|compy/){
+          # Verify job id from job_statsf file.
+          if ($system =~ m/anvil|chrysalis/){
             $job_statsf_string = "squeueall_jobid";
-            # For non-NERSC systems, already know system
+            # For LCRC systems, get system name from job_statsf file.
+            $thissystem = "unset";
+          }elsif ($system =~ m/compy/){
+            $job_statsf_string = "squeueall_jobid";
+            # For non-NERSC and non-LCRC systems, already know system.
             $thissystem = $system;
-          }elsif ($system =~ m/eos|theta|titan/){
+          }elsif ($system =~ m/theta/){
             $job_statsf_string = "qstatf_jobid";
-            # For non-NERSC systems, already know system
+            # For non-NERSC and non-LCRC systems, already know system.
             $thissystem = $system;
-          }elsif ($system =~ m/cori|edison/){
+          }elsif ($system =~ m/cori/){
             $job_statsf_string = "sqsf_jobid";
             # For NERSC, get system name from job_statsf file.
             $thissystem = "unset";
           }elsif ($system =~ m/summit/){
             $job_statsf_string = "bjobslUF_jobid";
-            # For non-NERSC systems, already know system
+            # For non-NERSC and non-LCRC systems, already know system.
             $thissystem = $system;
           }
           $job_statsf = "$thisjlid_directory/$job_statsf_string.$thisjlid.gz";
@@ -362,11 +380,14 @@ Optional arguments:
                     next JLIDSLOOP;
                   }
                 }elsif (m/^\s*Features=(\S+)\s+/){
+                  # In the past the Cori systems and the Edison system used the
+                  # same performance_archive directory. To differentiate on which
+                  # system a given job ran, we used information in the job_statsf
+                  # file. While Edison has been decommissioned, this issue may
+                  # reoccur when the Perlmutter system comes on-line. We retain
+                  # the following logic in case it becomes useful again.
                   $thisfeatures = $1;
-                  if    ($thisfeatures =~ m/ivybridge/){
-                    $thissystem = "edison";
-                  }
-                  elsif ($thisfeatures =~ m/haswell/){
+                  if ($thisfeatures =~ m/haswell/){
                     $thissystem = "cori";
                   }
                   elsif ($thisfeatures =~ m/knl/){
@@ -392,6 +413,17 @@ Optional arguments:
                   print "        JOB IDS: $thisjobid $thisjobid2\n";
                   close JOBSTATSF;
                   next JLIDSLOOP;
+                }
+                # At one point Anvil and Chrysalis used the same performance_archive
+                # directory. To differentiate on which system a given job ran, use
+                # information in the job_statsf file.
+                if ($system =~ m/anvil|chrysalis/){
+                  $thisexechost = $squeueall_field[27];
+                  if     ($thisexechost =~ m/b\S+/){
+                    $thissystem = "anvil";
+                  }elsif ($thisexechost =~ m/chr\S+/){
+                    $thissystem = "chrysalis";
+                  }
                 }
                 last JOBFLOOP2;
               }
@@ -449,13 +481,13 @@ Optional arguments:
           print "      JOBID: $thisjobid JOBID2: $thisjobid2\n";
           print "      SYSTEM: $thissystem  SCRIPT-SYSTEM: $system\n";
 
-          # if a gzipped version of CaseStatus exists, then job very likely completed
+          # If a gzipped version of CaseStatus exists, then job very likely completed.
           $thiscompleted = "false";
           $CaseStatusf = "CaseStatus.$thisjlid.gz";
           if (-f $CaseStatusf){
             $thiscompleted = "true";
 
-            # but also check that all files are gzipped in this directory
+            # But also check that all files are gzipped in this directory.
             opendir JLIDFILES, $thisjlid_directory;
 
             @jlidfiles = grep { -f $_ && -r _ && /^.*(?<!\.gz)$/ } readdir JLIDFILES;
@@ -467,11 +499,11 @@ Optional arguments:
 
           print "        COMPLETED: $thiscompleted\n";
 
-          # if not obviously completed, next check whether running, but should
-          # by queried only on front end of system where the job ran
+          # If not obviously completed, next check whether running, but should
+          # by queried only on front end of system where the job ran.
           if (($thissystem =~ m/$system/) && ($thiscompleted =~ m/false/)){
 
-            if ($system =~ m/anvil|compy/){
+            if ($system =~ m/anvil|chrysalis|compy/){
               $thisjobstat = `/usr/bin/squeue --job $thisjobid --noheader 2>&1`;
               if (($thisjobstat =~ m/^.*(slurm_load_jobs error: Invalid job id specified).*$/) ||
                   ($thisjobstat =~ m/^\s*$/)){
@@ -482,19 +514,9 @@ Optional arguments:
                 print "    CASE: $thiscase\n";
                 print "      JLID: $thisjlid\n";
               }
-            }elsif ($system =~ m/cori|edison/){
+            }elsif ($system =~ m/cori/){
               $thisjobstat = `/usr/bin/squeue --job $thisjobid --noheader 2>&1`;
               if ($thisjobstat =~ m/^.*(slurm_load_jobs error: Invalid job id specified).*$/){
-                $thiscompleted = "true";
-              } else {
-                print "RUNNING: $thisjlid_directory\n";
-                print "  USER: $thisuser\n";
-                print "    CASE: $thiscase\n";
-                print "      JLID: $thisjlid\n";
-	      }
-            }elsif ($system =~ m/eos|titan/){
-              $thisjobstat = `/usr/bin/qstat $thisjobid 2>&1`;
-              if ($thisjobstat =~ m/^.*(qstat: Unknown Job Id).*$/){
                 $thiscompleted = "true";
               } else {
                 print "RUNNING: $thisjlid_directory\n";
@@ -528,11 +550,13 @@ Optional arguments:
 
 	  }
 
-          # if completed, move data for this job to the new time-stamped performance 
-          # archive
-          if ($thiscompleted =~ m/true/){
+          # If completed, move data for this job to the new time-stamped performance 
+          # archive. While not scrictly necessary, only allow script running
+          # on the front end of a system to move data for jobs running on the
+          # corresponding system.
+          if (($thissystem =~ m/$system/) && ($thiscompleted =~ m/true/)){
 
-             # first, check whether need to create a new user directory
+             # First, check whether need to create a new user directory.
              if (-e $new_user_directory){
                if (!(-d $new_user_directory)){
                  die "ERROR: $new_user_directory must be a directory";
@@ -542,7 +566,7 @@ Optional arguments:
                chmod $mode, "$new_user_directory";
              }
 
-             # next, check whether need to create a new case directory
+             # Next, check whether need to create a new case directory.
              if (-e $new_case_directory){
                if (!(-d $new_case_directory)){
                  die "ERROR: $new_case_directory must be a directory";
@@ -552,7 +576,7 @@ Optional arguments:
                chmod $mode, "$new_case_directory";
              }
 
-             # finally, move the job directory
+             # Finally, move the job directory.
              chdir "$thiscase_directory";
 print "$thiscase_directory\n";
 print "mv $thisjlid_directory $new_case_directory/$thisjlid`\n";
@@ -562,12 +586,12 @@ print "mv $thisjlid_directory $new_case_directory/$thisjlid`\n";
 
         }
 
-        # delete the case directory if it is now empty
+        # Delete the case directory if it is now empty.
         rmdir "$thiscase_directory";
 
       }
 
-      # delete the user directory if it is now empty
+      # Delete the user directory if it is now empty.
       rmdir "$thisuser_directory";
 
     }
