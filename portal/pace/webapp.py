@@ -457,24 +457,31 @@ def advSearch(searchQuery):
 
 #This is a rest-like API that gives information about queried experiments from the e3smexp table.
 @app.route("/ajax/search/<searchTerms>")
-@app.route("/ajax/search/<searchTerms>/<limit>")
-@app.route("/ajax/search/<searchTerms>/<limit>/")
-@app.route("/ajax/search/<searchTerms>/<limit>/<orderBy>")
-@app.route("/ajax/search/<searchTerms>/<limit>/<orderBy>/<ascDsc>")
+@app.route("/ajax/search/<searchTerms>/<int:mlimit>")
+@app.route("/ajax/search/<searchTerms>/<int:mlimit>/")
+@app.route("/ajax/search/<searchTerms>/<int:mlimit>/<orderBy>")
+@app.route("/ajax/search/<searchTerms>/<int:mlimit>/<orderBy>/<ascDsc>")
 # Think if you want to specify default limit
 # Sarat: Note that limit is expecting a string here
-def searchCore(searchTerms,limit = "50",orderBy="exp_date",ascDsc="desc",whiteList = None,getRanks = True):
+def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteList = None,getRanks = True):
     resultItems = []
     filteredItems = []
 
+    # Convert user-passed to string after it passes integer validation
+    limit = str(mlimit)
+
+    # TODO: Decide if - and | should be allowed
+    if bool(re.match('^[()\'\"|;\-=]+$', searchTerms)):
+        return render_template('error.html')
     if searchTerms.__contains__("'") or searchTerms.__contains__("=") or searchTerms.__contains__(")"):
         return render_template('error.html')
     # * is an acceptable search term especially for getting home page results
     # \s is the whitespace character
     if not bool(re.match('^[\sa-zA-Z0-9\-_\.\*$:|]+$', searchTerms)):
         return render_template('error.html')
-    if not bool(re.match('^[\sa-zA-Z0-9\-_\.\*$:|]+$', whiteList)):
-        return render_template('error.html')
+    if whiteList != None:
+        if not bool(re.match('^[\sa-zA-Z0-9\-_\.\*$:|]+$', whiteList)):
+            return render_template('error.html')
 
     #Variable names are split into non-string and string respectively. This is because mysql doesn't like comparing strings with numbers. It should therfore be able to fix exact matches, as there is only a string-to-string comparison
     variableList=[
@@ -667,7 +674,7 @@ def specificSearch(query,whitelist = "total_pes_active,model_throughput,machine,
     whiteListArray = str(whiteList.replace("\\c","").replace(";","")).split(",")
     # Scatter plot uses this interface to request data for plotting, specific default limit of 50
     # Note: limit is expecting a string value
-    return json.dumps(json.loads(searchCore(query,"50","","",whiteListArray,False))[0])
+    return json.dumps(json.loads(searchCore(query,50,"","",whiteListArray,False))[0])
 
 @app.route("/searchSummary/")
 @app.route("/searchSummary/<query>")
