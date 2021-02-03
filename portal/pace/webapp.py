@@ -471,6 +471,9 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
     limit = str(mlimit)
 
     # TODO: Decide if - and | should be allowed
+    # TODO: Mitigate boolean OR
+    if searchTerms.__contains__("OR") or searchTerms.__contains__("or"):
+        return render_template('error.html')
     if bool(re.match('^[()\'\"|;\-=]+$', searchTerms)):
         return render_template('error.html')
     if searchTerms.__contains__("'") or searchTerms.__contains__("=") or searchTerms.__contains__(")"):
@@ -493,6 +496,13 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
     if whiteList == None:
         specificVariables = variableList[0] + variableList[1]
 
+    # Sarat (Feb 3,2021): orderby handling is a security issue. There could be
+    # malicious content after valid fields, so truncate
+    # "exp_date)) AS LwZg WHERE 8064=8064;SELECT SLEEP(5)#"
+    if not bool(re.match('^[a-zA-Z_]+$', orderby)):
+        return render_template('error.html')
+    if not bool(re.match('^(a|(de))sc$', ascDsc)):
+        return render_template('error.html')
     #This should be an easy way to determine if something's in the list
     if orderBy == "case":
         orderBy = "e3smexp.case"
