@@ -467,10 +467,15 @@ def searchCore(searchTerms,limit = "50",orderBy="exp_date",ascDsc="desc",whiteLi
     resultItems = []
     filteredItems = []
 
+    if searchTerms.__contains__("'") or searchTerms.__contains__("=") or searchTerms.__contains__(")"):
+        return render_template('error.html')
     # * is an acceptable search term especially for getting home page results
     # \s is the whitespace character
-    if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| ]+$', searchTerms)):
-        return None
+    if not bool(re.match('^[\sa-zA-Z0-9\-_\.\*$:|]+$', searchTerms)):
+        return render_template('error.html')
+    if not bool(re.match('^[\sa-zA-Z0-9\-_\.\*$:|]+$', whiteList)):
+        return render_template('error.html')
+
     #Variable names are split into non-string and string respectively. This is because mysql doesn't like comparing strings with numbers. It should therfore be able to fix exact matches, as there is only a string-to-string comparison
     variableList=[
         ["expid","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","init_time","run_time"],
@@ -528,6 +533,8 @@ def searchCore(searchTerms,limit = "50",orderBy="exp_date",ascDsc="desc",whiteLi
 
     #The original version of searchCore did not have these three functions separated... this is for cleaner code XP
     def searchAll(termString):
+        if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +]+$', termString)):
+            return render_template('error.html')
         queryStr = "select "+str(specificVariables).strip("[]").replace("'","")+" from e3smexp order by "+orderBy+" "+ascDsc
         if limit:
             queryStr+=" limit "+ str(limit)
@@ -536,6 +543,8 @@ def searchCore(searchTerms,limit = "50",orderBy="exp_date",ascDsc="desc",whiteLi
             resultItems.append(result)
 
     def advSearch(termString):
+        if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +]+$', termString)):
+            return render_template('error.html')
         termList = []
         #We assume the user is typing information with the following format: "user:name machine:titan etc:etc"
         for word in termString.split("+"):
@@ -570,6 +579,8 @@ def searchCore(searchTerms,limit = "50",orderBy="exp_date",ascDsc="desc",whiteLi
             resultItems.append(result)
 
     def basicSearch(termString):
+        if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +]+$', termString)):
+            return render_template('error.html')
         termList = []
         #A regular search (no matchall)
         for word in termString.split("+"):
@@ -647,8 +658,12 @@ def searchCore(searchTerms,limit = "50",orderBy="exp_date",ascDsc="desc",whiteLi
 
 #Retrive specific values from /ajax/search. Order,asc/desc & limits are not a priority with this function:
 @app.route("/ajax/specificSearch/<query>")
-@app.route("/ajax/specificSearch/<query>/<whiteList>")
-def specificSearch(query,whiteList = "total_pes_active,model_throughput,machine,run_time,expid"):
+@app.route("/ajax/specificSearch/<query>/<whitelist>")
+def specificSearch(query,whitelist = "total_pes_active,model_throughput,machine,run_time,expid"):
+    if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +]+$', query)):
+      return render_template('error.html')
+    if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +]+$', whitelist)):
+      return render_template('error.html')
     whiteListArray = str(whiteList.replace("\\c","").replace(";","")).split(",")
     # Scatter plot uses this interface to request data for plotting, specific default limit of 50
     # Note: limit is expecting a string value
@@ -657,6 +672,8 @@ def specificSearch(query,whiteList = "total_pes_active,model_throughput,machine,
 @app.route("/searchSummary/")
 @app.route("/searchSummary/<query>")
 def searchSummary(query = ""):
+    if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +]+$', query)):
+      return render_template('error.html')
     return render_template("searchSummary.html",query=query)
 
 #Get a specific list of elements from e3smexp. Only specific elements are allowed, so users cannot grab everything.
