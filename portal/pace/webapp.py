@@ -264,7 +264,9 @@ def summaryHtml(expID,rank,compare="",threads=""):
 @app.route("/summaryQuery/<int:expID>/<rank>/",methods=["GET"])
 @app.route("/summaryQuery/<int:expID>/<rank>/<getFullStats>",methods=["GET"])
 def summaryQuery(expID,rank,getFullStats = ""):
-    # TODO: Check rank
+    # Rank can be a number or stats referring to global statistics file
+    if not bool(re.match('(^stats$)|(^[0-9]+$)', rank)):
+        return render_template('error.html')
     resultNodes=""
     compset = "N/A"
     res="N/A"
