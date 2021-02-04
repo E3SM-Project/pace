@@ -735,7 +735,7 @@ def usersRedirect(user):
 
 @app.route("/benchmarks/<keyword>")
 def benchmarksRedirect(keyword):
-    if not bool(re.match('^[\sa-zA-Z0-9\-\._]+$', keyword)):
+    if not bool(re.match('^[\sa-zA-Z0-9\-\._:]+$', keyword)):
         return render_template('error.html')
     splitStr = keyword.split(" ")
     if splitStr[0] in ["FC5AV1C-H01A", "GMPAS-IAF"]:
@@ -798,7 +798,7 @@ def getRuntimeSvg(expid):
 
 @app.route("/atmos/<expids>/")
 def atmosChart(expids):
-    if not bool(re.match('^[0-9,]+$', expids))
+    if not bool(re.match('^[0-9,]+$', expids)):
         return render_template('error.html')
     return render_template("atmos.html",expids = expids)
 
