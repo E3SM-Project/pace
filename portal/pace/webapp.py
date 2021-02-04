@@ -102,7 +102,7 @@ def fileparse():
     if request.method == 'POST':
         filename = request.form['filename']
         user = request.form['user']
-        if not bool(re.match('^[a-zA-Z0-9-_]+$', user)):
+        if not bool(re.match('^[a-zA-Z0-9\-._]+$', user)):
             return
         # TODO: Check user and filename
         return(parse.parseData(filename,user))
@@ -114,9 +114,7 @@ def downloadlog():
         msgfile = request.form['filename']
         filelink = ('/pace/assets/static/logs/'+str(msgfile))
         try:
-            # TODO: Get more tighter check
-            matchobj = re.match("^pace-[a-zA-Z0-9\-:]+\.log$", msgfile)
-            if matchobj:
+            if bool(re.match("^pace-[a-zA-Z0-9\-:]+\.log$", msgfile)):
                 return send_file(filelink,attachment_filename='message.log')
             else :
                 return render_template('error.html')
@@ -127,8 +125,7 @@ def downloadlog():
 def userauth():
     if request.method == 'POST':
         username = request.form['user']
-        # TODO: check user
-        if not bool(re.match('^[a-zA-Z0-9-_]+$', username)):
+        if not bool(re.match('^[a-zA-Z0-9\-._]+$', username)):
             return ("invaliduser")
         searchuser = Authusers.query.filter_by(user=username).first()
         db.session.close()
@@ -307,10 +304,9 @@ def summaryQuery(expID,rank,getFullStats = ""):
         resultNodes = json.dumps([newJson])
     return  '{{"obj":{0},"meta":{{"expid":"{1}","rank":"{2}","compset":"{3}","res":"{4}"}} }}'.format(resultNodes,expID,rank,compset,res)
 
-@app.route("/flamegraph/<int:expid>/<rank>/")
+@app.route("/flamegraph/<expid>/<rank>/")
 def flameGraph(expid,rank):
-    # TODO: Check rank
-    if bool(re.match('^[0-9,]+$', rank)):
+    if bool(re.match('^[0-9,]+$', rank)) and bool(re.match('^[0-9,]+$', expid)):
       return render_template("flameGraph.html",expid=expid,rank=rank.split(','))
 
 @app.route("/exp-details/<int:mexpid>")
@@ -344,7 +340,7 @@ def expDetails(mexpid):
 
 @app.route("/useralias/<user>")
 def useralias(user):
-    if bool(re.match('^[a-zA-Z0-9-_]+$', user)):
+    if bool(re.match('^[a-zA-Z0-9\-._]+$', user)):
         try:
             validuser=db.engine.execute("select * from authusers where user='"+str(user)+"\'").fetchall()[0]
         except IndexError:
@@ -362,9 +358,9 @@ def useraliasdelete():
     if request.method=='POST':
         user = request.form['user']
         alias = request.form['delete']
-        if not bool(re.match('^[a-zA-Z0-9-_]+$', user)):
+        if not bool(re.match('^[a-zA-Z0-9\-_.]+$', user)):
             return render_template('error.html')
-        if not bool(re.match('^[a-zA-Z0-9-_.]+$', alias)):
+        if not bool(re.match('^[a-zA-Z0-9\-_.]+$', alias)):
             return render_template('error.html')
         try:
             db.engine.execute("delete from useralias where alias='"+alias+"\'")
@@ -378,9 +374,9 @@ def useraliasadd():
     if request.method=='POST':
         user = request.form['user']
         alias = request.form['alias']
-        if not bool(re.match('^[a-zA-Z0-9-_]+$', user)):
+        if not bool(re.match('^[a-zA-Z0-9\-_.]+$', user)):
             return render_template('error.html')
-        if not bool(re.match('^[a-zA-Z0-9-_.]+$', alias)):
+        if not bool(re.match('^[a-zA-Z0-9\-_.]+$', alias)):
             return render_template('error.html')
         try:
             db.engine.execute("insert into useralias(user,alias) values ('"+user+"\',\'"+alias+"\')")
@@ -444,7 +440,7 @@ def expsAjax(pageNum):
 @app.route("/search/<searchQuery>")
 def searchPage(searchQuery="*",isHomePage=False):
     homePageStr = False
-    if bool(re.match('^[a-zA-Z0-9-\. \*_\$i\:\|]+$', searchQuery)):
+    if bool(re.match('^[\sa-zA-Z0-9\-_\.,\*:$|]+$', searchQuery)):
         return render_template("search.html",sq = "var searchQuery = '"+searchQuery+"';",homePage = isHomePage)
     else:
         return render_template('error.html')
@@ -469,22 +465,26 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
 
     # Convert user-passed to string after it passes integer validation
     limit = str(mlimit)
+    # Double-check that limit is a valid number
+    if not bool(re.match('^[0-9]+$', limit)):
+        return render_template('error.html')
 
-    # TODO: Decide if - and | should be allowed
-    # TODO: Mitigate boolean OR
-    if searchTerms.__contains__("OR") or searchTerms.__contains__("or"):
+    # Search terms should not contain any special characters except - _ * . , : ($ and | still under evaluation)
+    # Since some special characters should be escaped with a \ even within regular expression character set,
+    # we have escaped every special character below to be safe
+    # Disallowed: `~@#$%^&()+={}[]\\|\'";:<>?/
+    if bool(re.search('[\`\~\@\#\$\%\^\&\(\)\+\=\{\}\[\]\\\|\'\"\;\<\>\?\/]', searchTerms)):
         return render_template('error.html')
-    if bool(re.match('^[()\'\"|;\-=]+$', searchTerms)):
-        return render_template('error.html')
-    if searchTerms.__contains__("'") or searchTerms.__contains__("=") or searchTerms.__contains__(")"):
-        return render_template('error.html')
+
+    # Allowed chars in search terms
     # * is an acceptable search term especially for getting home page results
     # \s is the whitespace character
-    if not bool(re.match('^[\sa-zA-Z0-9\-_\.\*$:|]+$', searchTerms)):
+    if not bool(re.match('^[\sa-zA-Z0-9\-_\.,\*:$|]+$', searchTerms)):
         return render_template('error.html')
-    if whiteList != None:
-        if not bool(re.match('^[\sa-zA-Z0-9\-_\.\*$:|]+$', whiteList)):
-            return render_template('error.html')
+
+    # TODO: Mitigate boolean OR
+    # if searchTerms.__contains__("OR") or searchTerms.__contains__("or"):
+        # return render_template('error.html')
 
     #Variable names are split into non-string and string respectively. This is because mysql doesn't like comparing strings with numbers. It should therfore be able to fix exact matches, as there is only a string-to-string comparison
     variableList=[
@@ -492,18 +492,16 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
         ["user","machine","compset","exp_date","res","e3smexp.case","lid"]
     ]
 
-    specificVariables = whiteList
-    if whiteList == None:
-        specificVariables = variableList[0] + variableList[1]
-
     # Sarat (Feb 3,2021): orderby handling is a security issue. There could be
     # malicious content after valid fields, so truncate
     # "exp_date)) AS LwZg WHERE 8064=8064;SELECT SLEEP(5)#"
-    if not bool(re.match('^[a-zA-Z_]+$', orderby)):
+    # Note: you need not allow . here as e3smexp.case will be added latter when needed
+    if not bool(re.match('^[a-zA-Z_]+$', orderBy)):
         return render_template('error.html')
     if not bool(re.match('^(a|(de))sc$', ascDsc)):
         return render_template('error.html')
-    #This should be an easy way to determine if something's in the list
+
+    # case is a reserved word in mySQL, so use table name
     if orderBy == "case":
         orderBy = "e3smexp.case"
     elif orderBy not in variableList[0] + variableList[1]:
@@ -511,6 +509,19 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
     #Only asc and desc are allowed:
     if ascDsc not in ["asc","desc"]:
         ascDsc = "desc"
+
+    #  whiteList is an array
+    # if whiteList != None:
+        # if not bool(re.match('^[\sa-zA-Z0-9\-_\.\*$:|,]+$', whiteList)):
+            # return render_template('error.html')
+    if whiteList == None:
+        specificVariables = variableList[0] + variableList[1]
+    else:
+        # TODO: Check whitelist vars
+        # for wvar in whiteList:
+            # if not bool(re.match('^[a-zA-Z_\.]+$', wvar)):
+                # return render_template('error.html')
+        specificVariables = whiteList    
 
     #Multiple queries can be used at one time; This helps separate them.
     querySet = set(searchTerms.replace(" ","+").split("|"))
@@ -550,7 +561,7 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
 
     #The original version of searchCore did not have these three functions separated... this is for cleaner code XP
     def searchAll(termString):
-        if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +]+$', termString)):
+        if not bool(re.match('^[\sa-zA-Z0-9\-_\.,\*:$|]+$', termString)):
             return render_template('error.html')
         queryStr = "select "+str(specificVariables).strip("[]").replace("'","")+" from e3smexp order by "+orderBy+" "+ascDsc
         if limit:
@@ -560,7 +571,7 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
             resultItems.append(result)
 
     def advSearch(termString):
-        if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +]+$', termString)):
+        if not bool(re.match('^[\sa-zA-Z0-9\-_\.,\*:$|]+$', termString)):
             return render_template('error.html')
         termList = []
         #We assume the user is typing information with the following format: "user:name machine:titan etc:etc"
@@ -596,7 +607,7 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
             resultItems.append(result)
 
     def basicSearch(termString):
-        if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +]+$', termString)):
+        if not bool(re.match('^[\sa-zA-Z0-9\-_\.,\*:$|]+$', termString)):
             return render_template('error.html')
         termList = []
         #A regular search (no matchall)
@@ -673,16 +684,20 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
 
     return json.dumps([filteredItems,rankList])
 
+# Sarat (Feb 3, 2021): This function is used by the scatter plot and sends
+# requests of the form https://pace.ornl.gov/ajax/specificSearch/*/expid,machine,model_throughput,total_pes_active
 #Retrive specific values from /ajax/search. Order,asc/desc & limits are not a priority with this function:
 @app.route("/ajax/specificSearch/<query>")
 @app.route("/ajax/specificSearch/<query>/<whitelist>")
 def specificSearch(query,whitelist = "total_pes_active,model_throughput,machine,run_time,expid"):
-    if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +]+$', query)):
+    # We need to allow comma  , here to allow scatter plot to work
+    if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +,]+$', query)):
       return render_template('error.html')
-    if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +]+$', whitelist)):
-      return render_template('error.html')
-    whiteListArray = str(whiteList.replace("\\c","").replace(";","")).split(",")
-    # Scatter plot uses this interface to request data for plotting, specific default limit of 50
+    if whitelist != None:
+        if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +,]+$', whitelist)):
+            return render_template('error.html')
+        whiteListArray = str(whitelist.replace("\\c","").replace(";","")).split(",")
+    # Scatter plot uses this interface to request data for plotting, specify default limit of 50
     # Note: limit is expecting a string value
     return json.dumps(json.loads(searchCore(query,50,"","",whiteListArray,False))[0])
 
@@ -706,21 +721,21 @@ def getDistinct(entry):
 #These three redirect to the search page with their respective category.
 @app.route("/platforms/<platform>/")
 def platformsRedirect(platform):
-    if bool(re.match('^[a-zA-Z0-9-_]+$', platform)):
+    if bool(re.match('^[a-zA-Z0-9\-_]+$', platform)):
         return searchPage("machine:"+platform,False)
     else:
         return render_template('error.html')
 
 @app.route("/users/<user>/")
 def usersRedirect(user):
-    if bool(re.match('^[a-zA-Z0-9-_]+$', user)):
+    if bool(re.match('^[a-zA-Z0-9\-_]+$', user)):
         return searchPage("user:"+user,False)
     else:
         return render_template('error.html')
 
 @app.route("/benchmarks/<keyword>")
 def benchmarksRedirect(keyword):
-    if not bool(re.match('^[\sa-zA-Z0-9 \-\._]+$', keyword)):
+    if not bool(re.match('^[\sa-zA-Z0-9\-\._]+$', keyword)):
         return render_template('error.html')
     splitStr = keyword.split(" ")
     if splitStr[0] in ["FC5AV1C-H01A", "GMPAS-IAF"]:
@@ -731,7 +746,7 @@ def benchmarksRedirect(keyword):
 #This is designed for the search bar on the website. It predicts what a user may be looking for based on where the dev specifies to search.
 @app.route("/ajax/similarDistinct/<keyword>")
 def searchPrediction(keyword):
-    if not bool(re.match('^[a-zA-Z0-9\-. *_$:\|]+$', keyword)):
+    if not bool(re.match('^[a-zA-Z0-9\-._$:]+$', keyword)):
         return render_template('error.html')
     #The keyword is designed to be a single word without any potential database loopholes:
     keyword = keyword.replace("\\c","").replace(";","").replace(" ","")
@@ -783,14 +798,13 @@ def getRuntimeSvg(expid):
 
 @app.route("/atmos/<expids>/")
 def atmosChart(expids):
-    #TODO: Check
-    # if not bool(re.match('^[0-9,]+[0-9]+$', expids)):
-        # return render_template('error.html')
+    if not bool(re.match('^[0-9,]+$', expids))
+        return render_template('error.html')
     return render_template("atmos.html",expids = expids)
 
 @app.route("/xmlviewer/<int:mexpid>/<mname>")
 def xmlViewer(mexpid, mname):
-    if not bool(re.match('^[a-zA-Z0-9-_.]+$', mname)):
+    if not bool(re.match('^[a-zA-Z0-9\-_.]+$', mname)):
         return render_template('error.html')
     data = db.engine.execute("select data from xml_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
     if data is None:
@@ -801,7 +815,7 @@ def xmlViewer(mexpid, mname):
 
 @app.route("/nmlviewer/<int:mexpid>/<mname>")
 def nmlViewer(mexpid, mname):
-    if not bool(re.match('^[a-zA-Z0-9-_.]+$', mname)):
+    if not bool(re.match('^[a-zA-Z0-9\-_.]+$', mname)):
         return render_template('error.html')
     data = db.engine.execute("select data from namelist_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
     if data is None:
@@ -812,7 +826,7 @@ def nmlViewer(mexpid, mname):
 
 @app.route("/rcviewer/<int:mexpid>/<mname>")
 def rcViewer(mexpid, mname):
-    if not bool(re.match('^[a-zA-Z0-9-_.]+$', mname)):
+    if not bool(re.match('^[a-zA-Z0-9\-_.]+$', mname)):
         return render_template('error.html')
     data = db.engine.execute("select data from rc_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
     if data is None:
