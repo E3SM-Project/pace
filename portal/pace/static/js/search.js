@@ -8,7 +8,6 @@ var searchObj = {
     afterFunctions:[],
     //The low-level function that is called for starting a search. When search data is received, it changes all data on the table (and internally) to reflect the results.
     search:function(searchStr,limit = this.limit,afterFunc,orderBy,ascDsc=false){
-        console.log("%cHELLOOO!!","font-size:175%"); //This is VERY important part of the function.
         searchBody.innerHTML="";
         if(afterFunc)
             this.afterFunctions.push(afterFunc);
