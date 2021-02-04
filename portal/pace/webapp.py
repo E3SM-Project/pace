@@ -469,17 +469,19 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
     if not bool(re.match('^[0-9]+$', limit)):
         return render_template('error.html')
 
-    # Search terms should not contain any special characters except - _ * . , : ($ and | still under evaluation)
+    # Search terms should not contain any special characters except - _ * . , : + ($ and | still under evaluation)
     # Since some special characters should be escaped with a \ even within regular expression character set,
     # we have escaped every special character below to be safe
-    # Disallowed: `~@#$%^&()+={}[]\\|\'";:<>?/
-    if bool(re.search('[\`\~\@\#\$\%\^\&\(\)\+\=\{\}\[\]\\\|\'\"\;\<\>\?\/]', searchTerms)):
+    # + needs to be allowed as search bar on website formulates queries using that as delimiter
+    # * definitely needs to be allowed as it is used for home page
+    # Disallowed: `~@#$%^&()={}[]\\|\'";:<>?/
+    if bool(re.search('[\`\~\@\#\$\%\^\&\(\)\=\{\}\[\]\\\|\'\"\;\<\>\?\/]', searchTerms)):
         return render_template('error.html')
 
     # Allowed chars in search terms
     # * is an acceptable search term especially for getting home page results
     # \s is the whitespace character
-    if not bool(re.match('^[\sa-zA-Z0-9\-_\.,\*:$|]+$', searchTerms)):
+    if not bool(re.match('^[\sa-zA-Z0-9\-_\.,\*:$\|+]+$', searchTerms)):
         return render_template('error.html')
 
     # TODO: Mitigate boolean OR
@@ -561,7 +563,7 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
 
     #The original version of searchCore did not have these three functions separated... this is for cleaner code XP
     def searchAll(termString):
-        if not bool(re.match('^[\sa-zA-Z0-9\-_\.,\*:$|]+$', termString)):
+        if not bool(re.match('^[\sa-zA-Z0-9\-_\.,\*:$|+]+$', termString)):
             return render_template('error.html')
         queryStr = "select "+str(specificVariables).strip("[]").replace("'","")+" from e3smexp order by "+orderBy+" "+ascDsc
         if limit:
@@ -571,7 +573,7 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
             resultItems.append(result)
 
     def advSearch(termString):
-        if not bool(re.match('^[\sa-zA-Z0-9\-_\.,\*:$|]+$', termString)):
+        if not bool(re.match('^[\sa-zA-Z0-9\-_\.,\*:$|+]+$', termString)):
             return render_template('error.html')
         termList = []
         #We assume the user is typing information with the following format: "user:name machine:titan etc:etc"
@@ -607,7 +609,7 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
             resultItems.append(result)
 
     def basicSearch(termString):
-        if not bool(re.match('^[\sa-zA-Z0-9\-_\.,\*:$|]+$', termString)):
+        if not bool(re.match('^[\sa-zA-Z0-9\-_\.,\*:$|+]+$', termString)):
             return render_template('error.html')
         termList = []
         #A regular search (no matchall)
@@ -699,7 +701,7 @@ def specificSearch(query,whitelist = "total_pes_active,model_throughput,machine,
         whiteListArray = str(whitelist.replace("\\c","").replace(";","")).split(",")
     # Scatter plot uses this interface to request data for plotting, specify default limit of 50
     # Note: limit is expecting a string value
-    return json.dumps(json.loads(searchCore(query,50,"","",whiteListArray,False))[0])
+    return json.dumps(json.loads(searchCore(query,50,"exp_date","desc",whiteListArray,False))[0])
 
 #@app.route("/searchSummary/")
 #@app.route("/searchSummary/<query>")
