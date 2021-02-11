@@ -49,14 +49,18 @@ PACE_LOG_DIR,EXP_DIR,UPLOAD_FOLDER = getDirectories()
 
 # main
 def parseData(zipfilename,uploaduser):
+    # CHECKED: sanitize zipfilename and uploaduser (this is done in webapp.py at fileparse)
     # open file to write pace report
     old_stdout = sys.stdout
     old_stderr = sys.stderr
     logfilename = 'pace-'+str(uploaduser)+'-'+str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))+'.log'
+    intlogfilename = "internal-" + logfilename
     logfilepath = PACE_LOG_DIR + logfilename
+    intlogfilepath = PACE_LOG_DIR + intlogfilename
     log_file = open(logfilepath,'w')
+    intlog_file = open(intlogfilepath,'w')
     sys.stdout = log_file
-    sys.stderr = log_file
+    sys.stderr = intlog_file
     print ("* * * * * * * * * * * * * * PACE Report * * * * * * * * * * * * * *")
     try:
         fpath=UPLOAD_FOLDER
@@ -119,6 +123,7 @@ def parseData(zipfilename,uploaduser):
         sys.stdout = old_stdout
         sys.stderr = old_stderr
         log_file.close()
+        intlog_file.close()
         # check parse status, returns status with report
         if False in isSuccess:
             return('fail/'+str(logfilename))
@@ -126,25 +131,30 @@ def parseData(zipfilename,uploaduser):
             return('success/'+str(logfilename))
     except IOError as e:
         print ('[ERROR]: %s' % e.strerror)
-        removeFolder(UPLOAD_FOLDER,zipfilename)
+        # NOTE: DO NOT use removeFolder without validating zipfilename
+        # Cybersecurity issue
+        # removeFolder(UPLOAD_FOLDER,zipfilename)
         sys.stdout = old_stdout
         sys.stderr = old_stderr
         log_file.close()
+        intlog_file.close()
         return ('ERROR/'+str(logfilename))
     except OSError as e:
         print ('[ERROR]: %s' % e.strerror)
-        removeFolder(UPLOAD_FOLDER,zipfilename)
+        # removeFolder(UPLOAD_FOLDER,zipfilename)
         sys.stdout = old_stdout
         sys.stderr = old_stderr
         log_file.close()
+        intlog_file.close()
         return ('ERROR/'+str(logfilename))
     except Exception as e:
         print ('[ERROR]: %s' %e)
         print ('[ERROR]: Other error during upload')
-        removeFolder(UPLOAD_FOLDER,zipfilename)
+        # removeFolder(UPLOAD_FOLDER,zipfilename)
         sys.stdout = old_stdout
         sys.stderr = old_stderr
         log_file.close()
+        intlog_file.close()
         return ('ERROR/'+str(logfilename))
 
 # removes unwanted spaces (dedicated for parsing model_timing files)
@@ -697,6 +707,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
 
 # removes temporary folders in server
 def removeFolder(removeroot,filename):
+    # TODO: Validate filename before removing
     try:
         shutil.rmtree(os.path.join(removeroot,filename.split('.')[0]))
         os.remove(os.path.join(removeroot,filename))
