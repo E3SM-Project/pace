@@ -103,8 +103,13 @@ def fileparse():
         filename = request.form['filename']
         user = request.form['user']
         if not bool(re.match('^[a-zA-Z0-9\-._]+$', user)):
-            return
-        # TODO: Check user and filename
+            return('ERROR')
+        # Check zip file names from pace-upload
+        # Upon error, this path is being deleted, so we need to guard it
+        # pace-exps-sarats-2021-02-04-003824.zip
+        # pace-exps-user-timestamp.zip
+        if not bool(re.match('^pace-exps-[a-zA-Z0-9\-_]+.zip$', filename)):
+            return('ERROR')
         return(parse.parseData(filename,user))
 
 @app.route('/downloadlog', methods=['POST'])
@@ -471,13 +476,13 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
     if not bool(re.match('^[0-9]+$', limit)):
         return render_template('error.html')
 
-    # Search terms should not contain any special characters except - _ * . , : + ($ and | still under evaluation)
+    # Search terms should not contain any special characters except - _ * . , : + ($ under evaluation, | presently allowed)
     # Since some special characters should be escaped with a \ even within regular expression character set,
     # we have escaped every special character below to be safe
     # + needs to be allowed as search bar on website formulates queries using that as delimiter
     # * definitely needs to be allowed as it is used for home page
     # Disallowed: `~@#$%^&()={}[]\\|\'";:<>?/
-    if bool(re.search('[\`\~\@\#\$\%\^\&\(\)\=\{\}\[\]\\\|\'\"\;\<\>\?\/]', searchTerms)):
+    if bool(re.search('[\`\~\@\#\$\%\^\&\(\)\=\{\}\[\]\\\'\"\;\<\>\?\/]', searchTerms)):
         return render_template('error.html')
 
     # Allowed chars in search terms
@@ -521,10 +526,10 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
     if whiteList == None:
         specificVariables = variableList[0] + variableList[1]
     else:
-        # TODO: Check whitelist vars
-        # for wvar in whiteList:
-            # if not bool(re.match('^[a-zA-Z_\.]+$', wvar)):
-                # return render_template('error.html')
+        # TODO: Check whitelist vars when whiteList is not none
+        for wvar in whiteList:
+            if not bool(re.match('^[a-zA-Z_\.]+$', wvar)):
+                return render_template('error.html')
         specificVariables = whiteList    
 
     #Multiple queries can be used at one time; This helps separate them.
@@ -698,12 +703,19 @@ def specificSearch(query,whitelist = "total_pes_active,model_throughput,machine,
     if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +,]+$', query)):
       return render_template('error.html')
     if whitelist != None:
-        if not bool(re.match('^[\sa-zA-Z0-9\-_.*$:| +,]+$', whitelist)):
+        # Whitelist would need alphanumeric chars and , and probably + for delimiting
+        if not bool(re.match('^[\sa-zA-Z_+,]+$', whitelist)):
             return render_template('error.html')
         whiteListArray = str(whitelist.replace("\\c","").replace(";","")).split(",")
     # Scatter plot uses this interface to request data for plotting, specify default limit of 50
     # Note: limit is expecting a string value
-    return json.dumps(json.loads(searchCore(query,50,"exp_date","desc",whiteListArray,False))[0])
+    try:
+        # Check if valid json, Error page returned if search contains forbidden chars
+        result = json.loads(searchCore(query,50,"exp_date","desc",whiteListArray,False))
+        retval = json.dumps(result[0])
+        return retval
+    except ValueError as e:
+         return ('ERROR')
 
 #@app.route("/searchSummary/")
 #@app.route("/searchSummary/<query>")
@@ -750,7 +762,7 @@ def benchmarksRedirect(keyword):
 #This is designed for the search bar on the website. It predicts what a user may be looking for based on where the dev specifies to search.
 @app.route("/ajax/similarDistinct/<keyword>")
 def searchPrediction(keyword):
-    if not bool(re.match('^[a-zA-Z0-9\-._$:]+$', keyword)):
+    if not bool(re.match('^[a-zA-Z0-9\-._]+$', keyword)):
         return render_template('error.html')
     #The keyword is designed to be a single word without any potential database loopholes:
     keyword = keyword.replace("\\c","").replace(";","").replace(" ","")
