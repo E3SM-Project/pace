@@ -121,6 +121,8 @@ sub main {
   my $CaseStatusf;
   my @jlidfiles;
   my $thisjobstat;
+  my $acme_timingf;
+  my $e3sm_timingf;
 
   $timestamp = "unset";
   for (my $i=0; $i <= $#ARGV; $i+=2){
@@ -468,6 +470,28 @@ Optional arguments:
 
             close JOBSTATSF;
 
+          }
+
+          if ($thissystem =~ m/unset/){
+            # If system still not defined, check the acme_timing or e3sm_timing file (if available)
+            $acme_timingf = "$thisjlid_directory/acme_timing.$thiscase.$thisjlid.gz";
+            $e3sm_timingf = "$thisjlid_directory/e3sm_timing.$thiscase.$thisjlid.gz";
+            if ((-f $acme_timingf) || (-f $e3sm_timingf)) {
+              if (-f $acme_timingf) {
+                open(TIMINGF, "gunzip -c $acme_timingf |") || die "can't open pipe to $acme_timingf";
+              }else{
+                open(TIMINGF, "gunzip -c $e3sm_timingf |") || die "can't open pipe to $e3sm_timingf";
+              }
+
+              TIMINGFLOOP: while (<TIMINGF>){
+                if (m/^\s*Machine\s*:\s*(\S+)/){
+                  $thissystem = $1;
+                  last TIMINGFLOOP;
+                }
+              }
+
+              close TIMINGF;
+            }
           }
 
           if ($thissystem =~ m/unset/){
