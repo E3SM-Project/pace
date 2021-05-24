@@ -103,6 +103,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# mac creates .ds_store when open folder from finder
+.DS_Store
+
 # PACE specific
 portal/upload
 .pacerc
