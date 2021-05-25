@@ -18,6 +18,8 @@ optional arguments:
   --application {e3sm}, -a {e3sm}
                         Application name, default set to e3sm.
 
+docs: Refer https://pace.ornl.gov/upload-howto
+
 Prerequisites
 --------------------------------------------------------------------------------
 * Python
