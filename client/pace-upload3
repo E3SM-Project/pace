@@ -18,6 +18,7 @@ import zipfile, tarfile
 import getpass
 import stat
 import socket
+import webbrowser
 from stat import *
 from datetime import datetime
 from configparser import RawConfigParser
@@ -172,6 +173,7 @@ def isValidFusionExp(expfile):
 # read token from config file if it exists else create new
 def getGitToken():
     configFile = os.path.join(expanduser("~"),'.pacecc')
+    print(configFile)
     if os.path.isfile(configFile):
         user,token = readconfigfile(configFile)
     else:
@@ -203,12 +205,23 @@ def gitAuthenticate(token):
     except KeyError:
         print(bcolors.FAIL+'ERROR: Github authentication failed, Invalid Token.'+bcolors.ENDC)
         exit()
-    validUser = authenticateUser(user)
-    return (validUser, user)
+    
+    return (user)
 
 # create new token for the user
 def createtoken():
     #User Input
+    print((bcolors.OKBLUE+"--------------------------------------"+bcolors.ENDC))
+    print((bcolors.BOLD+"First time user, Opening GITHUB"+bcolors.ENDC))
+    print(" ")
+    print((bcolors.BOLD+"Please generate a new personal access token"+bcolors.ENDC))
+    webbrowser.open_new('https://github.com/settings/tokens/new')
+    token = input(bcolors.BOLD + 'Github personal access token: '+ bcolors.ENDC)
+    #token = getpass.getpass(bcolors.BOLD + 'Github personal access token: '+ bcolors.ENDC)
+    print((bcolors.OKBLUE+"--------------------------------------"+bcolors.ENDC))
+    username = gitAuthenticate(token)
+    return (username,token)
+    """#User Input
     username = input(bcolors.BOLD + 'Github username: '+ bcolors.ENDC)
     password = getpass.getpass(bcolors.BOLD + 'Github password: '+ bcolors.ENDC)
     url = urljoin(GITHUB_API, 'authorizations')
@@ -227,7 +240,7 @@ def createtoken():
     token = j['token']
     print((bcolors.OKGREEN +"Github login success" + bcolors.ENDC))
     print (" ")
-    return (username,token)
+    return (username,token)"""
 
 # read from config file
 def readconfigfile(configFile):
@@ -252,7 +265,8 @@ def createconfigfile(user,token,configFile):
 # authenticate user
 def userAuth():
     token = getGitToken()
-    isSuccess, user = gitAuthenticate(token)
+    user = gitAuthenticate(token)
+    isSuccess = authenticateUser(user)
     if isSuccess == True:
         return (user)
     else:
@@ -270,6 +284,10 @@ def downloadlog(filename):
 
 # main
 def main():
+    #TODO: user auth test
+    user = userAuth()
+    exit()
+
     # parse argument
     result = parseArguments()
     if result.source == None:
