@@ -3,14 +3,15 @@
 from flask import Flask,render_template,Response,make_response,send_from_directory,request,redirect,url_for, session
 from collections import OrderedDict
 from pace import app
-import parse as parse
+#import parse as parse
+from . parse import parse as parse
 import sys
 import collections
 import operator
 import json
 import urllib
 from sqlalchemy.orm import sessionmaker
-from __init__ import db
+from . __init__ import db
 import os, shutil, distutils
 import re
 

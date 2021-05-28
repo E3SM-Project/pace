@@ -1,4 +1,4 @@
-from __init__ import db
+from . __init__ import db
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.mysql import MEDIUMTEXT,INTEGER,DECIMAL
