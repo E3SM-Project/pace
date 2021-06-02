@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # @file pace_common.py
 # @brief: Common helper functions for PACE
 #

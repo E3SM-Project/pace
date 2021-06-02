@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 from flask import Flask,render_template,Response,make_response,send_from_directory,request,redirect,url_for, session
 from collections import OrderedDict

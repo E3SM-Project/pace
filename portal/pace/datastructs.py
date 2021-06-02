@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from . __init__ import db
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy

@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 # imports
 from . datastructs import *
 from . pace_common import *

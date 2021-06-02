@@ -1,4 +1,4 @@
-##
+#! /usr/bin/env python3
 # @file modelTiming.py
 # @brief Parse files that come from GPTL into JSON for storing in DB.
 # @author Zachary Mitchell, Sarat Sreepathi
