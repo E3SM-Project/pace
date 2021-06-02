@@ -16,9 +16,9 @@ import os, shutil, distutils
 import re
 
 #Model Timing Library:
-import modelTiming as mt
+from . modelTiming import *
 #modelTiming database information:
-from pace_common import *
+from . pace_common import *
 
 from sqlalchemy.exc import SQLAlchemyError
 #github imports
@@ -45,12 +45,12 @@ PACE_LOG_DIR,EXP_DIR,UPLOAD_FOLDER = getDirectories()
 # Uploading file
 from werkzeug.utils import secure_filename
 import os
-from datastructs import *
+from . datastructs import *
 
 #These charts were modified for use on PACE
 #Runtime image generator: by donahue5
-import pe_layout_timings as runtimeSvg
-
+#from . pe_layout_timings import pe_layout_timings as runtimeSvg
+from . pe_layout_timings import *
 #This is for querying colors:
 from matplotlib.colors import to_rgb,to_hex
 import matplotlib.cm as cm
@@ -283,9 +283,9 @@ def summaryQuery(expID,rank,getFullStats = ""):
         basePath+="assets/"
     basePath+="static/samples/"
     if expID == "-1":
-        resultNodes = mt.parse(basePath+"model_timing.0000.new")
+        resultNodes = modelTiming.parse(basePath+"model_timing.0000.new")
     elif expID == "-2":
-        resultNodes = mt.parse(basePath+"model_timing_stats")
+        resultNodes = modelTiming.parse(basePath+"model_timing_stats")
     else:
         resultNodes = db.engine.execute("select jsonVal from model_timing where expid = "+str(expID)+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
         #Get user and machine information:
@@ -334,8 +334,8 @@ def expDetails(mexpid):
     myruntime = db.engine.execute("select * from runtime where expid= "+ str(mexpid) ).fetchall()
     ranks = db.engine.execute("select rank from model_timing where rank!= 'stats' and expid= "+ str(mexpid) + " order by cast(rank as int)" ).fetchall()
     colorDict = {}
-    for i in range(len(runtimeSvg.default_args['comps'])):
-        colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
+    for i in range(len(pe_layout_timings.default_args['comps'])):
+        colorDict[pe_layout_timings.default_args['comps'][i]] = pe_layout_timings.default_args['color'][i]
     try:
         noteexp = db.engine.execute("select * from expnotes where expid= "+ str(mexpid) ).fetchall()[0]
         note = noteexp.note
@@ -807,7 +807,7 @@ def getRuntimeSvg(expid):
                 resultElement[key]["root_pe"] = peQuery[0].root_pe
                 resultElement[key]["tasks"] = peQuery[0].tasks -1
         if len(resultElement.keys()) > 0:
-            return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")
+            return Response(pe_layout_timings.render(resultElement).read(),mimetype="image/svg+xml")
         else:
             return render_template('error.html'), 404
     except SQLAlchemyError:

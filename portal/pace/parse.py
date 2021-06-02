@@ -11,16 +11,17 @@ import shutil
 import zipfile
 import pymysql
 import types
-import modelTiming as mt
+from . modelTiming import *
 import io
 from minio import Minio
-from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
+#from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
+from minio.error import (InvalidResponseError)
 from sqlalchemy.exc import SQLAlchemyError
 
 import tarfile
 from os.path import abspath, realpath, dirname, join as joinpath
 from sys import stderr
-import inputFileParser
+from . inputFileParser import *
 
 resolved = lambda x: realpath(abspath(x))
 
@@ -750,7 +751,7 @@ def uploadMinio(EXP_DIR,expname):
         if not minioClient.bucket_exists("e3sm"):
             minioClient.make_bucket("e3sm")
         minioClient.fput_object('e3sm', expname+'.zip', os.path.join(EXP_DIR,expname)+'.zip')
-    except ResponseError as err:
+    except InvalidResponseError as err:
         print('    ERROR: Failed to upload to file server %s' %err)
         return (False)
     return True
@@ -780,7 +781,7 @@ def insertTiming(mtFile,expID,db):
                 # print "DEBUG: insertTiming before add: " + rankStr + " element : " + str(element)
                 # If code crashes here, check if GPTL output file format has changed
                 # Modify corresponding modelTiming.parse function
-                new_modeltiming = ModelTiming(expid=expID, jsonVal=mt.parse(sourceFile.extractfile(element)),rank=rankStr)
+                new_modeltiming = ModelTiming(expid=expID, jsonVal=modelTiming.parse(sourceFile.extractfile(element)),rank=rankStr)
                 # print "DEBUG: insertTiming before dbsession add: " + rankStr + " element : " + str(element)
                 db.session.add(new_modeltiming)
     except SQLAlchemyError as e:
