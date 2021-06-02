@@ -1,0 +1,10 @@
+configparser
+flask
+gunicorn
+sqlalchemy
+flask_sqlalchemy
+pymysql
+minio
+rauth
+numpy
+matplotlib
