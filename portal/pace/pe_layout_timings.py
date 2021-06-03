@@ -191,7 +191,7 @@ def render(runtimeIn,opt_dict = None):
         ax.text(1.05,0.5,layout,fontsize=16)
 
     #Save to a file object:
-    fileObj = StringIO.StringIO()
+    fileObj = StringIO()
     plt.savefig(fileObj,dpi=400,bbox_inches='tight',facecolor="#00000000")
     fileObj.seek(0)
     return fileObj
