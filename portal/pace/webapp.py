@@ -50,7 +50,7 @@ from . datastructs import *
 #These charts were modified for use on PACE
 #Runtime image generator: by donahue5
 #from . pe_layout_timings import pe_layout_timings as runtimeSvg
-from . pe_layout_timings import *
+from pace import pe_layout_timings
 #This is for querying colors:
 from matplotlib.colors import to_rgb,to_hex
 import matplotlib.cm as cm
