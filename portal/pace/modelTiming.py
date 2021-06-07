@@ -67,8 +67,8 @@ def loadConfig(files,appendLocation = None):
     #Add json to targetConfig
     def appendJson(jsonFile):
         srcJson = json.loads(jsonFile.read())
-        for key in srcJson.keys():
-            if key not in targetConfig.keys():
+        for key in list(srcJson.keys()):
+            if key not in list(targetConfig.keys()):
                 targetConfig[key] = srcJson[key]
     #Check if this is a valid json file
     def isJsonFile(path):
@@ -76,14 +76,14 @@ def loadConfig(files,appendLocation = None):
         return os.path.isfile(path) and len(jsonTest) > 1 and jsonTest[1] == "json"
 
     fileList = []
-    if type(files) == types.ListType:
+    if type(files) == list:
         fileList = files
     else:
         fileList.append(files)
     for element in fileList:
         if type(element) == types.FileType:
             appendJson(element)
-        elif type(element) == types.StringType:
+        elif type(element) == bytes:
             #Figure out if it's a directory or not:
             if isJsonFile(element):
                 appendJson(open(element))
@@ -105,7 +105,7 @@ def detectMtFile(fileObj,configList = parserConfigs):
     # Initialize matching file scores and column scores to zero for each configuration
     filescore = []
     colscore = []
-    for key in configList.keys():
+    for key in list(configList.keys()):
         for config in configList[key]:
             myconfigIdx = configList[key].index(config)
             filescore.append(0)
@@ -116,7 +116,7 @@ def detectMtFile(fileObj,configList = parserConfigs):
         lineCount+=1
         #Scan every line to find everything we should know about the file:
         if targetConfig == None:
-            for key in configList.keys():
+            for key in list(configList.keys()):
                 for config in configList[key]:
                     myconfigIdx = configList[key].index(config)
                     #Check to see if all of the file Identifiers showed up in this line:
@@ -167,7 +167,7 @@ def detectMtFile(fileObj,configList = parserConfigs):
 def getData(src,configList = parserConfigs):
     #Check if src is a string, otherwise attempt to read from a file object:
     sourceFile=None
-    if type(src) == types.StringType:
+    if type(src) == bytes:
         sourceFile = open(src,"r")
     else:
         sourceFile = src
@@ -276,12 +276,12 @@ def parseNode(lineInput,config,currLine=0,parent=None):
 def parseThread(thread,config):
     if len(thread) == 0:
         return []
-    elif type(thread[0][0]) == types.StringType:
+    elif type(thread[0][0]) == bytes:
         resultNodes = []
         for nodes in thread:
             resultNodes.append(parseNode(nodes,config))
         return resultNodes
-    elif type(thread[0][0]) == types.ListType:
+    elif type(thread[0][0]) == list:
         resultThreads=[]
         for element in thread:
             # print (element)
@@ -294,7 +294,7 @@ def typeResolver(mtObj):
     The function returns a dictionary of values that come from either timeNode objects, or json files.
     """
     output = {"name":None,"values":None,"children":None}
-    if type(mtObj) == types.DictType:
+    if type(mtObj) == dict:
             output["name"] = mtObj["name"]
             output["children"] = mtObj["children"]
             output["values"] = mtObj["values"]
@@ -308,7 +308,7 @@ def typeResolver(mtObj):
 def searchNode(nodeIn,name):
     #A little tweak to make things compatible with lists...
     nodeList = []
-    if type(nodeIn) == types.ListType:
+    if type(nodeIn) == list:
         nodeList = nodeIn
     else:
         nodeList.append(nodeIn)
@@ -332,8 +332,8 @@ def searchNode(nodeIn,name):
 #Recursively convert your nodes into JSON.
 def toJson(nodeIn,useBrackets=True):
     resultString=''
-    if type(nodeIn) == types.ListType:
-        if len(nodeIn) > 0 and type(nodeIn[0]) == types.ListType:
+    if type(nodeIn) == list:
+        if len(nodeIn) > 0 and type(nodeIn[0]) == list:
             #Aha! we have a multi-threaded collection:
             for i in range(len(nodeIn)):
                 resultString+=toJson(nodeIn[i])
