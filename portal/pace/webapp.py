@@ -55,7 +55,7 @@ from pace import pe_layout_timings
 from matplotlib.colors import to_rgb,to_hex
 import matplotlib.cm as cm
 
-mplColors = cm.datad.keys()
+mplColors = list(cm.datad.keys())
 
 # Home page
 @app.route("/")
@@ -90,7 +90,7 @@ def upload_file():
                 if os.path.exists(os.path.join(UPLOAD_FOLDER,zipfilename)):
                     os.remove(os.path.join(UPLOAD_FOLDER,zipfilename))
             except OSError as e:
-                print ("Error: %s - %s." % (e.filename, e.strerror))
+                print(("Error: %s - %s." % (e.filename, e.strerror)))
             filename = secure_filename(file.filename)
             file.save(os.path.join(UPLOAD_FOLDER, filename))
             return('complete')
@@ -678,7 +678,7 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
                 break
         if unique:
             resultDict = {}
-            for key in element.keys():
+            for key in list(element.keys()):
                 resultDict[key] = str(element[key])
             filteredItems.append(resultDict)
 
@@ -801,12 +801,12 @@ def getRuntimeSvg(expid):
         for element in runtimeQuery:
             #These Decimal objects don't have "precision" values, while the ones in searchCore do... :/ [probably because of how these were queried]
             resultElement[element.component] = {"seconds":float(element.seconds),"model_years":float(element.model_years),"model_day":float(element.model_day)}
-        for key in resultElement.keys():
+        for key in list(resultElement.keys()):
             peQuery = db.engine.execute("select root_pe,tasks from pelayout where expid = "+str(expid)+" and component like '%%"+key+"%%'").fetchall()
             if len(peQuery) > 0:
                 resultElement[key]["root_pe"] = peQuery[0].root_pe
                 resultElement[key]["tasks"] = peQuery[0].tasks -1
-        if len(resultElement.keys()) > 0:
+        if len(list(resultElement.keys())) > 0:
             return Response(pe_layout_timings.render(resultElement).read(),mimetype="image/svg+xml")
         else:
             return render_template('error.html'), 404

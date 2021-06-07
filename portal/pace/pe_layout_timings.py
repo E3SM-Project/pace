@@ -61,11 +61,11 @@ class pe_component(object):
         self.plot_patch = None
         self.fullstop = None
         self.values = valuesIn
-        if "tasks" in self.values.keys() and "root_pe" in self.values.keys():
+        if "tasks" in list(self.values.keys()) and "root_pe" in list(self.values.keys()):
             self.root_task_sum = self.values["tasks"] + self.values["root_pe"]
             #print(self.name+": "+str([self.values["root_pe"],self.root_task_sum]))
     def __str__(self):
-        print(self.name)
+        print((self.name))
 
     def add2plot(self,ax,bdims,displayLabel):
         self.plot_patch = patches.Rectangle(bdims[0:2], bdims[2],bdims[3],color=self.color)
@@ -82,8 +82,8 @@ def check_defaults(arg):
     # Pass a dictionary of all the arguments.  If any will cause an error then
     # change to default value.  Or kill run
     if not arg.get('dtype') in ("seconds","model_day","model_years"):
-        print("ERROR: data type "+arg.get('dtype')+" not supported... "+\
-                "changing to default data type = seconds")
+        print(("ERROR: data type "+arg.get('dtype')+" not supported... "+\
+                "changing to default data type = seconds"))
         arg['dtype'] = "seconds"
     for ii in arg.get('comps'):
         if not ii in ('ICE','LND','ROF','WAV','OCN','ATM','GLC','CPL'):
@@ -92,8 +92,8 @@ def check_defaults(arg):
             ['ICE','LND','ROF','WAV','OCN','ATM','GLC','CPL']""")
             return True
     if not len(arg.get('fullstop')) == len(arg.get('comps')):
-        print("my_comps and full_stop are not equal in length.  Setting to " +\
-                "default full_stop of all False")
+        print(("my_comps and full_stop are not equal in length.  Setting to " +\
+                "default full_stop of all False"))
         arg['fullstop'] = False*len(arg.get('comps'))
     if not len(arg.get('color')) == len(arg.get('comps')):
         print("Not all components have a designated color. Setting to default")

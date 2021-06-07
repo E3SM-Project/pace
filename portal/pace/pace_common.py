@@ -90,8 +90,8 @@ def getMiniokey():
 
     filePerms = oct(os.stat(configFile)[ST_MODE])
     if filePerms not in ['0100600','0o100600']:
-        print(bcolors.WARNING + "Config file permissions should be set to read, write for owner only")
-        print("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC)
+        print((bcolors.WARNING + "Config file permissions should be set to read, write for owner only"))
+        print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
     # print filePerms
     parser = RawConfigParser()
     parser.read(configFile)
@@ -108,8 +108,8 @@ def getGithubkey():
 
     filePerms = oct(os.stat(configFile)[ST_MODE])
     if filePerms not in ['0100600','0o100600']:
-        print(bcolors.WARNING + "Config file permissions should be set to read, write for owner only")
-        print("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC)
+        print((bcolors.WARNING + "Config file permissions should be set to read, write for owner only"))
+        print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
     # print filePerms
     parser = RawConfigParser()
     parser.read(configFile)
@@ -122,8 +122,8 @@ def readConfigFile(configFile):
     global PACE_USER
     filePerms = oct(os.stat(configFile)[ST_MODE])
     if filePerms not in ['0100600','0o100600']:
-        print(bcolors.WARNING + "Config file permissions should be set to read, write for owner only")
-        print("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC)
+        print((bcolors.WARNING + "Config file permissions should be set to read, write for owner only"))
+        print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
         # print filePerms
 
     parser = RawConfigParser()
@@ -143,11 +143,11 @@ def initDatabase():
     configFile = detectPaceRc()
 
     if configFile:
-        print("Reading configuration from " + configFile)
+        print(("Reading configuration from " + configFile))
         myuser,mypwd,mydb,myhost = readConfigFile(configFile)
     else:
-        print(bcolors.WARNING + "For convenience, you should create your configuration (.pacerc) using the template pacerc.tmpl")
-        print("Alternately, you can enter your credentials below." + bcolors.ENDC)
+        print((bcolors.WARNING + "For convenience, you should create your configuration (.pacerc) using the template pacerc.tmpl"))
+        print(("Alternately, you can enter your credentials below." + bcolors.ENDC))
         myuser = input('Username: ')
         mypwd = getpass.getpass()
         mydb = 'pace'
