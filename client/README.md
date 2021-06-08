@@ -23,5 +23,5 @@ docs: Refer https://pace.ornl.gov/upload-howto
 
 Prerequisites
 --------------------------------------------------------------------------------
-* Python
+* Python3
 
