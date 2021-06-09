@@ -21,6 +21,12 @@ optional arguments:
 
 docs: Refer https://pace.ornl.gov/upload-howto
 
+
+First Time User
+--------------------------------------------------------------------------------
+* Generate GitHub Personal Access Token from https://github.com/settings/tokens/new
+* Enter it when prompt after executing the pace-upload tool.
+
 Prerequisites
 --------------------------------------------------------------------------------
 * Python3
