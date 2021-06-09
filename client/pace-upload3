@@ -212,12 +212,10 @@ def gitAuthenticate(token):
 def createtoken():
     #User Input
     print((bcolors.OKBLUE+"--------------------------------------"+bcolors.ENDC))
-    print((bcolors.BOLD+"First time user, Opening GITHUB"+bcolors.ENDC))
-    print(" ")
-    print((bcolors.BOLD+"Please generate a new personal access token"+bcolors.ENDC))
-    webbrowser.open_new('https://github.com/settings/tokens/new')
-    token = input(bcolors.BOLD + 'Github personal access token: '+ bcolors.ENDC)
-    #token = getpass.getpass(bcolors.BOLD + 'Github personal access token: '+ bcolors.ENDC)
+    print((bcolors.BOLD+"First time user, Open GITHUB"+bcolors.ENDC))
+    print((bcolors.BOLD+"Please generate a new personal access token here"+bcolors.ENDC))
+    print((bcolors.BOLD+"https://github.com/settings/tokens/new"+bcolors.ENDC))
+    token = getpass.getpass(bcolors.BOLD + 'Github personal access token: '+ bcolors.ENDC)
     print((bcolors.OKBLUE+"--------------------------------------"+bcolors.ENDC))
     username = gitAuthenticate(token)
     return (username,token)
