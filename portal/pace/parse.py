@@ -11,7 +11,7 @@ import shutil
 import zipfile
 import pymysql
 import types
-from . modelTiming import *
+from . import modelTiming
 import io
 from minio import Minio
 #from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
@@ -19,9 +19,10 @@ from minio.error import (InvalidResponseError)
 from sqlalchemy.exc import SQLAlchemyError
 
 import tarfile
+import codecs
 from os.path import abspath, realpath, dirname, join as joinpath
 from sys import stderr
-from . inputFileParser import *
+from . import inputFileParser
 
 resolved = lambda x: realpath(abspath(x))
 
@@ -234,9 +235,9 @@ def checkDuplicateExp(euser,emachine,ecurr, ecase):
 def parseReadme(readmefilename):
     # open file
     if readmefilename.endswith('.gz'):
-        fileIn=gzip.open(readmefilename,'rb')
+        fileIn=gzip.open(readmefilename,'rt')
     else:
-        fileIn = open(readmefilename,'rb')
+        fileIn = open(readmefilename,'rt')
     resultElement = {}
     commandLine = None
     flag=False
@@ -286,9 +287,9 @@ def parseReadme(readmefilename):
 def parseModelVersion(gitfile):
     # open file
     if gitfile.endswith('.gz'):
-        parsefile = gzip.open(gitfile,'rb')
+        parsefile = gzip.open(gitfile,'rt')
     else:
-        parsefile = open(gitfile, 'rb')
+        parsefile = open(gitfile, 'rt')
     # initialize version
     version = 0
     for line in parsefile:
@@ -310,6 +311,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
     print(('* Parsing: '+ convertPathtofile(timingfile)))
 
     # insert modelTiming
+    print(timingfile)
     isSuccess = insertTiming(timingfile,currExpObj.expid,db)
     if isSuccess == False:
         return False
@@ -370,10 +372,11 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
     duplicateFlag = False
     currExpObj = None
     # open file
+    print('here')
     if filename.endswith('.gz'):
-        parseFile=gzip.open(filename,'rb')
+        parseFile=gzip.open(filename,mode='rt')
     else:
-        parseFile=open(filename,'rb')
+        parseFile=open(filename,'rt')
 
     # dictionary to store timingprofile
     timingProfileInfo={}
@@ -383,12 +386,11 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
     runTimeTable=[]
     # tmp var for parsing purpose
     word=''
-    print(('* Parsing: '+convertPathtofile(filename)))
+
     try:
         count = 0
         for line in parseFile:
             count = count + 1
-            # print str(count) + line
             if line!='\n':
                 # find values for given keys
                 if len(timingProfileInfo)<12:
@@ -541,9 +543,9 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
     # open file again to parse component and runtime tables
     try:
         if filename.endswith('.gz'):
-            parseFile=gzip.open(filename,'rb')
+            parseFile=gzip.open(filename,'rt')
         else:
-            parseFile=open(filename,'rb')
+            parseFile=open(filename,'rt')
         lines=parseFile.readlines()
         componentTableSuccess = False
         runtimeTableSuccess = False
@@ -781,7 +783,9 @@ def insertTiming(mtFile,expID,db):
                 # print "DEBUG: insertTiming before add: " + rankStr + " element : " + str(element)
                 # If code crashes here, check if GPTL output file format has changed
                 # Modify corresponding modelTiming.parse function
-                new_modeltiming = ModelTiming(expid=expID, jsonVal=modelTiming.parse(sourceFile.extractfile(element)),rank=rankStr)
+                utf8reader = codecs.getreader('utf-8')
+                source = utf8reader(sourceFile.extractfile(element))
+                new_modeltiming = ModelTiming(expid=expID, jsonVal=modelTiming.parse(source),rank=rankStr)
                 # print "DEBUG: insertTiming before dbsession add: " + rankStr + " element : " + str(element)
                 db.session.add(new_modeltiming)
     except SQLAlchemyError as e:
