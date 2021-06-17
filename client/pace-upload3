@@ -25,7 +25,8 @@ from configparser import RawConfigParser
 from urllib.parse import urljoin
 
 # base url
-baseurl = "https://pace.ornl.gov/"
+#baseurl = "https://pace.ornl.gov/"
+baseurl = "https://pace1.ornl.gov/"
 
 # api for github
 GITHUB_API = 'https://api.github.com'
@@ -282,10 +283,6 @@ def downloadlog(filename):
 
 # main
 def main():
-    #TODO: user auth test
-    user = userAuth()
-    exit()
-
     # parse argument
     result = parseArguments()
     if result.source == None:
