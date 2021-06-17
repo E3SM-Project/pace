@@ -4,7 +4,7 @@ from flask import Flask,render_template,Response,make_response,send_from_directo
 from collections import OrderedDict
 from pace import app
 #import parse as parse
-from . parse import parse as parse
+from . import parse
 import sys
 import collections
 import operator
@@ -16,7 +16,7 @@ import os, shutil, distutils
 import re
 
 #Model Timing Library:
-from . modelTiming import *
+from . import modelTiming
 #modelTiming database information:
 from . pace_common import *
 
