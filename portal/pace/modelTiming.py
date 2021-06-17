@@ -110,7 +110,6 @@ def detectMtFile(fileObj,configList = parserConfigs):
             myconfigIdx = configList[key].index(config)
             filescore.append(0)
             colscore.append(0)
-
     currLine = fileObj.readline()
     while not currLine == "":
         lineCount+=1
@@ -121,8 +120,6 @@ def detectMtFile(fileObj,configList = parserConfigs):
                     myconfigIdx = configList[key].index(config)
                     #Check to see if all of the file Identifiers showed up in this line:
                     for fileID in config["fileIdentifiers"]:
-                        # print "Checking identifier :" + fileID
-                        # print "currLine: " + currLine
                         if fileID in currLine:
                             filescore[myconfigIdx] += 1
                             # print fileID + " is present, filescore: " + str(filescore)
@@ -167,15 +164,13 @@ def detectMtFile(fileObj,configList = parserConfigs):
 def getData(src,configList = parserConfigs):
     #Check if src is a string, otherwise attempt to read from a file object:
     sourceFile=None
-    if type(src) == bytes:
-        sourceFile = open(src,"r")
+    if isinstance(src, str):
+        sourceFile = open(src,"rt")
     else:
         sourceFile = src
     lineCount = 0
     resultLines=[]
-
     threadIndexes,fileConfig = detectMtFile(sourceFile,configList)
-
     for line in threadIndexes:
         resultLines.append([])
         firstItr = True
@@ -276,7 +271,7 @@ def parseNode(lineInput,config,currLine=0,parent=None):
 def parseThread(thread,config):
     if len(thread) == 0:
         return []
-    elif type(thread[0][0]) == bytes:
+    elif isinstance(thread[0][0],str):
         resultNodes = []
         for nodes in thread:
             resultNodes.append(parseNode(nodes,config))
@@ -332,6 +327,8 @@ def searchNode(nodeIn,name):
 #Recursively convert your nodes into JSON.
 def toJson(nodeIn,useBrackets=True):
     resultString=''
+    #print("---------------nodeIn-----------")
+    #print(nodeIn)
     if type(nodeIn) == list:
         if len(nodeIn) > 0 and type(nodeIn[0]) == list:
             #Aha! we have a multi-threaded collection:
