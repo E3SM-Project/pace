@@ -92,3 +92,57 @@ class useralias(db.Model):
     id = db.Column(INTEGER(unsigned=True), primary_key=True,autoincrement=True)
     user = db.Column(db.String(25),nullable=False, index=True)
     alias = db.Column(db.String(25),nullable=False)
+
+#new tables
+class NamelistInputs(db.Model):
+    __tablename__ = 'namelist_inputs'
+    #id = Column(INTEGER(unsigned=True), primary_key=True,autoincrement=True)
+    expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
+            nullable=False, index=True, primary_key=True)
+    name = db.Column(db.VARCHAR(100), nullable=False, index=True, primary_key=True)
+    data = db.Column(MEDIUMTEXT, nullable=False)
+
+class XMLInputs(db.Model):
+    __tablename__ = 'xml_inputs'
+
+    #id = Column(INTEGER(unsigned=True), primary_key=True,autoincrement=True)
+    expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
+            nullable=False, index=True, primary_key=True)
+    name = db.Column(db.VARCHAR(100), nullable=False, index=True, primary_key=True)
+    data = db.Column(MEDIUMTEXT, nullable=False)
+
+
+class RCInputs(db.Model):
+    __tablename__ = 'rc_inputs'
+
+    #id = Column(INTEGER(unsigned=True), primary_key=True,autoincrement=True)
+    expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
+            nullable=False, index=True, primary_key=True)
+    name = db.Column(db.VARCHAR(100), nullable=False, index=True, primary_key=True)
+    data = db.Column(MEDIUMTEXT, nullable=False)
+
+class SpiofileInputs(db.Model):
+    __tablename__ = 'spiofile_inputs'
+
+    expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
+            nullable=False, index=True, primary_key=True)
+    name = db.Column(db.VARCHAR(100), nullable=False, index=True, primary_key=True)
+    data = db.Column(MEDIUMTEXT, nullable=False)
+
+
+class MemfileInputs(db.Model):
+    __tablename__ = 'memfile_inputs'
+
+    expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
+            nullable=False, index=True, primary_key=True)
+    name = db.Column(db.VARCHAR(100), nullable=False, index=True, primary_key=True)
+    data = db.Column(MEDIUMTEXT, nullable=False)
+
+
+class MakefileInputs(db.Model):
+    __tablename__ = 'makefile_inputs'
+
+    expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
+            nullable=False, index=True, primary_key=True)
+    name = db.Column(db.VARCHAR(100), nullable=False, index=True, primary_key=True)
+    data = db.Column(MEDIUMTEXT, nullable=False)
