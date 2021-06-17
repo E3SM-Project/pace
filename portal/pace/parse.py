@@ -311,7 +311,6 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
     print(('* Parsing: '+ convertPathtofile(timingfile)))
 
     # insert modelTiming
-    print(timingfile)
     isSuccess = insertTiming(timingfile,currExpObj.expid,db)
     if isSuccess == False:
         return False
@@ -372,7 +371,6 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
     duplicateFlag = False
     currExpObj = None
     # open file
-    print('here')
     if filename.endswith('.gz'):
         parseFile=gzip.open(filename,mode='rt')
     else:
