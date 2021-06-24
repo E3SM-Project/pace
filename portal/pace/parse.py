@@ -441,32 +441,6 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
                         # Now you get 20 days etc
                         newWord2=newWord[0].strip().split(" ")
                         timingProfileInfo['run_length']=newWord2[0]
-                        # print timingProfileInfo['run_length']
-                    # if word[0]=='Case':
-                    #     timingProfileInfo['case']=word[2]
-                    # elif word[0]=='LID':
-                    #     timingProfileInfo['lid']=word[2]
-                    # elif word[0]=='Machine':
-                    #     timingProfileInfo['machine']=word[2]
-                    # elif word[0]=='Caseroot':
-                    #     timingProfileInfo['caseroot']=word[2]
-                    # elif word[0]=='Timeroot':
-                    #     timingProfileInfo['timeroot']=word[2]
-                    # elif word[0]=='User':
-                    #     timingProfileInfo['user']=word[2]
-                    # elif word[0]=='Curr':
-                    #     timingProfileInfo['curr']=word[3]
-                    # elif word[0]=='grid':
-                    #     timingProfileInfo['long_res']=word[2]
-                    # elif word[0]=='compset':
-                    #     timingProfileInfo['long_compset']=word[2]
-                    # elif word[0]=='stop_option':
-                    #     timingProfileInfo['stop_option']=word[2]
-                    #     newWord=word[3].split(" ")
-                    #     timingProfileInfo['stop_n']=newWord[2]
-                    # elif word[0]=='run_length':
-                    #     newWord=word[3].split(" ")
-                    #     timingProfileInfo['run_length']=word[2]
 
                 flagrun=False
                 flaginit=False
@@ -609,8 +583,7 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
         expversion = parseModelVersion(gitfile)
         print('    -Complete')
 
-        # print "Debug info:"
-        # print timingProfileInfo
+        
         # insert timingprofile
         new_e3sm_experiment = E3SMexp(case=timingProfileInfo['case'],
                         lid=timingProfileInfo['lid'],
@@ -642,7 +615,6 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
         currExpObj = E3SMexp.query.order_by(E3SMexp.expid.desc()).first()
         # Following direct sql query returns already committed data in database and not the current exp being added
         # myexpid = db.engine.execute("select expid from e3smexp order by e3smexp.expid desc limit 1").fetchall()
-        # print "New expid: " + str(currExpObj.expid)
 
         new_experiment = Exp(expid=currExpObj.expid,
                         user=timingProfileInfo['user'],
@@ -678,7 +650,6 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
                         model_years=runTimeTable[i+3])
             db.session.add(new_runtime)
             i=i+4
-        # print "added runtime"
         # Set return flag to True once all processing is complete.
         successFlag = True
         return (successFlag, duplicateFlag, currExpObj)
@@ -778,13 +749,11 @@ def insertTiming(mtFile,expID,db):
                 elif underScore[len(underScore)-1] == "stats":
                     rankStr = underScore[len(underScore)-1]
                 #This is a file we want! Let's save it:
-                # print "DEBUG: insertTiming before add: " + rankStr + " element : " + str(element)
                 # If code crashes here, check if GPTL output file format has changed
                 # Modify corresponding modelTiming.parse function
                 utf8reader = codecs.getreader('utf-8')
                 source = utf8reader(sourceFile.extractfile(element))
                 new_modeltiming = ModelTiming(expid=expID, jsonVal=modelTiming.parse(source),rank=rankStr)
-                # print "DEBUG: insertTiming before dbsession add: " + rankStr + " element : " + str(element)
                 db.session.add(new_modeltiming)
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
