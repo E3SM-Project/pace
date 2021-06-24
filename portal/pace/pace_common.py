@@ -92,7 +92,6 @@ def getMiniokey():
     if filePerms not in ['0100600','0o100600']:
         print((bcolors.WARNING + "Config file permissions should be set to read, write for owner only"))
         print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
-    # print filePerms
     parser = RawConfigParser()
     parser.read(configFile)
     myAkey = parser.get('MINIO','minio_access_key')
@@ -110,7 +109,6 @@ def getGithubkey():
     if filePerms not in ['0100600','0o100600']:
         print((bcolors.WARNING + "Config file permissions should be set to read, write for owner only"))
         print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
-    # print filePerms
     parser = RawConfigParser()
     parser.read(configFile)
     myClientid = parser.get('GITHUBAPP','githubapp_client_id')
@@ -124,7 +122,6 @@ def readConfigFile(configFile):
     if filePerms not in ['0100600','0o100600']:
         print((bcolors.WARNING + "Config file permissions should be set to read, write for owner only"))
         print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
-        # print filePerms
 
     parser = RawConfigParser()
     parser.read(configFile)
