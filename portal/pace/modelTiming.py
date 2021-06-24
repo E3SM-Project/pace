@@ -89,7 +89,6 @@ def loadConfig(files,appendLocation = None):
                 appendJson(open(element))
             elif os.path.isdir(element):
                 for filePath in listdir(element):
-                    # print(element+"/"+filePath)
                     if isJsonFile(element+"/"+filePath):
                         appendJson(open(element+"/"+filePath))
     return targetConfig
@@ -152,13 +151,10 @@ def detectMtFile(fileObj,configList = parserConfigs):
             #if targetConfig["startMarker"][0] in currLine:
             if currLine.startswith(targetConfig["startMarker"][0]):
                 threadIndexes.append(lineCount+targetConfig["startMarker"][1])
-                # print threadIndexes
         currLine = fileObj.readline()
     #Reset the file & read from the new thread indexes
     fileObj.seek(0,0)
     # DEBUG: Start here to check which parser config is being used
-    # print "DEBUG: GPTL parser config: " + str(targetConfig)
-    # print "DEBUG: GPTL thread indexes: " + str(threadIndexes)
     return threadIndexes,targetConfig
 
 def getData(src,configList = parserConfigs):
@@ -176,11 +172,7 @@ def getData(src,configList = parserConfigs):
         firstItr = True
         while True:
             lineCount+=1
-            # Debug
-            # print lineCount
             currLine = sourceFile.readline()
-            # Debug
-            # print currLine
             if lineCount >= line:
                 # Sarat (added Nov 22, 2020): To address an infinite loop while handling certain model_global_stats files.
                 # Current parser was unable to detect end of file
@@ -279,7 +271,6 @@ def parseThread(thread,config):
     elif type(thread[0][0]) == list:
         resultThreads=[]
         for element in thread:
-            # print (element)
             resultThreads.append(parseThread(element,config))
         return resultThreads
 
@@ -327,8 +318,6 @@ def searchNode(nodeIn,name):
 #Recursively convert your nodes into JSON.
 def toJson(nodeIn,useBrackets=True):
     resultString=''
-    #print("---------------nodeIn-----------")
-    #print(nodeIn)
     if type(nodeIn) == list:
         if len(nodeIn) > 0 and type(nodeIn[0]) == list:
             #Aha! we have a multi-threaded collection:
@@ -354,7 +343,6 @@ def parse(fileIn,configList = parserConfigs,returnLayer=2):
     if returnLayer == 0:
         return nodeLines
     resultThreads = parseThread(nodeLines,config)
-    # print "Debug: parse thread done"
     if returnLayer == 1:
         return resultThreads
     return toJson(resultThreads)
