@@ -626,7 +626,7 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
         #Remove empty strings: (spaces on the client side)
         while '' in termList:
             termList.remove('')
-        #print(termList)
+        
 
         if(len(termList) > 0):
             queryStr = "select " + str(specificVariables).strip("[]").replace("'","") + " from e3smexp where "
