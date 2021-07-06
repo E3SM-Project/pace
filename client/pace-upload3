@@ -173,7 +173,6 @@ def isValidFusionExp(expfile):
 # read token from config file if it exists else create new
 def getGitToken():
     configFile = os.path.join(expanduser("~"),'.pacecc')
-    print(configFile)
     if os.path.isfile(configFile):
         user,token = readconfigfile(configFile)
     else:
