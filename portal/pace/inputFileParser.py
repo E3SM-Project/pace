@@ -1,8 +1,10 @@
-import sys, os
-#from . datastructs import *
+import sys, os, shutil, json, typing, tarfile
+from . datastructs import *
 from tempfile import TemporaryDirectory
 from zipfile import ZipFile
+from e3smlab import E3SMlab
 
+prj=E3SMlab()
 
 namelists = ("atm_in", "atm_modelio", "cpl_modelio", "drv_flds_in", "drv_in",
              "esp_modelio", "glc_modelio", "ice_modelio", "lnd_in",
@@ -31,7 +33,7 @@ excludes_casedocs = ["env_mach_specific.xml~"]
 excludes_gzfiles = []
 
 
-def loaddb_spiofile(expid, name, spiofile):
+def loaddb_spiofile(expid, name, spiofile,db):
 
     # TODO: handle a direcotry generated from this gz file
     # TODO: select a json file
@@ -61,36 +63,26 @@ def loaddb_spiofile(expid, name, spiofile):
     #    spioitems.append(item.to_source())
 
     #jsondata = json.dumps(memitems)
+    
+    
+    spio = db.session.query(SpiofileInputs).filter_by(
+           expid=expid, name=name).first()
+    
+    if spio:
+        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
 
-    spio = self.session.query(SpiofileInputs).filter_by(
-            expid=expid, name=name).first()
+    elif jsondata is None:
+        print("Json data read error: expid=%d, name=%s" % (expid, name))
 
-    if self.verify_db:
-        if not spio or jsondata != spio.data:
-            print("#######################################################")
-            print("spiofile verification failure: expid=%d, name=%s" % (expid, name))
-            print("From e3sm experiment:")
-            print(jsondata)
-            print("-------------------------------------------------------")
-            print("From database:")
-            print(spio.data if spio else spio)
     else:
-        if spio:
-            print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
-
-        elif jsondata is None:
-            print("Json data read error: expid=%d, name=%s" % (expid, name))
-
-        else:
-            spio = SpiofileInputs(expid, name, jsondata)
-            self.session.add(spio)
-
-def loaddb_memfile(expid, name, memfile):
-
+        spio = SpiofileInputs(expid=expid, name=name, data=jsondata)
+        db.session.add(spio)
+    
+def loaddb_memfile(expid, name, memfile, db):
+    print("1")
     cmd = ["gunzip", memfile]
 
-    mgr = self.get_manager()
-    ret, fwds = mgr.run_command(cmd)
+    ret, fwds = prj.run_command(cmd)
 
     memitems = []
 
@@ -101,32 +93,21 @@ def loaddb_memfile(expid, name, memfile):
     jsondata = json.dumps(memitems)
 
     #try:
-    mem = self.session.query(MemfileInputs).filter_by(
+    mem = db.session.query(MemfileInputs).filter_by(
             expid=expid, name=name).first()
 
-    if self.verify_db:
-        if not mem or jsondata != mem.data:
-            print("#######################################################")
-            print("memfile verification failure: expid=%d, name=%s" % (expid, name))
-            print("From e3sm experiment:")
-            print(jsondata)
-            print("-------------------------------------------------------")
-            print("From database:")
-            print(mem.data if mem else mem)
+    if mem:
+        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+
     else:
-        if mem:
-            print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+        mem = MemfileInputs(expid, name, jsondata)
+        db.session.add(mem)
 
-        else:
-            mem = MemfileInputs(expid, name, jsondata)
-            self.session.add(mem)
-
-def loaddb_makefile(expid, name, makefile):
-
+def loaddb_makefile(expid, name, makefile, db):
+    print("2")
     cmd = ["gunzip", makefile, "--", "parsemk",  "@data"]
 
-    mgr = self.get_manager()
-    ret, fwds = mgr.run_command(cmd)
+    ret, fwds = prj.run_command(cmd)
 
     mkitems = []
 
@@ -134,37 +115,25 @@ def loaddb_makefile(expid, name, makefile):
         mkitems.append(item.to_source())
 
     jsondata = json.dumps(mkitems)
-
+    
     #try:
-    mk = self.session.query(MakefileInputs).filter_by(
+    mk = db.session.query(MakefileInputs).filter_by(
             expid=expid, name=name).first()
 
-    if self.verify_db:
-        if not mk or jsondata != mk.data:
-            print("#######################################################")
-            print("makefile verification failure: expid=%d, name=%s" % (expid, name))
-            print("From e3sm experiment:")
-            print(jsondata)
-            print("-------------------------------------------------------")
-            print("From database:")
-            print(mk.data if mk else mk)
-    else:
-        if mk:
-            print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+    if mk:
+        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
 
-        else:
-            mk = MakefileInputs(expid, name, jsondata)
-            self.session.add(mk)
+    else:
+        mk = MakefileInputs(expid, name, jsondata)
+        db.session.add(mk)
 
     #except (InvalidRequestError, IntegrityError) as err:
     #    print("Missing expid in database: expid=%d, makefile-name=%s" % (expid, name))
 
-
-def loaddb_rcfile(expid, name, rcpath):
-
+def loaddb_rcfile(expid, name, rcpath, db):
+    print("3")
     cmd = ["gunzip", rcpath]
-    mgr = self.get_manager()
-    ret, fwds = mgr.run_command(cmd)
+    ret, fwds = prj.run_command(cmd)
 
     rcitems = []
 
@@ -175,74 +144,44 @@ def loaddb_rcfile(expid, name, rcpath):
             rcitems.append('"%s":%s' % items)
 
     jsondata = "{%s}" % ",".join(rcitems) 
-
+    
     #try:
-    rc = self.session.query(RCInputs).filter_by(
+    rc = db.session.query(RCInputs).filter_by(
             expid=expid, name=name).first()
 
-    if self.verify_db:
-        #e3smdump = json.dumps(rc.data, sort_keys=True) if rc else ""
-        #dbdump = json.dumps(jsondata, sort_keys=True)
-        #if e3smdump != dbdump:
-        if not rc or jsondata != rc.data:
-            print("#######################################################")
-            print("rc verification failure: expid=%d, name=%s" % (expid, name))
-            print("From e3sm experiment:")
-            #print(e3smdump)
-            print(jsondata)
-            print("-------------------------------------------------------")
-            print("From database:")
-            #print(dbdump)
-            print(rc.data if rc else rc)
-    else:
-        if rc:
-            print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+    if rc:
+        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
 
-        else:
-            rc = RCInputs(expid, name, jsondata)
-            self.session.add(rc)
+    else:
+        rc = RCInputs(expid, name, jsondata)
+        db.session.add(rc)
 
     #except (InvalidRequestError, IntegrityError) as err:
     #    print("Missing expid in database: expid=%d, rc-name=%s" % (expid, name))
 
-def loaddb_xmlfile(expid, name, xmlpath):
-
+def loaddb_xmlfile(expid, name, xmlpath, db):
+    print("4")
     cmd = ["gunzip", xmlpath, "--", "uxml2dict",  "@data", "--",
             "dict2json", "@data"]
 
     from xml.parsers.expat import ExpatError
 
     try:
-        mgr = self.get_manager()
-        ret, fwds = mgr.run_command(cmd)
+        ret, fwds = prj.run_command(cmd)
 
         jsondata = fwds["data"]
-
-        xml = self.session.query(XMLInputs).filter_by(
+        
+        
+        xml = db.session.query(XMLInputs).filter_by(
                 expid=expid, name=name).first()
 
-        if self.verify_db:
-            #e3smdump = json.dumps(xml.data, sort_keys=True) if xml else ""
-            #dbdump = json.dumps(jsondata, sort_keys=True)
-            #if e3smdump != dbdump:
-            if not xml or jsondata != xml.data:
-                print("#######################################################")
-                print("xml verification failure: expid=%d, name=%s" % (expid, name))
-                print("From e3sm experiment:")
-                #print(e3smdump)
-                print(jsondata)
-                print("-------------------------------------------------------")
-                print("From database:")
-                #print(dbdump)
-                print(xml.data if xml else xml)
+        if xml:
+            print("Insertion is discarded due to dupulication: expid=%d, xml-name=%s" % (expid, name))
+
         else:
-            if xml:
-                print("Insertion is discarded due to dupulication: expid=%d, xml-name=%s" % (expid, name))
-
-            else:
-                xml = XMLInputs(expid, name, jsondata)
-                self.session.add(xml)
-
+            xml = XMLInputs(expid, name, jsondata)
+            db.session.add(xml)
+        
     except ExpatError as err:
         print("Warning: %s" % str(err))
 
@@ -254,25 +193,24 @@ def loaddb_xmlfile(expid, name, xmlpath):
     #    import pdb; pdb.set_trace()
     #    print(err)
 
-def loaddb_namelist(expid, name, nmlpath):
-
+def loaddb_namelist(expid, name, nmlpath,db):
+    print("5")
     cmd = ["gunzip", nmlpath, "--", "nmlread",  "@data", "--",
                 "dict2json", "@data"]
 
     jsondata = None
 
     try:
-        mgr = self.get_manager()
-        ret, fwds = mgr.run_command(cmd)
+        ret, fwds = prj.run_command(cmd)
 
         jsondata = fwds["data"]
-
+        
     except IndexError as err:
         if name.startswith("user_nl"):
             jsondata = ""
 
         else:
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
             raise err
             
     except StopIteration as err:
@@ -280,40 +218,25 @@ def loaddb_namelist(expid, name, nmlpath):
 
     except Exception as err:
         print("Warning: %s" % str(err))
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         print(err)
-
+    
     #try:
-    nml = self.session.query(NamelistInputs).filter_by(
+    nml = db.session.query(NamelistInputs).filter_by(
                 expid=expid, name=name).first()
 
-    if self.verify_db:
-        #e3smdump = json.dumps(nml.data, sort_keys=True) if nml else ""
-        #dbdump = json.dumps(jsondata, sort_keys=True)
-        #if e3smdump != dbdump:
-        if not nml or jsondata != nml.data:
-            print("#######################################################")
-            print("namelist verification failure: expid=%d, name=%s" % (expid, name))
-            print("From e3sm experiment:")
-            #print(e3smdump)
-            print(jsondata)
-            print("-------------------------------------------------------")
-            print("From database:")
-            #print(dbdump)
-            print(nml.data if nml else nml)
+    if nml:
+        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
 
-    elif jsondata:
-        if nml:
-            print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
-
-        else:
-            nml = NamelistInputs(expid, name, jsondata)
-            self.session.add(nml)
+    else:
+        nml = NamelistInputs(expid, name, jsondata)
+        db.session.add(nml)
+        
 
     #except (InvalidRequestError, IntegrityError) as err:
     #    print("Missing expid in database: expid=%d, namelist-name=%s" % (expid, name))
 
-def loaddb_casedocs(expid, casedocpath):
+def loaddb_casedocs(expid, casedocpath,db):
 
     for item in os.listdir(casedocpath):
         basename, ext = os.path.splitext(item)
@@ -331,19 +254,19 @@ def loaddb_casedocs(expid, casedocpath):
             name = ".".join(nameseq)
 
             if nameseq[0] in namelists:
-                self.loaddb_namelist(expid, name, path)
+                loaddb_namelist(expid, name, path,db)
 
             elif nameseq[0] in xmlfiles:
-                self.loaddb_xmlfile(expid, name, path)
+                loaddb_xmlfile(expid, name, path,db)
 
             elif nameseq[0] in rcfiles:
-                self.loaddb_rcfile(expid, name, path)
+                loaddb_rcfile(expid, name, path,db)
 
             elif nameseq[0] in makefiles:
-                self.loaddb_makefile(expid, name, path)
+                loaddb_makefile(expid, name, path,db)
 
             elif nameseq[0] in memfiles:
-                self.loaddb_memfile(expid, name, path)
+                loaddb_memfile(expid, name, path,db)
 
 #                elif any(basename.startswith(p) for p in makefiles):
 #                    for makefile in makefiles:
@@ -357,13 +280,12 @@ def loaddb_casedocs(expid, casedocpath):
         else:
             pass
 
-def loaddb_e3smexp(zippath,db,expid):
+def loaddb_e3smexp(zippath,tempdir,db,expid):
 
     head, tail = os.path.split(zippath)
     basename, ext = os.path.splitext(tail)
     items = basename.split("-")
-    print("-------items---------")
-    print(items)
+    
     if ext == ".zip" and len(items)==3:
         #expid = int(items[2])
 
@@ -374,59 +296,49 @@ def loaddb_e3smexp(zippath,db,expid):
             unzipdir = os.path.join(tempdir, basename)
             myzip.extractall(path=unzipdir)
 
-            try:
-                for item in os.listdir(unzipdir):
-                    if item.startswith(".") or item in exclude_zipfiles:
-                        continue
+            #try:
+            for item in os.listdir(unzipdir):
+                if item.startswith(".") or item in exclude_zipfiles:
+                    continue
 
-                    basename, ext = os.path.splitext(item)
-                    path = os.path.join(unzipdir, item)
+                basename, ext = os.path.splitext(item)
+                path = os.path.join(unzipdir, item)
 
-                    if os.path.isdir(path):
+                if os.path.isdir(path):
 
-                        if basename.startswith("CaseDocs"):
-                            loaddb_casedocs(expid, path)
+                    if basename.startswith("CaseDocs"):
+                        loaddb_casedocs(expid, path,db)
 
-                        else:
-                            pass
-
-                    elif os.path.isfile(path) and ext == ".gz":
-
-                        if any(basename.startswith(e) for e in excludes_gzfiles):
-                            continue
-
-                        nameseq = []
-                        for n in basename.split("."):
-                            if n.isdigit():
-                                break
-                            nameseq.append(n)
-                        name = ".".join(nameseq)
-
-                        if nameseq[0] in spiofiles:
-                            self.loaddb_spiofile(expid, name, path)
-
-                        else:
-                            pass
                     else:
                         pass
 
-                if not self.verify_db:
+                elif os.path.isfile(path) and ext == ".gz":
 
-                        if self.commit_updates:
-                            self.session.commit()
+                    if any(basename.startswith(e) for e in excludes_gzfiles):
+                        continue
 
-                        else:
-                            print("INFO: pacedb ended without committing any "
-                                    "staged database transaction.")
+                    nameseq = []
+                    for n in basename.split("."):
+                        if n.isdigit():
+                            break
+                        nameseq.append(n)
+                    name = ".".join(nameseq)
 
-            except (InvalidRequestError, IntegrityError) as err:
-                print("Warning: database integrity error at %s: %s" % (zippath, str(err)))
-                self.session.rollback()
+                    if nameseq[0] in spiofiles:
+                        loaddb_spiofile(expid, name, path,db)
 
-            finally:                
-                shutil.rmtree(unzipdir, ignore_errors=True)
+                    else:
+                        pass
+                else:
+                    pass
 
-def perform(args):
+            #except (InvalidRequestError, IntegrityError) as err:
+            #    print("Warning: database integrity error at %s: %s" % (zippath, str(err)))
+
+            #finally:                
+            shutil.rmtree(unzipdir, ignore_errors=True)
+
+"""def perform(args):
 
     self.show_progress = args.progress
     self.verify_db = args.verify
@@ -464,7 +376,7 @@ def perform(args):
 
             else:
                 print("Can't find input path: %s" % inputpath, file=sys.stderr)
-                sys.exit(-1)
+                sys.exit(-1)"""
 
 def insertInputs(zipfile,db,expid, stdout, stderr=None):
 
@@ -472,11 +384,10 @@ def insertInputs(zipfile,db,expid, stdout, stderr=None):
         if os.path.isdir(zipfile):
             for item in os.listdir(zipfile):
                 print(item)
-                #loaddb_e3smexp(os.path.join(zipfile, item),db,expid)
+                loaddb_e3smexp(os.path.join(zipfile, item),tempdir,db,expid)
 
         elif os.path.isfile(zipfile):
-            print("isfile------->")
-            loaddb_e3smexp(zipfile,db,expid)
+            loaddb_e3smexp(zipfile,tempdir,db,expid)
 
         else:
             print("Can't find input path: %s" % zipfile, file=sys.stderr)
