@@ -349,9 +349,6 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
         db.session.rollback()
         return False # skips this experiment
 
-    # close session
-    db.session.close()
-    
     # write basic summary in report
     print(' ')
     print('----- Experiment Summary -----')
@@ -362,6 +359,9 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
     print('------------------------------')
     print(' ')
 
+    # close session
+    db.session.close()
+    
     return True
 
 # Parse e3sm files
