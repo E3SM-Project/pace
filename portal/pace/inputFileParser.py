@@ -1,8 +1,10 @@
 import sys, os, shutil, json, typing, tarfile
-from . datastructs import *
+#from . datastructs import *
 from tempfile import TemporaryDirectory
 from zipfile import ZipFile
 from e3smlab import E3SMlab
+import gzip
+import f90nml, xmltodict
 
 prj=E3SMlab()
 
@@ -32,12 +34,21 @@ exclude_zipfiles = []
 excludes_casedocs = ["env_mach_specific.xml~"]
 excludes_gzfiles = []
 
+def unzip(infile,outfile):
+
+    with gzip.open(infile, 'rb') as f_in:
+        with open(outfile,'wb') as f_out:
+            shutil.copyfileobj(f_in,f_out)
+        f_in.seek(0)
+    f_out.close()
+    f_in.close()
+
 
 def loaddb_spiofile(expid, name, spiofile,db):
 
     # TODO: handle a direcotry generated from this gz file
     # TODO: select a json file
-
+    
     sptar = tarfile.open(spiofile, "r:gz")
     
     jsonmember = None
@@ -105,6 +116,14 @@ def loaddb_memfile(expid, name, memfile, db):
 
 def loaddb_makefile(expid, name, makefile, db):
     print("2")
+    """
+    outputpath = makefile[:-3]
+    unzip(makefile,outputpath)
+    with open(outputpath) as f:
+        data = f.read()
+
+    
+
     cmd = ["gunzip", makefile, "--", "parsemk",  "@data"]
 
     ret, fwds = prj.run_command(cmd)
@@ -126,23 +145,21 @@ def loaddb_makefile(expid, name, makefile, db):
     else:
         mk = MakefileInputs(expid, name, jsondata)
         db.session.add(mk)
-
+    """
     #except (InvalidRequestError, IntegrityError) as err:
     #    print("Missing expid in database: expid=%d, makefile-name=%s" % (expid, name))
 
 def loaddb_rcfile(expid, name, rcpath, db):
     print("3")
-    cmd = ["gunzip", rcpath]
-    ret, fwds = prj.run_command(cmd)
-
     rcitems = []
+    with gzip.open(rcpath, 'rt') as f_in:
+        for line in f_in.read().strip().split("\n"):
+            items = tuple(l.strip() for l in line.split(":"))
 
-    for line in fwds["data"].strip().split("\n"):
-        items = tuple(l.strip() for l in line.split(":"))
-
-        if len(items)==2:
-            rcitems.append('"%s":%s' % items)
-
+            if len(items)==2:
+                rcitems.append('"%s":%s' % items)
+    f_in.close()
+    
     jsondata = "{%s}" % ",".join(rcitems) 
     
     #try:
@@ -161,16 +178,16 @@ def loaddb_rcfile(expid, name, rcpath, db):
 
 def loaddb_xmlfile(expid, name, xmlpath, db):
     print("4")
-    cmd = ["gunzip", xmlpath, "--", "uxml2dict",  "@data", "--",
-            "dict2json", "@data"]
 
     from xml.parsers.expat import ExpatError
 
     try:
-        ret, fwds = prj.run_command(cmd)
-
-        jsondata = fwds["data"]
-        
+        outputpath = xmlpath[:-3]
+        unzip(xmlpath,outputpath)
+        with open(outputpath) as f:
+            data = f.read()
+        xmldict = xmltodict.parse(data)
+        jsondata = json.dumps(xmldict)
         
         xml = db.session.query(XMLInputs).filter_by(
                 expid=expid, name=name).first()
@@ -184,7 +201,7 @@ def loaddb_xmlfile(expid, name, xmlpath, db):
         
     except ExpatError as err:
         print("Warning: %s" % str(err))
-
+    
     #except (InvalidRequestError, IntegrityError) as err:
     #    print("Missing expid in database: expid=%d, xml-name=%s" % (expid, name))
 
@@ -195,15 +212,16 @@ def loaddb_xmlfile(expid, name, xmlpath, db):
 
 def loaddb_namelist(expid, name, nmlpath,db):
     print("5")
-    cmd = ["gunzip", nmlpath, "--", "nmlread",  "@data", "--",
-                "dict2json", "@data"]
-
+    
     jsondata = None
 
     try:
-        ret, fwds = prj.run_command(cmd)
-
-        jsondata = fwds["data"]
+        outputpath = nmlpath[:-3]
+        unzip(nmlpath,outputpath)
+        nml_parser = f90nml.Parser()
+        nml = nml_parser.read(outputpath)
+        data=nml.todict(complex_tuple=True)
+        jsondata = json.dumps(data)
         
     except IndexError as err:
         if name.startswith("user_nl"):
@@ -214,11 +232,13 @@ def loaddb_namelist(expid, name, nmlpath,db):
             raise err
             
     except StopIteration as err:
+        print("-----StopIteration-------")
         print("Warning: %s" % str(err))
 
     except Exception as err:
         print("Warning: %s" % str(err))
         #import pdb; pdb.set_trace()
+        print("-----exception error------")
         print(err)
     
     #try:
@@ -231,6 +251,7 @@ def loaddb_namelist(expid, name, nmlpath,db):
     else:
         nml = NamelistInputs(expid, name, jsondata)
         db.session.add(nml)
+    
         
 
     #except (InvalidRequestError, IntegrityError) as err:
@@ -308,6 +329,7 @@ def loaddb_e3smexp(zippath,tempdir,db,expid):
 
                     if basename.startswith("CaseDocs"):
                         loaddb_casedocs(expid, path,db)
+                        #pass
 
                     else:
                         pass
