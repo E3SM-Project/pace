@@ -1,5 +1,5 @@
 import sys, os, shutil, json, typing, tarfile
-#from . datastructs import *
+from . datastructs import *
 from tempfile import TemporaryDirectory
 from zipfile import ZipFile
 from e3smlab import E3SMlab
@@ -90,8 +90,9 @@ def loaddb_spiofile(expid, name, spiofile,db):
         db.session.add(spio)
     
 def loaddb_memfile(expid, name, memfile, db):
-    print("1")
-    cmd = ["gunzip", memfile]
+    #TODO memfile parsing
+    print("memfile")
+    """cmd = ["gunzip", memfile]
 
     ret, fwds = prj.run_command(cmd)
 
@@ -112,27 +113,22 @@ def loaddb_memfile(expid, name, memfile, db):
 
     else:
         mem = MemfileInputs(expid, name, jsondata)
-        db.session.add(mem)
+        db.session.add(mem)"""
 
 def loaddb_makefile(expid, name, makefile, db):
-    print("2")
-    """
+    from langlab.pymake import parser
+    
     outputpath = makefile[:-3]
     unzip(makefile,outputpath)
-    with open(outputpath) as f:
-        data = f.read()
-
+    if os.path.isfile(outputpath):
+        filename = outputpath
+        with open(outputpath) as f:
+            mkfile = f.read()
     
-
-    cmd = ["gunzip", makefile, "--", "parsemk",  "@data"]
-
-    ret, fwds = prj.run_command(cmd)
-
+    stmts = parser.parsestring(mkfile,filename)
     mkitems = []
-
-    for item in fwds["data"]:
+    for item in stmts:
         mkitems.append(item.to_source())
-
     jsondata = json.dumps(mkitems)
     
     #try:
@@ -143,14 +139,14 @@ def loaddb_makefile(expid, name, makefile, db):
         print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
 
     else:
-        mk = MakefileInputs(expid, name, jsondata)
+        mk = MakefileInputs(expid=expid, name=name, data=jsondata)
         db.session.add(mk)
-    """
+    
     #except (InvalidRequestError, IntegrityError) as err:
     #    print("Missing expid in database: expid=%d, makefile-name=%s" % (expid, name))
 
 def loaddb_rcfile(expid, name, rcpath, db):
-    print("3")
+
     rcitems = []
     with gzip.open(rcpath, 'rt') as f_in:
         for line in f_in.read().strip().split("\n"):
@@ -170,15 +166,14 @@ def loaddb_rcfile(expid, name, rcpath, db):
         print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
 
     else:
-        rc = RCInputs(expid, name, jsondata)
+        rc = RCInputs(expid=expid, name=name, data=jsondata)
         db.session.add(rc)
 
     #except (InvalidRequestError, IntegrityError) as err:
     #    print("Missing expid in database: expid=%d, rc-name=%s" % (expid, name))
 
 def loaddb_xmlfile(expid, name, xmlpath, db):
-    print("4")
-
+    
     from xml.parsers.expat import ExpatError
 
     try:
@@ -196,7 +191,7 @@ def loaddb_xmlfile(expid, name, xmlpath, db):
             print("Insertion is discarded due to dupulication: expid=%d, xml-name=%s" % (expid, name))
 
         else:
-            xml = XMLInputs(expid, name, jsondata)
+            xml = XMLInputs(expid=expid, name=name, data=jsondata)
             db.session.add(xml)
         
     except ExpatError as err:
@@ -211,7 +206,6 @@ def loaddb_xmlfile(expid, name, xmlpath, db):
     #    print(err)
 
 def loaddb_namelist(expid, name, nmlpath,db):
-    print("5")
     
     jsondata = None
 
@@ -222,7 +216,6 @@ def loaddb_namelist(expid, name, nmlpath,db):
         nml = nml_parser.read(outputpath)
         data=nml.todict(complex_tuple=True)
         jsondata = json.dumps(data)
-        
     except IndexError as err:
         if name.startswith("user_nl"):
             jsondata = ""
@@ -244,12 +237,11 @@ def loaddb_namelist(expid, name, nmlpath,db):
     #try:
     nml = db.session.query(NamelistInputs).filter_by(
                 expid=expid, name=name).first()
-
     if nml:
         print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
 
     else:
-        nml = NamelistInputs(expid, name, jsondata)
+        nml = NamelistInputs(expid=expid, name=name, data=jsondata)
         db.session.add(nml)
     
         
