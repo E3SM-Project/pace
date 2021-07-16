@@ -278,9 +278,6 @@ def loaddb_casedocs(expid, casedocpath,db):
             elif nameseq[0] in makefiles:
                 loaddb_makefile(expid, name, path,db)
 
-            elif nameseq[0] in memfiles:
-                loaddb_memfile(expid, name, path,db)
-
 #                elif any(basename.startswith(p) for p in makefiles):
 #                    for makefile in makefiles:
 #                        if basename.startswith(makefile):
@@ -340,6 +337,8 @@ def loaddb_e3smexp(zippath,tempdir,db,expid):
 
                     if nameseq[0] in spiofiles:
                         loaddb_spiofile(expid, name, path,db)
+                    elif nameseq[0] in memfiles:
+                        loaddb_memfile(expid, name, path,db)    
 
                     else:
                         pass
