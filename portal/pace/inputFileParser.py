@@ -90,21 +90,10 @@ def loaddb_spiofile(expid, name, spiofile,db):
         db.session.add(spio)
     
 def loaddb_memfile(expid, name, memfile, db):
-    #TODO memfile parsing
-    print("memfile")
-    """cmd = ["gunzip", memfile]
-
-    ret, fwds = prj.run_command(cmd)
-
-    memitems = []
-
-    for item in fwds["data"]:
-        memitems.append(item.to_source())
-
-    # TODO: json load?
-    jsondata = json.dumps(memitems)
-
-    #try:
+    
+    with gzip.open(memfile, 'rt') as f:
+        csv_data = f.read()
+    #print(csv_data)
     mem = db.session.query(MemfileInputs).filter_by(
             expid=expid, name=name).first()
 
@@ -112,9 +101,9 @@ def loaddb_memfile(expid, name, memfile, db):
         print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
 
     else:
-        mem = MemfileInputs(expid, name, jsondata)
-        db.session.add(mem)"""
-
+        mem = MemfileInputs(expid=expid, name=name, data=csv_data)
+        db.session.add(mem)
+    
 def loaddb_makefile(expid, name, makefile, db):
     from langlab.pymake import parser
     
@@ -318,7 +307,7 @@ def loaddb_e3smexp(zippath,tempdir,db,expid):
 
                     if basename.startswith("CaseDocs"):
                         loaddb_casedocs(expid, path,db)
-                        #pass
+                        #print("casedocs")
 
                     else:
                         pass
@@ -337,6 +326,7 @@ def loaddb_e3smexp(zippath,tempdir,db,expid):
 
                     if nameseq[0] in spiofiles:
                         loaddb_spiofile(expid, name, path,db)
+                        #print("spio")
                     elif nameseq[0] in memfiles:
                         loaddb_memfile(expid, name, path,db)    
 
