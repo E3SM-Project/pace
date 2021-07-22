@@ -341,46 +341,6 @@ def loaddb_e3smexp(zippath,tempdir,db,expid):
             #finally:                
             shutil.rmtree(unzipdir, ignore_errors=True)
 
-"""def perform(args):
-
-    self.show_progress = args.progress
-    self.verify_db = args.verify
-    self.create_expid_table = args.create_expid_table
-    self.commit_updates = args.commit
-
-    for datapath in args.datapath:
-        inputpath = datapath["_"]
-
-        if not args.db_session:
-            dbcfg = args.db_cfg["_"]
-            if not os.path.isfile(dbcfg):
-                print("Could not find database configuration file: %s" % dbcfg)
-                sys.exit(-1)
-
-            with open(dbcfg) as f:
-                myuser, mypwd, myhost, mydb = f.read().strip().split("\n")
-                
-            dburl = 'mysql+pymysql://%s:%s@%s/%s' % (myuser, mypwd, myhost, mydb)
-            engine = create_engine(dburl, echo=args.db_echo)
-            Base.metadata.create_all(engine)
-            Session = sessionmaker(bind=engine)
-            self.session = Session()
-
-        else:
-            self.session = args.db_session["_"]
-
-        with TemporaryDirectory() as self.tempdir:
-            if os.path.isdir(inputpath):
-                for item in os.listdir(inputpath):
-                    self.loaddb_e3smexp(os.path.join(inputpath, item))
-
-            elif os.path.isfile(inputpath):
-                self.loaddb_e3smexp(inputpath)
-
-            else:
-                print("Can't find input path: %s" % inputpath, file=sys.stderr)
-                sys.exit(-1)"""
-
 def insertInputs(zipfile,db,expid, stdout, stderr=None):
 
     with TemporaryDirectory() as tempdir:
@@ -402,50 +362,3 @@ if __name__ == "__main__":
     db=0
     expid=0
     insertInputs(sys.argv[1],db,expid, sys.stdout, sys.stderr)
-
-
-
-
-
-
-
-
-#old version
-#def insertInputs(zipfile, stdout, stderr=None):
-    """parse e3sm input data and upload to pace database
-
-    Parameters:
-    zipfile(str): file path to a zipped e3sm data
-    
-    dbcfg is hardcoded for now
-    dbcfg(str): file path to a pace database configuration ascii data.
-                Only one item should exist in a line in four lines in total::
-
-                    username
-                    password
-                    hostname
-                    databasename
-
-    stdout(file object): output file object
-    stderr(file object): error file object. Optional
-
-    Returns:
-    int: return code
-
-    Notes:
-    * As of this version, this function works only if e3smlab is installed
-        in Python 3. To make sure that e3smlab is installed in Python 3,
-        use following command to install::
-
-        python3 -m pip install e3smlab
-
-    * This function assumes that e3smexp table exists and the table already
-        has the expid of this zipped data. It may require to commit any staged
-        transaction before calling this function.
-    """
-
-    #import subprocess
-    #cmd = ["/opt/venv/pace3/bin/e3smlab", "pacedb", zipfile, "--db-cfg", "/pace/prod/portal/pace/e3smlabdb.cfg", "--commit"]
-    # print ("Calling " + str(cmd) )
-    #return subprocess.call(cmd, stdout=stdout, stderr=stderr)
-
