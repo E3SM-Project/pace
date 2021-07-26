@@ -48,115 +48,114 @@ def loaddb_spiofile(expid, name, spiofile,db):
 
     # TODO: handle a direcotry generated from this gz file
     # TODO: select a json file
-    
-    sptar = tarfile.open(spiofile, "r:gz")
-    
-    jsonmember = None
-    jsondata = None
+    try:
+        sptar = tarfile.open(spiofile, "r:gz")
+        
+        jsonmember = None
+        jsondata = None
 
-    for member in sptar.getmembers():
-        if member.isfile() and member.name.endswith("json"):
-            if jsonmember is None or jsonmember.size < member.size:
-                jsonmember = member
+        for member in sptar.getmembers():
+            if member.isfile() and member.name.endswith("json"):
+                if jsonmember is None or jsonmember.size < member.size:
+                    jsonmember = member
 
-    if jsonmember:
-        jsondata = sptar.extractfile(jsonmember).read()
+        if jsonmember:
+            jsondata = sptar.extractfile(jsonmember).read()
 
-    sptar.close()
+        sptar.close()
+        
+        spio = db.session.query(SpiofileInputs).filter_by(
+            expid=expid, name=name).first()
+        
+        if spio:
+            print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
 
-    #cmd = ["gunzip", spiofile]
-    #mgr = self.get_manager()
-    #ret, fwds = mgr.run_command(cmd)
+        elif jsondata is None:
+            print("Json data read error: expid=%d, name=%s" % (expid, name))
 
-    #spioitems = []
-
-    #for item in fwds["data"]:
-    #    spioitems.append(item.to_source())
-
-    #jsondata = json.dumps(memitems)
-    
-    
-    spio = db.session.query(SpiofileInputs).filter_by(
-           expid=expid, name=name).first()
-    
-    if spio:
-        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
-
-    elif jsondata is None:
-        print("Json data read error: expid=%d, name=%s" % (expid, name))
-
-    else:
-        spio = SpiofileInputs(expid=expid, name=name, data=jsondata)
-        db.session.add(spio)
+        else:
+            spio = SpiofileInputs(expid=expid, name=name, data=jsondata)
+            db.session.add(spio)
+    except:
+        print("Something went wrong with %s" %spiofile)
     
 def loaddb_memfile(expid, name, memfile, db):
     
-    with gzip.open(memfile, 'rt') as f:
-        csv_data = f.read()
-    #print(csv_data)
-    mem = db.session.query(MemfileInputs).filter_by(
-            expid=expid, name=name).first()
+    try:
+        with gzip.open(memfile, 'rt') as f:
+            csv_data = f.read()
+        #print(csv_data)
+        mem = db.session.query(MemfileInputs).filter_by(
+                expid=expid, name=name).first()
 
-    if mem:
-        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+        if mem:
+            print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
 
-    else:
-        mem = MemfileInputs(expid=expid, name=name, data=csv_data)
-        db.session.add(mem)
+        else:
+            mem = MemfileInputs(expid=expid, name=name, data=csv_data)
+            db.session.add(mem)
+    except:
+        print("Something went wrong with %s" %memfile)
     
 def loaddb_makefile(expid, name, makefile, db):
     from langlab.pymake import parser
     
-    outputpath = makefile[:-3]
-    unzip(makefile,outputpath)
-    if os.path.isfile(outputpath):
-        filename = outputpath
-        with open(outputpath) as f:
-            mkfile = f.read()
-    
-    stmts = parser.parsestring(mkfile,filename)
-    mkitems = []
-    for item in stmts:
-        mkitems.append(item.to_source())
-    jsondata = json.dumps(mkitems)
-    
-    #try:
-    mk = db.session.query(MakefileInputs).filter_by(
-            expid=expid, name=name).first()
+    try:
+        outputpath = makefile[:-3]
+        unzip(makefile,outputpath)
+        if os.path.isfile(outputpath):
+            filename = outputpath
+            with open(outputpath) as f:
+                mkfile = f.read()
+        
+        stmts = parser.parsestring(mkfile,filename)
+        mkitems = []
+        for item in stmts:
+            mkitems.append(item.to_source())
+        jsondata = json.dumps(mkitems)
+        
+        #try:
+        mk = db.session.query(MakefileInputs).filter_by(
+                expid=expid, name=name).first()
 
-    if mk:
-        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+        if mk:
+            print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
 
-    else:
-        mk = MakefileInputs(expid=expid, name=name, data=jsondata)
-        db.session.add(mk)
+        else:
+            mk = MakefileInputs(expid=expid, name=name, data=jsondata)
+            db.session.add(mk)
+    except:
+        print("Something went wrong with %s" %makefile)
     
     #except (InvalidRequestError, IntegrityError) as err:
     #    print("Missing expid in database: expid=%d, makefile-name=%s" % (expid, name))
 
 def loaddb_rcfile(expid, name, rcpath, db):
 
-    rcitems = []
-    with gzip.open(rcpath, 'rt') as f_in:
-        for line in f_in.read().strip().split("\n"):
-            items = tuple(l.strip() for l in line.split(":"))
+    try:
+        rcitems = []
+        with gzip.open(rcpath, 'rt') as f_in:
+            for line in f_in.read().strip().split("\n"):
+                items = tuple(l.strip() for l in line.split(":"))
 
-            if len(items)==2:
-                rcitems.append('"%s":%s' % items)
-    f_in.close()
-    
-    jsondata = "{%s}" % ",".join(rcitems) 
-    
-    #try:
-    rc = db.session.query(RCInputs).filter_by(
-            expid=expid, name=name).first()
+                if len(items)==2:
+                    rcitems.append('"%s":%s' % items)
+        f_in.close()
+        
+        jsondata = "{%s}" % ",".join(rcitems) 
+        
+        #try:
+        rc = db.session.query(RCInputs).filter_by(
+                expid=expid, name=name).first()
 
-    if rc:
-        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+        if rc:
+            print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
 
-    else:
-        rc = RCInputs(expid=expid, name=name, data=jsondata)
-        db.session.add(rc)
+        else:
+            rc = RCInputs(expid=expid, name=name, data=jsondata)
+            db.session.add(rc)
+    except:
+        print("Something went wrong with %s" %rcpath)
 
     #except (InvalidRequestError, IntegrityError) as err:
     #    print("Missing expid in database: expid=%d, rc-name=%s" % (expid, name))
@@ -185,6 +184,9 @@ def loaddb_xmlfile(expid, name, xmlpath, db):
         
     except ExpatError as err:
         print("Warning: %s" % str(err))
+    
+    except:
+        print("Something went wrong with %s" %xmlpath)
     
     #except (InvalidRequestError, IntegrityError) as err:
     #    print("Missing expid in database: expid=%d, xml-name=%s" % (expid, name))
@@ -266,16 +268,8 @@ def loaddb_casedocs(expid, casedocpath,db):
 
             elif nameseq[0] in makefiles:
                 loaddb_makefile(expid, name, path,db)
-
-#                elif any(basename.startswith(p) for p in makefiles):
-#                    for makefile in makefiles:
-#                        if basename.startswith(makefile):
-#                            self.loaddb_makefile(expid, makefile, path)
-#                            break
             else:
                 pass
-                #print("Warning: %s is not parsed." % basename)
-
         else:
             pass
 
@@ -286,9 +280,6 @@ def loaddb_e3smexp(zippath,tempdir,db,expid):
     items = basename.split("-")
     
     if ext == ".zip" and len(items)==3:
-        #expid = int(items[2])
-
-        
 
         with ZipFile(zippath) as myzip:
 
@@ -307,13 +298,10 @@ def loaddb_e3smexp(zippath,tempdir,db,expid):
 
                     if basename.startswith("CaseDocs"):
                         loaddb_casedocs(expid, path,db)
-                        #print("casedocs")
-
                     else:
                         pass
 
                 elif os.path.isfile(path) and ext == ".gz":
-
                     if any(basename.startswith(e) for e in excludes_gzfiles):
                         continue
 
@@ -354,7 +342,6 @@ def insertInputs(zipfile,db,expid, stdout, stderr=None):
 
         else:
             print("Can't find input path: %s" % zipfile, file=sys.stderr)
-            sys.exit(-1)
             
     return 0
 
