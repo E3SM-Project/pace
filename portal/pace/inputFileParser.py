@@ -2,11 +2,9 @@ import sys, os, shutil, json, typing, tarfile
 from . datastructs import *
 from tempfile import TemporaryDirectory
 from zipfile import ZipFile
-from e3smlab import E3SMlab
 import gzip
 import f90nml, xmltodict
 
-prj=E3SMlab()
 
 namelists = ("atm_in", "atm_modelio", "cpl_modelio", "drv_flds_in", "drv_in",
              "esp_modelio", "glc_modelio", "ice_modelio", "lnd_in",
