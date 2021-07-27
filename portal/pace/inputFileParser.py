@@ -310,11 +310,12 @@ def loaddb_e3smexp(zippath,tempdir,db,expid):
                         nameseq.append(n)
                     name = ".".join(nameseq)
 
-                    if nameseq[0] in spiofiles:
-                        loaddb_spiofile(expid, name, path,db)
-                        #print("spio")
-                    elif nameseq[0] in memfiles:
-                        loaddb_memfile(expid, name, path,db)    
+                    if nameseq:
+                        if nameseq[0] in spiofiles:
+                            loaddb_spiofile(expid, name, path,db)
+                            #print("spio")
+                        elif nameseq[0] in memfiles:
+                            loaddb_memfile(expid, name, path,db)    
 
                     else:
                         pass
