@@ -254,20 +254,20 @@ def loaddb_casedocs(expid, casedocpath,db):
                     break
                 nameseq.append(n)
             name = ".".join(nameseq)
+            if nameseq:
+                if nameseq[0] in namelists:
+                    loaddb_namelist(expid, name, path,db)
 
-            if nameseq[0] in namelists:
-                loaddb_namelist(expid, name, path,db)
+                elif nameseq[0] in xmlfiles:
+                    loaddb_xmlfile(expid, name, path,db)
 
-            elif nameseq[0] in xmlfiles:
-                loaddb_xmlfile(expid, name, path,db)
+                elif nameseq[0] in rcfiles:
+                    loaddb_rcfile(expid, name, path,db)
 
-            elif nameseq[0] in rcfiles:
-                loaddb_rcfile(expid, name, path,db)
-
-            elif nameseq[0] in makefiles:
-                loaddb_makefile(expid, name, path,db)
-            else:
-                pass
+                elif nameseq[0] in makefiles:
+                    loaddb_makefile(expid, name, path,db)
+                else:
+                    pass
         else:
             pass
 
