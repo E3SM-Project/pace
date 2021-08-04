@@ -89,7 +89,7 @@ def getMiniokey():
     myMiniourl = None
 
     filePerms = oct(os.stat(configFile)[ST_MODE])
-    if filePerms not in ['0100600','0o100600']:
+    if filePerms not in ['0o100600']:
         print((bcolors.WARNING + "Config file permissions should be set to read, write for owner only"))
         print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
     parser = RawConfigParser()
@@ -106,7 +106,7 @@ def getGithubkey():
     myClientsecret = None
 
     filePerms = oct(os.stat(configFile)[ST_MODE])
-    if filePerms not in ['0100600','0o100600']:
+    if filePerms not in ['0o100600']:
         print((bcolors.WARNING + "Config file permissions should be set to read, write for owner only"))
         print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
     parser = RawConfigParser()
@@ -119,7 +119,7 @@ def getGithubkey():
 def readConfigFile(configFile):
     global PACE_USER
     filePerms = oct(os.stat(configFile)[ST_MODE])
-    if filePerms not in ['0100600','0o100600']:
+    if filePerms not in ['0o100600']:
         print((bcolors.WARNING + "Config file permissions should be set to read, write for owner only"))
         print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
 
