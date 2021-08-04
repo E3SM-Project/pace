@@ -213,8 +213,8 @@ class RCInputs(db.Model):
         self.name = name
         self.data = data
 
-class SpiofileInputs(db.Model):
-    __tablename__ = 'spiofile_inputs'
+class ScorpioStats(db.Model):
+    __tablename__ = 'scorpio_stats'
 
     expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
             nullable=False, index=True, primary_key=True)

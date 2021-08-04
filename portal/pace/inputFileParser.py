@@ -42,7 +42,7 @@ def unzip(infile,outfile):
     f_in.close()
 
 
-def loaddb_spiofile(expid, name, spiofile,db):
+def loaddb_scorpio_stats(expid, name, spiofile,db):
 
     # TODO: handle a direcotry generated from this gz file
     # TODO: select a json file
@@ -62,7 +62,7 @@ def loaddb_spiofile(expid, name, spiofile,db):
 
         sptar.close()
         
-        spio = db.session.query(SpiofileInputs).filter_by(
+        spio = db.session.query(ScorpioStats).filter_by(
             expid=expid, name=name).first()
         
         if spio:
@@ -72,7 +72,7 @@ def loaddb_spiofile(expid, name, spiofile,db):
             print("Json data read error: expid=%d, name=%s" % (expid, name))
 
         else:
-            spio = SpiofileInputs(expid=expid, name=name, data=jsondata)
+            spio = ScorpioStats(expid=expid, name=name, data=jsondata)
             db.session.add(spio)
     except:
         print("Something went wrong with %s" %spiofile)
@@ -312,7 +312,7 @@ def loaddb_e3smexp(zippath,tempdir,db,expid):
 
                     if nameseq:
                         if nameseq[0] in spiofiles:
-                            loaddb_spiofile(expid, name, path,db)
+                            loaddb_scorpio_stats(expid, name, path,db)
                             #print("spio")
                         elif nameseq[0] in memfiles:
                             loaddb_memfile(expid, name, path,db)    
