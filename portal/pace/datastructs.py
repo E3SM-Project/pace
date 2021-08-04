@@ -240,16 +240,3 @@ class MemfileInputs(db.Model):
         self.name = name
         self.data = data
 
-
-class MakefileInputs(db.Model):
-    __tablename__ = 'makefile_inputs'
-
-    expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
-            nullable=False, index=True, primary_key=True)
-    name = db.Column(db.VARCHAR(100), nullable=False, index=True, primary_key=True)
-    data = db.Column(MEDIUMTEXT, nullable=False)
-
-    def __init__(self, expid, name, data):
-        self.expid = expid
-        self.name = name
-        self.data = data

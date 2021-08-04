@@ -21,8 +21,6 @@ xmlfiles = ("env_archive", "env_batch", "env_build", "env_case",
 
 rcfiles = ("seq_maps",)
 
-#makefiles = ("Depends.intel",)
-makefiles = ("Depends",)
 
 memfiles = ("memory",)
 
@@ -95,39 +93,6 @@ def loaddb_memfile(expid, name, memfile, db):
     except:
         print("Something went wrong with %s" %memfile)
     
-def loaddb_makefile(expid, name, makefile, db):
-    from langlab.pymake import parser
-    
-    try:
-        outputpath = makefile[:-3]
-        unzip(makefile,outputpath)
-        if os.path.isfile(outputpath):
-            filename = outputpath
-            with open(outputpath) as f:
-                mkfile = f.read()
-        
-        stmts = parser.parsestring(mkfile,filename)
-        mkitems = []
-        for item in stmts:
-            mkitems.append(item.to_source())
-        jsondata = json.dumps(mkitems)
-        
-        #try:
-        mk = db.session.query(MakefileInputs).filter_by(
-                expid=expid, name=name).first()
-
-        if mk:
-            print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
-
-        else:
-            mk = MakefileInputs(expid=expid, name=name, data=jsondata)
-            db.session.add(mk)
-    except:
-        print("Something went wrong with %s" %makefile)
-    
-    #except (InvalidRequestError, IntegrityError) as err:
-    #    print("Missing expid in database: expid=%d, makefile-name=%s" % (expid, name))
-
 def loaddb_rcfile(expid, name, rcpath, db):
 
     try:
@@ -264,8 +229,6 @@ def loaddb_casedocs(expid, casedocpath,db):
                 elif nameseq[0] in rcfiles:
                     loaddb_rcfile(expid, name, path,db)
 
-                elif nameseq[0] in makefiles:
-                    loaddb_makefile(expid, name, path,db)
                 else:
                     pass
         else:
