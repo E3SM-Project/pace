@@ -106,6 +106,10 @@ venv.bak/
 # mac creates .ds_store when open folder from finder
 .DS_Store
 
+# ignore pycache from langlab
+portal/pace/langlab/__pycache__
+portal/pace/langlab/pymake/__pycache__
+
 # PACE specific
 portal/upload
 .pacerc

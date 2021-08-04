@@ -322,6 +322,16 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
     if isSuccess == False:
         return False
     print('    -Complete')
+    
+    print('* Parsing E3SM Input files')
+    # Needs expid changes to be committed to database
+    # We need to add .zip to zipFileFullPath 
+    zipFileFullName = zipFileFullPath + ".zip"
+    returnValue = inputFileParser.insertInputs(zipFileFullName, db,currExpObj.expid,  sys.stdout, sys.stderr)
+    if returnValue != 0:
+        print('[ERROR] Problem parsing model inputs')
+        return False
+    print('    -Complete')
 
     # try commit if not, rollback
     print('* Storing Experiment Data in Database')
@@ -348,19 +358,10 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
     print(('- Web Link: '+str('https://pace.ornl.gov/exp-details/')+str(currExpObj.expid)))
     print('------------------------------')
     print(' ')
+
     # close session
     db.session.close()
-
-    print('* Parsing E3SM Input files')
-    # Needs expid changes to be committed to database
-    # We need to add .zip to zipFileFullPath 
-    zipFileFullName = zipFileFullPath + ".zip"
-    returnValue = inputFileParser.insertInputs(zipFileFullName, sys.stdout, sys.stderr)
-    if returnValue != 0:
-        print('[ERROR] Problem parsing model inputs')
-        return False
-    print('    -Complete')
-
+    
     return True
 
 # Parse e3sm files

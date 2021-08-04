@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% block topscripts %}
+  <link href="https://unpkg.com/tabulator-tables@4.1.4/dist/css/tabulator.min.css" rel="stylesheet">
+{% endblock %}
+{% block content %}
+
+
+<h3> Details
+</h3>
+
+<div id="data-table"></div>
+
+{% endblock %}
+{% block bottomscripts %}
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.1.4/dist/js/tabulator.min.js"></script>
+<script>
+var tableDataNested = {{myjson | safe}};
+
+   //headerVisible:false,
+   //resizableRows:true,
+   //maxHeight:"100%",
+var table = new Tabulator("#data-table", {
+   height:"100%",
+   layout:"fitColumns",
+   data:tableDataNested,
+   dataTree:true,
+   dataTreeStartExpanded:true,
+   columns:[
+   {title:"Section", field:"name", headerFilter:"input" }, 
+       {title:"Value", field:"value", formatter:"textarea"}
+       ],
+});
+</script>
+{% endblock %}
