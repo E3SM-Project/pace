@@ -23,6 +23,7 @@ import codecs
 from os.path import abspath, realpath, dirname, join as joinpath
 from sys import stderr
 from . import inputFileParser
+from . import parseE3SMTiming
 
 resolved = lambda x: realpath(abspath(x))
 
@@ -677,6 +678,118 @@ def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
         print(('    ERROR: something is wrong with %s' %convertPathtofile(filename)))
         db.session.rollback()
         parseFile.close()
+        return (successFlag, duplicateFlag, currExpObj) # skips this experiment
+
+def insertE3SMTiming(filename,readmefile,gitfile,db,fpath, uploaduser):
+    try:
+        # parse e3sm_timing.* file
+        print(('* Parsing: '+convertPathtofile(filename)))
+        successFlag, duplicateFlag, currExpObj,timingProfileInfo, componentTable, runTimeTable = parseE3SMTiming.parseE3SMtiming(filename)
+        if duplicateFlag:
+            return (successFlag, duplicateFlag, currExpObj)
+        print('     -Complete')
+
+        # parse README.docs file
+        print(('* Parsing: '+convertPathtofile(readmefile)))
+        readmeparse = parseReadme(readmefile)
+        if readmeparse == False:
+            return (successFlag, duplicateFlag, currExpObj) #this skips the experiment
+        print('    -Complete')
+
+        # parse GIT_DESCRIBE file
+        print(('* Parsing: '+convertPathtofile(gitfile)))
+        expversion = parseModelVersion(gitfile)
+        print('    -Complete')
+
+        
+        # insert timingprofile
+        new_e3sm_experiment = E3SMexp(case=timingProfileInfo['case'],
+                        lid=timingProfileInfo['lid'],
+                        machine=timingProfileInfo['machine'],
+                        caseroot=timingProfileInfo['caseroot'],
+                        timeroot=timingProfileInfo['timeroot'],
+                        user=timingProfileInfo['user'],
+                        exp_date=changeDateTime(timingProfileInfo['curr']),
+                        long_res=timingProfileInfo['long_res'],
+                        res=readmeparse['res'],
+                        compset=readmeparse['compset'],
+                        long_compset=timingProfileInfo['long_compset'],
+                        stop_option=timingProfileInfo['stop_option'],
+                        stop_n=timingProfileInfo['stop_n'],
+                        run_length=timingProfileInfo['run_length'],
+                        total_pes_active=timingProfileInfo['total_pes'],
+                        mpi_tasks_per_node=timingProfileInfo['mpi_task'],
+                        pe_count_for_cost_estimate=timingProfileInfo['pe_count'],
+                        model_cost=timingProfileInfo['model_cost'],
+                        model_throughput=timingProfileInfo['model_throughput'],
+                        actual_ocn_init_wait_time=timingProfileInfo['actual_ocn'],
+                        init_time=timingProfileInfo['init_time'],
+                        run_time=timingProfileInfo['run_time'],
+                        final_time=timingProfileInfo['final_time'],
+                        version = expversion,
+                        upload_by = uploaduser)
+        db.session.add(new_e3sm_experiment)
+        # table has to have a same experiment id
+        currExpObj = E3SMexp.query.order_by(E3SMexp.expid.desc()).first()
+        # Following direct sql query returns already committed data in database and not the current exp being added
+        # myexpid = db.engine.execute("select expid from e3smexp order by e3smexp.expid desc limit 1").fetchall()
+
+        new_experiment = Exp(expid=currExpObj.expid,
+                        user=timingProfileInfo['user'],
+                        machine=timingProfileInfo['machine'],
+                        exp_date=changeDateTime(timingProfileInfo['curr']),
+                        upload_by = uploaduser,
+                        exp_name=timingProfileInfo['case'],
+                        total_pes_active=timingProfileInfo['total_pes'],
+                        run_time=timingProfileInfo['run_time'],
+                        mpi_tasks_per_node=timingProfileInfo['mpi_task'])
+        db.session.add(new_experiment)
+        #insert pelayout
+        i=0
+        while i < len(componentTable):
+            new_pelayout = Pelayout(expid=currExpObj.expid,
+                        component=componentTable[i],
+                        comp_pes=componentTable[i+1],
+                        root_pe=componentTable[i+2],
+                        tasks=componentTable[i+3],
+                        threads=componentTable[i+4],
+                        instances=componentTable[i+5],
+                        stride=componentTable[i+6])
+            db.session.add(new_pelayout)
+            i=i+7
+
+        #insert run time
+        i=0
+        while i < len(runTimeTable):
+            new_runtime = Runtime(expid=currExpObj.expid,
+                        component=runTimeTable[i],
+                        seconds=runTimeTable[i+1],
+                        model_day=runTimeTable[i+2],
+                        model_years=runTimeTable[i+3])
+            db.session.add(new_runtime)
+            i=i+4
+        # Set return flag to True once all processing is complete.
+        successFlag = True
+        return (successFlag, duplicateFlag, currExpObj)
+    except IndexError as e:
+        print(('    ERROR: %s' %e))
+        # Sarat: Rollback added to avoid auto-incrementing expid for failed uploads
+        # Check if rollback doesn't cause issues with skipping incomplete exps
+        db.session.rollback()
+        return (successFlag, duplicateFlag, currExpObj) # skips this experiment
+    except KeyError as e:
+        print(('    ERROR: Missing data %s' %e))
+        db.session.rollback()
+        return (successFlag, duplicateFlag, currExpObj) # skips this experiment
+    except SQLAlchemyError as e:
+        error = str(e.__dict__['orig'])
+        print(('    SQL ERROR: %s' %e))
+        db.session.rollback()
+        return (successFlag, duplicateFlag, currExpObj) # skips this experiment
+    except Exception as e:
+        print(('    ERROR: %s' %e))
+        print(('    ERROR: something is wrong with %s' %convertPathtofile(filename)))
+        db.session.rollback()
         return (successFlag, duplicateFlag, currExpObj) # skips this experiment
 
 # removes temporary folders in server
