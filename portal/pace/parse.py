@@ -2,7 +2,6 @@
 # imports
 from . datastructs import *
 from . pace_common import *
-db.create_all()
 import array
 import sys,os
 import gzip
