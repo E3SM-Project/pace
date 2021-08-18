@@ -25,7 +25,7 @@ from sqlalchemy.exc import SQLAlchemyError
 import binascii
 from rauth import OAuth2Service
 from . import tabulatorjson
-from . import xmljson2tabulator
+# from . import xmljson2tabulator
 
 GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET = getGithubkey()
 
