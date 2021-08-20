@@ -24,6 +24,8 @@ from os.path import abspath, realpath, dirname, join as joinpath
 from sys import stderr
 from . import inputFileParser
 from . import parseE3SMTiming
+from . import parseModelVersion
+from . import parseReadMe
 
 resolved = lambda x: realpath(abspath(x))
 
@@ -232,78 +234,10 @@ def checkDuplicateExp(euser,emachine,ecurr, ecase):
     else:
         return(True,exp.expid)
 
-# parser for readme file
-def parseReadme(readmefilename):
-    # open file
-    if readmefilename.endswith('.gz'):
-        fileIn=gzip.open(readmefilename,'rt')
-    else:
-        fileIn = open(readmefilename,'rt')
-    resultElement = {}
-    commandLine = None
-    flag=False
-    try:
-        for commandLine in fileIn:
-            word=commandLine.split(" ")
-            for element in word:
-                # this line holds profile information
-                if ('create_newcase' in element):
-                    cmdArgs = commandLine.split(": ",1)[1].strip("./\n").split(" ")
-                    resultElement["name"] = cmdArgs[0]
-                    for i in range(len(cmdArgs)):
-                        if cmdArgs[i][0] == "-":
-                            if "=" in cmdArgs[i]:
-                                argumentStr = cmdArgs[i].strip("-").split("=")
-                                resultElement[argumentStr[0]] = argumentStr[1]
-                            else:
-                                argument = cmdArgs[i].strip("-")
-                                resultElement[argument] = cmdArgs[i+1]
-                        resultElement["date"] = commandLine.split(": ",1)[0].strip(":")
-                    break
-            # job done after finding elements res, compset
-            if 'res' and 'compset' in list(resultElement.keys()):
-                break
-        # this case only runs if element 'res','compset' exists else throws keyError
-        if resultElement['res'] is None:
-            resultElement['res'] = 'nan'
-        if resultElement['compset'] is None:
-            resultElement['compset'] = 'nan'
-    except KeyError as e:
-        print(('[ERROR]: %s not found in %s' %(e,convertPathtofile(readmefilename))))
-        fileIn.close()
-        return False
-    except IndexError as e:
-        print(('[ERROR]: %s in file %s' %(e,convertPathtofile(readmefilename))))
-        fileIn.close()
-        return False
-    except Exception as e:
-        print(('[ERROR]: %s' %e))
-        print(('    ERROR: Something is wrong with %s' %convertPathtofile(readmefilename)))
-        fileIn.close()
-        return False
-    fileIn.close()
-    return resultElement
-
-# parser for GIT_DESCRIBE file
-def parseModelVersion(gitfile):
-    # open file
-    if gitfile.endswith('.gz'):
-        parsefile = gzip.open(gitfile,'rt')
-    else:
-        parsefile = open(gitfile, 'rt')
-    # initialize version
-    version = 0
-    for line in parsefile:
-        if line != '\n':
-            version = line.strip('\n')
-            break
-    parsefile.close()
-    return version
-
 # This function provides pathway to files for their respective parser function and finally stores in database
 def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser):
     # returns True if successful or if duplicate exp already in database
-    (successFlag, duplicateFlag, currExpObj) = parseE3SMtiming(filename,readmefile,gitfile,db,fpath,uploaduser)
+    (successFlag, duplicateFlag, currExpObj) = insertE3SMTiming(filename,readmefile,gitfile,db,fpath,uploaduser)
     # If this is a duplicate experiment, return True as we won't need to parse rest of this exp files
     if duplicateFlag == True:
         return True
@@ -366,339 +300,35 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
     return True
 
 # Parse e3sm files
-# Returns tuple (successFlag, duplicateFlag, currExpObj)
-def parseE3SMtiming(filename,readmefile,gitfile,db,fpath, uploaduser):
-    # Flags are set to False at beginning, success is marked True only at the end
-    successFlag = False
-    duplicateFlag = False
-    currExpObj = None
-    # open file
-    if filename.endswith('.gz'):
-        parseFile=gzip.open(filename,mode='rt')
-    else:
-        parseFile=open(filename,'rt')
-
-    # dictionary to store timingprofile
-    timingProfileInfo={}
-    # list to store component table
-    componentTable=[]
-    # list to store runtime table
-    runTimeTable=[]
-    # tmp var for parsing purpose
-    word=''
-
+def insertE3SMTiming(filename,readmefile,gitfile,db,fpath, uploaduser):
     try:
-        count = 0
-        for line in parseFile:
-            count = count + 1
-            if line!='\n':
-                # find values for given keys
-                if len(timingProfileInfo)<12:
-                    word=line.split(':', 2)
-                    # if 'Case' in word[0]:
-                    # You can't use if 'Case' in word[0] as that would also match caseroot
-                    # This was a pretty difficult to debug bug - Sarat April 4, 2019.
-                    if word[0].strip() =='Case':
-                        timingProfileInfo['case']=word[1].strip()
-                        # print timingProfileInfo['case']
-                    elif 'LID' in word[0]:
-                        timingProfileInfo['lid']=word[1].strip()
-                        # print timingProfileInfo['lid']
-                    elif 'Machine' in word[0]:
-                        timingProfileInfo['machine']=word[1].strip()
-                        # print timingProfileInfo['machine']
-                    elif 'Caseroot' in word[0]:
-                    # elif word[0].strip() == 'Caseroot':
-                    # elif word[0]=='Caseroot':
-                        timingProfileInfo['caseroot']=word[1].strip()
-                        # print timingProfileInfo['caseroot']
-                    elif 'Timeroot' in word[0]:
-                        timingProfileInfo['timeroot']=word[1].strip()
-                        # print timingProfileInfo['timeroot']
-                    elif 'User' in word[0]:
-                        timingProfileInfo['user']=word[1].strip()
-                        # print timingProfileInfo['user']
-                    elif 'Curr' in word[0]:
-                        newWord = line.split(None,3)
-                        timingProfileInfo['curr']=newWord[3].strip()
-                        # print timingProfileInfo['curr']
-                    elif 'grid' in word[0]:
-                        timingProfileInfo['long_res']=word[1].strip()
-                        # print timingProfileInfo['long_res']
-                    elif 'compset' in word[0]:
-                        timingProfileInfo['long_compset']=word[1].strip()
-                        # print timingProfileInfo['long_compset']
-                    elif 'stop' in word[0]:
-                        # stop option or stop_option : ndays, stop_n = 20
-                        newWord=word[1].split(",")
-                        timingProfileInfo['stop_option']=newWord[0].strip()
-                        # print timingProfileInfo['stop_option']
-                        if 'stop_n' in newWord[1]:
-                            newWord2 = newWord[1].split('=')
-                            timingProfileInfo['stop_n'] = newWord2[1].strip()
-                            # print timingProfileInfo['stop_n']
-                    elif 'length' in word[0]:
-                        #   run length  : 20 days (19.9166666667 for ocean)
-                        newWord=word[1].split("(")
-                        # Now you get 20 days etc
-                        newWord2=newWord[0].strip().split(" ")
-                        timingProfileInfo['run_length']=newWord2[0]
-
-                flagrun=False
-                flaginit=False
-                flagfinal=False
-                word=line.split(None,1)
-                if word[0]=='total':
-                    newWord=word[1].split(":")
-                    newWord1=newWord[1].split(" ")
-                    timingProfileInfo['total_pes']=newWord1[1]
-                elif word[0]=='mpi':
-                    newWord=word[1].split(":")
-                    newWord1=newWord[1].split(" ")
-                    timingProfileInfo['mpi_task']=newWord1[1]
-                elif word[0]=='pe':
-                    newWord=word[1].split(":")
-                    newWord1=newWord[1].split(" ")
-                    timingProfileInfo['pe_count']=newWord1[1]
-                elif word[0]=='Model':
-                    newWord=word[1].split(":")
-                    newWord1=newWord[1].split()
-                    if 'model_cost' in list(timingProfileInfo.keys()):
-                        timingProfileInfo['model_throughput']=newWord1[0]
-                    else:
-                        timingProfileInfo['model_cost']=newWord1[0]
-                elif word[0]=='Actual':
-                    newWord=word[1].split(":")
-                    newWord1=newWord[1].split()
-                    timingProfileInfo['actual_ocn']=newWord1[0]
-                elif word[0]=='Init' and flaginit == False:
-                    newWord=word[1].split(":")
-                    newWord1=newWord[1].split()
-                    timingProfileInfo['init_time']=newWord1[0]
-                    flaginit = True
-                elif word[0]=='Run' and flagrun == False:
-                    newWord=word[1].split(":")
-                    newWord1=newWord[1].split()
-                    timingProfileInfo['run_time']=newWord1[0]
-                    flagrun = True
-                elif word[0]=='Final' and flagfinal == False:
-                    newWord=word[1].split(":")
-                    newWord1=newWord[1].split()
-                    timingProfileInfo['final_time']=newWord1[0]
-                    flagfinal = True
-                elif len(timingProfileInfo)>=20:
-                    break
-
-        # check if this is duplicate experiment
+        # parse e3sm_timing.* file
+        print(('* Parsing: '+convertPathtofile(filename)))
+        successFlag, timingProfileInfo, componentTable, runTimeTable = parseE3SMTiming.parseE3SMtiming(filename)
+        if not successFlag:
+            return (successFlag)
+        
+        #check for duplicate experiments
         (duplicateFlag, existingExpid) = checkDuplicateExp(timingProfileInfo['user'],timingProfileInfo['machine'],timingProfileInfo['curr'],timingProfileInfo['case'])
         if duplicateFlag is True:
             print(('    -[NOTE]: Duplicate of Experiment : ' + str(existingExpid) ))
             db.session.close()
             # Set success to True as the experiment already exists in database
             successFlag = True
-            return (successFlag, duplicateFlag, currExpObj) # This skips this experiment and moves to next
+            return (successFlag, duplicateFlag) # This skips this experiment and moves to next
 
-    except IndexError as e:
-        print(('    ERROR: %s' %e))
-        parseFile.close()
-        return (successFlag, duplicateFlag, currExpObj) # skips this experiment
-    except KeyError as e:
-        print(('    ERROR: Missing data %s' %e))
-        parseFile.close()
-        return (successFlag, duplicateFlag, currExpObj) # skips this experiment
-    except Exception as e:
-        print(('    ERROR: %s' %e))
-        print(('    ERROR: Something is wrong with %s' %convertPathtofile(filename)))
-        parseFile.close()
-        return (successFlag, duplicateFlag, currExpObj) # skips this experiment
-
-    parseFile.close()
-
-    # open file again to parse component and runtime tables
-    try:
-        if filename.endswith('.gz'):
-            parseFile=gzip.open(filename,'rt')
-        else:
-            parseFile=open(filename,'rt')
-        lines=parseFile.readlines()
-        componentTableSuccess = False
-        runtimeTableSuccess = False
-        component=[]
-        tablelist=[]
-        # loop to grab component and store in a list and parse runtime table
-        for i in range(len(lines)):
-            if lines[i] != '\n':
-                firstWord = lines[i].split()[0]
-                if firstWord == 'component':
-                    for j in range(9):
-                        tablelist.append(lines[i+j+2])
-                    componentTableSuccess = True
-                # parse runtime table and store in a list
-                elif firstWord == 'TOT':
-                    for j in range(11):
-                        component=lines[i+j].split()
-                        if component[1]=='Run':
-                            runTimeTable.append(component[0])
-                        else:
-                            runTimeTable.append(str(component[0])+'_COMM')
-                        runTimeTable.append(component[3])
-                        runTimeTable.append(component[5])
-                        runTimeTable.append(component[7])
-                        runtimeTableSuccess = True
-            # grabbed both tables then break
-            if componentTableSuccess == True and runtimeTableSuccess == True:
-                break
-        # check if both table exists
-        if componentTableSuccess != True or runtimeTableSuccess != True:
-            print('    ERROR: runtime/component table not found')
-            return False
-
-        # parse component table
-        resultlist=tableParse(tablelist)
-        parseFile.close()
-
-        # store component table values in a list
-        for i in range(len(tablelist)):
-            tmpthread1=resultlist[i]['component']
-            change1=tmpthread1.split(" ")
-            componentTable.append(change1[0])
-            componentTable.append(resultlist[i]['comp_pes'])
-            componentTable.append(resultlist[i]['root_pe'])
-            componentTable.append(resultlist[i]['tasks'])
-            tmpthread=resultlist[i]['threads']
-            change=tmpthread.split(" ")
-            componentTable.append(change[1])
-            componentTable.append(resultlist[i]['instances'])
-            componentTable.append(resultlist[i]['stride'])
-
-        print('    -Complete')
-
-        # parse README.docs file
-        print(('* Parsing: '+convertPathtofile(readmefile)))
-        readmeparse = parseReadme(readmefile)
-        if readmeparse == False:
-            return (successFlag, duplicateFlag, currExpObj) #this skips the experiment
-        print('    -Complete')
-
-        # parse GIT_DESCRIBE file
-        print(('* Parsing: '+convertPathtofile(gitfile)))
-        expversion = parseModelVersion(gitfile)
-        print('    -Complete')
-
-        
-        # insert timingprofile
-        new_e3sm_experiment = E3SMexp(case=timingProfileInfo['case'],
-                        lid=timingProfileInfo['lid'],
-                        machine=timingProfileInfo['machine'],
-                        caseroot=timingProfileInfo['caseroot'],
-                        timeroot=timingProfileInfo['timeroot'],
-                        user=timingProfileInfo['user'],
-                        exp_date=changeDateTime(timingProfileInfo['curr']),
-                        long_res=timingProfileInfo['long_res'],
-                        res=readmeparse['res'],
-                        compset=readmeparse['compset'],
-                        long_compset=timingProfileInfo['long_compset'],
-                        stop_option=timingProfileInfo['stop_option'],
-                        stop_n=timingProfileInfo['stop_n'],
-                        run_length=timingProfileInfo['run_length'],
-                        total_pes_active=timingProfileInfo['total_pes'],
-                        mpi_tasks_per_node=timingProfileInfo['mpi_task'],
-                        pe_count_for_cost_estimate=timingProfileInfo['pe_count'],
-                        model_cost=timingProfileInfo['model_cost'],
-                        model_throughput=timingProfileInfo['model_throughput'],
-                        actual_ocn_init_wait_time=timingProfileInfo['actual_ocn'],
-                        init_time=timingProfileInfo['init_time'],
-                        run_time=timingProfileInfo['run_time'],
-                        final_time=timingProfileInfo['final_time'],
-                        version = expversion,
-                        upload_by = uploaduser)
-        db.session.add(new_e3sm_experiment)
-        # table has to have a same experiment id
-        currExpObj = E3SMexp.query.order_by(E3SMexp.expid.desc()).first()
-        # Following direct sql query returns already committed data in database and not the current exp being added
-        # myexpid = db.engine.execute("select expid from e3smexp order by e3smexp.expid desc limit 1").fetchall()
-
-        new_experiment = Exp(expid=currExpObj.expid,
-                        user=timingProfileInfo['user'],
-                        machine=timingProfileInfo['machine'],
-                        exp_date=changeDateTime(timingProfileInfo['curr']),
-                        upload_by = uploaduser,
-                        exp_name=timingProfileInfo['case'],
-                        total_pes_active=timingProfileInfo['total_pes'],
-                        run_time=timingProfileInfo['run_time'],
-                        mpi_tasks_per_node=timingProfileInfo['mpi_task'])
-        db.session.add(new_experiment)
-        #insert pelayout
-        i=0
-        while i < len(componentTable):
-            new_pelayout = Pelayout(expid=currExpObj.expid,
-                        component=componentTable[i],
-                        comp_pes=componentTable[i+1],
-                        root_pe=componentTable[i+2],
-                        tasks=componentTable[i+3],
-                        threads=componentTable[i+4],
-                        instances=componentTable[i+5],
-                        stride=componentTable[i+6])
-            db.session.add(new_pelayout)
-            i=i+7
-
-        #insert run time
-        i=0
-        while i < len(runTimeTable):
-            new_runtime = Runtime(expid=currExpObj.expid,
-                        component=runTimeTable[i],
-                        seconds=runTimeTable[i+1],
-                        model_day=runTimeTable[i+2],
-                        model_years=runTimeTable[i+3])
-            db.session.add(new_runtime)
-            i=i+4
-        # Set return flag to True once all processing is complete.
-        successFlag = True
-        return (successFlag, duplicateFlag, currExpObj)
-    except IndexError as e:
-        print(('    ERROR: %s' %e))
-        # Sarat: Rollback added to avoid auto-incrementing expid for failed uploads
-        # Check if rollback doesn't cause issues with skipping incomplete exps
-        db.session.rollback()
-        parseFile.close()
-        return (successFlag, duplicateFlag, currExpObj) # skips this experiment
-    except KeyError as e:
-        print(('    ERROR: Missing data %s' %e))
-        db.session.rollback()
-        parseFile.close()
-        return (successFlag, duplicateFlag, currExpObj) # skips this experiment
-    except SQLAlchemyError as e:
-        error = str(e.__dict__['orig'])
-        print(('    SQL ERROR: %s' %e))
-        db.session.rollback()
-        parseFile.close()
-        return (successFlag, duplicateFlag, currExpObj) # skips this experiment
-    except Exception as e:
-        print(('    ERROR: %s' %e))
-        print(('    ERROR: something is wrong with %s' %convertPathtofile(filename)))
-        db.session.rollback()
-        parseFile.close()
-        return (successFlag, duplicateFlag, currExpObj) # skips this experiment
-
-def insertE3SMTiming(filename,readmefile,gitfile,db,fpath, uploaduser):
-    try:
-        # parse e3sm_timing.* file
-        print(('* Parsing: '+convertPathtofile(filename)))
-        successFlag, duplicateFlag, currExpObj,timingProfileInfo, componentTable, runTimeTable = parseE3SMTiming.parseE3SMtiming(filename)
-        if duplicateFlag:
-            return (successFlag, duplicateFlag, currExpObj)
         print('     -Complete')
 
         # parse README.docs file
         print(('* Parsing: '+convertPathtofile(readmefile)))
-        readmeparse = parseReadme(readmefile)
+        readmeparse = parseReadMe.parseReadme(readmefile)
         if readmeparse == False:
-            return (successFlag, duplicateFlag, currExpObj) #this skips the experiment
+            return (successFlag, duplicateFlag) #this skips the experiment
         print('    -Complete')
 
         # parse GIT_DESCRIBE file
         print(('* Parsing: '+convertPathtofile(gitfile)))
-        expversion = parseModelVersion(gitfile)
+        expversion = parseModelVersion.parseModelVersion(gitfile)
         print('    -Complete')
 
         

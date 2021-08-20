@@ -173,15 +173,6 @@ def parseE3SMtiming(filename):
                 elif len(timingProfileInfo)>=20:
                     break
 
-        # check if this is duplicate experiment
-        """(duplicateFlag, existingExpid) = checkDuplicateExp(timingProfileInfo['user'],timingProfileInfo['machine'],timingProfileInfo['curr'],timingProfileInfo['case'])
-        if duplicateFlag is True:
-            print(('    -[NOTE]: Duplicate of Experiment : ' + str(existingExpid) ))
-            #db.session.close()
-            # Set success to True as the experiment already exists in database
-            successFlag = True
-            return (successFlag, duplicateFlag, currExpObj) # This skips this experiment and moves to next"""
-
     except IndexError as e:
         print(('    ERROR: %s' %e))
         parseFile.close()
@@ -255,13 +246,14 @@ def parseE3SMtiming(filename):
             componentTable.append(resultlist[i]['instances'])
             componentTable.append(resultlist[i]['stride'])
 
-        print('    -Complete')
-        print('-----------timingProfileInfo----------')
+        """print('-----------timingProfileInfo----------')
         print(timingProfileInfo)
         print('--------------componentTable---------')
         print(componentTable)
         print('-------------runTimeTable------------')
-        print(runTimeTable)
+        print(runTimeTable)"""
+        successFlag = True
+        return(successFlag, timingProfileInfo, componentTable, runTimeTable)
     except IndexError as e:
         print(('    ERROR: %s' %e))
         # Sarat: Rollback added to avoid auto-incrementing expid for failed uploads
