@@ -302,11 +302,12 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
 # Parse e3sm files
 def insertE3SMTiming(filename,readmefile,gitfile,db,fpath, uploaduser):
     try:
+        
         # parse e3sm_timing.* file
         print(('* Parsing: '+convertPathtofile(filename)))
         successFlag, timingProfileInfo, componentTable, runTimeTable = parseE3SMTiming.parseE3SMtiming(filename)
         if not successFlag:
-            return (successFlag)
+            return (successFlag, False, None)
         
         #check for duplicate experiments
         (duplicateFlag, existingExpid) = checkDuplicateExp(timingProfileInfo['user'],timingProfileInfo['machine'],timingProfileInfo['curr'],timingProfileInfo['case'])
@@ -315,7 +316,7 @@ def insertE3SMTiming(filename,readmefile,gitfile,db,fpath, uploaduser):
             db.session.close()
             # Set success to True as the experiment already exists in database
             successFlag = True
-            return (successFlag, duplicateFlag) # This skips this experiment and moves to next
+            return (successFlag, duplicateFlag, None) # This skips this experiment and moves to next
 
         print('     -Complete')
 
@@ -323,7 +324,7 @@ def insertE3SMTiming(filename,readmefile,gitfile,db,fpath, uploaduser):
         print(('* Parsing: '+convertPathtofile(readmefile)))
         readmeparse = parseReadMe.parseReadme(readmefile)
         if readmeparse == False:
-            return (successFlag, duplicateFlag) #this skips the experiment
+            return (successFlag, duplicateFlag, None) #this skips the experiment
         print('    -Complete')
 
         # parse GIT_DESCRIBE file
