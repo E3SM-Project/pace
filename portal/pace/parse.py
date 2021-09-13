@@ -26,6 +26,9 @@ from . import inputFileParser
 from . import parseE3SMTiming
 from . import parseModelVersion
 from . import parseReadMe
+from . import parseMemoryFile
+from . import parseScorpioStats
+from . import parseCaseDocs
 
 resolved = lambda x: realpath(abspath(x))
 
@@ -270,12 +273,24 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
 
     #insert memory file
     #TODO
+    data = parseMemoryFile.loaddb_memfile(memfile)
+    if not data:
+        return False
+    rc = RCInputs(expid=currExpObj.expid, name=name, data=data)
+    db.session.add(rc)
+
 
     #insert scorpio stats
     #TODO
+    data = parseScorpioStats.loaddb_scorpio_stats(spiofile)
+    if not data:
+        return False
+    spio = ScorpioStats(expid=currExpObj.expid, name=name, data=data)
+    db.session.add(spio)
 
     #insert casedocs files (namelist, rc, xml)
     #TODO
+    parseCaseDocs.loaddb_casedocs(casedocs)
 
     # store raw data (In server and Minio)
     print('* Storing Experiment in file server')
