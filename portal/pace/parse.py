@@ -101,6 +101,12 @@ def parseData(zipfilename,uploaduser):
         readmefile=[]
         # "GIT_DESCRIBE." file list
         gitdescribefile=[]
+        #scorpio file
+        scorpiofile = []
+        #memory file
+        memoryfile =[]
+        #CaseDocs for input files (namelist, xml, rc)
+        casedocs = []
         # go through all directories and grab certain files for parsing
         for i in range(len(dic1)):
             root=os.path.join(fpath,dic1[i])
@@ -108,12 +114,19 @@ def parseData(zipfilename,uploaduser):
                 for name in files:
                     if name.startswith("timing."):
                         timingfile.append(os.path.join(path, name))
-                    if name.startswith("e3sm_timing."):
+                    elif name.startswith("e3sm_timing."):
                         allfile.append(os.path.join(path, name))
-                    if name.startswith("README.case."):
+                    elif name.startswith("README.case."):
                         readmefile.append(os.path.join(path, name))
-                    if name.startswith("GIT_DESCRIBE."):
+                    elif name.startswith("GIT_DESCRIBE."):
                         gitdescribefile.append(os.path.join(path, name))
+                    elif name.startswith("spio_stats."):
+                        scorpiofile.append(os.path.join(path, name))
+                    elif name.startswith("memory."):
+                        memoryfile.append(os.path.join(path, name))
+                for name in subdirs:
+                    if name.startswith("CaseDocs."):
+                        casedocs.append(os.path.joim(path, name))
         # boolean list
         isSuccess=[]
         # parse and store timing profile file in a database
@@ -121,7 +134,9 @@ def parseData(zipfilename,uploaduser):
             print (' ')
             print ('**************************************************')
             # insert experiments for given files
-            isSuccess.append(insertExperiment(allfile[i],readmefile[i],timingfile[i],gitdescribefile[i],db,fpath,uploaduser))
+            isSuccess.append(insertExperiment(allfile[i],readmefile[i],timingfile[i],gitdescribefile[i],
+                                            scorpiofile[i], memoryfile[i], casedocs[i],
+                                            db,fpath,uploaduser))
             print ('**************************************************')
             print (' ')
         # remove uploaded experiments
@@ -235,7 +250,9 @@ def checkDuplicateExp(euser,emachine,ecurr, ecase):
         return(True,exp.expid)
 
 # This function provides pathway to files for their respective parser function and finally stores in database
-def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser):
+def insertExperiment(filename,readmefile,timingfile,gitfile,
+                    spiofile,memfile,casedocs,
+                    db,fpath,uploaduser):
     # returns True if successful or if duplicate exp already in database
     (successFlag, duplicateFlag, currExpObj) = insertE3SMTiming(filename,readmefile,gitfile,db,fpath,uploaduser)
     # If this is a duplicate experiment, return True as we won't need to parse rest of this exp files
@@ -251,6 +268,15 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
         return False
     print('    -Complete')
 
+    #insert memory file
+    #TODO
+
+    #insert scorpio stats
+    #TODO
+
+    #insert casedocs files (namelist, rc, xml)
+    #TODO
+
     # store raw data (In server and Minio)
     print('* Storing Experiment in file server')
     (isSuccess,zipFileFullPath) = zipFolder(currExpObj.lid,currExpObj.user,currExpObj.expid,fpath)
@@ -258,7 +284,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
         return False
     print('    -Complete')
     
-    print('* Parsing E3SM Input files')
+    """print('* Parsing E3SM Input files')
     # Needs expid changes to be committed to database
     # We need to add .zip to zipFileFullPath 
     zipFileFullName = zipFileFullPath + ".zip"
@@ -266,7 +292,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,db,fpath,uploaduser)
     if returnValue != 0:
         print('[ERROR] Problem parsing model inputs')
         return False
-    print('    -Complete')
+    print('    -Complete')"""
 
     # try commit if not, rollback
     print('* Storing Experiment Data in Database')
