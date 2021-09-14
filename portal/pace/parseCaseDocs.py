@@ -29,7 +29,6 @@ excludes_casedocs = ["env_mach_specific.xml~"]
 excludes_gzfiles = []
 
 def loaddb_casedocs(casedocpath,db, expid):
-
     for item in os.listdir(casedocpath):
         basename, ext = os.path.splitext(item)
         path = os.path.join(casedocpath, item)
@@ -84,6 +83,8 @@ def loaddb_casedocs(casedocpath,db, expid):
                     pass
         else:
             pass
+    return True
+
 
 if __name__ == "__main__":
     # "e3sm_timing." file list
@@ -120,5 +121,9 @@ if __name__ == "__main__":
                 casedocs.append(os.path.join(path, name))
     
     print(casedocs)
+    #print(convertPathtofile(casedocs[0]))
+
     for case in casedocs:
-        loaddb_casedocs(case,db)
+        loaddb_casedocs(case,0,0)
+    
+    
