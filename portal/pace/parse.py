@@ -129,7 +129,7 @@ def parseData(zipfilename,uploaduser):
                         memoryfile.append(os.path.join(path, name))
                 for name in subdirs:
                     if name.startswith("CaseDocs."):
-                        casedocs.append(os.path.joim(path, name))
+                        casedocs.append(os.path.join(path, name))
         # boolean list
         isSuccess=[]
         # parse and store timing profile file in a database
@@ -252,6 +252,38 @@ def checkDuplicateExp(euser,emachine,ecurr, ecase):
     else:
         return(True,exp.expid)
 
+def insertMemoryFile(memfile,db,expid):
+    #TODO
+    data = parseMemoryFile.loaddb_memfile(memfile)
+    if not data:
+        return False
+    name = 'memory'
+    mem = db.session.query(MemfileInputs).filter_by(expid=expid, name=name).first()
+    if mem:
+        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+        return True
+    else:
+        mem = MemfileInputs(expid=expid, name=name, data=data)
+        db.session.add(mem)
+    return True
+
+def insertScorpioStats(spiofile,db,expid):
+    #TODO
+    data = parseScorpioStats.loaddb_scorpio_stats(spiofile)
+    if not data:
+        return False
+    
+    name = 'spio_stats'
+    spio = db.session.query(ScorpioStats).filter_by(expid=expid, name=name).first()
+    if spio:
+        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+        return True
+    else:
+        spio = ScorpioStats(expid=expid, name=name, data=data)
+        db.session.add(spio)
+    return True
+
+
 # This function provides pathway to files for their respective parser function and finally stores in database
 def insertExperiment(filename,readmefile,timingfile,gitfile,
                     spiofile,memfile,casedocs,
@@ -272,25 +304,29 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
     print('    -Complete')
 
     #insert memory file
-    #TODO
-    data = parseMemoryFile.loaddb_memfile(memfile)
-    if not data:
+    #TODO create a seperate function to handle logic and db insertion
+    print(('* Parsing: '+ convertPathtofile(memfile)))
+    isSuccess = insertMemoryFile(memfile,db,currExpObj.expid)
+    if not isSuccess:
         return False
-    rc = RCInputs(expid=currExpObj.expid, name=name, data=data)
-    db.session.add(rc)
+    print('    -Complete')
 
 
     #insert scorpio stats
-    #TODO
-    data = parseScorpioStats.loaddb_scorpio_stats(spiofile)
-    if not data:
+    #TODO create a seperate function to handle logic and db insertion
+    print(('* Parsing: '+ convertPathtofile(spiofile)))
+    isSuccess = insertScorpioStats(spiofile,db,currExpObj.expid)
+    if not isSuccess:
         return False
-    spio = ScorpioStats(expid=currExpObj.expid, name=name, data=data)
-    db.session.add(spio)
+    print('    -Complete')
 
     #insert casedocs files (namelist, rc, xml)
     #TODO
-    parseCaseDocs.loaddb_casedocs(casedocs)
+    print(('* Parsing: '+ convertPathtofile(casedocs)))
+    isSuccess = parseCaseDocs.loaddb_casedocs(casedocs,db,currExpObj.expid)
+    if not isSuccess:
+        return False
+    print('    -Complete')
 
     # store raw data (In server and Minio)
     print('* Storing Experiment in file server')
@@ -299,6 +335,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
         return False
     print('    -Complete')
     
+    #deprecated version
     """print('* Parsing E3SM Input files')
     # Needs expid changes to be committed to database
     # We need to add .zip to zipFileFullPath 
