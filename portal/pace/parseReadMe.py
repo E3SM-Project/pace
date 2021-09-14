@@ -1,4 +1,11 @@
-import gzip
+#! /usr/bin/env python3
+# @file parseReadMe.py
+# @brief parser for ReadMe file.
+# @author Gaurab KC
+# @version 3.0
+# @date 2021-09-13
+
+import gzip, sys
 
 # converts path string into single file name (/home/absd/asde/file.txt -> file.txt)
 def convertPathtofile(path):
@@ -61,5 +68,8 @@ def parseReadme(readmefilename):
     return resultElement
 
 if __name__ == '__main__':
-    filename = "/Users/4g5/Downloads/exp-blazg-71436/CaseDocs.43235257.210608-222102/README.case.43235257.210608-222102.gz"
+    if sys.argv[1]:
+        filename = sys.argv[1]
+    else:
+        filename = "/Users/4g5/Downloads/exp-blazg-71436/CaseDocs.43235257.210608-222102/README.case.43235257.210608-222102.gz"
     print(parseReadme(filename))

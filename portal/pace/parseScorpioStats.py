@@ -1,3 +1,10 @@
+#! /usr/bin/env python3
+# @file parseScorpioStats.py
+# @brief parser for scorpio_stat file.
+# @author Gaurab KC
+# @version 3.0
+# @date 2021-09-13
+
 import tarfile, sys
 from os.path import abspath, realpath, dirname, join as joinpath
 resolved = lambda x: realpath(abspath(x))

@@ -1,3 +1,10 @@
+#! /usr/bin/env python3
+# @file parseCaseDocsXML.py
+# @brief parser for XML files in CaseDocs.
+# @author Gaurab KC
+# @version 3.0
+# @date 2021-09-13
+
 import gzip, shutil, xmltodict, json, sys
 
 def unzip(infile,outfile):

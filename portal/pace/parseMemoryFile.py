@@ -1,3 +1,10 @@
+#! /usr/bin/env python3
+# @file parseMemoryFile.py
+# @brief parser for memory file.
+# @author Gaurab KC
+# @version 3.0
+# @date 2021-09-13
+
 import gzip, sys
 
 def loaddb_memfile(memfile):

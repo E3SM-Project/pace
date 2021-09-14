@@ -1,4 +1,11 @@
-import gzip
+#! /usr/bin/env python3
+# @file parseE3SMTiming.py
+# @brief parser for E3SM timing file.
+# @author Gaurab KC
+# @version 3.0
+# @date 2021-09-13
+
+import gzip, sys
 from sqlalchemy.exc import SQLAlchemyError
 
 # converts path string into single file name (/home/absd/asde/file.txt -> file.txt)
@@ -280,5 +287,8 @@ def parseE3SMtiming(filename):
         return (successFlag, duplicateFlag, currExpObj) # skips this experiment
 
 if __name__ == "__main__":
-    filename = "/Users/4g5/Downloads/exp-blazg-71436/e3sm_timing.e3sm_v1.2_ne30_noAgg-60.43235257.210608-222102.gz"
+    if sys.argv[1]:
+        filename = sys.argv[1]
+    else:
+        filename = "/Users/4g5/Downloads/exp-blazg-71436/e3sm_timing.e3sm_v1.2_ne30_noAgg-60.43235257.210608-222102.gz"
     parseE3SMtiming(filename)

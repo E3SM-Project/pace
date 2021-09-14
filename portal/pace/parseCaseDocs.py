@@ -1,3 +1,10 @@
+#! /usr/bin/env python3
+# @file parseCaseDocs.py
+# @brief initial flow process for parsing files under CaseDocs folder.
+# @author Gaurab KC
+# @version 3.0
+# @date 2021-09-13
+
 import os, sys
 from . datastructs import *
 from . import parseCaseDocsNameList

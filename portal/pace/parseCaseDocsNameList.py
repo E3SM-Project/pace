@@ -1,3 +1,10 @@
+#! /usr/bin/env python3
+# @file parseCaseDocsNameList.py
+# @brief parser for namelist file under CaseDocs.
+# @author Gaurab KC
+# @version 3.0
+# @date 2021-09-13
+
 import f90nml, json, gzip, shutil, sys
 
 def unzip(infile,outfile):

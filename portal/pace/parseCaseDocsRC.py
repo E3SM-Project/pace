@@ -1,3 +1,10 @@
+#! /usr/bin/env python3
+# @file parseCaseDocsRC.py
+# @brief parser for RC file inside CaseDocs (seq_maqs*).
+# @author Gaurab KC
+# @version 3.0
+# @date 2021-09-13
+
 import sys, gzip
 
 def loaddb_rcfile(rcpath):

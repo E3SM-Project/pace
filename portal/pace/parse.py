@@ -1,4 +1,9 @@
 #! /usr/bin/env python3
+# @file parse.py
+# @brief initial flow process for parsing.
+# @author Gaurab KC
+# @version 3.0
+# @date 2021-09-13
 # imports
 from . datastructs import *
 from . pace_common import *
@@ -22,7 +27,7 @@ import tarfile
 import codecs
 from os.path import abspath, realpath, dirname, join as joinpath
 from sys import stderr
-from . import inputFileParser
+#from . import inputFileParser
 from . import parseE3SMTiming
 from . import parseModelVersion
 from . import parseReadMe
@@ -209,18 +214,6 @@ def spaceConcat(phraseIn,subGroup = False,filter="\n\t"):
                     total[currPhrase]+=" "
                 total[currPhrase]+=phraseSplit[i]
     return total
-
-# Returns a list of items from the table.
-def tableParse(lineInput):
-    names=["component","comp_pes","root_pe","tasks","threads","instances","stride"]
-    resultList=[]
-    for item in lineInput:
-        splitValues = spaceConcat(item,True)
-        tableColumn={}
-        for i in range(len(names)):
-            tableColumn[names[i]] = splitValues[i].strip("(")
-        resultList.append(tableColumn)
-    return resultList
 
 # change string into date time format
 def changeDateTime(c_date):
