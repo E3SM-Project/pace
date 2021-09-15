@@ -595,4 +595,9 @@ def insertTiming(mtFile,expID,db):
     return
 
 if __name__ == "__main__":
+    if sys.argv[1]:
+        filename = sys.argv[1]
+    else:
+        filename = '/Users/4g5/Downloads/exp-ac.golaz-73642'
+    user = 'gaurabkcutk'
     parseData(filename,user)
