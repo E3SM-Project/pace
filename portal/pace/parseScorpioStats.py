@@ -23,11 +23,11 @@ def safemembers(members):
 
     for finfo in members:
         if badpath(finfo.name, base):
-            print(finfo.name, "is blocked (illegal path)",file=stderr)
+            print(finfo.name, "is blocked (illegal path)",file=sys.stderr)
         elif finfo.issym() and badlink(finfo,base):
-            print(finfo.name, "is blocked: Hard link to", finfo.linkname,file=stderr)
+            print(finfo.name, "is blocked: Hard link to", finfo.linkname,file=sys.stderr)
         elif finfo.islnk() and badlink(finfo,base):
-            print(finfo.name, "is blocked: Symlink to", finfo.linkname, file=stderr)
+            print(finfo.name, "is blocked: Symlink to", finfo.linkname, file=sys.stderr)
         else:
             yield finfo
 
