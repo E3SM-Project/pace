@@ -60,4 +60,8 @@ def loaddb_scorpio_stats(spiofile):
         print("Something went wrong with %s" %spiofile)
 
 if __name__ == "__main__":
-    print(loaddb_scorpio_stats(sys.argv[1]))
+    if len(sys.argv)>1:
+        filename = sys.argv[1]
+    else:
+        filename = "/Users/4g5/Downloads/exp-ac.golaz-73642/spio_stats.63117.210714-233452.tar.gz"
+    print(loaddb_scorpio_stats(filename))

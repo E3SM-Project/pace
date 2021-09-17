@@ -18,4 +18,8 @@ def loaddb_memfile(memfile):
         print("Something went wrong with %s" %memfile)
 
 if __name__ == "__main__":
-    print(loaddb_memfile(sys.argv[1]))
+    if len(sys.argv)>1:
+        filename = sys.argv[1]
+    else:
+        filename = "/Users/4g5/Downloads/exp-ac.golaz-73642/memory.3.86400.log.63117.210714-233452.gz"
+    print(loaddb_memfile(filename))

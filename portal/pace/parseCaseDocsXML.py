@@ -37,5 +37,8 @@ def loaddb_xmlfile(xmlpath):
     
 
 if __name__ == "__main__":
-    xmlpath = sys.argv[1]
-    print(loaddb_xmlfile(xmlpath))
+    if len(sys.argv)>1:
+        filename = sys.argv[1]
+    else:
+        filename = "/Users/4g5/Downloads/exp-ac.golaz-73642/CaseDocs.63117.210714-233452/env_batch.xml.63117.210714-233452.gz"
+    print(loaddb_xmlfile(filename))

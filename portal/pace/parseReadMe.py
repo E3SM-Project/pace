@@ -68,7 +68,7 @@ def parseReadme(readmefilename):
     return resultElement
 
 if __name__ == '__main__':
-    if sys.argv[1]:
+    if len(sys.argv)>1:
         filename = sys.argv[1]
     else:
         filename = "/Users/4g5/Downloads/exp-blazg-71436/CaseDocs.43235257.210608-222102/README.case.43235257.210608-222102.gz"

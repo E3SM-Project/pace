@@ -108,7 +108,10 @@ if __name__ == "__main__":
     memoryfile =[]
     # CaseDocs
     casedocs = []
-    root=os.path.join(sys.argv[1])
+    if len(sys.argv)>1:
+        root=os.path.join(sys.argv[1])
+    else:
+        root="/Users/4g5/Downloads/exp-ac.golaz-73642"
     for path, subdirs, files in os.walk(root):
         for name in files:
             if name.startswith("timing."):
