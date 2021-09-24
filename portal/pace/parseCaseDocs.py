@@ -7,9 +7,9 @@
 
 import os, sys
 from . datastructs import *
-from . import parseCaseDocsNameList
-from . import parseCaseDocsRC
-from . import parseCaseDocsXML
+from pace.parserScripts import parseCaseDocsNameList
+from pace.parserScripts import parseCaseDocsRC
+from pace.parserScripts import parseCaseDocsXML
 
 namelists = ("atm_in", "atm_modelio", "cpl_modelio", "drv_flds_in", "drv_in",
              "esp_modelio", "glc_modelio", "ice_modelio", "lnd_in",
@@ -53,7 +53,7 @@ def loaddb_casedocs(casedocpath,db, expid):
             if nameseq:
                 if nameseq[0] in namelists:
                     data = parseCaseDocsNameList.loaddb_namelist(path)
-                    
+
                     nml = db.session.query(NamelistInputs).filter_by(expid=expid, name=name).first()
                     if nml:
                         print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
@@ -64,7 +64,7 @@ def loaddb_casedocs(casedocpath,db, expid):
 
                 elif nameseq[0] in xmlfiles:
                     data = parseCaseDocsXML.loaddb_xmlfile(path)
-
+                    
                     xml = db.session.query(XMLInputs).filter_by(expid=expid, name=name).first()
 
                     if xml:
@@ -76,7 +76,7 @@ def loaddb_casedocs(casedocpath,db, expid):
 
                 elif nameseq[0] in rcfiles:
                     data = parseCaseDocsRC.loaddb_rcfile(path)
-
+                    
                     rc = db.session.query(RCInputs).filter_by(expid=expid, name=name).first()
 
                     if rc:

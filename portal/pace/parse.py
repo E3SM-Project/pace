@@ -28,11 +28,11 @@ import codecs
 from os.path import abspath, realpath, dirname, join as joinpath
 from sys import stderr
 #from . import inputFileParser
-from . import parseE3SMTiming
-from . import parseModelVersion
-from . import parseReadMe
-from . import parseMemoryFile
-from . import parseScorpioStats
+from pace.parserScripts import parseE3SMTiming
+from pace.parserScripts import parseModelVersion
+from pace.parserScripts import parseReadMe
+from pace.parserScripts import parseMemoryFile
+from pace.parserScripts import parseScorpioStats
 from . import parseCaseDocs
 
 resolved = lambda x: realpath(abspath(x))
