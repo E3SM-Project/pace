@@ -31,7 +31,7 @@ from sys import stderr
 from pace.e3smParser import parseE3SMTiming
 from pace.e3smParser import parseModelVersion
 from pace.e3smParser import parseReadMe
-from pace.e3smParser import parseMemoryFile
+from pace.e3smParser import parseMemoryProfile
 from pace.e3smParser import parseScorpioStats
 from . import parseCaseDocs
 
@@ -247,7 +247,7 @@ def checkDuplicateExp(euser,emachine,ecurr, ecase):
 
 def insertMemoryFile(memfile,db,expid):
     #TODO
-    data = parseMemoryFile.loaddb_memfile(memfile)
+    data = parseMemoryProfile.loaddb_memfile(memfile)
     if not data:
         return False
     name = 'memory'
