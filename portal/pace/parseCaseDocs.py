@@ -92,48 +92,5 @@ def loaddb_casedocs(casedocpath,db, expid):
             pass
     return True
 
-
-if __name__ == "__main__":
-    # "e3sm_timing." file list
-    allfile=[]
-    # "timing." file list
-    timingfile=[]
-    # "README.case." file list
-    readmefile=[]
-    # "GIT_DESCRIBE." file list
-    gitdescribefile=[]
-    #scorpio file
-    scorpiofile = []
-    #memory file
-    memoryfile =[]
-    # CaseDocs
-    casedocs = []
-    if len(sys.argv)>1:
-        root=os.path.join(sys.argv[1])
-    else:
-        root="/Users/4g5/Downloads/exp-ac.golaz-73642"
-    for path, subdirs, files in os.walk(root):
-        for name in files:
-            if name.startswith("timing."):
-                timingfile.append(os.path.join(path, name))
-            elif name.startswith("e3sm_timing."):
-                allfile.append(os.path.join(path, name))
-            elif name.startswith("README.case."):
-                readmefile.append(os.path.join(path, name))
-            elif name.startswith("GIT_DESCRIBE."):
-                gitdescribefile.append(os.path.join(path, name))
-            elif name.startswith("spio_stats."):
-                scorpiofile.append(os.path.join(path, name))
-            elif name.startswith("memory."):
-                memoryfile.append(os.path.join(path, name))
-        for name in subdirs:
-            if name.startswith("CaseDocs."):
-                casedocs.append(os.path.join(path, name))
-    
-    print(casedocs)
-    #print(convertPathtofile(casedocs[0]))
-
-    for case in casedocs:
-        loaddb_casedocs(case,0,0)
     
     

@@ -16,10 +16,3 @@ def loaddb_memfile(memfile):
         return csv_data
     except:
         print("Something went wrong with %s" %memfile)
-
-if __name__ == "__main__":
-    if len(sys.argv)>1:
-        filename = sys.argv[1]
-    else:
-        filename = "/Users/4g5/Downloads/exp-ac.golaz-73642/memory.3.86400.log.63117.210714-233452.gz"
-    print(loaddb_memfile(filename))

@@ -22,10 +22,3 @@ def parseModelVersion(gitfile):
             break
     parsefile.close()
     return version
-
-if __name__ == '__main__':
-    if len(sys.argv)>1:
-        filename = sys.argv[1]
-    else:
-        filename = '/Users/4g5/Downloads/exp-blazg-71436/GIT_DESCRIBE.43235257.210608-222102.gz'
-    print(parseModelVersion(filename))

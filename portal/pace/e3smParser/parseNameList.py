@@ -47,10 +47,3 @@ def loaddb_namelist(nmlpath):
         #import pdb; pdb.set_trace()
         print("-----exception error------")
         print(err)
-
-if __name__ == "__main__":
-    if len(sys.argv)>1:
-        filename = sys.argv[1]
-    else:
-        filename = "/Users/4g5/Downloads/exp-ac.golaz-73642/CaseDocs.63117.210714-233452/atm_in.63117.210714-233452.gz"
-    print(loaddb_namelist(filename))

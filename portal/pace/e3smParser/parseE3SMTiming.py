@@ -285,10 +285,3 @@ def parseE3SMtiming(filename):
         #db.session.rollback()
         parseFile.close()
         return (successFlag, duplicateFlag, currExpObj) # skips this experiment
-
-if __name__ == "__main__":
-    if len(sys.argv)>1:
-        filename = sys.argv[1]
-    else:
-        filename = "/Users/4g5/Downloads/exp-blazg-71436/e3sm_timing.e3sm_v1.2_ne30_noAgg-60.43235257.210608-222102.gz"
-    print(parseE3SMtiming(filename))

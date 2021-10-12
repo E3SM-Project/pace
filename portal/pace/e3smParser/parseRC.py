@@ -25,10 +25,3 @@ def loaddb_rcfile(rcpath):
 
     except:
         print("Something went wrong with %s" %rcpath)
-
-if __name__ == "__main__":
-    if len(sys.argv)>1:
-        filename = sys.argv[1]
-    else:
-        filename = "/Users/4g5/Downloads/exp-ac.golaz-73642/CaseDocs.63117.210714-233452/seq_maps.rc.63117.210714-233452.gz"
-    print(loaddb_rcfile(filename))
