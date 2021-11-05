@@ -16,7 +16,7 @@ import os, shutil, distutils
 import re
 
 #Model Timing Library:
-from . import modelTiming
+from pace.e3sm.e3smParser import parseModelTiming
 #modelTiming database information:
 from . pace_common import *
 
@@ -283,9 +283,9 @@ def summaryQuery(expID,rank,getFullStats = ""):
         basePath+="assets/"
     basePath+="static/samples/"
     if expID == "-1":
-        resultNodes = modelTiming.parse(basePath+"model_timing.0000.new")
+        resultNodes = parseModelTiming.parse(basePath+"model_timing.0000.new")
     elif expID == "-2":
-        resultNodes = modelTiming.parse(basePath+"model_timing_stats")
+        resultNodes = parseModelTiming.parse(basePath+"model_timing_stats")
     else:
         resultNodes = db.engine.execute("select jsonVal from model_timing where expid = "+str(expID)+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
         #Get user and machine information:

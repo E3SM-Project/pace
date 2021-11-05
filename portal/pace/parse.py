@@ -16,7 +16,7 @@ import shutil
 import zipfile
 import pymysql
 import types
-from . import modelTiming
+from pace.e3sm.e3smParser import parseModelTiming
 import io
 from minio import Minio
 #from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
@@ -569,7 +569,7 @@ def insertTiming(mtFile,expID,db):
                 # Modify corresponding modelTiming.parse function
                 utf8reader = codecs.getreader('utf-8')
                 source = utf8reader(sourceFile.extractfile(element))
-                new_modeltiming = ModelTiming(expid=expID, jsonVal=modelTiming.parse(source),rank=rankStr)
+                new_modeltiming = ModelTiming(expid=expID, jsonVal=parseModelTiming.parse(source),rank=rankStr)
                 db.session.add(new_modeltiming)
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
