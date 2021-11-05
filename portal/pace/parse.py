@@ -33,7 +33,7 @@ from pace.e3sm.e3smParser import parseModelVersion
 from pace.e3sm.e3smParser import parseReadMe
 from pace.e3sm.e3smParser import parseMemoryProfile
 from pace.e3sm.e3smParser import parseScorpioStats
-from pace.e3sm import parseCaseDocs
+from pace.e3sm.e3smParser import parseCaseDocs
 
 resolved = lambda x: realpath(abspath(x))
 
