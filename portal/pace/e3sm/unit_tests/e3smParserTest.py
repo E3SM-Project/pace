@@ -7,7 +7,7 @@
 
 import sys
 
-from pace.e3smParser import parseE3SMTiming, parseMemoryProfile, parseModelVersion, parseNameList, parseRC, parseReadMe, parseScorpioStats, parseXML
+from pace.e3sm.e3smParser import parseE3SMTiming, parseMemoryProfile, parseModelVersion, parseNameList, parseRC, parseReadMe, parseScorpioStats, parseXML
 
 if __name__ == "__main__":
     filename = "e3sm_timing.e3sm_v1.2_ne30_noAgg-60.43235257.210608-222102.gz"

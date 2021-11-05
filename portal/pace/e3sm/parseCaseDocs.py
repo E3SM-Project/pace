@@ -6,10 +6,10 @@
 # @date 2021-09-13
 
 import os, sys
-from . datastructs import *
-from pace.e3smParser import parseNameList
-from pace.e3smParser import parseRC
-from pace.e3smParser import parseXML
+from pace.datastructs import *
+from pace.e3sm.e3smParser import parseNameList
+from pace.e3sm.e3smParser import parseRC
+from pace.e3sm.e3smParser import parseXML
 
 namelists = ("atm_in", "atm_modelio", "cpl_modelio", "drv_flds_in", "drv_in",
              "esp_modelio", "glc_modelio", "ice_modelio", "lnd_in",
