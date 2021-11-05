@@ -5,7 +5,7 @@
 # @version 3.0
 # @date 2021-09-13
 
-from . __init__ import db
+from pace.__init__ import db
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.mysql import MEDIUMTEXT,INTEGER,DECIMAL

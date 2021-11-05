@@ -45,7 +45,7 @@ PACE_LOG_DIR,EXP_DIR,UPLOAD_FOLDER = getDirectories()
 # Uploading file
 from werkzeug.utils import secure_filename
 import os
-from . datastructs import *
+from pace.e3sm.e3smDb.datastructs import *
 
 #These charts were modified for use on PACE
 #Runtime image generator: by donahue5

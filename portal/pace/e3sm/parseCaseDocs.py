@@ -6,7 +6,7 @@
 # @date 2021-09-13
 
 import os, sys
-from pace.datastructs import *
+from pace.e3sm.e3smDb.datastructs import *
 from pace.e3sm.e3smParser import parseNameList
 from pace.e3sm.e3smParser import parseRC
 from pace.e3sm.e3smParser import parseXML

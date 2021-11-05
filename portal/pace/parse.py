@@ -5,7 +5,7 @@
 # @version 3.0
 # @date 2021-09-13
 # imports
-from . datastructs import *
+from pace.e3sm.e3smDb.datastructs import *
 from . pace_common import *
 db.create_all()
 import array
