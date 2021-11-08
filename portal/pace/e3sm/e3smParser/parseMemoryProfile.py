@@ -7,6 +7,9 @@
 
 import gzip, sys
 
+'''
+    This function reads the memory file data and returns the cvs data
+'''
 def loaddb_memfile(memfile):
     
     try:

@@ -11,6 +11,7 @@ from pace.e3sm.e3smParser import parseNameList
 from pace.e3sm.e3smParser import parseRC
 from pace.e3sm.e3smParser import parseXML
 
+#acceptable file name prefix
 namelists = ("atm_in", "atm_modelio", "cpl_modelio", "drv_flds_in", "drv_in",
              "esp_modelio", "glc_modelio", "ice_modelio", "lnd_in",
              "lnd_modelio", "mosart_in", "mpaso_in", "mpassi_in",
@@ -35,6 +36,10 @@ exclude_zipfiles = []
 excludes_casedocs = ["env_mach_specific.xml~"]
 excludes_gzfiles = []
 
+'''
+    This function goes through casedocs folder in e3sm experiment and parses certain files by calling 
+    its respective parser.
+'''
 def loaddb_casedocs(casedocpath,db, expid):
     for item in os.listdir(casedocpath):
         basename, ext = os.path.splitext(item)

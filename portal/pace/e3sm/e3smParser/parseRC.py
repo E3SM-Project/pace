@@ -7,6 +7,9 @@
 
 import sys, gzip
 
+'''
+This function reads the rc files and return data in json format
+'''
 def loaddb_rcfile(rcpath):
 
     try:

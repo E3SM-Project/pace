@@ -16,6 +16,9 @@ def unzip(infile,outfile):
     f_out.close()
     f_in.close()
 
+'''
+This function reads the xml files and return data in json format
+'''
 def loaddb_xmlfile(xmlpath):
     
     from xml.parsers.expat import ExpatError

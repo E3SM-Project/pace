@@ -31,6 +31,9 @@ def safemembers(members):
         else:
             yield finfo
 
+'''
+This function reads the scorpio file and return data in json format
+'''
 def loaddb_scorpio_stats(spiofile):
 
     # TODO: handle a direcotry generated from this gz file

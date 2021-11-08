@@ -7,6 +7,7 @@
 
 import f90nml, json, gzip, shutil, sys
 
+# unzip the file
 def unzip(infile,outfile):
 
     with gzip.open(infile, 'rb') as f_in:
@@ -16,6 +17,9 @@ def unzip(infile,outfile):
     f_out.close()
     f_in.close()
 
+'''
+This function reads the namelists files and return data in json format
+'''
 def loaddb_namelist(nmlpath):
     
     jsondata = None
