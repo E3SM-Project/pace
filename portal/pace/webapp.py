@@ -103,6 +103,7 @@ def fileparse():
     if request.method == 'POST':
         filename = request.form['filename']
         user = request.form['user']
+        project = request.form['project']
         if not bool(re.match('^[a-zA-Z0-9\-._]+$', user)):
             return('ERROR')
         # Check zip file names from pace-upload
@@ -111,7 +112,7 @@ def fileparse():
         # pace-exps-user-timestamp.zip
         if not bool(re.match('^pace-exps-[a-zA-Z0-9\-_]+.zip$', filename)):
             return('ERROR')
-        return(parse.parseData(filename,user))
+        return(parse.parseData(filename,user,project))
 
 @app.route('/downloadlog', methods=['POST'])
 def downloadlog():
