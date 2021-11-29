@@ -60,4 +60,4 @@ def loaddb_scorpio_stats(spiofile):
         else:
             return jsondata
     except:
-        print("Something went wrong with %s" %spiofile)     
+        print("Something went wrong with %s" %spiofile)
