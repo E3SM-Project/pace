@@ -136,6 +136,7 @@ function drawMaterialO() {
             vAxis: {
                 textPosition: 'out',
             },
+            colors: ['#631492','#d39df2'],
             bars: 'horizontal'
         };
         //var materialChart = new google.charts.Bar(document.getElementById('otput'));
@@ -164,6 +165,7 @@ function drawMaterialO3() {
         vAxis: {
             textPosition: 'out'
         },
+        colors: ['#456990','#EF767A','#EEB868'],
         bars: 'horizontal'
     };
     //var materialChart = new google.charts.Bar(document.getElementById('otimes'));
@@ -197,6 +199,7 @@ function drawMaterialO2() {
         vAxis: {
           textPosition: 'out'
         },
+        colors: ['#456990','#EF767A'],
         bars: 'horizontal'
       };
       //var materialChart = new google.charts.Bar(document.getElementById('obytes'));
@@ -205,24 +208,16 @@ function drawMaterialO2() {
     }
 
 function drawMaterial() {
-
-      /*var data = google.visualization.arrayToDataTable([
-        ['Name', 'avg_wtput', 'avg_rtput'],
-        ['COMP_CPL: CPL', 2140.706992, 12.640536],
-        ['COMP_ATM: EAM', 1507.539226, 21935.646749],
-        ['COMP_LND: ELM', 958.108832, 345.153312],
-        ['COMP_OCN: MPASO', 2001.431654, 365.267174],
-        ['COMP_ICE: MPASSI', 912.279050, 261.993721]
-      ]);*/
-
       var data = new google.visualization.DataTable();
       data.addColumn('string', 'Name');
       data.addColumn('number', 'avg_wtput');
       data.addColumn('number', 'avg_rtput');
       
       for(let i = 0; i<modeltabledata.length; i++){
+        if(modeltabledata[i]["avg_wtput(MB/s)"]!=0 && modeltabledata[i]["avg_rtput(MB/s)"]!=0){
           data.addRow([modeltabledata[i]["name"],modeltabledata[i]["avg_wtput(MB/s)"],modeltabledata[i]["avg_rtput(MB/s)"]]);
-      }
+        }
+    }
       data.sort({column: 1, desc: true});
 
       var materialOptions = {
@@ -249,6 +244,7 @@ function drawMaterial() {
             position: 'bottom',
             positionalignment: 'center'
         },
+        colors: ['#456990','#EF767A'],
         height: 500
       };
       //var materialChart = new google.charts.Bar(document.getElementById('tput'));
@@ -257,22 +253,16 @@ function drawMaterial() {
     }
     
 function drawMaterial2() {
-      /*var data = google.visualization.arrayToDataTable([
-        ['Name', 'tot_wb', 'tot_rb'],
-        ['COMP_CPL: CPL', 821404359, 6214824],
-        ['COMP_ATM: EAM', 4667935480, 1311759579040],
-        ['COMP_LND: ELM', 486631405, 482048640],
-        ['COMP_OCN: MPASO', 15733698243, 1163108144],
-        ['COMP_ICE: MPASSI', 1991884176, 1065097524]
-      ]);*/
       var data = new google.visualization.DataTable();
       data.addColumn('string', 'Name');
       data.addColumn('number', 'tot_wb');
       data.addColumn('number', 'tot_rb');
       
       for(let i = 0; i<modeltabledata.length; i++){
-          data.addRow([modeltabledata[i]["name"],modeltabledata[i]["tot_wb(bytes)"],modeltabledata[i]["tot_rb(bytes)"]]);
-      }
+          if(modeltabledata[i]["tot_wb(bytes)"]!=0 && modeltabledata[i]["tot_rb(bytes)"]!=0){
+            data.addRow([modeltabledata[i]["name"],modeltabledata[i]["tot_wb(bytes)"],modeltabledata[i]["tot_rb(bytes)"]]);
+            }
+        }
       data.sort({column: 1, desc: true});
       var materialOptions = {
         title: 'Bytes',
@@ -298,6 +288,7 @@ function drawMaterial2() {
             position: 'bottom',
             positionalignment: 'center'
         },
+        colors: ['#456990','#EF767A'],
         height: 500
       };
       //var materialChart = new google.charts.Bar(document.getElementById('bytes'));
@@ -306,24 +297,18 @@ function drawMaterial2() {
     }
 
 function drawMaterial3() {
-    /*
-    var data = google.visualization.arrayToDataTable([
-    ['Name', 'tot_wtimes', 'tot_rtimes'],
-    ['COMP_CPL: CPL', 0.365932, 0.468882],
-    ['COMP_ATM: EAM', 2.952951, 57.030068],
-    ['COMP_LND: ELM', 0.484379, 1.331922],
-    ['COMP_OCN: MPASO', 7.497045, 3.036753],
-    ['COMP_ICE: MPASSI', 2.082267, 3.877025]
-    ]);*/
     var data = new google.visualization.DataTable();
       data.addColumn('string', 'Name');
       data.addColumn('number', 'tot_wtimes');
       data.addColumn('number', 'tot_rtimes');
       
       for(let i = 0; i<modeltabledata.length; i++){
-          data.addRow([modeltabledata[i]["name"],modeltabledata[i]["tot_wtime(s)"],modeltabledata[i]["tot_rtime(s)"]]);
-      }
+          if(modeltabledata[i]["tot_wtime(s)"]!=0 && modeltabledata[i]["tot_rtime(s)"]!=0){
+              data.addRow([modeltabledata[i]["name"],modeltabledata[i]["tot_wtime(s)"],modeltabledata[i]["tot_rtime(s)"]]);
+            }
+    }
       data.sort({column: 1, desc: true});
+      //data.hideColumns([3])
     var materialOptions = {
         title: 'Total Times',
         hAxis: {
@@ -348,6 +333,7 @@ function drawMaterial3() {
             position: 'bottom',
             positionalignment: 'center'
         },
+        colors: ['#456990','#EF767A'],
         height: 500
       };
 
