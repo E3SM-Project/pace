@@ -223,7 +223,7 @@ function drawMaterial() {
       for(let i = 0; i<modeltabledata.length; i++){
           data.addRow([modeltabledata[i]["name"],modeltabledata[i]["avg_wtput(MB/s)"],modeltabledata[i]["avg_rtput(MB/s)"]]);
       }
-
+      data.sort({column: 1, desc: true});
 
       var materialOptions = {
         title: 'Avg Throughput',
@@ -273,6 +273,7 @@ function drawMaterial2() {
       for(let i = 0; i<modeltabledata.length; i++){
           data.addRow([modeltabledata[i]["name"],modeltabledata[i]["tot_wb(bytes)"],modeltabledata[i]["tot_rb(bytes)"]]);
       }
+      data.sort({column: 1, desc: true});
       var materialOptions = {
         title: 'Bytes',
         hAxis: {
@@ -322,6 +323,7 @@ function drawMaterial3() {
       for(let i = 0; i<modeltabledata.length; i++){
           data.addRow([modeltabledata[i]["name"],modeltabledata[i]["tot_wtime(s)"],modeltabledata[i]["tot_rtime(s)"]]);
       }
+      data.sort({column: 1, desc: true});
     var materialOptions = {
         title: 'Total Times',
         hAxis: {
