@@ -1,0 +1,358 @@
+{% extends "layout.html" %}
+{% block content %}
+{% block topcontent %}
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<link href="https://unpkg.com/tabulator-tables@5.0.7/dist/css/tabulator.min.css" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.0.7/dist/js/tabulator.min.js"></script>
+<style>
+    tr:nth-child(even) {background-color: #f2f2f2;}
+</style>
+{% endblock topcontent %}
+<p>
+    <div style="width: 99%; overflow: hidden; border:4px solid black">
+        <h1 style="text-align:center">Overall IO Summary Statistics</h1>
+        <div id="overallIO-table" style="margin-top:25px; margin-bottom: 25px"></div>
+        <div id="otput"></div>
+        <div id="otimes"></div>
+        <div id="obytes"></div>
+    </div>
+</p>
+<br>
+<p>
+<div style="border:4px solid black; margin-top:100px">
+<h1 style="text-align:center; margin-bottom:45px">Model Component IO Statistics</h1>
+<div id="modelIO-table" style="margin-top:25px"></div>
+<p><div id="tput" style="border:1px solid black; border-radius: 25px"></div></p>
+<p><div id="times" style="border:1px solid black; border-radius: 25px"></div></p>
+<p><div id="bytes" style="border:1px solid black; border-radius: 25px"></div></p></div></p>
+
+<div style="border:4px solid black; margin-top:100px; margin-bottom:100px;">
+    <h1 style="text-align:center">File IO Statistics</h1>
+    <h3 style="text-align:left" style="margin-top: 20px;">Write File IO Statistics</h1>
+    <div id="writefile-table" style="margin-top:25px"></div>
+    <br>
+    <h3 style="text-align:left" style="margin-top: 25px;">Read File IO Statistics</h1>
+    <div id="readfile-table" style="margin-top:25px"></div>
+</div>
+
+
+
+<script>
+var overalTableData = [{{overalData|tojson}}];
+var table = new Tabulator("#overallIO-table", {
+    data:overalTableData,
+    layout:"fitDataStretch",
+    columns:[
+    {title:"tot_time(s)", field:"tot_time(s)", hozAlign:"right", sorter:"number"},
+    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right"},
+    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right"},
+    {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", sorter:"number", hozAlign:"right"},
+    {title:"avg_rtput(MB/s)", field:"avg_rtput(MB/s)", hozAlign:"right"},
+    {title:"tot_wb(MB)", field:"tot_wb(MB)", hozAlign:"right"},
+    {title:"tot_rb(MB)", field:"tot_rb(MB)", hozAlign:"right"},
+    {title:"Name", field:"name", hozAlign:"right"},
+    ],
+});
+
+var modeltabledata={{modelData|tojson}};
+var table = new Tabulator("#modelIO-table", {
+    data:modeltabledata,
+    layout:"fitDataStretch",
+    initialSort:[
+        {column:"tot_time(s)", dir:"desc"},
+    ],
+    columns:[
+    {title:"tot_time(s)", field:"tot_time(s)", hozAlign:"right"},
+    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right"},
+    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right"},
+    {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", hozAlign:"right"},
+    {title:"avg_rtput(MB/s)", field:"avg_rtput(MB/s)", hozAlign:"right"},
+    {title:"tot_wb(bytes)", field:"tot_wb(bytes)", hozAlign:"right"},
+    {title:"tot_rb(bytes)", field:"tot_rb(bytes)", hozAlign:"right"},
+    {title:"Name", field:"name", hozAlign:"right"},
+    ],
+});
+
+var writeFileTableData = {{writeIOData|tojson}};
+var table = new Tabulator("#writefile-table", {
+    data:writeFileTableData,
+    layout:"fitDataStretch",
+    height:"315px",
+    initialSort:[
+        {column:"tot_wtime(s)", dir:"desc"},
+    ],
+    columns:[
+    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right"},
+    {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", sorter:"number", hozAlign:"right"},
+    {title:"tot_wb(bytes)", field:"tot_wb(bytes)", hozAlign:"right"},
+    {title:"Name", field:"name", hozAlign:"right"}
+    ],
+});
+
+var readFileTableData = {{readIOData|tojson}};
+var table = new Tabulator("#readfile-table", {
+    data:readFileTableData,
+    layout:"fitDataStretch",
+    height:"315px",
+    initialSort:[
+        {column:"tot_rtime(s)", dir:"desc"},
+    ],
+    columns:[
+    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right"},
+    {title:"avg_rtput(MB/s)", field:"avg_rtput(MB/s)", hozAlign:"right"},
+    {title:"tot_rb(bytes)", field:"tot_rb(bytes)", hozAlign:"right"},
+    {title:"Name", field:"name", hozAlign:"right"}
+    ],
+});
+
+google.charts.load('current', {packages: ['corechart', 'bar']});
+google.charts.setOnLoadCallback(drawMaterialO);
+google.charts.setOnLoadCallback(drawMaterialO2);
+google.charts.setOnLoadCallback(drawMaterialO3);
+google.charts.setOnLoadCallback(drawMaterial);
+google.charts.setOnLoadCallback(drawMaterial2);
+google.charts.setOnLoadCallback(drawMaterial3);
+
+function drawMaterialO() {
+        var tot_time = overalTableData[0]["tot_time(s)"]
+        var model_runtime = {{modelRuntime}}
+        var data = google.visualization.arrayToDataTable([
+            ['Name', 'tot_time_spent_io', 'remaning_time'],
+            ['Scorpio', tot_time, (model_runtime - tot_time)]
+            ]);
+
+        var materialOptions = {
+            title: 'Scorpio IO time percent',
+            isStacked: 'percent',
+            
+            legend:{
+                position: 'bottom',
+                positionalignment: 'center'
+            },
+            hAxis: {
+            minValue: 0
+            },
+            vAxis: {
+                textPosition: 'out',
+            },
+            bars: 'horizontal'
+        };
+        //var materialChart = new google.charts.Bar(document.getElementById('otput'));
+        var materialChart = new google.visualization.BarChart(document.getElementById('otput'));
+        materialChart.draw(data, materialOptions);
+}
+
+function drawMaterialO3() {
+    var other_time = overalTableData[0]["tot_time(s)"]-(overalTableData[0]["tot_wtime(s)"]+overalTableData[0]["tot_rtime(s)"])
+    var data = google.visualization.arrayToDataTable([
+        ['Name', 'tot_wtimes', 'tot_rtimes', 'other'],
+        [overalTableData[0]["name"], overalTableData[0]["tot_wtime(s)"], overalTableData[0]["tot_rtime(s)"], other_time]
+    ]);
+
+    var materialOptions = {    
+        title: 'Total Times',
+        isStacked: 'percent',
+        
+        legend:{
+            position: 'bottom',
+            positionalignment: 'center'
+        },
+        hAxis: {
+            minValue: 0,
+        },
+        vAxis: {
+            textPosition: 'out'
+        },
+        bars: 'horizontal'
+    };
+    //var materialChart = new google.charts.Bar(document.getElementById('otimes'));
+    var materialChart = new google.visualization.BarChart(document.getElementById('otimes'));
+    materialChart.draw(data, materialOptions);
+}
+
+function drawMaterialO2() {
+      var data = google.visualization.arrayToDataTable([
+        ['Name', 'tot_wb', 'tot_rb'],
+        [overalTableData[0]["name"], overalTableData[0]["tot_wb(MB)"], overalTableData[0]["tot_rb(MB)"]]
+      ]);
+
+      var materialOptions = {    
+        title: 'MegaBytes',
+        
+        legend:{
+            position: 'bottom',
+            positionalignment: 'center'
+        },
+        hAxis: {
+          title: 's',
+          minValue: 0,
+          logScale: true,
+          format: 'short',
+          textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        vAxis: {
+          textPosition: 'out'
+        },
+        bars: 'horizontal'
+      };
+      //var materialChart = new google.charts.Bar(document.getElementById('obytes'));
+      var materialChart = new google.visualization.BarChart(document.getElementById('obytes'));
+      materialChart.draw(data, materialOptions);
+    }
+
+function drawMaterial() {
+
+      /*var data = google.visualization.arrayToDataTable([
+        ['Name', 'avg_wtput', 'avg_rtput'],
+        ['COMP_CPL: CPL', 2140.706992, 12.640536],
+        ['COMP_ATM: EAM', 1507.539226, 21935.646749],
+        ['COMP_LND: ELM', 958.108832, 345.153312],
+        ['COMP_OCN: MPASO', 2001.431654, 365.267174],
+        ['COMP_ICE: MPASSI', 912.279050, 261.993721]
+      ]);*/
+
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Name');
+      data.addColumn('number', 'avg_wtput');
+      data.addColumn('number', 'avg_rtput');
+      
+      for(let i = 0; i<modeltabledata.length; i++){
+          data.addRow([modeltabledata[i]["name"],modeltabledata[i]["avg_wtput(MB/s)"],modeltabledata[i]["avg_rtput(MB/s)"]]);
+      }
+
+
+      var materialOptions = {
+        title: 'Avg Throughput',
+        hAxis: {
+          title: 'MB/s',
+          minValue: 0,
+          logScale: true,
+          format: 'short',
+          textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        vAxis: {
+            textPosition: 'out',
+            textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        bars: 'horizontal',
+        legend:{
+            position: 'bottom',
+            positionalignment: 'center'
+        },
+        height: 500
+      };
+      //var materialChart = new google.charts.Bar(document.getElementById('tput'));
+      var materialChart = new google.visualization.BarChart(document.getElementById('tput'));
+      materialChart.draw(data, materialOptions);
+    }
+    
+function drawMaterial2() {
+      /*var data = google.visualization.arrayToDataTable([
+        ['Name', 'tot_wb', 'tot_rb'],
+        ['COMP_CPL: CPL', 821404359, 6214824],
+        ['COMP_ATM: EAM', 4667935480, 1311759579040],
+        ['COMP_LND: ELM', 486631405, 482048640],
+        ['COMP_OCN: MPASO', 15733698243, 1163108144],
+        ['COMP_ICE: MPASSI', 1991884176, 1065097524]
+      ]);*/
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Name');
+      data.addColumn('number', 'tot_wb');
+      data.addColumn('number', 'tot_rb');
+      
+      for(let i = 0; i<modeltabledata.length; i++){
+          data.addRow([modeltabledata[i]["name"],modeltabledata[i]["tot_wb(bytes)"],modeltabledata[i]["tot_rb(bytes)"]]);
+      }
+      var materialOptions = {
+        title: 'Bytes',
+        hAxis: {
+          title: 's',
+          minValue: 0,
+          logScale: true,
+          format: 'short',
+          textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        vAxis: {
+            textPosition: 'out',
+            textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        bars: 'horizontal',
+        legend:{
+            position: 'bottom',
+            positionalignment: 'center'
+        },
+        height: 500
+      };
+      //var materialChart = new google.charts.Bar(document.getElementById('bytes'));
+      var materialChart = new google.visualization.BarChart(document.getElementById('bytes'));
+      materialChart.draw(data, materialOptions);
+    }
+
+function drawMaterial3() {
+    /*
+    var data = google.visualization.arrayToDataTable([
+    ['Name', 'tot_wtimes', 'tot_rtimes'],
+    ['COMP_CPL: CPL', 0.365932, 0.468882],
+    ['COMP_ATM: EAM', 2.952951, 57.030068],
+    ['COMP_LND: ELM', 0.484379, 1.331922],
+    ['COMP_OCN: MPASO', 7.497045, 3.036753],
+    ['COMP_ICE: MPASSI', 2.082267, 3.877025]
+    ]);*/
+    var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Name');
+      data.addColumn('number', 'tot_wtimes');
+      data.addColumn('number', 'tot_rtimes');
+      
+      for(let i = 0; i<modeltabledata.length; i++){
+          data.addRow([modeltabledata[i]["name"],modeltabledata[i]["tot_wtime(s)"],modeltabledata[i]["tot_rtime(s)"]]);
+      }
+    var materialOptions = {
+        title: 'Total Times',
+        hAxis: {
+          title: 's',
+          minValue: 0,
+          logScale: true,
+          format: 'short',
+          textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        vAxis: {
+            textPosition: 'out',
+            textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        bars: 'horizontal',
+        legend:{
+            position: 'bottom',
+            positionalignment: 'center'
+        },
+        height: 500
+      };
+
+    //var materialChart = new google.charts.Bar(document.getElementById('times'));
+    var materialChart = new google.visualization.BarChart(document.getElementById('times'));
+    materialChart.draw(data, materialOptions);
+}
+
+</script>
+{% endblock %}

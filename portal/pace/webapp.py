@@ -318,6 +318,49 @@ def flameGraph(expid,rank):
     if bool(re.match('^[0-9,]+$', rank)) and bool(re.match('^[0-9,]+$', expid)):
       return render_template("flameGraph.html",expid=expid,rank=rank.split(','))
 
+@app.route("/scorpioIO/<int:mexpid>")
+def scorpioIOStat(mexpid):
+    #get data
+    try:
+        scorpio_data = db.engine.execute("select data from scorpio_stats where name = 'spio_stats' and expid="+str(mexpid)).first()
+        scorpio_json_data = json.loads(scorpio_data[0])
+        
+        myexp = db.engine.execute("select * from e3smexp where expid= "+ str(mexpid) ).fetchall()[0]
+        modelRuntime = myexp.run_time
+
+        overalData = scorpio_json_data["ScorpioIOSummaryStatistics"]["OverallIOStatistics"]
+        overalData["tot_wb(MB)"] = overalData["tot_wb(bytes)"]/1000000
+        overalData["tot_rb(MB)"] = overalData["tot_rb(bytes)"]/1000000
+        for name in overalData:
+            if isinstance(overalData[name],float):
+                overalData[name]=round(overalData[name],2)
+
+        modelData = scorpio_json_data["ScorpioIOSummaryStatistics"]["ModelComponentIOStatistics"]
+
+        for mdata in modelData:
+            for name in mdata:        
+                if isinstance(mdata[name],float):
+                    mdata[name]=round(mdata[name],2)
+
+        fileIOData = scorpio_json_data["ScorpioIOSummaryStatistics"]["FileIOStatistics"]
+
+        readIOData = []
+        writeIOData = []
+
+        for fdata in fileIOData:
+            for name in fdata:
+                if isinstance(fdata[name],float):
+                    fdata[name]=round(fdata[name],2)
+            if fdata['tot_rtime(s)']!=0:
+                readIOData.append(fdata)
+            if fdata['tot_wtime(s)']!=0:
+                writeIOData.append(fdata)
+
+    except IndexError:
+        return render_template('error.html')
+    return render_template('scorpioIOpage.html', overalData = overalData, modelData = modelData,
+                            readIOData=readIOData,writeIOData=writeIOData, modelRuntime = modelRuntime)
+
 @app.route("/exp-details/<int:mexpid>")
 def expDetails(mexpid):
     myexp = None
