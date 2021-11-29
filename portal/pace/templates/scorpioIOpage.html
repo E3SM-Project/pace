@@ -63,7 +63,7 @@ var table = new Tabulator("#modelIO-table", {
         {column:"tot_time(s)", dir:"desc"},
     ],
     columns:[
-    {title:"tot_time(s)", field:"tot_time(s)", hozAlign:"right"},
+    {title:"tot_time(s)", field:"tot_time(s)", hozAlign:"right", sorter:"number"},
     {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right"},
     {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right"},
     {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", hozAlign:"right"},
@@ -83,7 +83,7 @@ var table = new Tabulator("#writefile-table", {
         {column:"tot_wtime(s)", dir:"desc"},
     ],
     columns:[
-    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right"},
+    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right", sorter:"number"},
     {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", sorter:"number", hozAlign:"right"},
     {title:"tot_wb(bytes)", field:"tot_wb(bytes)", hozAlign:"right"},
     {title:"Name", field:"name", hozAlign:"right"}
@@ -99,7 +99,7 @@ var table = new Tabulator("#readfile-table", {
         {column:"tot_rtime(s)", dir:"desc"},
     ],
     columns:[
-    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right"},
+    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right", sorter:"number"},
     {title:"avg_rtput(MB/s)", field:"avg_rtput(MB/s)", hozAlign:"right"},
     {title:"tot_rb(bytes)", field:"tot_rb(bytes)", hozAlign:"right"},
     {title:"Name", field:"name", hozAlign:"right"}
