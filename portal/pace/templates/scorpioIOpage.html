@@ -7,11 +7,21 @@
 <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.0.7/dist/js/tabulator.min.js"></script>
 <style>
     tr:nth-child(even) {background-color: #f2f2f2;}
+    #hover-content {
+        display:none;
+    }
+    #parent:hover #hover-content {
+        display:block;
+    }
 </style>
 {% endblock topcontent %}
 <p>
     <div style="width: 99%; overflow: hidden; border:4px solid black">
-        <h1 style="text-align:center">Overall IO Summary Statistics</h1>
+        <div id="parent"><h1 style="text-align:center">Overall IO Summary Statistics</h1>
+            <div id="hover-content">
+                <h6 style="text-align:center">This object contains the overall I/O performance statistics for the application.</h6>
+            </div>
+        </div>
         <div id="overallIO-table" style="margin-top:25px; margin-bottom: 25px"></div>
         <div id="otput"></div>
         <div id="otimes"></div>
@@ -21,14 +31,22 @@
 <br>
 <p>
 <div style="border:4px solid black; margin-top:100px">
-<h1 style="text-align:center; margin-bottom:45px">Model Component IO Statistics</h1>
+<div id="parent"><h1 style="text-align:center">Model Component IO Statistics</h1>
+    <div id="hover-content">
+        <h6 style="text-align:center">An array of objects, each object containing the I/O performance statistics for a single model component.</h6>
+    </div>
+</div>
 <div id="modelIO-table" style="margin-top:25px"></div>
 <p><div id="tput" style="border:1px solid black; border-radius: 25px"></div></p>
 <p><div id="times" style="border:1px solid black; border-radius: 25px"></div></p>
 <p><div id="bytes" style="border:1px solid black; border-radius: 25px"></div></p></div></p>
 
 <div style="border:4px solid black; margin-top:100px; margin-bottom:100px;">
-    <h1 style="text-align:center">File IO Statistics</h1>
+    <div id="parent"><h1 style="text-align:center">File IO Statistics</h1>
+        <div id="hover-content">
+            <h6 style="text-align:center">An array of objects, each object containing the I/O performance statistics for a single file.</h6>
+        </div>
+    </div>
     <h3 style="text-align:left" style="margin-top: 20px;">Write File IO Statistics</h1>
     <div id="writefile-table" style="margin-top:25px"></div>
     <br>
@@ -39,18 +57,21 @@
 
 
 <script>
+var model_runtime = {{modelRuntime}}
+
 var overalTableData = [{{overalData|tojson}}];
 var table = new Tabulator("#overallIO-table", {
     data:overalTableData,
+    tooltipsHeader:true,
     layout:"fitDataStretch",
     columns:[
-    {title:"tot_time(s)", field:"tot_time(s)", hozAlign:"right", sorter:"number"},
-    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right"},
-    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right"},
-    {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", sorter:"number", hozAlign:"right"},
-    {title:"avg_rtput(MB/s)", field:"avg_rtput(MB/s)", hozAlign:"right"},
-    {title:"tot_wb(MB)", field:"tot_wb(MB)", hozAlign:"right"},
-    {title:"tot_rb(MB)", field:"tot_rb(MB)", hozAlign:"right"},
+    {title:"tot_time(s)", field:"tot_time(s)", hozAlign:"right", sorter:"number",headerTooltip:"Total wallclock time spent in seconds. This can be considered as an upper bound on the total time spent inside Scorpio by the slowest process"},
+    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right",headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
+    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right",headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
+    {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", sorter:"number", hozAlign:"right",headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
+    {title:"avg_rtput(MB/s)", field:"avg_rtput(MB/s)", hozAlign:"right",headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
+    {title:"tot_wb(MB)", field:"tot_wb(MB)", hozAlign:"right",headerTooltip:"Total bytes written out, in bytes, to the file system"},
+    {title:"tot_rb(MB)", field:"tot_rb(MB)", hozAlign:"right",headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
     {title:"Name", field:"name", hozAlign:"right"},
     ],
 });
@@ -58,18 +79,19 @@ var table = new Tabulator("#overallIO-table", {
 var modeltabledata={{modelData|tojson}};
 var table = new Tabulator("#modelIO-table", {
     data:modeltabledata,
+    tooltipsHeader:true,
     layout:"fitDataStretch",
     initialSort:[
         {column:"tot_time(s)", dir:"desc"},
     ],
     columns:[
-    {title:"tot_time(s)", field:"tot_time(s)", hozAlign:"right", sorter:"number"},
-    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right"},
-    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right"},
-    {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", hozAlign:"right"},
-    {title:"avg_rtput(MB/s)", field:"avg_rtput(MB/s)", hozAlign:"right"},
-    {title:"tot_wb(bytes)", field:"tot_wb(bytes)", hozAlign:"right"},
-    {title:"tot_rb(bytes)", field:"tot_rb(bytes)", hozAlign:"right"},
+    {title:"tot_time(s)", field:"tot_time(s)", hozAlign:"right", sorter:"number",headerTooltip:"Total wallclock time spent in seconds. This can be considered as an upper bound on the total time spent inside Scorpio by the slowest process"},
+    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right",headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
+    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right",headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
+    {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", hozAlign:"right",headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
+    {title:"avg_rtput(MB/s)", field:"avg_rtput(MB/s)", hozAlign:"right",headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
+    {title:"tot_wb(bytes)", field:"tot_wb(bytes)", hozAlign:"right",headerTooltip:"Total bytes written out, in bytes, to the file system"},
+    {title:"tot_rb(bytes)", field:"tot_rb(bytes)", hozAlign:"right",headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
     {title:"Name", field:"name", hozAlign:"right"},
     ],
 });
@@ -77,15 +99,16 @@ var table = new Tabulator("#modelIO-table", {
 var writeFileTableData = {{writeIOData|tojson}};
 var table = new Tabulator("#writefile-table", {
     data:writeFileTableData,
+    tooltipsHeader:true,
     layout:"fitDataStretch",
     height:"315px",
     initialSort:[
         {column:"tot_wtime(s)", dir:"desc"},
     ],
     columns:[
-    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right", sorter:"number"},
-    {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", sorter:"number", hozAlign:"right"},
-    {title:"tot_wb(bytes)", field:"tot_wb(bytes)", hozAlign:"right"},
+    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right", sorter:"number",headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
+    {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", sorter:"number", hozAlign:"right",headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
+    {title:"tot_wb(bytes)", field:"tot_wb(bytes)", hozAlign:"right",headerTooltip:"Total bytes written out, in bytes, to the file system"},
     {title:"Name", field:"name", hozAlign:"right"}
     ],
 });
@@ -93,15 +116,16 @@ var table = new Tabulator("#writefile-table", {
 var readFileTableData = {{readIOData|tojson}};
 var table = new Tabulator("#readfile-table", {
     data:readFileTableData,
+    tooltipsHeader:true,
     layout:"fitDataStretch",
     height:"315px",
     initialSort:[
         {column:"tot_rtime(s)", dir:"desc"},
     ],
     columns:[
-    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right", sorter:"number"},
-    {title:"avg_rtput(MB/s)", field:"avg_rtput(MB/s)", hozAlign:"right"},
-    {title:"tot_rb(bytes)", field:"tot_rb(bytes)", hozAlign:"right"},
+    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right", sorter:"number",headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
+    {title:"avg_rtput(MB/s)", field:"avg_rtput(MB/s)", hozAlign:"right",headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
+    {title:"tot_rb(bytes)", field:"tot_rb(bytes)", hozAlign:"right",headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
     {title:"Name", field:"name", hozAlign:"right"}
     ],
 });
@@ -116,14 +140,13 @@ google.charts.setOnLoadCallback(drawMaterial3);
 
 function drawMaterialO() {
         var tot_time = overalTableData[0]["tot_time(s)"]
-        var model_runtime = {{modelRuntime}}
         var data = google.visualization.arrayToDataTable([
-            ['Name', 'tot_time_spent_io', 'remaning_time'],
+            ['Name', 'scorpio_io_time', 'other'],
             ['Scorpio', tot_time, (model_runtime - tot_time)]
             ]);
 
         var materialOptions = {
-            title: 'Scorpio IO time percent',
+            title: 'Scorpio IO time VS Model RunTime',
             isStacked: 'percent',
             
             legend:{
@@ -152,7 +175,7 @@ function drawMaterialO3() {
     ]);
 
     var materialOptions = {    
-        title: 'Total Times',
+        title: 'Write VS Read Scorpio IO Time',
         isStacked: 'percent',
         
         legend:{
@@ -180,7 +203,7 @@ function drawMaterialO2() {
       ]);
 
       var materialOptions = {    
-        title: 'MegaBytes',
+        title: 'Total MB Written Out VS Total MB Read',
         
         legend:{
             position: 'bottom',
@@ -221,7 +244,7 @@ function drawMaterial() {
       data.sort({column: 1, desc: true});
 
       var materialOptions = {
-        title: 'Avg Throughput',
+        title: 'Avg Write Throughput VS Read Throughput',
         hAxis: {
           title: 'MB/s',
           minValue: 0,
@@ -265,7 +288,7 @@ function drawMaterial2() {
         }
       data.sort({column: 1, desc: true});
       var materialOptions = {
-        title: 'Bytes',
+        title: 'Total Write Size VS Read Size',
         hAxis: {
           title: 's',
           minValue: 0,
@@ -310,7 +333,7 @@ function drawMaterial3() {
       data.sort({column: 1, desc: true});
       //data.hideColumns([3])
     var materialOptions = {
-        title: 'Total Times',
+        title: 'Total Write Time VS Read Time',
         hAxis: {
           title: 's',
           minValue: 0,
