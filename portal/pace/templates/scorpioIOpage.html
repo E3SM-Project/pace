@@ -16,7 +16,17 @@
 </style>
 {% endblock topcontent %}
 <p>
-    <div style="width: 99%; overflow: hidden; border:4px solid black">
+    <div style="overflow: hidden; border:4px solid black; margin-bottom:75px">
+        <div id="parent"><h1 style="text-align:center">Scorpio I/O Performance Statistics</h1>
+            <div id="hover-content">
+                <div id="variableDescription-table" style="margin-top:25px; margin-bottom: 25px"></div>
+                <div id="modelComponentDescription-table" style="margin-top:25px; margin-bottom: 25px"></div>
+            </div>
+        </div>
+    </div>
+</p>
+<p>
+    <div style="overflow: hidden; border:4px solid black">
         <div id="parent"><h1 style="text-align:center">Overall IO Summary Statistics</h1>
             <div id="hover-content">
                 <h6 style="text-align:center">This object contains the overall I/O performance statistics for the application.</h6>
@@ -30,7 +40,7 @@
 </p>
 <br>
 <p>
-<div style="border:4px solid black; margin-top:100px">
+<div style="border:4px solid black; margin-top:50px">
 <div id="parent"><h1 style="text-align:center">Model Component IO Statistics</h1>
     <div id="hover-content">
         <h6 style="text-align:center">An array of objects, each object containing the I/O performance statistics for a single model component.</h6>
@@ -41,7 +51,7 @@
 <p><div id="times" style="border:1px solid black; border-radius: 25px"></div></p>
 <p><div id="bytes" style="border:1px solid black; border-radius: 25px"></div></p></div></p>
 
-<div style="border:4px solid black; margin-top:100px; margin-bottom:100px;">
+<div style="border:4px solid black; margin-top:75px; margin-bottom:100px;">
     <div id="parent"><h1 style="text-align:center">File IO Statistics</h1>
         <div id="hover-content">
             <h6 style="text-align:center">An array of objects, each object containing the I/O performance statistics for a single file.</h6>
@@ -63,6 +73,121 @@ var overalTableData = [{{overalData|tojson}}];
 var modeltabledata={{modelData|tojson}};
 var writeFileTableData = {{writeIOData|tojson}};
 var readFileTableData = {{readIOData|tojson}};
+
+var variableDescriptionData = [
+    {
+        "Field" : "avg_wtput(MB/s)",
+        "Description" : "Average write throughput",
+        "Comments" : "Average throughput (total bytes written/time taken by slowest process) in MB/s ."
+    },
+    {
+        "Field" : "avg_rtput(MB/s)",
+        "Description" : "Average read throughput",
+        "Comments" : "Average throughput (total bytes read/time taken by slowest process) in MB/s"
+    },
+    {
+        "Field" : "tot_wb(bytes)",
+        "Description" : "Total bytes written out",
+        "Comments" : "Total bytes written out, in bytes, to the file system"
+    },
+    {
+        "Field" : "tot_rb(bytes)",
+        "Description" : "Total bytes read",
+        "Comments" : "Total bytes read in bytes (Total bytes read to all the compute processes)"
+    },
+    {
+        "Field" : "tot_wtime(s)",
+        "Description" : "Total write time",
+        "Comments" : "Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."
+    },
+    {
+        "Field" : "tot_rtime(s)",
+        "Description" : "Total read time",
+        "Comments" : "Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."
+    },
+    {
+        "Field" : "tot_time(s)",
+        "Description" : "Total time",
+        "Comments" : "Total wallclock time spent in seconds. This can be considered as an upper bound on the total time spent inside Scorpio by the slowest process."
+    }
+]
+
+var modelComponentDescriptionData = [
+    {
+        "Field":"COMP_CPL: CPL",
+        "Comments":"The Coupler Component"
+    },
+    {
+        "Field":"COMP_ATM: EAM",
+        "Comments":"The E3SM Atmosphere Component"
+    },
+    {
+        "Field":"COMP_OCN: MPASO",
+        "Comments":"The MPAS Ocean Component"
+    },
+    {
+        "Field":"COMP_OCN: OCN",
+        "Comments":"The Data Ocean Component"
+    },
+    {
+        "Field":"COMP_LND: ELM",
+        "Comments":"The E3SM Land Component"
+    },
+    {
+        "Field":"COMP_ROF: MOSART",
+        "Comments":"The MOSART Riven Component"
+    },
+    {
+        "Field":"COMP_ROF: ROF",
+        "Comments":"The ROF River Component"
+    },
+    {
+        "Field":"COMP_GLC: MPASLI",
+        "Comments":"The MPAS Land Ice Component"
+    },
+    {
+        "Field":"COMP_GLC: GLC",
+        "Comments":"The GLC Land Ice Component"
+    },
+    {
+        "Field":"COMP_ICE: MPASSI",
+        "Comments":"The MPAS Sea Ice Component"
+    },
+    {
+        "Field":"COMP_ICE: ICE",
+        "Comments":"The Data Sea Ice Component"
+    },
+    {
+        "Field":"COMP_WAV: WAV",
+        "Comments":"The Wave Component"
+    },
+    {
+        "Field":"UNKNOWN:SPIO_COMP_xxxxxxidxxtasksxxioxx_tmp_name",
+        "Comments":"The Model Components are given a unique name by default and this format is used to name and include the statistics for the E3SM model components that are not auto detected by Scorpio. e.g. UNKNOWN:SPIO_COMP_002049id32tasks02io01_tmp_name"
+    }
+
+]
+
+// overal description table
+var table = new Tabulator("#variableDescription-table", {
+    data:variableDescriptionData,
+    layout:"fitDataFill",
+    columns:[
+    {title:"Field", field:"Field", hozAlign:"right"},
+    {title:"Description", field:"Description", hozAlign:"center"},
+    {title:"Comments", field:"Comments", hozAlign:"left"}
+    ],
+});
+
+// Model Componenet description table
+var table = new Tabulator("#modelComponentDescription-table", {
+    data:modelComponentDescriptionData,
+    layout:"fitDataFill",
+    columns:[
+    {title:"Model Component Field Name", field:"Field", hozAlign:"right"},
+    {title:"Comments", field:"Comments", hozAlign:"left"}
+    ],
+});
 
 // overall data table creation
 var table = new Tabulator("#overallIO-table", {
