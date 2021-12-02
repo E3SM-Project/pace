@@ -23,9 +23,9 @@
             </div>
         </div>
         <div id="overallIO-table" style="margin-top:25px; margin-bottom: 25px"></div>
-        <div id="otput"></div>
-        <div id="otimes"></div>
-        <div id="obytes"></div>
+        <div id="otput" style="border:1px solid black; border-radius: 25px"></div>
+        <div id="otimes" style="border:1px solid black; border-radius: 25px"></div>
+        <div id="obytes" style="border:1px solid black; border-radius: 25px"></div>
     </div>
 </p>
 <br>
@@ -56,10 +56,15 @@
 
 
 
-<script>
+<script type="text/javascript">
+// global variable for data
 var model_runtime = {{modelRuntime}}
-
 var overalTableData = [{{overalData|tojson}}];
+var modeltabledata={{modelData|tojson}};
+var writeFileTableData = {{writeIOData|tojson}};
+var readFileTableData = {{readIOData|tojson}};
+
+// overall data table creation
 var table = new Tabulator("#overallIO-table", {
     data:overalTableData,
     tooltipsHeader:true,
@@ -76,7 +81,7 @@ var table = new Tabulator("#overallIO-table", {
     ],
 });
 
-var modeltabledata={{modelData|tojson}};
+//model data table creation
 var table = new Tabulator("#modelIO-table", {
     data:modeltabledata,
     tooltipsHeader:true,
@@ -96,7 +101,7 @@ var table = new Tabulator("#modelIO-table", {
     ],
 });
 
-var writeFileTableData = {{writeIOData|tojson}};
+//write file data table creation
 var table = new Tabulator("#writefile-table", {
     data:writeFileTableData,
     tooltipsHeader:true,
@@ -113,7 +118,7 @@ var table = new Tabulator("#writefile-table", {
     ],
 });
 
-var readFileTableData = {{readIOData|tojson}};
+//read file data table creation
 var table = new Tabulator("#readfile-table", {
     data:readFileTableData,
     tooltipsHeader:true,
@@ -130,15 +135,17 @@ var table = new Tabulator("#readfile-table", {
     ],
 });
 
+//load google charts to create bar charts
 google.charts.load('current', {packages: ['corechart', 'bar']});
-google.charts.setOnLoadCallback(drawMaterialO);
-google.charts.setOnLoadCallback(drawMaterialO2);
-google.charts.setOnLoadCallback(drawMaterialO3);
-google.charts.setOnLoadCallback(drawMaterial);
-google.charts.setOnLoadCallback(drawMaterial2);
-google.charts.setOnLoadCallback(drawMaterial3);
+google.charts.setOnLoadCallback(overalScorpioStackedTime);
+google.charts.setOnLoadCallback(overalScorpioStackedWRTime);
+google.charts.setOnLoadCallback(overalScorpioBarWRSize);
+google.charts.setOnLoadCallback(modelScorpioBarWRThroughput);
+google.charts.setOnLoadCallback(modelScorpioBarWRTime);
+google.charts.setOnLoadCallback(modelScorpioBarWRSize);
 
-function drawMaterialO() {
+// stacked percentage bar chart scorpio time vs model runtime
+function overalScorpioStackedTime() {
         var tot_time = overalTableData[0]["tot_time(s)"]
         var data = google.visualization.arrayToDataTable([
             ['Name', 'scorpio_io_time', 'other'],
@@ -167,7 +174,8 @@ function drawMaterialO() {
         materialChart.draw(data, materialOptions);
 }
 
-function drawMaterialO3() {
+// stacked percentage bar chart scorpio write vs read vs scorpio time
+function overalScorpioStackedWRTime() {
     var other_time = overalTableData[0]["tot_time(s)"]-(overalTableData[0]["tot_wtime(s)"]+overalTableData[0]["tot_rtime(s)"])
     var data = google.visualization.arrayToDataTable([
         ['Name', 'tot_wtimes', 'tot_rtimes', 'other'],
@@ -196,7 +204,8 @@ function drawMaterialO3() {
     materialChart.draw(data, materialOptions);
 }
 
-function drawMaterialO2() {
+// horizontal bar chart write vs read size for overall summary
+function overalScorpioBarWRSize() {
       var data = google.visualization.arrayToDataTable([
         ['Name', 'tot_wb', 'tot_rb'],
         [overalTableData[0]["name"], overalTableData[0]["tot_wb(MB)"], overalTableData[0]["tot_rb(MB)"]]
@@ -230,7 +239,8 @@ function drawMaterialO2() {
       materialChart.draw(data, materialOptions);
     }
 
-function drawMaterial() {
+// horizontal bar chart write vs read throughput for model component
+function modelScorpioBarWRThroughput() {
       var data = new google.visualization.DataTable();
       data.addColumn('string', 'Name');
       data.addColumn('number', 'avg_wtput');
@@ -274,8 +284,9 @@ function drawMaterial() {
       var materialChart = new google.visualization.BarChart(document.getElementById('tput'));
       materialChart.draw(data, materialOptions);
     }
-    
-function drawMaterial2() {
+
+// horizontal bar chart write vs read size for model component
+function modelScorpioBarWRSize() {
       var data = new google.visualization.DataTable();
       data.addColumn('string', 'Name');
       data.addColumn('number', 'tot_wb');
@@ -319,7 +330,8 @@ function drawMaterial2() {
       materialChart.draw(data, materialOptions);
     }
 
-function drawMaterial3() {
+// horizontal bar chart write vs read time for model component
+function modelScorpioBarWRTime() {
     var data = new google.visualization.DataTable();
       data.addColumn('string', 'Name');
       data.addColumn('number', 'tot_wtimes');
