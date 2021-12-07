@@ -322,6 +322,8 @@ def flameGraph(expid,rank):
 def scorpioIOStat(mexpid):
     #get data
     try:
+        if not isinstance(mexpid,int):
+            return render_template('error.html')
         scorpio_data = db.engine.execute("select data from scorpio_stats where name = 'spio_stats' and expid="+str(mexpid)).first()
         scorpio_json_data = json.loads(scorpio_data[0])
         
@@ -356,7 +358,9 @@ def scorpioIOStat(mexpid):
             if fdata['tot_wtime(s)']!=0:
                 writeIOData.append(fdata)
 
-    except IndexError:
+    except Exception as e:
+        print('Error:')
+        print(e)
         return render_template('error.html')
     return render_template('scorpioIOpage.html', overalData = overalData, modelData = modelData,
                             readIOData=readIOData,writeIOData=writeIOData, modelRuntime = modelRuntime)
