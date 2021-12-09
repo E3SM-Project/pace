@@ -7,31 +7,25 @@
 <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.0.7/dist/js/tabulator.min.js"></script>
 <style>
     tr:nth-child(even) {background-color: #f2f2f2;}
-    #hover-content {
-        display:none;
-    }
-    #parent:hover #hover-content {
-        display:block;
-    }
 </style>
 {% endblock topcontent %}
 <p>
     <div style="overflow: hidden; border:4px solid black; margin-bottom:75px">
-        <div id="parent"><h1 style="text-align:center">Scorpio I/O Performance Statistics</h1>
-            <div id="hover-content">
-                <div id="variableDescription-table" style="margin-top:25px; margin-bottom: 25px"></div>
-                <div id="modelComponentDescription-table" style="margin-top:25px; margin-bottom: 25px"></div>
-            </div>
-        </div>
+        <h1 style="text-align:center">Scorpio I/O Performance Statistics</h1>
+        <details>
+            <summary style="text-align:center; cursor:pointer">read more...</summary>
+            <div id="variableDescription-table" style="margin-top:25px; margin-bottom: 25px"></div>
+            <div id="modelComponentDescription-table" style="margin-top:25px; margin-bottom: 25px"></div>
+        </details>
     </div>
 </p>
 <p>
     <div style="overflow: hidden; border:4px solid black">
-        <div id="parent"><h1 style="text-align:center">Overall IO Summary Statistics</h1>
-            <div id="hover-content">
-                <h6 style="text-align:center">This object contains the overall I/O performance statistics for the application.</h6>
-            </div>
-        </div>
+        <h1 style="text-align:center">Overall IO Summary Statistics</h1>
+        <details>
+            <summary style="text-align:center; cursor:pointer">read more...</summary>
+            <h6 style="text-align:center; margin-top:25px">This object contains the overall I/O performance statistics for the application.</h6>
+        </details>
         <div id="overallIO-table" style="margin-top:25px; margin-bottom: 25px"></div>
         <div id="otput" style="border:1px solid black; border-radius: 25px"></div>
         <div id="otimes" style="border:1px solid black; border-radius: 25px"></div>
@@ -40,23 +34,31 @@
 </p>
 <br>
 <p>
-<div style="border:4px solid black; margin-top:50px">
-<div id="parent"><h1 style="text-align:center">Model Component IO Statistics</h1>
-    <div id="hover-content">
-        <h6 style="text-align:center">An array of objects, each object containing the I/O performance statistics for a single model component.</h6>
+    <div style="border:4px solid black; margin-top:50px">
+        <h1 style="text-align:center">Model Component IO Statistics</h1>
+        <details>
+            <summary style="text-align:center; cursor:pointer">read more...</summary>
+            <h6 style="text-align:center; margin-top:25px">An array of objects, each object containing the I/O performance statistics for a single model component.</h6>
+        </details>
+        <div id="modelIO-table" style="margin-top:25px"></div>
+        <p>
+            <div id="tput" style="border:1px solid black; border-radius: 25px"></div>
+        </p>
+        <p>
+            <div id="times" style="border:1px solid black; border-radius: 25px"></div>
+        </p>
+        <p>
+            <div id="bytes" style="border:1px solid black; border-radius: 25px"></div>
+        </p>
     </div>
-</div>
-<div id="modelIO-table" style="margin-top:25px"></div>
-<p><div id="tput" style="border:1px solid black; border-radius: 25px"></div></p>
-<p><div id="times" style="border:1px solid black; border-radius: 25px"></div></p>
-<p><div id="bytes" style="border:1px solid black; border-radius: 25px"></div></p></div></p>
+</p>
 
 <div style="border:4px solid black; margin-top:75px; margin-bottom:100px;">
-    <div id="parent"><h1 style="text-align:center">File IO Statistics</h1>
-        <div id="hover-content">
-            <h6 style="text-align:center">An array of objects, each object containing the I/O performance statistics for a single file.</h6>
-        </div>
-    </div>
+    <h1 style="text-align:center">File IO Statistics</h1>
+    <details>
+        <summary style="text-align:center; cursor:pointer">read more...</summary>
+        <h6 style="text-align:center">An array of objects, each object containing the I/O performance statistics for a single file.</h6>
+    </details>           
     <h3 style="text-align:left" style="margin-top: 20px;">Write File IO Statistics</h1>
     <div id="writefile-table" style="margin-top:25px"></div>
     <br>
@@ -173,8 +175,8 @@ var table = new Tabulator("#variableDescription-table", {
     data:variableDescriptionData,
     layout:"fitDataFill",
     columns:[
-    {title:"Field", field:"Field", hozAlign:"right"},
-    {title:"Description", field:"Description", hozAlign:"center"},
+    {title:"Field", field:"Field", hozAlign:"left"},
+    {title:"Description", field:"Description", hozAlign:"left"},
     {title:"Comments", field:"Comments", hozAlign:"left"}
     ],
 });
@@ -184,7 +186,7 @@ var table = new Tabulator("#modelComponentDescription-table", {
     data:modelComponentDescriptionData,
     layout:"fitDataFill",
     columns:[
-    {title:"Model Component Field Name", field:"Field", hozAlign:"right"},
+    {title:"Model Component Field Name", field:"Field", hozAlign:"left"},
     {title:"Comments", field:"Comments", hozAlign:"left"}
     ],
 });
