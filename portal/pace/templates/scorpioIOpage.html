@@ -171,7 +171,7 @@ var modelComponentDescriptionData = [
 ]
 
 // overal description table
-var table = new Tabulator("#variableDescription-table", {
+var varDescriptiontable = new Tabulator("#variableDescription-table", {
     data:variableDescriptionData,
     layout:"fitDataFill",
     columns:[
@@ -182,7 +182,7 @@ var table = new Tabulator("#variableDescription-table", {
 });
 
 // Model Componenet description table
-var table = new Tabulator("#modelComponentDescription-table", {
+var modelCompDescriptiontable = new Tabulator("#modelComponentDescription-table", {
     data:modelComponentDescriptionData,
     layout:"fitDataFill",
     columns:[
@@ -192,7 +192,7 @@ var table = new Tabulator("#modelComponentDescription-table", {
 });
 
 // overall data table creation
-var table = new Tabulator("#overallIO-table", {
+var overallIOtable = new Tabulator("#overallIO-table", {
     data:overalTableData,
     tooltipsHeader:true,
     layout:"fitDataStretch",
@@ -209,7 +209,7 @@ var table = new Tabulator("#overallIO-table", {
 });
 
 //model data table creation
-var table = new Tabulator("#modelIO-table", {
+var modelIOtable = new Tabulator("#modelIO-table", {
     data:modeltabledata,
     tooltipsHeader:true,
     layout:"fitDataStretch",
@@ -227,12 +227,12 @@ var table = new Tabulator("#modelIO-table", {
     {title:"Name", field:"name", hozAlign:"right"},
     ],
 });
-table.setFilter([
+modelIOtable.setFilter([
     {field:"tot_time(s)", type:"!=", value:0}
 ]);
 
 //write file data table creation
-var table = new Tabulator("#writefile-table", {
+var writeFiletable = new Tabulator("#writefile-table", {
     data:writeFileTableData,
     tooltipsHeader:true,
     layout:"fitDataStretch",
@@ -249,7 +249,7 @@ var table = new Tabulator("#writefile-table", {
 });
 
 //read file data table creation
-var table = new Tabulator("#readfile-table", {
+var readFiletable = new Tabulator("#readfile-table", {
     data:readFileTableData,
     tooltipsHeader:true,
     layout:"fitDataStretch",
