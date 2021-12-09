@@ -227,6 +227,9 @@ var table = new Tabulator("#modelIO-table", {
     {title:"Name", field:"name", hozAlign:"right"},
     ],
 });
+table.setFilter([
+    {field:"tot_time(s)", type:"!=", value:0}
+]);
 
 //write file data table creation
 var table = new Tabulator("#writefile-table", {
