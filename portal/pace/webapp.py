@@ -331,18 +331,8 @@ def scorpioIOStat(mexpid):
         modelRuntime = myexp.run_time
 
         overalData = scorpio_json_data["ScorpioIOSummaryStatistics"]["OverallIOStatistics"]
-        overalData["tot_wb(MB)"] = overalData["tot_wb(bytes)"]/1000000
-        overalData["tot_rb(MB)"] = overalData["tot_rb(bytes)"]/1000000
-        for name in overalData:
-            if isinstance(overalData[name],float):
-                overalData[name]=round(overalData[name],2)
-
+        
         modelData = scorpio_json_data["ScorpioIOSummaryStatistics"]["ModelComponentIOStatistics"]
-
-        for mdata in modelData:
-            for name in mdata:        
-                if isinstance(mdata[name],float):
-                    mdata[name]=round(mdata[name],2)
 
         fileIOData = scorpio_json_data["ScorpioIOSummaryStatistics"]["FileIOStatistics"]
 
@@ -350,9 +340,6 @@ def scorpioIOStat(mexpid):
         writeIOData = []
 
         for fdata in fileIOData:
-            for name in fdata:
-                if isinstance(fdata[name],float):
-                    fdata[name]=round(fdata[name],2)
             if fdata['tot_rtime(s)']!=0:
                 readIOData.append(fdata)
             if fdata['tot_wtime(s)']!=0:
