@@ -412,7 +412,7 @@ function modelScorpioBarWRThroughput() {
       data.addColumn('number', 'avg_rtput');
       
       for(let i = 0; i<modeltabledata.length; i++){
-        if(modeltabledata[i]["avg_wtput(MB/s)"]!=0 && modeltabledata[i]["avg_rtput(MB/s)"]!=0){
+        if(modeltabledata[i]["avg_wtput(MB/s)"]!=0 || modeltabledata[i]["avg_rtput(MB/s)"]!=0){
           data.addRow([modeltabledata[i]["name"],modeltabledata[i]["avg_wtput(MB/s)"],modeltabledata[i]["avg_rtput(MB/s)"]]);
         }
     }
@@ -458,7 +458,7 @@ function modelScorpioBarWRSize() {
       data.addColumn('number', 'tot_rb');
       
       for(let i = 0; i<modeltabledata.length; i++){
-          if(modeltabledata[i]["tot_wb(bytes)"]!=0 && modeltabledata[i]["tot_rb(bytes)"]!=0){
+          if(modeltabledata[i]["tot_wb(bytes)"]!=0 || modeltabledata[i]["tot_rb(bytes)"]!=0){
             data.addRow([modeltabledata[i]["name"],modeltabledata[i]["tot_wb(bytes)"],modeltabledata[i]["tot_rb(bytes)"]]);
             }
         }
@@ -503,7 +503,7 @@ function modelScorpioBarWRTime() {
       data.addColumn('number', 'tot_rtimes');
       
       for(let i = 0; i<modeltabledata.length; i++){
-          if(modeltabledata[i]["tot_wtime(s)"]!=0 && modeltabledata[i]["tot_rtime(s)"]!=0){
+          if(modeltabledata[i]["tot_wtime(s)"]!=0 || modeltabledata[i]["tot_rtime(s)"]!=0){
               data.addRow([modeltabledata[i]["name"],modeltabledata[i]["tot_wtime(s)"],modeltabledata[i]["tot_rtime(s)"]]);
             }
     }
