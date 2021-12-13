@@ -77,49 +77,50 @@ var writeFileTableData = {{writeIOData|tojson}};
 var readFileTableData = {{readIOData|tojson}};
 
 var fieldDic = {
-    "avg_wtput(MB/s)":"Avg Write Throughput",
-    "avg_rtput(MB/s)":"Avg Read Throughput",
-    "tot_wb(bytes)":"Total Write Size",
-    "tot_rb(bytes)":"Total Read Size",
-    "tot_wtime(s)":"Total Write Time",
-    "tot_rtime(s)":"Total Read Time",
-    "tot_time(s)":"Total Time"
+    "name":"Name",
+    "avg_wtput":"Avg Write Throughput(MB/s)",
+    "avg_rtput":"Avg Read Throughput(MB/s)",
+    "tot_wb":"Total Write Size(GB)",
+    "tot_rb":"Total Read Size(GB)",
+    "tot_wtime":"Total Write Time(s)",
+    "tot_rtime":"Total Read Time(s)",
+    "tot_time":"Total Time(s)"
 };
 
 var variableDescriptionData = [
     {
-        "Field" : "avg_wtput(MB/s)",
-        "Description" : "Average write throughput",
+        "Field" : "avg_wtput",
+        "Description" : "Avg Write Throughput",
         "Comments" : "Average throughput (total bytes written/time taken by slowest process) in MB/s ."
     },
     {
-        "Field" : "avg_rtput(MB/s)",
-        "Description" : "Average read throughput",
+        "Field" : "avg_rtput",
+        "Description" : "Avg Read Throughput",
         "Comments" : "Average throughput (total bytes read/time taken by slowest process) in MB/s"
     },
     {
-        "Field" : "tot_wb(bytes)",
-        "Description" : "Total bytes written out",
-        "Comments" : "Total bytes written out, in bytes, to the file system"
+        "Field" : "tot_wb",
+        "Description" : "Total Write Size",
+        "Comments" : "Total size written out to the file system"
     },
     {
-        "Field" : "tot_rb(bytes)",
-        "Description" : "Total bytes read",
-        "Comments" : "Total bytes read in bytes (Total bytes read to all the compute processes)"
+        "Field" : "tot_rb",
+        "Description" : "Total Read Size",
+        "Comments" : "Total size read (Total size read to all the compute processes)"
     },
     {
-        "Field" : "tot_wtime(s)",
-        "Description" : "Total write time",
+        "Field" : "tot_wtime",
+        "Description" : "Total Write Time",
         "Comments" : "Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."
     },
     {
-        "Field" : "tot_rtime(s)",
-        "Description" : "Total read time",
+        "Field" : "tot_rtime",
+        "Description" : "Total Read Time",
         "Comments" : "Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."
     },
     {
-        "Field" : "tot_time(s)",
-        "Description" : "Total time",
+        "Field" : "tot_time",
+        "Description" : "Total Time",
         "Comments" : "Total wallclock time spent in seconds. This can be considered as an upper bound on the total time spent inside Scorpio by the slowest process."
     }
 ]
@@ -201,25 +202,31 @@ var modelCompDescriptiontable = new Tabulator("#modelComponentDescription-table"
     ],
 });
 
-console.log(overalTableData);
-
+//convert bytes to GB
+overalTableData[0]["tot_wb(GB)"] = bytesToGb(overalTableData[0]["tot_wb(bytes)"])
+overalTableData[0]["tot_rb(GB)"] = bytesToGb(overalTableData[0]["tot_rb(bytes)"])
 // overall data table creation
 var overallIOtable = new Tabulator("#overallIO-table", {
     data:overalTableData,
     tooltipsHeader:true,
     layout:"fitDataStretch",
     columns:[
-    {title:"tot_time(s)", field:"tot_time(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number",headerTooltip:"Total wallclock time spent in seconds. This can be considered as an upper bound on the total time spent inside Scorpio by the slowest process"},
-    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
-    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
-    {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", sorter:"number", formatter:"money", formatterParams:{precision:2}, hozAlign:"right",headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
-    {title:"avg_rtput(MB/s)", field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
-    {title:"tot_wb(bytes)", field:"tot_wb(bytes)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
-    {title:"tot_rb(bytes)", field:"tot_rb(bytes)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
-    {title:"Name", field:"name", hozAlign:"right"},
+    {title:fieldDic["tot_time"], field:"tot_time(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number",headerTooltip:"Total wallclock time spent in seconds. This can be considered as an upper bound on the total time spent inside Scorpio by the slowest process"},
+    {title:fieldDic["tot_wtime"], field:"tot_wtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
+    {title:fieldDic["tot_rtime"], field:"tot_rtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
+    {title:fieldDic["avg_wtput"], field:"avg_wtput(MB/s)", sorter:"number", formatter:"money", formatterParams:{precision:2}, hozAlign:"right",headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
+    {title:fieldDic["avg_rtput"], field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
+    {title:fieldDic["tot_wb"], field:"tot_wb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
+    {title:fieldDic["tot_rb"], field:"tot_rb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
+    {title:fieldDic["name"], field:"name", hozAlign:"right"},
     ],
 });
 
+// convert bytes to GB
+for (i = 0; i<modeltabledata.length; i++){
+    modeltabledata[i]["tot_wb(GB)"] = bytesToGb(modeltabledata[i]["tot_wb(bytes)"]);
+    modeltabledata[i]["tot_rb(GB)"] = bytesToGb(modeltabledata[i]["tot_rb(bytes)"]);
+}
 //model data table creation
 var modelIOtable = new Tabulator("#modelIO-table", {
     data:modeltabledata,
@@ -229,20 +236,24 @@ var modelIOtable = new Tabulator("#modelIO-table", {
         {column:"tot_time(s)", dir:"desc"},
     ],
     columns:[
-    {title:"tot_time(s)", field:"tot_time(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number",headerTooltip:"Total wallclock time spent in seconds. This can be considered as an upper bound on the total time spent inside Scorpio by the slowest process"},
-    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
-    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
-    {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
-    {title:"avg_rtput(MB/s)", field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
-    {title:"tot_wb(bytes)", field:"tot_wb(bytes)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
-    {title:"tot_rb(bytes)", field:"tot_rb(bytes)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
-    {title:"Name", field:"name", hozAlign:"right"},
+    {title:fieldDic["tot_time"], field:"tot_time(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number",headerTooltip:"Total wallclock time spent in seconds. This can be considered as an upper bound on the total time spent inside Scorpio by the slowest process"},
+    {title:fieldDic["tot_wtime"], field:"tot_wtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
+    {title:fieldDic["tot_rtime"], field:"tot_rtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
+    {title:fieldDic["avg_wtput"], field:"avg_wtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
+    {title:fieldDic["avg_rtput"], field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
+    {title:fieldDic["tot_wb"], field:"tot_wb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
+    {title:fieldDic["tot_rb"], field:"tot_rb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
+    {title:fieldDic["name"], field:"name", hozAlign:"right"},
     ],
 });
 modelIOtable.setFilter([
-    {field:"tot_time(s)", type:"!=", value:0}
+    {field:"tot_time(s)", type:">", value:0.005}
 ]);
 
+// convert bytes to GB
+for (i = 0; i<writeFileTableData.length; i++){
+    writeFileTableData[i]["tot_wb(GB)"] = bytesToGb(writeFileTableData[i]["tot_wb(bytes)"]);
+}
 //write file data table creation
 var writeFiletable = new Tabulator("#writefile-table", {
     data:writeFileTableData,
@@ -253,13 +264,17 @@ var writeFiletable = new Tabulator("#writefile-table", {
         {column:"tot_wtime(s)", dir:"desc"},
     ],
     columns:[
-    {title:"tot_wtime(s)", field:"tot_wtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},sorter:"number",headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
-    {title:"avg_wtput(MB/s)", field:"avg_wtput(MB/s)", sorter:"number", formatter:"money", formatterParams:{precision:2}, hozAlign:"right",headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
-    {title:"tot_wb(bytes)", field:"tot_wb(bytes)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
-    {title:"Name", field:"name", hozAlign:"right"}
+    {title:fieldDic["tot_wtime"], field:"tot_wtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},sorter:"number",headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
+    {title:fieldDic["avg_wtput"], field:"avg_wtput(MB/s)", sorter:"number", formatter:"money", formatterParams:{precision:2}, hozAlign:"right",headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
+    {title:fieldDic["tot_wb"], field:"tot_wb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
+    {title:fieldDic["name"], field:"name", hozAlign:"right"}
     ],
 });
 
+// convert bytes to GB
+for (i = 0; i<readFileTableData.length; i++){
+    readFileTableData[i]["tot_rb(GB)"] = bytesToGb(readFileTableData[i]["tot_rb(bytes)"]);
+}
 //read file data table creation
 var readFiletable = new Tabulator("#readfile-table", {
     data:readFileTableData,
@@ -270,10 +285,10 @@ var readFiletable = new Tabulator("#readfile-table", {
         {column:"tot_rtime(s)", dir:"desc"},
     ],
     columns:[
-    {title:"tot_rtime(s)", field:"tot_rtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number",headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
-    {title:"avg_rtput(MB/s)", field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
-    {title:"tot_rb(bytes)", field:"tot_rb(bytes)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
-    {title:"Name", field:"name", hozAlign:"right"}
+    {title:fieldDic["tot_rtime"], field:"tot_rtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number",headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
+    {title:fieldDic["avg_rtput"], field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
+    {title:fieldDic["tot_rb"], field:"tot_rb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
+    {title:fieldDic["name"], field:"name", hozAlign:"right"}
     ],
 });
 
@@ -285,6 +300,15 @@ google.charts.setOnLoadCallback(overalScorpioBarWRSize);
 google.charts.setOnLoadCallback(modelScorpioBarWRThroughput);
 google.charts.setOnLoadCallback(modelScorpioBarWRTime);
 google.charts.setOnLoadCallback(modelScorpioBarWRSize);
+
+
+// convert bytes to gb
+function bytesToGb(size){
+    if (size == 0){
+        return 0;
+    }
+    return size/1000000000;
+}
 
 // stacked percentage bar chart scorpio time vs model runtime
 function overalScorpioStackedTime() {
