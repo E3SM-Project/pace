@@ -352,6 +352,45 @@ def scorpioIOStat(mexpid):
     return render_template('scorpioIOpage.html', overalData = overalData, modelData = modelData,
                             readIOData=readIOData,writeIOData=writeIOData, modelRuntime = modelRuntime)
 
+
+@app.route("/exp-details-test/<int:mexpid>")
+def expDetailsTest(mexpid):
+    myexp = None
+    myxmls = None
+    mynmls = None
+    myrcs = None
+    try:
+        myexp = db.engine.execute("select * from e3smexp where expid= "+ str(mexpid) ).fetchall()[0]
+        myxmls = db.engine.execute("select name from xml_inputs where expid= "+ str(mexpid) ).fetchall()
+        mynmls = db.engine.execute("select name from namelist_inputs where expid= "+ str(mexpid) ).fetchall()
+        myrcs = db.engine.execute("select name from rc_inputs where expid= "+ str(mexpid) ).fetchall()
+    except IndexError:
+        return render_template('error.html')
+    mypelayout = db.engine.execute("select * from pelayout where expid= "+ str(mexpid) ).fetchall()
+    myruntime = db.engine.execute("select * from runtime where expid= "+ str(mexpid) ).fetchall()
+    ranks = db.engine.execute("select rank from model_timing where rank!= 'stats' and expid= "+ str(mexpid) + " order by cast(rank as int)" ).fetchall()
+    colorDict = {}
+    for i in range(len(pe_layout_timings.default_args['comps'])):
+        colorDict[pe_layout_timings.default_args['comps'][i]] = pe_layout_timings.default_args['color'][i]
+    try:
+        noteexp = db.engine.execute("select * from expnotes where expid= "+ str(mexpid) ).fetchall()[0]
+        note = noteexp.note
+    except IndexError:
+        note=""
+    runtimes=[]
+    for runs in myruntime:
+        run = {
+            'component':runs[2],
+            'seconds':float(runs[3]),
+            'model_day':float(runs[4]),
+            'model_years':float(runs[5])
+        }
+        runtimes.append(run)
+    return render_template('exp-details-test.html', testrun = runtimes,exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
+            ranks = ranks,chartColors = json.dumps(colorDict),note=note, \
+            xmls = myxmls, nmls = mynmls, rcs = myrcs \
+            )
+
 @app.route("/exp-details/<int:mexpid>")
 def expDetails(mexpid):
     myexp = None
