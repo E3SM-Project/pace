@@ -49,124 +49,79 @@ overflow:scroll;
 </style>
 {% endblock topcontent %}
 
-<h3 style="text-align:center">Experiment Details</h3>
-
-<table style="margin-left:11%">
-    <tbody>
-        <tr>
-        <td class="inBlock">
-            <!--Pre's take *everything literally, so everyting inside this pre is unformatted...-->
-            <pre style="padding:10px;width:auto;background-color:#EEE;border-radius:5px"><code id="expsummary">
-Id: {{exp.expid}}
-User: {{exp.user}} 
-JobID: {{exp.lid}}
-Machine: {{exp.machine}} 
-Compset: {{exp.compset}} 
-Case: {{exp.case}}
-Res: {{exp.res}} 
-Version: {{exp.version}}
-Date: {{exp.exp_date}}
-
-Run_time: {{ exp.run_time }} sec
-Init time: {{ exp.init_time }} sec
-Final_time: {{ exp.final_time }} sec
-Total PEs: {{exp.total_pes_active}}
-Model cost: {{exp.model_cost}} pe-hrs/sim_year
-
-Run length: {{exp.run_length}} days
-Stop_n: {{exp.stop_n}}
-Stop Option: {{ exp.stop_option}}
-MPI tasks/node: {{exp.mpi_tasks_per_node}}
-
-<br>
-<b>Model Throughput</b>: {{exp.model_throughput}} SYPD
-<br>
-
-<b>Graphs:</b>
-<a href="/summary/{{expid}}/stats">Summary Global statistics</a>
-<br>
-Tree graph : {% for rank in ranks -%}<a href="/summary/{{expid}}/{{rank.rank}}">Rank {{rank.rank}}</a> &nbsp;
-            {%- endfor %}
-Flame graph : {% for rank in ranks -%}<a href="/flamegraph/{{expid}}/{{rank.rank}}">Rank {{rank.rank}}</a> &nbsp;
-            {%- endfor %}
-<a href="/atmos/{{exp.expid}}">Atm process distribution</a>
-<br>
-<b>Scorpio IO Stats:</b>
-<a href="/scorpioIO/{{expid}}">Scorpio I/O statistics</a>
-<br>
-<br>
-Additional Notes:
-</code>
-<textarea style="resize:both" id="note" name="note" class="form-control" readonly>{{note}}</textarea><p style="text-align:center;margin-top:5px"><a href="/note/{{exp.expid}}"><input type="button" style = "text-align:center" value="Add/Edit" class="btn btn-outline-secondary"/><br></p>
-<!--Static file loc on web server-->
-<!--<a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>-->
-<!--From file server-->
-<a href="https://pacefs.ornl.gov/e3sm/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
-           </pre>
-        </td>
-
-        <td class="inBlock">
-            <img id="runtimeImg"/>
-        </td>
-        <td class="inBlock">
-            <table class="runtimeTable">
-                <thead>
-                    <tr>
-                    <th>Color</th><th>Component</th><th>Run time(s)</th><th>Throughput(SYPD)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {%for element in runtime%}
-                <tr>
-                    <td class='colorElement'></td><td class='elementName'>{{element.component}}</td><td>{{element.seconds}}</td><td>{{element.model_years}}</td>
-                </tr>
-                {%endfor%}
-                </tbody>
-            </table>
-        </td>
-        </tr>
-
-        <tr>
-        <td class="inBlock">
-            <b>Model Input files</b>
-            <br>
-            XML Inputs: 
-            <br>
-            {%for name in xmls%}
-            <a href="/xmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
-            {%endfor%}
-
-            Namelist Inputs:
-            <br>
-            {%for name in nmls%}
-            <a href="/nmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
-            {%endfor%}
-
-            RC Inputs:
-            <br>
-            {%for name in rcs%}
-            <a href="/rcviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
-            {%endfor%}
-            <br>
-        </td>
-    </tr>
-    </tbody>
-</table>
-
 <!-- new design exp-details-->
 
 <p>
-    <div style="overflow:scroll ; border:4px solid black">
+    <div style="overflow:scroll ; border:4px solid black; margin-top:50px">
         <h1 style="text-align: center">Experiment Details</h1>
-        <br>
-        <br>
+        <!--Pre's take *everything literally, so everyting inside this pre is unformatted...-->
+        <div class="wrap" style="padding:10px;width:auto;background-color:#EEE;border-radius:5px;font-family:menlo">
+            <div class="fleft">
+                <span style='color:crimson'>Id:</span> {{exp.expid}}<br>
+                <span style='color:crimson'>User:</span> {{exp.user}} <br>
+                <span style='color:crimson'>JobID:</span> {{exp.lid}}<br>
+                <span style='color:crimson'>Machine:</span> {{exp.machine}}<br> 
+                <span style='color:crimson'>Compset:</span> {{exp.compset}}<br> 
+                <span style='color:crimson'>Case:</span> {{exp.case}}<br>
+                <span style='color:crimson'>Res:</span> {{exp.res}}<br> 
+                <span style='color:crimson'>Version:</span> {{exp.version}}<br>
+                <span style='color:crimson'>Date:</span> {{exp.exp_date}}<br>
+                <span style='color:crimson'>Run_time:</span> {{ exp.run_time }} sec<br>
+                <span style='color:crimson'>Init time:</span> {{ exp.init_time }} sec<br>
+                <span style='color:crimson'>Final_time:</span> {{ exp.final_time }} sec<br>
+                <span style='color:crimson'>Total PEs:</span> {{exp.total_pes_active}}<br>
+                <span style='color:crimson'>Model cost:</span> {{exp.model_cost}} pe-hrs/sim_year<br>
+                <span style='color:crimson'>Run length:</span> {{exp.run_length}} days<br>
+                <span style='color:crimson'>Stop_n:</span> {{exp.stop_n}}<br>
+                <span style='color:crimson'>Stop Option:</span> {{ exp.stop_option}}<br>
+                <span style='color:crimson'>MPI tasks/node:</span> {{exp.mpi_tasks_per_node}}<br>
+                
+                <br>
+                <span style='color:crimson'><b>Model Throughput</b>:</span> {{exp.model_throughput}} SYPD
+                <br>
+                <br>
+                <span style='color:crimson'>Additional Notes:</span>
+            </div>
+            <div class="fright">
+                <span style='color:crimson'><b>Graphs:</b></span>
+                <br>
+                <span style='padding-left:5em'> <a href="/summary/{{expid}}/stats">Summary Global statistics</a></span>
+                <br>
+                <span style='color:crimson'>Tree graph :</span><br>
+                <span style='padding-left:5em'>{% for rank in ranks -%}<a href="/summary/{{expid}}/{{rank.rank}}">Rank {{rank.rank}}</a> &nbsp;</span>
+                            {%- endfor %}
+                <br>
+                <span style='color:crimson'>Flame graph :</span> <br>
+                <span style="padding-left:5em">{% for rank in ranks -%}<a href="/flamegraph/{{expid}}/{{rank.rank}}">Rank {{rank.rank}}</a> &nbsp;</span>
+                            {%- endfor %}
+                <br>
+                <span style='color:crimson'>Component Process :</span> <br>
+                <span style="padding-left:5em;"><a href="/atmos/{{exp.expid}}">Atm process distribution</a></span>
+                <br>
+                <span style='color:crimson'><b>Scorpio IO Stats:</b></span><br>
+                <span style="padding-left:5em;"><a href="/scorpioIO/{{expid}}">Scorpio I/O statistics</a></span>
+            </div>
+            <br>
+            <br>
+            
+            <textarea style="resize:both" id="note" name="note" class="form-control" readonly>{{note}}</textarea><p style="text-align:center;margin-top:5px"><a href="/note/{{exp.expid}}"><input type="button" style = "text-align:center" value="Add/Edit" class="btn btn-outline-secondary"/><br></p>
+            <!--Static file loc on web server-->
+            <!--<a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>-->
+            <!--From file server-->
+            <a href="https://pacefs.ornl.gov/e3sm/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
+       </div>
+    </div>
+    <div style="overflow:scroll ; border:4px solid black; margin-top:50px">
+        <h3 style="text-align: center; margin-top:50px;margin-bottom:25px;">Model Componenet</h3>
         <div class="wrap">
             <div class="fleft" id="compTable"></div>
             <div class="fright">
-                <img id="newimage"/>
+                <img id="runtimeImg"/>
             </div>
         </div>
-        <h3 style="text-align: center; margin-top:50px">Model Input Files</h3>
+    </div>
+    <div style="overflow:scroll ; border:4px solid black; margin-top:50px; margin-bottom:100px;">
+        <h3 style="text-align: center; margin-top:50px;margin-bottom:25px;">Model Input Files</h3>
         <table style="width:100%; border: 1px solid black">
             <tr>
                 <th style="border: 1px solid black">XML Inputs:</th>
@@ -196,25 +151,24 @@ Additional Notes:
 <script>
 var imgLink = detectRootUrl()+"svg/runtime/{{expid}}";
 runtimeImg.src=imgLink;
-newimage.src = imgLink;
 
 //Format the expsummary!
-{
-    let lines = expsummary.innerHTML.split("\n");
-    expsummary.innerHTML="";
-    lines.forEach(element=>{
-        elSplit = element.split(":");
-        expsummary.innerHTML+="<span style='color:crimson'>"+elSplit[0]+""+(elSplit[1]?":</span><b>"+elSplit[1]+"</b>\n":"</span>");
-    });
-}
+//{
+//    let lines = expsummary.innerHTML.split("\n");
+//    expsummary.innerHTML="";
+//    lines.forEach(element=>{
+//        elSplit = element.split(":");
+//        expsummary.innerHTML+="<span style='color:crimson'>"+elSplit[0]+""+(elSplit[1]?":</span><b>"+elSplit[1]+"</b>\n":"</span>");
+//    });
+//}
 
-var chartColors = JSON.parse(`{{chartColors|safe}}`);
-var colorLegend = document.getElementsByClassName("colorElement");
-var elNames = document.getElementsByClassName("elementName");
-for(var i = 0;i<colorLegend.length;i++){
-    if(chartColors[elNames[i].innerHTML])
-        colorLegend[i].style.backgroundColor = chartColors[elNames[i].innerHTML];
-}
+//var chartColors = JSON.parse(`{{chartColors|safe}}`);
+//var colorLegend = document.getElementsByClassName("colorElement");
+//var elNames = document.getElementsByClassName("elementName");
+//for(var i = 0;i<colorLegend.length;i++){
+//    if(chartColors[elNames[i].innerHTML])
+//        colorLegend[i].style.backgroundColor = chartColors[elNames[i].innerHTML];
+//}
 
 var compRunTime = {{testrun|tojson}}
 var compcolor = {
