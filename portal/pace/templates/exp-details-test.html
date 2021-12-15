@@ -166,15 +166,31 @@ Additional Notes:
                 <img id="newimage"/>
             </div>
         </div>
-        <!--
-        <div style="width: 100%; display:table">
-                <div id="compTable" style="width:400px;">
-                </div>
-                <div style="display: table-cell">
-                    <img id="newimage"/>
-                </div>
-        </div>
-    -->
+        <h3 style="text-align: center; margin-top:50px">Model Input Files</h3>
+        <table style="width:100%; border: 1px solid black">
+            <tr>
+                <th style="border: 1px solid black">XML Inputs:</th>
+                <th style="border: 1px solid black">Namelist Inputs:</th>
+                <th style="border: 1px solid black">RC Inputs:</th>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black">
+                    {%for name in xmls%}
+                    <a href="/xmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
+                    {%endfor%}
+                </td>
+                <td style="border: 1px solid black">
+                    {%for name in nmls%}
+                    <a href="/nmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
+                    {%endfor%}
+                </td>
+                <td style="border: 1px solid black">
+                    {%for name in rcs%}
+                    <a href="/rcviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
+                    {%endfor%}
+                </td>
+            </tr>
+        </table>
     </div>
 </p>
 <script>
