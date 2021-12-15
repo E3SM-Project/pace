@@ -353,8 +353,8 @@ def scorpioIOStat(mexpid):
                             readIOData=readIOData,writeIOData=writeIOData, modelRuntime = modelRuntime)
 
 
-@app.route("/exp-details-test/<int:mexpid>")
-def expDetailsTest(mexpid):
+@app.route("/exp-details/<int:mexpid>")
+def expDetails(mexpid):
     myexp = None
     myxmls = None
     mynmls = None
@@ -386,13 +386,13 @@ def expDetailsTest(mexpid):
             'model_years':float(runs[5])
         }
         runtimes.append(run)
-    return render_template('exp-details-test.html', testrun = runtimes,exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
+    return render_template('exp-details.html', runtimes = runtimes,exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
             ranks = ranks,chartColors = json.dumps(colorDict),note=note, \
             xmls = myxmls, nmls = mynmls, rcs = myrcs \
             )
 
-@app.route("/exp-details/<int:mexpid>")
-def expDetails(mexpid):
+@app.route("/exp-details-old/<int:mexpid>")
+def expDetailsOld(mexpid):
     myexp = None
     myxmls = None
     mynmls = None
@@ -415,7 +415,7 @@ def expDetails(mexpid):
         note = noteexp.note
     except IndexError:
         note=""
-    return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
+    return render_template('exp-details-old.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
             ranks = ranks,chartColors = json.dumps(colorDict),note=note, \
             xmls = myxmls, nmls = mynmls, rcs = myrcs \
             )
