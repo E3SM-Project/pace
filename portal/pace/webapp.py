@@ -318,7 +318,7 @@ def flameGraph(expid,rank):
     if bool(re.match('^[0-9,]+$', rank)) and bool(re.match('^[0-9,]+$', expid)):
       return render_template("flameGraph.html",expid=expid,rank=rank.split(','))
 
-@app.route("/scorpioIO/<int:mexpid>")
+@app.route("/scorpio/<int:mexpid>")
 def scorpioIOStat(mexpid):
     #get data
     try:
