@@ -8,13 +8,170 @@
 <script src="https://y-takey.github.io/chartjs-plugin-stacked100/plugin.js"></script>
 <script src="/static/js/colorTools.js"></script>
 <script src="/static/js/mtGeneralTools.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 {% endblock %}
 {% block content %}
 <p style="text-align:center">
 <span style="float:left">Color Theme: &nbsp; <select class="form-control" style="width:unset;display:inline-block" id="themeSelect" onchange="colorAtmos(this.selectedIndex);resultChart.update()"></select></span>
-<span id="metaInfoContainer" style="width:500px;"><span></span></span>
+
 </p>
-<canvas id="chartTag"></canvas>
+<!--<canvas id="chartTag"></canvas>-->
+
+
+<br>
+<br>
+<p>
+    <div style="overflow:hidden; border: 4px solid black; margin-bottom:75px">
+        <h3 style="text-align:center">ATM Process Distribution</h3>
+        <details>
+            <summary style="text-align:center; cursor: pointer;"><u>read more...</u></summary>
+            
+        </details>
+        <canvas id="chartTag"></canvas>
+
+    </div>
+</p>
+
+<p>
+    <div style="overflow:hidden; border: 4px solid black; margin-bottom:75px">
+        <h3 style="text-align:center">ATM Process Distribution </h3>
+        <details>
+            <summary style="text-align:center; cursor: pointer;"><u>read more...</u></summary>
+            
+        </details>
+        
+        <canvas id="columnChartTag"></canvas>
+    </div>
+</p>
+
+<!-- new atmos page -->
+<p>
+    <div style="overflow:hidden; border: 4px solid black; margin-bottom:75px">
+        <h3 style="text-align:center">ATM Process Distribution - stacked graph</h3>
+        <details>
+            <summary style="text-align:center; cursor: pointer;"><u>read more...</u></summary>
+            
+        </details>
+        
+        <div id="stacktimes" style="border:1px solid black; border-radius: 25px"></div>
+    </div>
+    <br>
+</p>
+
+<!-- new scripts -->
+<script>
+
+var easyTableList = {{rd|tojson}}
+var graphData = []
+var other_time = 0;
+var atmCompSum = 0;
+var expid = String({{expids}})
+graphData.push(easyTableList["a:moist_convection"]["values"]["wallmax"]);
+graphData.push(easyTableList["a:macrop_tend"]["values"]["wallmax"] + easyTableList["a:tphysbc_aerosols"]["values"]["wallmax"]);
+graphData.push(easyTableList["a:microp_aero_run"]["values"]["wallmax"]);
+graphData.push(easyTableList["a:microp_tend"]["values"]["wallmax"]);
+graphData.push(easyTableList["a:radiation"]["values"]["wallmax"]);
+graphData.push(easyTableList["a:phys_run2"]["values"]["wallmax"]);
+graphData.push(easyTableList["a:stepon_run3"]["values"]["wallmax"]);
+graphData.push(easyTableList["a:stepon_run1"]["values"]["wallmax"] + easyTableList["a:stepon_run2"]["values"]["wallmax"]);
+graphData.push(easyTableList["a:wshist"]["values"]["wallmax"]);
+
+for ( let i = 0; i < graphData.length; i++) {
+    atmCompSum += Number(graphData[i]);
+}
+var totalTime = easyTableList["CPL:ATM_RUN"]["values"]["wallmax"]
+other_time = totalTime - atmCompSum;
+
+var percentGraph = []
+
+for (let i = 0; i< graphData.length; i++){
+    percentGraph.push((graphData[i]/totalTime)*100);
+}
+percentGraph.push((other_time/totalTime)*100);
+
+//load google charts to create bar charts
+google.charts.load('current', {packages: ['corechart', 'bar']});
+google.charts.setOnLoadCallback(atmStackedTime);
+
+var colorShade = ['#264653','#287271','#2A9D8F','#5AA786','#8AB17D','#E9C46A','#EFB366','#F4A261','#EE8959','#E76F51']
+var colorJet = ["#000080", "#0000ff", "#0060ff", "#00d4ff", "#4dffaa", "#aaff4d", "#ffe600", "#ff7a00", "#ff1300", "#800000"]
+
+function atmStackedTime() {
+    
+    var data = google.visualization.arrayToDataTable([
+        ['Exp ID', 'Convection','CLUBB','Aerosol','Microphys','Radiation','Phys Aft Surface','Dynamics','Phys/Dyn Coupling','Hist','ATM Other'],
+        [
+
+            expid,
+            graphData[0],
+            graphData[1],
+            graphData[2],
+            graphData[3],
+            graphData[4],
+            graphData[5],
+            graphData[6],
+            graphData[7],
+            graphData[8],
+            other_time
+        ]
+    ]);
+
+    var materialOptions = {    
+        title: 'Write VS Read Scorpio IO Time',
+        isStacked: 'percent',
+        
+        legend:{
+            position: 'bottom',
+            positionalignment: 'center'
+        },
+        hAxis: {
+            minValue: 0,
+        },
+        vAxis: {
+            title: 'Experiment ID',
+            textPosition: 'out'
+        },
+        colors: colorShade,
+        bars: 'horizontal'
+    };
+    //var materialChart = new google.charts.Bar(document.getElementById('stacktimes'));
+    var materialChart = new google.visualization.BarChart(document.getElementById('stacktimes'));
+    materialChart.draw(data, materialOptions);
+}
+
+var labels=['Convection','CLUBB','Aerosol','Microphys','Radiation','Phys Aft Surface','Dynamics','Phys/Dyn Coupling','Hist','ATM Other', 'Remaining Model'];
+var columnChart = new Chart(columnChartTag,{
+    type:"bar",
+    options: {
+        plugins:{stacked100: { enable: true }},
+        scales: {
+                yAxes:[{
+                    scaleLabel:{
+                        display:true,
+                        fontSize:18,
+                        labelString:"% Atm Runtime"
+                    }}],
+                xAxes:[{
+                    scaleLabel:{
+                        display:true,
+                        fontSize:18,
+                        labelString:"Experiment"
+                    }}]
+        }
+    }
+});
+for ( let i = 0; i < percentGraph.length; i++) {
+        // set chart label first to create javascript array element
+        if(!columnChart.data.datasets[i])
+            columnChart.data.datasets[i] = {label:labels[i],data:[],backgroundColor:[],borderColor:[]};
+        // then set the value
+        columnChart.data.datasets[i].data.push(percentGraph[i]);
+        columnChart.data.datasets[i].backgroundColor.push(colorShade[i]);
+     }
+columnChart.update();
+
+</script>
+<!-- old scripts -->
 <script>
 expidList = "{{expids}}".split(",");
 
@@ -98,16 +255,51 @@ tableList.forEach((e,index)=>{
     let remaining = 0;
     let totalAtm = 0;
     let totalModel = 0;
-
-    timer.push( e["a:moist_convection"].values.wallmax );
-    timer.push( e["a:macrop_tend"].values.wallmax );
-    timer.push( e["a:microp_aero_run"].values.wallmax + e["a:bc_aerosols"].values.wallmax );
-    timer.push( e["a:microp_tend"].values.wallmax );
-    timer.push( e["a:radiation"].values.wallmax );
-    timer.push( e["a:phys_run2"].values.wallmax );
-    timer.push( e["a:stepon_run3"].values.wallmax );
-    timer.push( e["a:stepon_run1"].values.wallmax + e["a:stepon_run2"].values.wallmax );
-    timer.push( e["a:wshist"].values.wallmax );
+    if("a:moist_convection" in e){
+        timer.push( e["a:moist_convection"].values.wallmax );
+    }else{
+        timer.push(0);
+    }
+    if("a:macrop_tend" in e && "a:tphysbc_aerosols" in e){
+        timer.push( e["a:macrop_tend"].values.wallmax + e["a:tphysbc_aerosols"].values.wallmax);
+    }else{
+        timer.push(0);
+    }
+    if("a:microp_aero_run" in e){
+        timer.push( e["a:microp_aero_run"].values.wallmax );
+    }else{
+        timer.push(0);
+    }
+    if("a:microp_tend" in e){
+        timer.push( e["a:microp_tend"].values.wallmax );
+    }else{
+        timer.push(0);
+    }
+    if("a:radiation" in e){
+        timer.push( e["a:radiation"].values.wallmax );
+    }else{
+        timer.push(0);
+    }
+    if("a:phys_run2" in e){
+        timer.push( e["a:phys_run2"].values.wallmax );
+    }else{
+        timer.push(0);
+    }
+    if("a:stepon_run3" in e){
+        timer.push( e["a:stepon_run3"].values.wallmax );
+    }else{
+        timer.push(0);
+    }
+    if("a:stepon_run1" in e && "a:stepon_run2" in e){
+        timer.push( e["a:stepon_run1"].values.wallmax + e["a:stepon_run2"].values.wallmax);
+    }else{
+        timer.push(0);
+    }
+    if("a:wshist" in e){
+        timer.push( e["a:wshist"].values.wallmax );
+    }else{
+        timer.push(0);
+    }
 
     for ( let j = 0; j < 9; j++) {
         atmCompSum += Number(timer[j]);

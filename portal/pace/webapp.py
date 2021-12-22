@@ -852,7 +852,27 @@ def getRuntimeSvg(expid):
 def atmosChart(expids):
     if not bool(re.match('^[0-9,]+$', expids)):
         return render_template('error.html')
-    return render_template("atmos.html",expids = expids)
+    resultNodes = db.engine.execute("select jsonVal from model_timing where expid = 6  and rank = 'stats'").fetchall()[0].jsonVal
+    data = json.loads(resultNodes)
+    atm_timer = [
+        "a:moist_convection",
+        "a:macrop_tend",
+        "a:tphysbc_aerosols",
+        "a:microp_aero_run",
+        "a:microp_tend",
+        "a:radiation",
+        "a:phys_run2",
+        "a:stepon_run3",
+        "a:stepon_run1",
+        "a:stepon_run2",
+        "a:wshist",
+        "CPL:ATM_RUN"
+    ]
+    result = {}
+    for model in data[0]:
+        if model['name'] in atm_timer:
+            result[model['name']] = model
+    return render_template("atmos.html",expids = expids, rd = result)
 
 @app.route("/xmlviewer/<int:mexpid>/<mname>")
 def xmlViewer(mexpid, mname):
