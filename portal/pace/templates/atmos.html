@@ -1,36 +1,11 @@
-{#  Author: Zachary Mitchell
-    Purpose:Create a new chart for atmosphere experiments that rounds each bar to 100% (Through chartJS!)#}
 {% extends "layout.html" %}
 {% block topscripts %}
 <link rel="stylesheet" type="text/css" href="/static/css/mtGeneral.css" />
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
-<script src="https://y-takey.github.io/chartjs-plugin-stacked100/plugin.js"></script>
-<script src="/static/js/colorTools.js"></script>
-<script src="/static/js/mtGeneralTools.js"></script>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 {% endblock %}
 {% block content %}
-<p style="text-align:center">
-<span style="float:left">Color Theme: &nbsp; <select class="form-control" style="width:unset;display:inline-block" id="themeSelect" onchange="colorAtmos(this.selectedIndex);resultChart.update()"></select></span>
-
-</p>
-<!--<canvas id="chartTag"></canvas>-->
-
-
-<br>
-<br>
-<p>
-    <div style="overflow:hidden; border: 4px solid black; margin-bottom:75px">
-        <h3 style="text-align:center">ATM Process Distribution</h3>
-        <details>
-            <summary style="text-align:center; cursor: pointer;"><u>read more...</u></summary>
-            
-        </details>
-        <canvas id="chartTag"></canvas>
-
-    </div>
-</p>
 
 <p>
     <div style="overflow:hidden; border: 4px solid black; margin-bottom:75px">
@@ -44,7 +19,6 @@
     </div>
 </p>
 
-<!-- new atmos page -->
 <p>
     <div style="overflow:hidden; border: 4px solid black; margin-bottom:75px">
         <h3 style="text-align:center">ATM Process Distribution - stacked graph</h3>
@@ -85,9 +59,9 @@ other_time = totalTime - atmCompSum;
 var percentGraph = []
 
 for (let i = 0; i< graphData.length; i++){
-    percentGraph.push((graphData[i]/totalTime)*100);
+    percentGraph.push(((graphData[i]/totalTime)*100).toFixed(2));
 }
-percentGraph.push((other_time/totalTime)*100);
+percentGraph.push(((other_time/totalTime)*100).toFixed(2));
 
 //load google charts to create bar charts
 google.charts.load('current', {packages: ['corechart', 'bar']});
@@ -143,7 +117,6 @@ var labels=['Convection','CLUBB','Aerosol','Microphys','Radiation','Phys Aft Sur
 var columnChart = new Chart(columnChartTag,{
     type:"bar",
     options: {
-        plugins:{stacked100: { enable: true }},
         scales: {
                 yAxes:[{
                     scaleLabel:{
@@ -170,166 +143,5 @@ for ( let i = 0; i < percentGraph.length; i++) {
      }
 columnChart.update();
 
-</script>
-<!-- old scripts -->
-<script>
-expidList = "{{expids}}".split(",");
-
-var labels=['Convection','CLUBB','Aerosol','Microphys','Radiation','Phys Aft Surface','Dynamics','Phys/Dyn Coupling','Hist','ATM Other', 'Remaining Model'];
-var resultChart = new Chart(chartTag,{
-    type:"bar",
-    options: {
-        plugins:{stacked100: { enable: true }},
-        scales: {
-                yAxes:[{
-                    scaleLabel:{
-                        display:true,
-                        fontSize:18,
-                        labelString:"% Atm Runtime"
-                    }}],
-                xAxes:[{
-                    scaleLabel:{
-                        display:true,
-                        fontSize:18,
-                        labelString:"Experiment"
-                    }}]
-        }
-    }
-});
-
-var tableList = [];
-var metaInfoObjs = [];
-
-//Get the themes for chartJs
-colorThemes = undefined;
-$.get("/static/chartJsThemes.json",data=>{
-    colorThemes = data
-    //Setup the select tag:
-    colorThemes.forEach( (e,index)=>themeSelect.innerHTML+="<option "+(index == 1?"selected":"")+" value='"+index+"'>"+e.name+"</option>");
-});
-
-//When this strikes 0, everything gets rendered:
-dataCountdown = 0;
-expidList.forEach(expid=>{
-    dataCountdown++;
-    $.get("/summaryQuery/"+expid+"/stats/getFullStats",data=>{
-        resultData = JSON.parse(data);
-        tableList.push(new addressTable(resultData.obj[0],true,undefined,0) );
-        resultChart.data.labels.push(resultData.meta.expid);
-        metaInfoObjs.push({name:resultData.meta.expid,res:resultData.meta.res,compset:resultData.meta.compset});
-        dataCountdown--;
-        if(dataCountdown === 0){
-            renderData();
-            metaOpenClose(true,metaInfoObjs);
-        }
-    });
-});
-
-// var addressList = ["a:moist_convection","a:macrop_tend",["a:microp_aero_run","a:bc_aerosols"],"a:microp_tend","a:radiation","a:phys_run2","a:stepon_run3",["a:stepon_run1","a:stepon_run2"],"a:wshist", "Other ATM" ];
-//Array.map lets you create a new array based on the properties of another array.
-var colorPercentages = arrayToPercentages(labels.map((e,index)=>index+1),true);
-// console.log(colorPercentages);
-
-function colorAtmos(themeIndex = themeSelect.selectedIndex){
-    var selectedTheme = hex2RgbArray(colorThemes[themeIndex].values);
-    for(let i=0;i<resultChart.data.datasets.length;i++){
-        resultChart.data.datasets[i].backgroundColor = [];
-        resultChart.data.datasets[i].borderColor = [];
-        for(let j=0;j<resultChart.data.datasets[i].data.length;j++){
-            let colorData = percentToColor(colorPercentages[i],false,2,selectedTheme,false);
-            resultChart.data.datasets[i].backgroundColor.push(colorData[0]);
-            resultChart.data.datasets[i].borderColor.push(percentToColor(50,false,0,[selectedTheme,colorData[1]],true ) );
-        }
-    }
-
-}
-
-//Append all values for one stats file to a single place on the chart.
-function renderData(){
-
-tableList.forEach((e,index)=>{
-    // For each experiment
-    let timer = [];;
-    let atmCompSum = 0;
-    let otherAtm = 0;
-    let remaining = 0;
-    let totalAtm = 0;
-    let totalModel = 0;
-    if("a:moist_convection" in e){
-        timer.push( e["a:moist_convection"].values.wallmax );
-    }else{
-        timer.push(0);
-    }
-    if("a:macrop_tend" in e && "a:tphysbc_aerosols" in e){
-        timer.push( e["a:macrop_tend"].values.wallmax + e["a:tphysbc_aerosols"].values.wallmax);
-    }else{
-        timer.push(0);
-    }
-    if("a:microp_aero_run" in e){
-        timer.push( e["a:microp_aero_run"].values.wallmax );
-    }else{
-        timer.push(0);
-    }
-    if("a:microp_tend" in e){
-        timer.push( e["a:microp_tend"].values.wallmax );
-    }else{
-        timer.push(0);
-    }
-    if("a:radiation" in e){
-        timer.push( e["a:radiation"].values.wallmax );
-    }else{
-        timer.push(0);
-    }
-    if("a:phys_run2" in e){
-        timer.push( e["a:phys_run2"].values.wallmax );
-    }else{
-        timer.push(0);
-    }
-    if("a:stepon_run3" in e){
-        timer.push( e["a:stepon_run3"].values.wallmax );
-    }else{
-        timer.push(0);
-    }
-    if("a:stepon_run1" in e && "a:stepon_run2" in e){
-        timer.push( e["a:stepon_run1"].values.wallmax + e["a:stepon_run2"].values.wallmax);
-    }else{
-        timer.push(0);
-    }
-    if("a:wshist" in e){
-        timer.push( e["a:wshist"].values.wallmax );
-    }else{
-        timer.push(0);
-    }
-
-    for ( let j = 0; j < 9; j++) {
-        atmCompSum += Number(timer[j]);
-    }
-
-    totalAtm = e["CPL:ATM_RUN"].values.wallmax;
-    otherAtm = totalAtm - atmCompSum ;
-    timer.push( otherAtm );
-    // console.log (otherAtm);
-
-    // totalModel = e["CPL:RUN_LOOP"].values.wallmax ;
-    // remaining = totalModel - totalAtm;
-    // timer.push( remaining );
-
-    // console.log (remaining);
-    // console.log (timer);
-
-    // for ( let j = 0; j < 11; j++) {
-    for ( let j = 0; j < 10; j++) {
-        // set chart label first to create javascript array element
-        if(!resultChart.data.datasets[j])
-            resultChart.data.datasets[j] = {label:labels[j],data:[],backgroundColor:[],borderColor:[]};
-        // then set the value
-        resultChart.data.datasets[j].data.push(timer[j]);
-     }
-});
-
-colorAtmos();
-resultChart.update();
-
-}
 </script>
 {% endblock %}

@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+{% block topscripts %}
+<link rel="stylesheet" type="text/css" href="/static/css/mtGeneral.css" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+{% block content %}
+
+<p>
+    <div style="overflow:hidden; border: 4px solid black; margin-bottom:75px">
+        <h3 style="text-align:center">ATM Process Distribution </h3>
+        <details>
+            <summary style="text-align:center; cursor: pointer;"><u>read more...</u></summary>
+            
+        </details>
+        
+        <canvas id="columnChartTag"></canvas>
+    </div>
+</p>
+
+<script>
+var easyTableList = {{rd|tojson}}
+var expids = {{expids|tojson}}
+var graphData = []
+var other_time = 0;
+var atmCompSum = 0;
+
+/*for (i = 0;i<easyTableList.length;i++){
+    graphData.push(easyTableList[i]["a:moist_convection"]["values"]["wallmax"]);
+    graphData.push(easyTableList[i]["a:macrop_tend"]["values"]["wallmax"] + easyTableList["a:tphysbc_aerosols"]["values"]["wallmax"]);
+    graphData.push(easyTableList[i]["a:microp_aero_run"]["values"]["wallmax"]);
+    graphData.push(easyTableList[i]["a:microp_tend"]["values"]["wallmax"]);
+    graphData.push(easyTableList[i]["a:radiation"]["values"]["wallmax"]);
+    graphData.push(easyTableList[i]["a:phys_run2"]["values"]["wallmax"]);
+    graphData.push(easyTableList[i]["a:stepon_run3"]["values"]["wallmax"]);
+    graphData.push(easyTableList[i]["a:stepon_run1"]["values"]["wallmax"] + easyTableList["a:stepon_run2"]["values"]["wallmax"]);
+    graphData.push(easyTableList[i]["a:wshist"]["values"]["wallmax"]);
+
+    for ( let j = 0; j < graphData.length; j++) {
+        atmCompSum += Number(graphData[j]);
+    }
+    var totalTime = easyTableList[i]["CPL:ATM_RUN"]["values"]["wallmax"]
+    other_time = totalTime - atmCompSum;
+
+    var percentGraph = []
+
+    for (let j = 0; j< graphData.length; j++){
+        percentGraph.push(((graphData[j]/totalTime)*100).toFixed(2));
+    }
+    percentGraph.push(((other_time/totalTime)*100).toFixed(2));
+}*/
+percentData = []
+var colorShade = ['#264653','#287271','#2A9D8F','#5AA786','#8AB17D','#E9C46A','#EFB366','#F4A261','#EE8959','#E76F51']  
+var labels=['Convection','CLUBB','Aerosol','Microphys','Radiation','Phys Aft Surface','Dynamics','Phys/Dyn Coupling','Hist','ATM Other'];
+
+for (i=0;i<expids.length;i++){
+    var graphData = []
+    var atmCompSum = 0
+    var totalTime = 0
+    var other_time = 0
+    graphData.push(easyTableList[expids[i]]["a:moist_convection"]["values"]["wallmax"]);
+    graphData.push(easyTableList[expids[i]]["a:macrop_tend"]["values"]["wallmax"] + easyTableList[expids[i]]["a:tphysbc_aerosols"]["values"]["wallmax"]);
+    graphData.push(easyTableList[expids[i]]["a:microp_aero_run"]["values"]["wallmax"]);
+    graphData.push(easyTableList[expids[i]]["a:microp_tend"]["values"]["wallmax"]);
+    graphData.push(easyTableList[expids[i]]["a:radiation"]["values"]["wallmax"]);
+    graphData.push(easyTableList[expids[i]]["a:phys_run2"]["values"]["wallmax"]);
+    graphData.push(easyTableList[expids[i]]["a:stepon_run3"]["values"]["wallmax"]);
+    graphData.push(easyTableList[expids[i]]["a:stepon_run1"]["values"]["wallmax"] + easyTableList[expids[i]]["a:stepon_run2"]["values"]["wallmax"]);
+    graphData.push(easyTableList[expids[i]]["a:wshist"]["values"]["wallmax"]);
+
+    for ( let j = 0; j < graphData.length; j++) {
+        atmCompSum += Number(graphData[j]);
+    }
+    var totalTime = easyTableList[expids[i]]["CPL:ATM_RUN"]["values"]["wallmax"]
+    other_time = totalTime - atmCompSum;
+
+    var percentGraph = []
+
+    for (let j = 0; j< graphData.length; j++){
+        percentGraph.push(((graphData[j]/totalTime)*100).toFixed(2));
+    }
+    percentGraph.push(((other_time/totalTime)*100).toFixed(2));
+    for (j=0;j<labels.length;j++){
+        if(!percentData[j]){
+            percentData[j] = [percentGraph[j]]
+        }else{
+            percentData[j].push(percentGraph[j])
+        }
+    }
+    
+}
+
+var columnChart = new Chart(columnChartTag,{
+    type:"bar",
+    data:{
+        labels:expids
+    },
+    options: {
+        scales: {
+                yAxes:[{
+                    stacked:true,
+                    scaleLabel:{
+                        display:true,
+                        fontSize:18,
+                        labelString:"% Atm Runtime"
+                    }}],
+                xAxes:[{
+                    stacked:true,
+                    scaleLabel:{
+                        display:true,
+                        fontSize:18,
+                        labelString:"Experiment ID"
+                    }}]
+        }
+    }
+});
+for ( let i = 0; i < labels.length; i++) {
+    // set chart label first to create javascript array element
+    if(!columnChart.data.datasets[i])
+        columnChart.data.datasets[i] = {label:labels[i],data:percentData[i],backgroundColor:colorShade[i],borderColor:[]};
+    }
+columnChart.update();
+</script>
+{% endblock %}

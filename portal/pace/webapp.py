@@ -891,8 +891,6 @@ def getRuntimeSvg(expid):
 def atmosChart(expids):
     if not bool(re.match('^[0-9,]+$', expids)):
         return render_template('error.html')
-    resultNodes = db.engine.execute("select jsonVal from model_timing where expid = 6  and rank = 'stats'").fetchall()[0].jsonVal
-    data = json.loads(resultNodes)
     atm_timer = [
         "a:moist_convection",
         "a:macrop_tend",
@@ -907,11 +905,67 @@ def atmosChart(expids):
         "a:wshist",
         "CPL:ATM_RUN"
     ]
-    result = {}
-    for model in data[0]:
-        if model['name'] in atm_timer:
-            result[model['name']] = model
-    return render_template("atmos.html",expids = expids, rd = result)
+    sampleModel = {
+        'children': [],
+        'multiParent': False,
+        'name': '',
+        'values':{
+            'count': 0,
+            'on': False,
+            'processes': 0,
+            'threads': 0,
+            'wallmax': 0,
+            'wallmax_proc': 0,
+            'wallmax_thrd': 0,
+            'wallmin': 0,
+            'wallmin_proc': 0,
+            'wallmin_thrd': 0,
+            'walltotal': 0
+        }
+    }
+    expidlist = expids.split(',')
+    for id in expidlist:
+        try:
+            expid = int(id)
+        except:
+            return render_template('error.html')
+    try:
+        # single experiment detail page
+        if len(expidlist)==1:
+            resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expidlist[0],)).fetchall()[0].jsonVal
+            data = json.loads(resultNodes)
+            
+            result = {}
+            for model in data[0]:
+                if model['name'] in atm_timer:
+                    result[model['name']] = model
+            
+            for name in atm_timer:
+                if name not in result:
+                    sampleModel['name'] = name
+                    result[name] = sampleModel
+            return render_template("atmos.html",expids = expidlist[0], rd = result)
+        # compare atm page
+        else:
+            output = {}
+            for expid in expidlist:
+                resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expid,)).fetchall()[0].jsonVal
+                data = json.loads(resultNodes)
+                result = {}
+                for model in data[0]:
+                    if model['name'] in atm_timer:
+                        result[model['name']] = model
+                
+                for name in atm_timer:
+                    if name not in result:
+                        sampleModel['name'] = name
+                        result[name] = sampleModel
+                output[expid] = result
+            return render_template('atmosCompare.html', expids = expidlist, rd = output)
+    except:
+        return render_template('error.html')
+    
+
 
 @app.route("/xmlviewer/<int:mexpid>/<mname>")
 def xmlViewer(mexpid, mname):
