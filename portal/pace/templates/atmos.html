@@ -4,6 +4,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<link href="https://unpkg.com/tabulator-tables@5.0.7/dist/css/tabulator.min.css" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.0.7/dist/js/tabulator.min.js"></script>
 {% endblock %}
 {% block content %}
 
@@ -12,9 +14,9 @@
         <h3 style="text-align:center">ATM Process Distribution </h3>
         <details>
             <summary style="text-align:center; cursor: pointer;"><u>read more...</u></summary>
-            
+            <div id="compTable"></div>
         </details>
-        
+        <br>
         <canvas id="columnChartTag"></canvas>
     </div>
 </p>
@@ -114,7 +116,7 @@ function atmStackedTime() {
 }
 
 var xLabelString = "Experiment ID - "+expid
-var labels=['Convection','CLUBB','Aerosol','Microphys','Radiation','Phys Aft Surface','Dynamics','Phys/Dyn Coupling','Hist','ATM Other', 'Remaining Model'];
+var labels=['Convection','CLUBB','Aerosol','Microphys','Radiation','Phys Aft Surface','Dynamics','Phys/Dyn Coupling','Hist','ATM Other'];
 var columnChart = new Chart(columnChartTag,{
     type:"bar",
     options: {
@@ -143,6 +145,47 @@ for ( let i = 0; i < percentGraph.length; i++) {
         columnChart.data.datasets[i].backgroundColor.push(colorShade[i]);
      }
 columnChart.update();
+
+var fieldDic = {
+    "color":"Color",
+    "timer":"Timer",
+    "run_time":"Run Time(s)",
+    "percentage":"Percentage"
+};
+
+var newCompRunTime = [];
+for(i=0;i<labels.length;i++){
+    if(i==9){
+        newCompRunTime.push({
+            "color":colorShade[i],
+            "timer":labels[i],
+            "run_time":other_time,
+            "percentage":percentGraph[i]
+        })
+    }else{
+        newCompRunTime.push({
+            "color":colorShade[i],
+            "timer":labels[i],
+            "run_time":graphData[i],
+            "percentage":percentGraph[i]
+        })
+    }
+}
+
+
+var atmCompTable = new Tabulator("#compTable", {
+    data:newCompRunTime,
+    layout:"fitDataStretch",
+    initialSort:[
+        {column:"run_time", dir:"desc"},
+    ],
+    columns:[
+    {title:fieldDic["color"], field:"color", hozAlign:"right", formatter:"color", width:75},
+    {title:fieldDic["timer"], field:"timer", hozAlign:"right"},
+    {title:fieldDic["run_time"], field:"run_time", hozAlign:"right",sorter:"number",formatter:"money", formatterParams:{precision:3}},
+    {title:fieldDic["percentage"], field:"percentage", hozAlign:"right",formatter:"money", formatterParams:{precision:2}},
+    ],
+});
 
 </script>
 {% endblock %}
