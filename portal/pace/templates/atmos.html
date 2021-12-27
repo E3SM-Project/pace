@@ -113,6 +113,7 @@ function atmStackedTime() {
     materialChart.draw(data, materialOptions);
 }
 
+var xLabelString = "Experiment ID - "+expid
 var labels=['Convection','CLUBB','Aerosol','Microphys','Radiation','Phys Aft Surface','Dynamics','Phys/Dyn Coupling','Hist','ATM Other', 'Remaining Model'];
 var columnChart = new Chart(columnChartTag,{
     type:"bar",
@@ -128,7 +129,7 @@ var columnChart = new Chart(columnChartTag,{
                     scaleLabel:{
                         display:true,
                         fontSize:18,
-                        labelString:"Experiment"
+                        labelString:xLabelString
                     }}]
         }
     }

@@ -939,6 +939,8 @@ def atmosChart(expids):
             for model in data[0]:
                 if model['name'] in atm_timer:
                     result[model['name']] = model
+                elif model['name'] == "a:bc_aerosols":
+                    result['a:tphysbc_aerosols'] = model   
             
             for name in atm_timer:
                 if name not in result:
@@ -955,6 +957,8 @@ def atmosChart(expids):
                 for model in data[0]:
                     if model['name'] in atm_timer:
                         result[model['name']] = model
+                    elif model['name'] == "a:bc_aerosols":
+                        result['a:tphysbc_aerosols'] = model 
                 
                 for name in atm_timer:
                     if name not in result:

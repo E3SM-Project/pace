@@ -26,30 +26,6 @@ var graphData = []
 var other_time = 0;
 var atmCompSum = 0;
 
-/*for (i = 0;i<easyTableList.length;i++){
-    graphData.push(easyTableList[i]["a:moist_convection"]["values"]["wallmax"]);
-    graphData.push(easyTableList[i]["a:macrop_tend"]["values"]["wallmax"] + easyTableList["a:tphysbc_aerosols"]["values"]["wallmax"]);
-    graphData.push(easyTableList[i]["a:microp_aero_run"]["values"]["wallmax"]);
-    graphData.push(easyTableList[i]["a:microp_tend"]["values"]["wallmax"]);
-    graphData.push(easyTableList[i]["a:radiation"]["values"]["wallmax"]);
-    graphData.push(easyTableList[i]["a:phys_run2"]["values"]["wallmax"]);
-    graphData.push(easyTableList[i]["a:stepon_run3"]["values"]["wallmax"]);
-    graphData.push(easyTableList[i]["a:stepon_run1"]["values"]["wallmax"] + easyTableList["a:stepon_run2"]["values"]["wallmax"]);
-    graphData.push(easyTableList[i]["a:wshist"]["values"]["wallmax"]);
-
-    for ( let j = 0; j < graphData.length; j++) {
-        atmCompSum += Number(graphData[j]);
-    }
-    var totalTime = easyTableList[i]["CPL:ATM_RUN"]["values"]["wallmax"]
-    other_time = totalTime - atmCompSum;
-
-    var percentGraph = []
-
-    for (let j = 0; j< graphData.length; j++){
-        percentGraph.push(((graphData[j]/totalTime)*100).toFixed(2));
-    }
-    percentGraph.push(((other_time/totalTime)*100).toFixed(2));
-}*/
 percentData = []
 var colorShade = ['#264653','#287271','#2A9D8F','#5AA786','#8AB17D','#E9C46A','#EFB366','#F4A261','#EE8959','#E76F51']  
 var labels=['Convection','CLUBB','Aerosol','Microphys','Radiation','Phys Aft Surface','Dynamics','Phys/Dyn Coupling','Hist','ATM Other'];
