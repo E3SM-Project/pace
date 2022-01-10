@@ -49,7 +49,7 @@ for (i=0;i<expids.length;i++){
         atmCompSum += Number(graphData[j]);
     }
     var totalTime = easyTableList[expids[i]]["CPL:ATM_RUN"]["values"]["wallmax"]
-    other_time = totalTime - atmCompSum;
+    other_time = Math.max(totalTime - atmCompSum,0);
 
     var percentGraph = []
 
