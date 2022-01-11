@@ -28,6 +28,7 @@ var atmCompSum = 0;
 
 percentData = []
 var colorShade = ['#264653','#287271','#2A9D8F','#5AA786','#8AB17D','#E9C46A','#EFB366','#F4A261','#EE8959','#E76F51']  
+var colorSeq = ["#882E72","#1965B0","#7BAFDE","#4EB265","#CAE0AB","#F7F056","#F4A736","#E8601C","#DC050C","#72190E"]
 var labels=['Convection','CLUBB','Aerosol','Microphys','Radiation','Phys Aft Surface','Dynamics','Phys/Dyn Coupling','Hist','ATM Other'];
 
 for (i=0;i<expids.length;i++){
@@ -94,7 +95,7 @@ var columnChart = new Chart(columnChartTag,{
 for ( let i = 0; i < labels.length; i++) {
     // set chart label first to create javascript array element
     if(!columnChart.data.datasets[i])
-        columnChart.data.datasets[i] = {label:labels[i],data:percentData[i],backgroundColor:colorShade[i],borderColor:[]};
+        columnChart.data.datasets[i] = {label:labels[i],data:percentData[i],backgroundColor:colorSeq[i],borderColor:[]};
     }
 columnChart.update();
 </script>

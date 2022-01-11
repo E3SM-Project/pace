@@ -71,7 +71,7 @@ google.charts.setOnLoadCallback(atmStackedTime);
 
 var colorShade = ['#264653','#287271','#2A9D8F','#5AA786','#8AB17D','#E9C46A','#EFB366','#F4A261','#EE8959','#E76F51']
 var colorJet = ["#000080", "#0000ff", "#0060ff", "#00d4ff", "#4dffaa", "#aaff4d", "#ffe600", "#ff7a00", "#ff1300", "#800000"]
-
+var colorSeq = ["#882E72","#1965B0","#7BAFDE","#4EB265","#CAE0AB","#F7F056","#F4A736","#E8601C","#DC050C","#72190E"]
 function atmStackedTime() {
     
     var data = google.visualization.arrayToDataTable([
@@ -107,7 +107,7 @@ function atmStackedTime() {
             title: 'Experiment ID',
             textPosition: 'out'
         },
-        colors: colorShade,
+        colors: colorSeq,
         bars: 'horizontal'
     };
     //var materialChart = new google.charts.Bar(document.getElementById('stacktimes'));
@@ -142,7 +142,7 @@ for ( let i = 0; i < percentGraph.length; i++) {
             columnChart.data.datasets[i] = {label:labels[i],data:[],backgroundColor:[],borderColor:[]};
         // then set the value
         columnChart.data.datasets[i].data.push(percentGraph[i]);
-        columnChart.data.datasets[i].backgroundColor.push(colorShade[i]);
+        columnChart.data.datasets[i].backgroundColor.push(colorSeq[i]);
      }
 columnChart.update();
 
@@ -157,14 +157,14 @@ var newCompRunTime = [];
 for(i=0;i<labels.length;i++){
     if(i==9){
         newCompRunTime.push({
-            "color":colorShade[i],
+            "color":colorSeq[i],
             "timer":labels[i],
             "run_time":other_time,
             "percentage":percentGraph[i]
         })
     }else{
         newCompRunTime.push({
-            "color":colorShade[i],
+            "color":colorSeq[i],
             "timer":labels[i],
             "run_time":graphData[i],
             "percentage":percentGraph[i]
