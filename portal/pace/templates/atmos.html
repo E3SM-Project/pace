@@ -28,7 +28,7 @@
             <summary style="text-align:center; cursor: pointer;"><u>read more...</u></summary>
             
         </details>
-        
+        <br>
         <div id="stacktimes" style="border:1px solid black; border-radius: 25px"></div>
     </div>
     <br>
@@ -79,26 +79,26 @@ function atmStackedTime() {
         [
 
             expid,
-            graphData[0],
-            graphData[1],
-            graphData[2],
-            graphData[3],
-            graphData[4],
-            graphData[5],
-            graphData[6],
-            graphData[7],
-            graphData[8],
-            other_time
+            Number(percentGraph[0]),
+            Number(percentGraph[1]),
+            Number(percentGraph[2]),
+            Number(percentGraph[3]),
+            Number(percentGraph[4]),
+            Number(percentGraph[5]),
+            Number(percentGraph[6]),
+            Number(percentGraph[7]),
+            Number(percentGraph[8]),
+            Number(percentGraph[9])
         ]
     ]);
 
     var materialOptions = {    
-        title: 'Write VS Read Scorpio IO Time',
         isStacked: 'percent',
         
         legend:{
-            position: 'bottom',
-            positionalignment: 'center'
+            position: 'top',
+            positionalignment: 'center',
+            maxLines:3
         },
         hAxis: {
             minValue: 0,
