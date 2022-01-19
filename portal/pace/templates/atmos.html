@@ -15,6 +15,7 @@
         <details>
             <summary style="text-align:center; cursor: pointer;"><u>Details...</u></summary>
             <div id="compTable"></div>
+            <span id="note"></span>
         </details>
         <br>
         <canvas id="columnChartTag"></canvas>
@@ -56,6 +57,11 @@ for ( let i = 0; i < graphData.length; i++) {
     atmCompSum += Number(graphData[i]);
 }
 var totalTime = easyTableList["CPL:ATM_RUN"]["values"]["wallmax"]
+other_time = totalTime - atmCompSum
+if(other_time<0){
+    note = "* Note: CPL:ATM_RUN is less than the cummulative atm timers. ATM other = " + String(other_time.toFixed(2)) + "s"
+    document.getElementById("note").innerHTML = note;
+}
 other_time = Math.max(totalTime - atmCompSum,0);
 
 var percentGraph = []
