@@ -178,11 +178,12 @@ def changeDateTime(c_date):
 #need here
 # converts path string into single file name (/home/absd/asde/file.txt -> file.txt)
 def convertPathtofile(path):
+    if not path:
+        return ("None")
     if '/' in path:
         foldername = path.split('/')
         return (foldername[len(foldername)-1]) #grab the last file from path link
-    else:
-        return path
+    return path
 
 #need here
 # function to check duplicate experiments (check based on user,machinr,exp_date,case)
@@ -198,9 +199,12 @@ def checkDuplicateExp(euser,emachine,ecurr, ecase):
 #need here
 def insertMemoryFile(memfile,db,expid):
     #TODO
-    data = parseMemoryProfile.loaddb_memfile(memfile)
-    if not data:
-        return False
+    if memfile:
+        data = parseMemoryProfile.loaddb_memfile(memfile)
+        if not data:
+            return False
+    else:
+        data = {'data':'None'}
     name = 'memory'
     mem = db.session.query(MemfileInputs).filter_by(expid=expid, name=name).first()
     if mem:
@@ -214,10 +218,12 @@ def insertMemoryFile(memfile,db,expid):
 #need here
 def insertScorpioStats(spiofile,db,expid):
     #TODO
-    data = parseScorpioStats.loaddb_scorpio_stats(spiofile)
-    if not data:
-        return False
-    
+    if spiofile:
+        data = parseScorpioStats.loaddb_scorpio_stats(spiofile)
+        if not data:
+            return False
+    else:
+        data = {'data':'None'}
     name = 'spio_stats'
     spio = db.session.query(ScorpioStats).filter_by(expid=expid, name=name).first()
     if spio:
