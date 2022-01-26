@@ -16,6 +16,7 @@ from minio import Minio
 #from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
 from minio.error import (InvalidResponseError)
 from sqlalchemy.exc import SQLAlchemyError
+import json
 
 import tarfile
 import codecs
@@ -204,7 +205,7 @@ def insertMemoryFile(memfile,db,expid):
         if not data:
             return False
     else:
-        data = {'data':'None'}
+        data = json.dumps({'data':'None'})
     name = 'memory'
     mem = db.session.query(MemfileInputs).filter_by(expid=expid, name=name).first()
     if mem:
@@ -223,7 +224,7 @@ def insertScorpioStats(spiofile,db,expid):
         if not data:
             return False
     else:
-        data = {'data':'None'}
+        data = json.dumps({'data':'None'})
     name = 'spio_stats'
     spio = db.session.query(ScorpioStats).filter_by(expid=expid, name=name).first()
     if spio:
