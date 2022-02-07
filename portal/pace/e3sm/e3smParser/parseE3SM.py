@@ -16,6 +16,7 @@ from minio import Minio
 #from minio.error import (ResponseError, BucketAlreadyOwnedByYou,BucketAlreadyExists)
 from minio.error import (InvalidResponseError)
 from sqlalchemy.exc import SQLAlchemyError
+import json
 
 import tarfile
 import codecs
@@ -83,49 +84,58 @@ def parseData(zipfilename,uploaduser):
             if i == tmpfilename:
                 dic1.append(i)
 
-        # "e3sm_timing." file list
-        allfile=[]
-        # "timing." file list
-        timingfile=[]
-        # "README.case." file list
-        readmefile=[]
-        # "GIT_DESCRIBE." file list
-        gitdescribefile=[]
-        #scorpio file
-        scorpiofile = []
-        #memory file
-        memoryfile =[]
-        #CaseDocs for input files (namelist, xml, rc)
-        casedocs = []
-        # go through all directories and grab certain files for parsing
+        # get dir for each experiments
+        experimentDirs = []
         for i in range(len(dic1)):
-            root=os.path.join(fpath,dic1[i])
+            for dir in os.listdir(os.path.join(fpath,dic1[i])):
+                if dir.startswith('exp'):
+                    experimentDirs.append(os.path.join(fpath,tmpfilename,dir))
+        
+        # go through all directories and grab certain files for parsing
+        experimentFiles = []
+        for root in experimentDirs:
+            model = {
+                "timingfile":None,
+                "allfile":None,
+                "readmefile":None,
+                "gitdescribefile":None,
+                "scorpiofile":None,
+                "memoryfile":None,
+                "casedocs":None
+            }
             for path, subdirs, files in os.walk(root):
                 for name in files:
                     if name.startswith("timing."):
-                        timingfile.append(os.path.join(path, name))
+                        model['timingfile'] = os.path.join(path, name)
                     elif name.startswith("e3sm_timing."):
-                        allfile.append(os.path.join(path, name))
+                        model['allfile'] = os.path.join(path, name)
                     elif name.startswith("README.case."):
-                        readmefile.append(os.path.join(path, name))
+                        model['readmefile'] = os.path.join(path, name)
                     elif name.startswith("GIT_DESCRIBE."):
-                        gitdescribefile.append(os.path.join(path, name))
+                        model['gitdescribefile'] = os.path.join(path, name)
                     elif name.startswith("spio_stats."):
-                        scorpiofile.append(os.path.join(path, name))
+                        model['scorpiofile'] = os.path.join(path, name)
                     elif name.startswith("memory."):
-                        memoryfile.append(os.path.join(path, name))
+                        model['memoryfile'] = os.path.join(path, name)
                 for name in subdirs:
                     if name.startswith("CaseDocs."):
-                        casedocs.append(os.path.join(path, name))
+                        model['casedocs'] = os.path.join(path, name)
+            experimentFiles.append(model)
+
         # boolean list
         isSuccess=[]
         # parse and store timing profile file in a database
-        for i in range(len(allfile)):
+        for index in range(len(experimentFiles)):
             print (' ')
             print ('**************************************************')
             # insert experiments for given files
-            isSuccess.append(insertExperiment(allfile[i],readmefile[i],timingfile[i],gitdescribefile[i],
-                                            scorpiofile[i], memoryfile[i], casedocs[i],
+            isSuccess.append(insertExperiment(experimentFiles[index]['allfile'],
+                                            experimentFiles[index]['readmefile'],
+                                            experimentFiles[index]['timingfile'],
+                                            experimentFiles[index]['gitdescribefile'],
+                                            experimentFiles[index]['scorpiofile'],
+                                            experimentFiles[index]['memoryfile'],
+                                            experimentFiles[index]['casedocs'],
                                             db,fpath,uploaduser))
             print ('**************************************************')
             print (' ')
@@ -169,11 +179,12 @@ def changeDateTime(c_date):
 #need here
 # converts path string into single file name (/home/absd/asde/file.txt -> file.txt)
 def convertPathtofile(path):
+    if not path:
+        return ("None")
     if '/' in path:
         foldername = path.split('/')
         return (foldername[len(foldername)-1]) #grab the last file from path link
-    else:
-        return path
+    return path
 
 #need here
 # function to check duplicate experiments (check based on user,machinr,exp_date,case)
@@ -189,9 +200,12 @@ def checkDuplicateExp(euser,emachine,ecurr, ecase):
 #need here
 def insertMemoryFile(memfile,db,expid):
     #TODO
-    data = parseMemoryProfile.loaddb_memfile(memfile)
-    if not data:
-        return False
+    if memfile:
+        data = parseMemoryProfile.loaddb_memfile(memfile)
+        if not data:
+            return False
+    else:
+        data = json.dumps({'data':'None'})
     name = 'memory'
     mem = db.session.query(MemfileInputs).filter_by(expid=expid, name=name).first()
     if mem:
@@ -205,10 +219,12 @@ def insertMemoryFile(memfile,db,expid):
 #need here
 def insertScorpioStats(spiofile,db,expid):
     #TODO
-    data = parseScorpioStats.loaddb_scorpio_stats(spiofile)
-    if not data:
-        return False
-    
+    if spiofile:
+        data = parseScorpioStats.loaddb_scorpio_stats(spiofile)
+        if not data:
+            return False
+    else:
+        data = json.dumps({'data':'None'})
     name = 'spio_stats'
     spio = db.session.query(ScorpioStats).filter_by(expid=expid, name=name).first()
     if spio:
