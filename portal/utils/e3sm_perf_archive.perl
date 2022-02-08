@@ -192,6 +192,10 @@ Optional arguments:
     $system = "summit";
     $center = "summit";
   }
+  elsif ($host =~ m/^jenkins\S*/){
+    $system = "summit";
+    $center = "summit";
+  }
   elsif ($host =~ m/^theta\S*/){
     $system = "theta";
     $center = "theta";
