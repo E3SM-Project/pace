@@ -1,0 +1,117 @@
+{% extends "layout.html" %}
+{% block topscripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+{% endblock %}
+{% block content %}
+
+<p>
+    <div style="overflow:hidden; border: 4px solid black; margin-bottom:75px">
+        <h3 style="text-align:center">Resident Memory Profile, RSS </h3>
+        <details>
+            <summary style="text-align:center; cursor: pointer;"><u>Details...</u></summary>
+        </details>
+        <br>
+        <canvas id="lineChartRSSTag"></canvas>
+    </div>
+</p>
+
+<p>
+    <div style="overflow:hidden; border: 4px solid black; margin-bottom:75px">
+        <h3 style="text-align:center">Vistual Memory Profile, VSZ </h3>
+        <details>
+            <summary style="text-align:center; cursor: pointer;"><u>Details...</u></summary>
+        </details>
+        <br>
+        <canvas id="lineChartVSZTag"></canvas>
+    </div>
+</p>
+<script>
+
+    var colorSeq = ["#882E72","#1965B0","#7BAFDE","#4EB265","#CAE0AB","#F7F056","#F4A736","#E8601C","#DC050C","#72190E"]
+    
+    var RSS = {{RSS|tojson}}
+    var TOD = {{TOD}}
+    var VSZ = {{VSZ|tojson}}
+
+    var lineChartRSS = new Chart(lineChartRSSTag,{
+        type: 'line',
+        data:{
+            labels: TOD,
+        },
+        options: {
+            responsive: true,
+            scales: {
+                yAxes:[{
+                    scaleLabel:{
+                        display:true,
+                        fontSize:18,
+                        labelString:"Resident Memory, RSS (MB)"
+                    }
+                }],
+                xAxes:[{
+                    scaleLabel:{
+                        display:true,
+                        fontSize:18,
+                        labelString: "YYYYMMDD"
+                    }
+                }]
+            }
+        },
+    });
+    var i = 0
+    for (var key in RSS){
+        lineChartRSS.data.datasets[i] = {
+            label: key,
+            data: RSS[key],
+            fill: false,
+            borderColor: colorSeq[i],
+            backgroundColor: colorSeq[i],
+            borderWidth: 1
+        }
+        i++;
+    }
+
+    var lineChartVSZ = new Chart(lineChartVSZTag,{
+        type: 'line',
+        data:{
+            labels: TOD,
+        },
+        options: {
+            responsive: true,
+            scales: {
+                yAxes:[{
+                    scaleLabel:{
+                        display:true,
+                        fontSize:18,
+                        labelString:"Virtual Memory, VSZ (MB)"
+                    }
+                }],
+                xAxes:[{
+                    scaleLabel:{
+                        display:true,
+                        fontSize:18,
+                        labelString: "YYYYMMDD"
+                    }
+                }]
+            }
+        },
+    });
+    var i = 0
+    for (var key in VSZ){
+        lineChartVSZ.data.datasets[i] = {
+            label: key,
+            data: VSZ[key],
+            fill: false,
+            borderColor: colorSeq[i],
+            backgroundColor: colorSeq[i],
+            borderWidth: 1
+        }
+        i++;
+    }
+    
+    lineChartRSS.update()
+    lineChartVSZ.update()
+
+    
+</script>
+{% endblock %}
