@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Tue Dec 12 13:31:44 2017
@@ -25,7 +25,8 @@ import matplotlib.patches as patches
 from matplotlib.pyplot import cm
 import datetime
 #If converting this to python 3, use io.StringIO (if supported by python 3's matplotlib)
-import StringIO
+#import StringIO
+from io import StringIO
 ###############################################################################
 ###                           Options                                       ###
 ##
@@ -60,11 +61,11 @@ class pe_component(object):
         self.plot_patch = None
         self.fullstop = None
         self.values = valuesIn
-        if "tasks" in self.values.keys() and "root_pe" in self.values.keys():
+        if "tasks" in list(self.values.keys()) and "root_pe" in list(self.values.keys()):
             self.root_task_sum = self.values["tasks"] + self.values["root_pe"]
             #print(self.name+": "+str([self.values["root_pe"],self.root_task_sum]))
     def __str__(self):
-        print self.name
+        print((self.name))
 
     def add2plot(self,ax,bdims,displayLabel):
         self.plot_patch = patches.Rectangle(bdims[0:2], bdims[2],bdims[3],color=self.color)
@@ -81,21 +82,21 @@ def check_defaults(arg):
     # Pass a dictionary of all the arguments.  If any will cause an error then
     # change to default value.  Or kill run
     if not arg.get('dtype') in ("seconds","model_day","model_years"):
-        print "ERROR: data type "+arg.get('dtype')+" not supported... "+\
-                "changing to default data type = seconds"
+        print(("ERROR: data type "+arg.get('dtype')+" not supported... "+\
+                "changing to default data type = seconds"))
         arg['dtype'] = "seconds"
     for ii in arg.get('comps'):
         if not ii in ('ICE','LND','ROF','WAV','OCN','ATM','GLC','CPL'):
-            print """%s not a supported component please check my_comps variable
+            print("""%s not a supported component please check my_comps variable
             Consider using default of:\n
-            ['ICE','LND','ROF','WAV','OCN','ATM','GLC','CPL']"""
+            ['ICE','LND','ROF','WAV','OCN','ATM','GLC','CPL']""")
             return True
     if not len(arg.get('fullstop')) == len(arg.get('comps')):
-        print "my_comps and full_stop are not equal in length.  Setting to " +\
-                "default full_stop of all False"
+        print(("my_comps and full_stop are not equal in length.  Setting to " +\
+                "default full_stop of all False"))
         arg['fullstop'] = False*len(arg.get('comps'))
     if not len(arg.get('color')) == len(arg.get('comps')):
-        print "Not all components have a designated color. Setting to default"
+        print("Not all components have a designated color. Setting to default")
         arg['color'] = cm.rainbow(np.linspace(0,1,len(arg.get('comps'))))
     arg['color'] = iter(arg.get('color'))
     if not arg.get('figname'):
@@ -112,7 +113,7 @@ def render(runtimeIn,opt_dict = None):
         opt_dict = default_args.copy()
     errorflag = check_defaults(opt_dict)
     if errorflag:
-        print "Error with options, cancelling run."
+        print("Error with options, cancelling run.")
         quit()
     ## Load data and create plot
     comp_data = list()
@@ -190,7 +191,7 @@ def render(runtimeIn,opt_dict = None):
         ax.text(1.05,0.5,layout,fontsize=16)
 
     #Save to a file object:
-    fileObj = StringIO.StringIO()
+    fileObj = StringIO()
     plt.savefig(fileObj,dpi=400,bbox_inches='tight',facecolor="#00000000")
     fileObj.seek(0)
     return fileObj

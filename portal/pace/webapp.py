@@ -1,30 +1,31 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 from flask import Flask,render_template,Response,make_response,send_from_directory,request,redirect,url_for, session
 from collections import OrderedDict
 from pace import app
-import parse as parse
+#import parse as parse
+from . import parse
 import sys
 import collections
 import operator
 import json
 import urllib
 from sqlalchemy.orm import sessionmaker
-from __init__ import db
+from . __init__ import db
 import os, shutil, distutils
 import re
 
 #Model Timing Library:
-import modelTiming as mt
+from pace.e3sm.e3smParser import parseModelTiming
 #modelTiming database information:
-from pace_common import *
+from . pace_common import *
 
 from sqlalchemy.exc import SQLAlchemyError
 #github imports
 import binascii
 from rauth import OAuth2Service
 from . import tabulatorjson
-from . import xmljson2tabulator
+# from . import xmljson2tabulator
 
 GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET = getGithubkey()
 
@@ -44,17 +45,17 @@ PACE_LOG_DIR,EXP_DIR,UPLOAD_FOLDER = getDirectories()
 # Uploading file
 from werkzeug.utils import secure_filename
 import os
-from datastructs import *
+from pace.e3sm.e3smDb.datastructs import *
 
 #These charts were modified for use on PACE
 #Runtime image generator: by donahue5
-import pe_layout_timings as runtimeSvg
-
+#from . pe_layout_timings import pe_layout_timings as runtimeSvg
+from pace import pe_layout_timings
 #This is for querying colors:
 from matplotlib.colors import to_rgb,to_hex
 import matplotlib.cm as cm
 
-mplColors = cm.datad.keys()
+mplColors = list(cm.datad.keys())
 
 # Home page
 @app.route("/")
@@ -89,7 +90,7 @@ def upload_file():
                 if os.path.exists(os.path.join(UPLOAD_FOLDER,zipfilename)):
                     os.remove(os.path.join(UPLOAD_FOLDER,zipfilename))
             except OSError as e:
-                print ("Error: %s - %s." % (e.filename, e.strerror))
+                print(("Error: %s - %s." % (e.filename, e.strerror)))
             filename = secure_filename(file.filename)
             file.save(os.path.join(UPLOAD_FOLDER, filename))
             return('complete')
@@ -102,6 +103,7 @@ def fileparse():
     if request.method == 'POST':
         filename = request.form['filename']
         user = request.form['user']
+        project = request.form['project']
         if not bool(re.match('^[a-zA-Z0-9\-._]+$', user)):
             return('ERROR')
         # Check zip file names from pace-upload
@@ -110,7 +112,7 @@ def fileparse():
         # pace-exps-user-timestamp.zip
         if not bool(re.match('^pace-exps-[a-zA-Z0-9\-_]+.zip$', filename)):
             return('ERROR')
-        return(parse.parseData(filename,user))
+        return(parse.parseData(filename,user,project))
 
 @app.route('/downloadlog', methods=['POST'])
 def downloadlog():
@@ -282,9 +284,9 @@ def summaryQuery(expID,rank,getFullStats = ""):
         basePath+="assets/"
     basePath+="static/samples/"
     if expID == "-1":
-        resultNodes = mt.parse(basePath+"model_timing.0000.new")
+        resultNodes = parseModelTiming.parse(basePath+"model_timing.0000.new")
     elif expID == "-2":
-        resultNodes = mt.parse(basePath+"model_timing_stats")
+        resultNodes = parseModelTiming.parse(basePath+"model_timing_stats")
     else:
         resultNodes = db.engine.execute("select jsonVal from model_timing where expid = "+str(expID)+ " and rank = '"+rank+"'").fetchall()[0].jsonVal
         #Get user and machine information:
@@ -316,6 +318,41 @@ def flameGraph(expid,rank):
     if bool(re.match('^[0-9,]+$', rank)) and bool(re.match('^[0-9,]+$', expid)):
       return render_template("flameGraph.html",expid=expid,rank=rank.split(','))
 
+@app.route("/scorpio/<int:mexpid>")
+def scorpioIOStat(mexpid):
+    #get data
+    try:
+        if not isinstance(mexpid,int):
+            return render_template('error.html')
+        scorpio_data = db.engine.execute("select data from scorpio_stats where name = 'spio_stats' and expid="+str(mexpid)).first()
+        scorpio_json_data = json.loads(scorpio_data[0])
+        
+        myexp = db.engine.execute("select * from e3smexp where expid= "+ str(mexpid) ).fetchall()[0]
+        modelRuntime = myexp.run_time
+
+        overalData = scorpio_json_data["ScorpioIOSummaryStatistics"]["OverallIOStatistics"]
+        
+        modelData = scorpio_json_data["ScorpioIOSummaryStatistics"]["ModelComponentIOStatistics"]
+
+        fileIOData = scorpio_json_data["ScorpioIOSummaryStatistics"]["FileIOStatistics"]
+
+        readIOData = []
+        writeIOData = []
+
+        for fdata in fileIOData:
+            if fdata['tot_rtime(s)']!=0:
+                readIOData.append(fdata)
+            if fdata['tot_wtime(s)']!=0:
+                writeIOData.append(fdata)
+
+    except Exception as e:
+        print('Error:')
+        print(e)
+        return render_template('error.html')
+    return render_template('scorpioIOpage.html', overalData = overalData, modelData = modelData,
+                            readIOData=readIOData,writeIOData=writeIOData, modelRuntime = modelRuntime)
+
+
 @app.route("/exp-details/<int:mexpid>")
 def expDetails(mexpid):
     myexp = None
@@ -333,14 +370,52 @@ def expDetails(mexpid):
     myruntime = db.engine.execute("select * from runtime where expid= "+ str(mexpid) ).fetchall()
     ranks = db.engine.execute("select rank from model_timing where rank!= 'stats' and expid= "+ str(mexpid) + " order by cast(rank as int)" ).fetchall()
     colorDict = {}
-    for i in range(len(runtimeSvg.default_args['comps'])):
-        colorDict[runtimeSvg.default_args['comps'][i]] = runtimeSvg.default_args['color'][i]
+    for i in range(len(pe_layout_timings.default_args['comps'])):
+        colorDict[pe_layout_timings.default_args['comps'][i]] = pe_layout_timings.default_args['color'][i]
     try:
         noteexp = db.engine.execute("select * from expnotes where expid= "+ str(mexpid) ).fetchall()[0]
         note = noteexp.note
     except IndexError:
         note=""
-    return render_template('exp-details.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
+    runtimes=[]
+    for runs in myruntime:
+        run = {
+            'component':runs[2],
+            'seconds':float(runs[3]),
+            'model_day':float(runs[4]),
+            'model_years':float(runs[5])
+        }
+        runtimes.append(run)
+    return render_template('exp-details.html', runtimes = runtimes,exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
+            ranks = ranks,chartColors = json.dumps(colorDict),note=note, \
+            xmls = myxmls, nmls = mynmls, rcs = myrcs \
+            )
+
+@app.route("/exp-details-old/<int:mexpid>")
+def expDetailsOld(mexpid):
+    myexp = None
+    myxmls = None
+    mynmls = None
+    myrcs = None
+    try:
+        myexp = db.engine.execute("select * from e3smexp where expid= "+ str(mexpid) ).fetchall()[0]
+        myxmls = db.engine.execute("select name from xml_inputs where expid= "+ str(mexpid) ).fetchall()
+        mynmls = db.engine.execute("select name from namelist_inputs where expid= "+ str(mexpid) ).fetchall()
+        myrcs = db.engine.execute("select name from rc_inputs where expid= "+ str(mexpid) ).fetchall()
+    except IndexError:
+        return render_template('error.html')
+    mypelayout = db.engine.execute("select * from pelayout where expid= "+ str(mexpid) ).fetchall()
+    myruntime = db.engine.execute("select * from runtime where expid= "+ str(mexpid) ).fetchall()
+    ranks = db.engine.execute("select rank from model_timing where rank!= 'stats' and expid= "+ str(mexpid) + " order by cast(rank as int)" ).fetchall()
+    colorDict = {}
+    for i in range(len(pe_layout_timings.default_args['comps'])):
+        colorDict[pe_layout_timings.default_args['comps'][i]] = pe_layout_timings.default_args['color'][i]
+    try:
+        noteexp = db.engine.execute("select * from expnotes where expid= "+ str(mexpid) ).fetchall()[0]
+        note = noteexp.note
+    except IndexError:
+        note=""
+    return render_template('exp-details-old.html', exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
             ranks = ranks,chartColors = json.dumps(colorDict),note=note, \
             xmls = myxmls, nmls = mynmls, rcs = myrcs \
             )
@@ -625,7 +700,7 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
         #Remove empty strings: (spaces on the client side)
         while '' in termList:
             termList.remove('')
-        #print(termList)
+        
 
         if(len(termList) > 0):
             queryStr = "select " + str(specificVariables).strip("[]").replace("'","") + " from e3smexp where "
@@ -677,7 +752,7 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
                 break
         if unique:
             resultDict = {}
-            for key in element.keys():
+            for key in list(element.keys()):
                 resultDict[key] = str(element[key])
             filteredItems.append(resultDict)
 
@@ -800,13 +875,13 @@ def getRuntimeSvg(expid):
         for element in runtimeQuery:
             #These Decimal objects don't have "precision" values, while the ones in searchCore do... :/ [probably because of how these were queried]
             resultElement[element.component] = {"seconds":float(element.seconds),"model_years":float(element.model_years),"model_day":float(element.model_day)}
-        for key in resultElement.keys():
+        for key in list(resultElement.keys()):
             peQuery = db.engine.execute("select root_pe,tasks from pelayout where expid = "+str(expid)+" and component like '%%"+key+"%%'").fetchall()
             if len(peQuery) > 0:
                 resultElement[key]["root_pe"] = peQuery[0].root_pe
                 resultElement[key]["tasks"] = peQuery[0].tasks -1
-        if len(resultElement.keys()) > 0:
-            return Response(runtimeSvg.render(resultElement).read(),mimetype="image/svg+xml")
+        if len(list(resultElement.keys())) > 0:
+            return Response(pe_layout_timings.render(resultElement).read(),mimetype="image/svg+xml")
         else:
             return render_template('error.html'), 404
     except SQLAlchemyError:
@@ -816,7 +891,85 @@ def getRuntimeSvg(expid):
 def atmosChart(expids):
     if not bool(re.match('^[0-9,]+$', expids)):
         return render_template('error.html')
-    return render_template("atmos.html",expids = expids)
+    atm_timer = [
+        "a:moist_convection",
+        "a:macrop_tend",
+        "a:tphysbc_aerosols",
+        "a:microp_aero_run",
+        "a:microp_tend",
+        "a:radiation",
+        "a:phys_run2",
+        "a:stepon_run3",
+        "a:stepon_run1",
+        "a:stepon_run2",
+        "a:wshist",
+        "CPL:ATM_RUN"
+    ]
+    sampleModel = {
+        'children': [],
+        'multiParent': False,
+        'name': '',
+        'values':{
+            'count': 0,
+            'on': False,
+            'processes': 0,
+            'threads': 0,
+            'wallmax': 0,
+            'wallmax_proc': 0,
+            'wallmax_thrd': 0,
+            'wallmin': 0,
+            'wallmin_proc': 0,
+            'wallmin_thrd': 0,
+            'walltotal': 0
+        }
+    }
+    expidlist = expids.split(',')
+    for id in expidlist:
+        try:
+            expid = int(id)
+        except:
+            return render_template('error.html')
+    try:
+        # single experiment detail page
+        if len(expidlist)==1:
+            resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expidlist[0],)).fetchall()[0].jsonVal
+            data = json.loads(resultNodes)
+            
+            result = {}
+            for model in data[0]:
+                if model['name'] in atm_timer:
+                    result[model['name']] = model
+                elif model['name'] == "a:bc_aerosols":
+                    result['a:tphysbc_aerosols'] = model   
+            
+            for name in atm_timer:
+                if name not in result:
+                    sampleModel['name'] = name
+                    result[name] = sampleModel
+            return render_template("atmos.html",expids = expidlist[0], rd = result)
+        # compare atm page
+        else:
+            output = {}
+            for expid in expidlist:
+                resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expid,)).fetchall()[0].jsonVal
+                data = json.loads(resultNodes)
+                result = {}
+                for model in data[0]:
+                    if model['name'] in atm_timer:
+                        result[model['name']] = model
+                    elif model['name'] == "a:bc_aerosols":
+                        result['a:tphysbc_aerosols'] = model 
+                
+                for name in atm_timer:
+                    if name not in result:
+                        sampleModel['name'] = name
+                        result[name] = sampleModel
+                output[expid] = result
+            return render_template('atmosCompare.html', expids = expidlist, rd = output)
+    except:
+        return render_template('error.html')
+    
+
 
 @app.route("/xmlviewer/<int:mexpid>/<mname>")
 def xmlViewer(mexpid, mname):

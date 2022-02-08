@@ -1,4 +1,4 @@
-##
+#! /usr/bin/env python3
 # @file modelTiming.py
 # @brief Parse files that come from GPTL into JSON for storing in DB.
 # @author Zachary Mitchell, Sarat Sreepathi
@@ -67,8 +67,8 @@ def loadConfig(files,appendLocation = None):
     #Add json to targetConfig
     def appendJson(jsonFile):
         srcJson = json.loads(jsonFile.read())
-        for key in srcJson.keys():
-            if key not in targetConfig.keys():
+        for key in list(srcJson.keys()):
+            if key not in list(targetConfig.keys()):
                 targetConfig[key] = srcJson[key]
     #Check if this is a valid json file
     def isJsonFile(path):
@@ -76,20 +76,19 @@ def loadConfig(files,appendLocation = None):
         return os.path.isfile(path) and len(jsonTest) > 1 and jsonTest[1] == "json"
 
     fileList = []
-    if type(files) == types.ListType:
+    if type(files) == list:
         fileList = files
     else:
         fileList.append(files)
     for element in fileList:
         if type(element) == types.FileType:
             appendJson(element)
-        elif type(element) == types.StringType:
+        elif type(element) == bytes:
             #Figure out if it's a directory or not:
             if isJsonFile(element):
                 appendJson(open(element))
             elif os.path.isdir(element):
                 for filePath in listdir(element):
-                    # print(element+"/"+filePath)
                     if isJsonFile(element+"/"+filePath):
                         appendJson(open(element+"/"+filePath))
     return targetConfig
@@ -105,24 +104,21 @@ def detectMtFile(fileObj,configList = parserConfigs):
     # Initialize matching file scores and column scores to zero for each configuration
     filescore = []
     colscore = []
-    for key in configList.keys():
+    for key in list(configList.keys()):
         for config in configList[key]:
             myconfigIdx = configList[key].index(config)
             filescore.append(0)
             colscore.append(0)
-
     currLine = fileObj.readline()
     while not currLine == "":
         lineCount+=1
         #Scan every line to find everything we should know about the file:
         if targetConfig == None:
-            for key in configList.keys():
+            for key in list(configList.keys()):
                 for config in configList[key]:
                     myconfigIdx = configList[key].index(config)
                     #Check to see if all of the file Identifiers showed up in this line:
                     for fileID in config["fileIdentifiers"]:
-                        # print "Checking identifier :" + fileID
-                        # print "currLine: " + currLine
                         if fileID in currLine:
                             filescore[myconfigIdx] += 1
                             # print fileID + " is present, filescore: " + str(filescore)
@@ -155,37 +151,28 @@ def detectMtFile(fileObj,configList = parserConfigs):
             #if targetConfig["startMarker"][0] in currLine:
             if currLine.startswith(targetConfig["startMarker"][0]):
                 threadIndexes.append(lineCount+targetConfig["startMarker"][1])
-                # print threadIndexes
         currLine = fileObj.readline()
     #Reset the file & read from the new thread indexes
     fileObj.seek(0,0)
     # DEBUG: Start here to check which parser config is being used
-    # print "DEBUG: GPTL parser config: " + str(targetConfig)
-    # print "DEBUG: GPTL thread indexes: " + str(threadIndexes)
     return threadIndexes,targetConfig
 
 def getData(src,configList = parserConfigs):
     #Check if src is a string, otherwise attempt to read from a file object:
     sourceFile=None
-    if type(src) == types.StringType:
-        sourceFile = open(src,"r")
+    if isinstance(src, str):
+        sourceFile = open(src,"rt")
     else:
         sourceFile = src
     lineCount = 0
     resultLines=[]
-
     threadIndexes,fileConfig = detectMtFile(sourceFile,configList)
-
     for line in threadIndexes:
         resultLines.append([])
         firstItr = True
         while True:
             lineCount+=1
-            # Debug
-            # print lineCount
             currLine = sourceFile.readline()
-            # Debug
-            # print currLine
             if lineCount >= line:
                 # Sarat (added Nov 22, 2020): To address an infinite loop while handling certain model_global_stats files.
                 # Current parser was unable to detect end of file
@@ -276,15 +263,14 @@ def parseNode(lineInput,config,currLine=0,parent=None):
 def parseThread(thread,config):
     if len(thread) == 0:
         return []
-    elif type(thread[0][0]) == types.StringType:
+    elif isinstance(thread[0][0],str):
         resultNodes = []
         for nodes in thread:
             resultNodes.append(parseNode(nodes,config))
         return resultNodes
-    elif type(thread[0][0]) == types.ListType:
+    elif type(thread[0][0]) == list:
         resultThreads=[]
         for element in thread:
-            # print (element)
             resultThreads.append(parseThread(element,config))
         return resultThreads
 
@@ -294,7 +280,7 @@ def typeResolver(mtObj):
     The function returns a dictionary of values that come from either timeNode objects, or json files.
     """
     output = {"name":None,"values":None,"children":None}
-    if type(mtObj) == types.DictType:
+    if type(mtObj) == dict:
             output["name"] = mtObj["name"]
             output["children"] = mtObj["children"]
             output["values"] = mtObj["values"]
@@ -308,7 +294,7 @@ def typeResolver(mtObj):
 def searchNode(nodeIn,name):
     #A little tweak to make things compatible with lists...
     nodeList = []
-    if type(nodeIn) == types.ListType:
+    if type(nodeIn) == list:
         nodeList = nodeIn
     else:
         nodeList.append(nodeIn)
@@ -332,8 +318,8 @@ def searchNode(nodeIn,name):
 #Recursively convert your nodes into JSON.
 def toJson(nodeIn,useBrackets=True):
     resultString=''
-    if type(nodeIn) == types.ListType:
-        if len(nodeIn) > 0 and type(nodeIn[0]) == types.ListType:
+    if type(nodeIn) == list:
+        if len(nodeIn) > 0 and type(nodeIn[0]) == list:
             #Aha! we have a multi-threaded collection:
             for i in range(len(nodeIn)):
                 resultString+=toJson(nodeIn[i])
@@ -357,7 +343,6 @@ def parse(fileIn,configList = parserConfigs,returnLayer=2):
     if returnLayer == 0:
         return nodeLines
     resultThreads = parseThread(nodeLines,config)
-    # print "Debug: parse thread done"
     if returnLayer == 1:
         return resultThreads
     return toJson(resultThreads)

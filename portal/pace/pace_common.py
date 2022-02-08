@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # @file pace_common.py
 # @brief: Common helper functions for PACE
 #
@@ -22,7 +22,8 @@ import stat
 from stat import *
 import getpass
 import codecs
-from ConfigParser import RawConfigParser
+#from ConfigParser import RawConfigParser
+from configparser import RawConfigParser
 # SafeConfig parser does interpolation - refer to other desctions of file as %(foo)
 # This causes problems with strings containing % - e.g., password
 # from ConfigParser import SafeConfigParser
@@ -88,10 +89,9 @@ def getMiniokey():
     myMiniourl = None
 
     filePerms = oct(os.stat(configFile)[ST_MODE])
-    if filePerms != '0100600':
-        print bcolors.WARNING + "Config file permissions should be set to read, write for owner only"
-        print "Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC
-    # print filePerms
+    if filePerms not in ['0o100600']:
+        print((bcolors.WARNING + "Config file permissions should be set to read, write for owner only"))
+        print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
     parser = RawConfigParser()
     parser.read(configFile)
     myAkey = parser.get('MINIO','minio_access_key')
@@ -106,10 +106,9 @@ def getGithubkey():
     myClientsecret = None
 
     filePerms = oct(os.stat(configFile)[ST_MODE])
-    if filePerms != '0100600':
-        print bcolors.WARNING + "Config file permissions should be set to read, write for owner only"
-        print "Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC
-    # print filePerms
+    if filePerms not in ['0o100600']:
+        print((bcolors.WARNING + "Config file permissions should be set to read, write for owner only"))
+        print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
     parser = RawConfigParser()
     parser.read(configFile)
     myClientid = parser.get('GITHUBAPP','githubapp_client_id')
@@ -120,10 +119,9 @@ def getGithubkey():
 def readConfigFile(configFile):
     global PACE_USER
     filePerms = oct(os.stat(configFile)[ST_MODE])
-    if filePerms != '0100600':
-        print bcolors.WARNING + "Config file permissions should be set to read, write for owner only"
-        print "Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC
-        # print filePerms
+    if filePerms not in ['0o100600']:
+        print((bcolors.WARNING + "Config file permissions should be set to read, write for owner only"))
+        print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
 
     parser = RawConfigParser()
     parser.read(configFile)
@@ -142,12 +140,12 @@ def initDatabase():
     configFile = detectPaceRc()
 
     if configFile:
-        print "Reading configuration from " + configFile
+        print(("Reading configuration from " + configFile))
         myuser,mypwd,mydb,myhost = readConfigFile(configFile)
     else:
-        print bcolors.WARNING + "For convenience, you should create your configuration (.pacerc) using the template pacerc.tmpl"
-        print "Alternately, you can enter your credentials below." + bcolors.ENDC
-        myuser = raw_input('Username: ')
+        print((bcolors.WARNING + "For convenience, you should create your configuration (.pacerc) using the template pacerc.tmpl"))
+        print(("Alternately, you can enter your credentials below." + bcolors.ENDC))
+        myuser = input('Username: ')
         mypwd = getpass.getpass()
         mydb = 'pace'
         myhost = 'localhost'

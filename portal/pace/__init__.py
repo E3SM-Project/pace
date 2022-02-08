@@ -1,12 +1,14 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 from flask import Flask
 #from flask import render_template
-from pace_common import *
+from . pace_common import *
 from flask_sqlalchemy import SQLAlchemy
 
 # Import the fixer
-from werkzeug.contrib.fixers import ProxyFix
+#from werkzeug.contrib.fixers import ProxyFix
+#deprecated new fixer
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Uploading file
 #from flask import request,redirect,url_for
@@ -35,4 +37,4 @@ app.secret_key = 'p\xcb\xd8\x81z\xa5)D\x14(\x8dJ\nvjdb\x82\x9a\x8dH\rg='
 # import pace.webapp
 if __name__ == "__main__":
     app.run()
-from webapp import *
+from . webapp import *
