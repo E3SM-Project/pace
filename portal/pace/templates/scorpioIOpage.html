@@ -1,0 +1,546 @@
+{% extends "layout.html" %}
+{% block content %}
+{% block topcontent %}
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<link href="https://unpkg.com/tabulator-tables@5.0.7/dist/css/tabulator.min.css" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.0.7/dist/js/tabulator.min.js"></script>
+<style>
+    tr:nth-child(even) {background-color: #f2f2f2;}
+</style>
+{% endblock topcontent %}
+<p>
+    <div style="overflow: hidden; border:4px solid black; margin-bottom:75px">
+        <h3 style="text-align:center">Scorpio I/O Performance Statistics</h3>
+        <details>
+            <summary style="text-align:center; cursor:pointer"><u>read more...</u></summary>
+            <div id="variableDescription-table" style="margin-top:25px; margin-bottom: 25px"></div>
+            <div id="modelComponentDescription-table" style="margin-top:25px; margin-bottom: 25px"></div>
+        </details>
+    </div>
+</p>
+<p>
+    <div style="overflow: hidden; border:4px solid black">
+        <h3 style="text-align:center">Overall I/O Summary Statistics</h3>
+        <details>
+            <summary style="text-align:center; cursor:pointer"><u>read more...</u></summary>
+            <h6 style="text-align:center; margin-top:25px">This object contains the overall I/O performance statistics for the application.</h6>
+        </details>
+        <div id="overallIO-table" style="margin-top:25px; margin-bottom: 25px"></div>
+        <div id="otput" style="border:1px solid black; border-radius: 25px"></div>
+        <div id="otimes" style="border:1px solid black; border-radius: 25px"></div>
+        <div id="obytes" style="border:1px solid black; border-radius: 25px"></div>
+    </div>
+</p>
+<br>
+<p>
+    <div style="border:4px solid black; margin-top:50px">
+        <h3 style="text-align:center">Model Component I/O Statistics</h3>
+        <details>
+            <summary style="text-align:center; cursor:pointer"><u>read more...</u></summary>
+            <h6 style="text-align:center; margin-top:25px">An array of objects, each object containing the I/O performance statistics for a single model component.</h6>
+        </details>
+        <div id="modelIO-table" style="margin-top:25px"></div>
+        <p>
+            <div id="tput" style="border:1px solid black; border-radius: 25px"></div>
+        </p>
+        <p>
+            <div id="times" style="border:1px solid black; border-radius: 25px"></div>
+        </p>
+        <p>
+            <div id="bytes" style="border:1px solid black; border-radius: 25px"></div>
+        </p>
+    </div>
+</p>
+
+<div style="border:4px solid black; margin-top:75px; margin-bottom:100px;">
+    <h3 style="text-align:center">File I/O Statistics</h3>
+    <details>
+        <summary style="text-align:center; cursor:pointer">read more...</summary>
+        <h6 style="text-align:center">An array of objects, each object containing the I/O performance statistics for a single file.</h6>
+    </details>           
+    <h5 style="text-align:left" style="margin-top: 20px;">Write File I/O Statistics</h5>
+    <div id="writefile-table" style="margin-top:25px"></div>
+    <br>
+    <h5 style="text-align:left" style="margin-top: 25px;">Read File I/O Statistics</h5>
+    <div id="readfile-table" style="margin-top:25px"></div>
+</div>
+
+
+
+<script type="text/javascript">
+// global variable for data
+var model_runtime = {{modelRuntime}}
+var overalTableData = [{{overalData|tojson}}];
+var modeltabledata={{modelData|tojson}};
+var writeFileTableData = {{writeIOData|tojson}};
+var readFileTableData = {{readIOData|tojson}};
+
+var fieldDic = {
+    "name":"Name",
+    "avg_wtput":"Avg Write Throughput(MB/s)",
+    "avg_rtput":"Avg Read Throughput(MB/s)",
+    "tot_wb":"Total Write Size(GB)",
+    "tot_rb":"Total Read Size(GB)",
+    "tot_wtime":"Total Write Time(s)",
+    "tot_rtime":"Total Read Time(s)",
+    "tot_time":"Total Time(s)"
+};
+
+var variableDescriptionData = [
+    {
+        "Field" : "avg_wtput",
+        "Description" : "Avg Write Throughput",
+        "Comments" : "Average throughput (total bytes written/time taken by slowest process) in MB/s ."
+    },
+    {
+        "Field" : "avg_rtput",
+        "Description" : "Avg Read Throughput",
+        "Comments" : "Average throughput (total bytes read/time taken by slowest process) in MB/s"
+    },
+    {
+        "Field" : "tot_wb",
+        "Description" : "Total Write Size",
+        "Comments" : "Total size written out to the file system"
+    },
+    {
+        "Field" : "tot_rb",
+        "Description" : "Total Read Size",
+        "Comments" : "Total size read (Total size read to all the compute processes)"
+    },
+    {
+        "Field" : "tot_wtime",
+        "Description" : "Total Write Time",
+        "Comments" : "Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."
+    },
+    {
+        "Field" : "tot_rtime",
+        "Description" : "Total Read Time",
+        "Comments" : "Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."
+    },
+    {
+        "Field" : "tot_time",
+        "Description" : "Total Time",
+        "Comments" : "Total wallclock time spent in seconds. This can be considered as an upper bound on the total time spent inside Scorpio by the slowest process."
+    }
+]
+
+var modelComponentDescriptionData = [
+    {
+        "Field":"COMP_CPL: CPL",
+        "Comments":"The Coupler Component"
+    },
+    {
+        "Field":"COMP_ATM: EAM",
+        "Comments":"The E3SM Atmosphere Component"
+    },
+    {
+        "Field":"COMP_OCN: MPASO",
+        "Comments":"The MPAS Ocean Component"
+    },
+    {
+        "Field":"COMP_OCN: OCN",
+        "Comments":"The Data Ocean Component"
+    },
+    {
+        "Field":"COMP_LND: ELM",
+        "Comments":"The E3SM Land Component"
+    },
+    {
+        "Field":"COMP_ROF: MOSART",
+        "Comments":"The MOSART River Component"
+    },
+    {
+        "Field":"COMP_ROF: ROF",
+        "Comments":"The ROF River Component"
+    },
+    {
+        "Field":"COMP_GLC: MPASLI",
+        "Comments":"The MPAS Land Ice Component"
+    },
+    {
+        "Field":"COMP_GLC: GLC",
+        "Comments":"The GLC Land Ice Component"
+    },
+    {
+        "Field":"COMP_ICE: MPASSI",
+        "Comments":"The MPAS Sea Ice Component"
+    },
+    {
+        "Field":"COMP_ICE: ICE",
+        "Comments":"The Data Sea Ice Component"
+    },
+    {
+        "Field":"COMP_WAV: WAV",
+        "Comments":"The Wave Component"
+    },
+    {
+        "Field":"UNKNOWN:SPIO_COMP_xxxxxxidxxtasksxxioxx_tmp_name",
+        "Comments":"The Model Components are given a unique name by default and this format is used to name and include the statistics for the E3SM model components that are not auto detected by Scorpio. e.g. UNKNOWN:SPIO_COMP_002049id32tasks02io01_tmp_name"
+    }
+
+]
+
+// overal description table
+var varDescriptiontable = new Tabulator("#variableDescription-table", {
+    data:variableDescriptionData,
+    layout:"fitDataFill",
+    columns:[
+    {title:"Field", field:"Field", hozAlign:"left"},
+    {title:"Description", field:"Description", hozAlign:"left"},
+    {title:"Comments", field:"Comments", hozAlign:"left"}
+    ],
+});
+
+// Model Componenet description table
+var modelCompDescriptiontable = new Tabulator("#modelComponentDescription-table", {
+    data:modelComponentDescriptionData,
+    layout:"fitDataFill",
+    columns:[
+    {title:"Model Component Field Name", field:"Field", hozAlign:"left"},
+    {title:"Comments", field:"Comments", hozAlign:"left"}
+    ],
+});
+
+//convert bytes to GB
+overalTableData[0]["tot_wb(GB)"] = bytesToGb(overalTableData[0]["tot_wb(bytes)"])
+overalTableData[0]["tot_rb(GB)"] = bytesToGb(overalTableData[0]["tot_rb(bytes)"])
+// overall data table creation
+var overallIOtable = new Tabulator("#overallIO-table", {
+    data:overalTableData,
+    tooltipsHeader:true,
+    layout:"fitDataStretch",
+    columns:[
+    {title:fieldDic["tot_time"], field:"tot_time(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number",headerTooltip:"Total wallclock time spent in seconds. This can be considered as an upper bound on the total time spent inside Scorpio by the slowest process"},
+    {title:fieldDic["tot_wtime"], field:"tot_wtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
+    {title:fieldDic["tot_rtime"], field:"tot_rtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
+    {title:fieldDic["avg_wtput"], field:"avg_wtput(MB/s)", sorter:"number", formatter:"money", formatterParams:{precision:2}, hozAlign:"right",headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
+    {title:fieldDic["avg_rtput"], field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
+    {title:fieldDic["tot_wb"], field:"tot_wb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
+    {title:fieldDic["tot_rb"], field:"tot_rb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
+    {title:fieldDic["name"], field:"name", hozAlign:"right"},
+    ],
+});
+
+// convert bytes to GB
+for (i = 0; i<modeltabledata.length; i++){
+    modeltabledata[i]["tot_wb(GB)"] = bytesToGb(modeltabledata[i]["tot_wb(bytes)"]);
+    modeltabledata[i]["tot_rb(GB)"] = bytesToGb(modeltabledata[i]["tot_rb(bytes)"]);
+}
+//model data table creation
+var modelIOtable = new Tabulator("#modelIO-table", {
+    data:modeltabledata,
+    tooltipsHeader:true,
+    layout:"fitDataStretch",
+    initialSort:[
+        {column:"tot_time(s)", dir:"desc"},
+    ],
+    columns:[
+    {title:fieldDic["tot_time"], field:"tot_time(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number",headerTooltip:"Total wallclock time spent in seconds. This can be considered as an upper bound on the total time spent inside Scorpio by the slowest process"},
+    {title:fieldDic["tot_wtime"], field:"tot_wtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
+    {title:fieldDic["tot_rtime"], field:"tot_rtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
+    {title:fieldDic["avg_wtput"], field:"avg_wtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
+    {title:fieldDic["avg_rtput"], field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
+    {title:fieldDic["tot_wb"], field:"tot_wb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
+    {title:fieldDic["tot_rb"], field:"tot_rb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
+    {title:fieldDic["name"], field:"name", hozAlign:"right"},
+    ],
+});
+modelIOtable.setFilter([
+    {field:"tot_time(s)", type:">", value:0.005}
+]);
+
+// convert bytes to GB
+for (i = 0; i<writeFileTableData.length; i++){
+    writeFileTableData[i]["tot_wb(GB)"] = bytesToGb(writeFileTableData[i]["tot_wb(bytes)"]);
+}
+//write file data table creation
+var writeFiletable = new Tabulator("#writefile-table", {
+    data:writeFileTableData,
+    tooltipsHeader:true,
+    layout:"fitDataStretch",
+    height:"315px",
+    initialSort:[
+        {column:"tot_wtime(s)", dir:"desc"},
+    ],
+    columns:[
+    {title:fieldDic["tot_wtime"], field:"tot_wtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},sorter:"number",headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
+    {title:fieldDic["avg_wtput"], field:"avg_wtput(MB/s)", sorter:"number", formatter:"money", formatterParams:{precision:2}, hozAlign:"right",headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
+    {title:fieldDic["tot_wb"], field:"tot_wb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
+    {title:fieldDic["name"], field:"name", hozAlign:"right"}
+    ],
+});
+
+// convert bytes to GB
+for (i = 0; i<readFileTableData.length; i++){
+    readFileTableData[i]["tot_rb(GB)"] = bytesToGb(readFileTableData[i]["tot_rb(bytes)"]);
+}
+//read file data table creation
+var readFiletable = new Tabulator("#readfile-table", {
+    data:readFileTableData,
+    tooltipsHeader:true,
+    layout:"fitDataStretch",
+    height:"315px",
+    initialSort:[
+        {column:"tot_rtime(s)", dir:"desc"},
+    ],
+    columns:[
+    {title:fieldDic["tot_rtime"], field:"tot_rtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number",headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
+    {title:fieldDic["avg_rtput"], field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
+    {title:fieldDic["tot_rb"], field:"tot_rb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
+    {title:fieldDic["name"], field:"name", hozAlign:"right"}
+    ],
+});
+
+//load google charts to create bar charts
+google.charts.load('current', {packages: ['corechart', 'bar']});
+google.charts.setOnLoadCallback(overalScorpioStackedTime);
+google.charts.setOnLoadCallback(overalScorpioStackedWRTime);
+google.charts.setOnLoadCallback(overalScorpioBarWRSize);
+google.charts.setOnLoadCallback(modelScorpioBarWRThroughput);
+google.charts.setOnLoadCallback(modelScorpioBarWRTime);
+google.charts.setOnLoadCallback(modelScorpioBarWRSize);
+
+
+// convert bytes to gb
+function bytesToGb(size){
+    if (size == 0){
+        return 0;
+    }
+    return size/1000000000;
+}
+
+// stacked percentage bar chart scorpio time vs model runtime
+function overalScorpioStackedTime() {
+        var tot_time = overalTableData[0]["tot_time(s)"]
+        var data = google.visualization.arrayToDataTable([
+            ['Name', 'scorpio_io_time', 'other'],
+            ['Scorpio', tot_time, (model_runtime - tot_time)]
+            ]);
+
+        var materialOptions = {
+            title: 'Scorpio IO time VS Model RunTime',
+            isStacked: 'percent',
+            
+            legend:{
+                position: 'bottom',
+                positionalignment: 'center'
+            },
+            hAxis: {
+            minValue: 0
+            },
+            vAxis: {
+                textPosition: 'out',
+            },
+            colors: ['#631492','#d39df2'],
+            bars: 'horizontal'
+        };
+        //var materialChart = new google.charts.Bar(document.getElementById('otput'));
+        var materialChart = new google.visualization.BarChart(document.getElementById('otput'));
+        materialChart.draw(data, materialOptions);
+}
+
+// stacked percentage bar chart scorpio write vs read vs scorpio time
+function overalScorpioStackedWRTime() {
+    var other_time = overalTableData[0]["tot_time(s)"]-(overalTableData[0]["tot_wtime(s)"]+overalTableData[0]["tot_rtime(s)"])
+    var data = google.visualization.arrayToDataTable([
+        ['Name', 'tot_wtimes', 'tot_rtimes', 'other'],
+        [overalTableData[0]["name"], overalTableData[0]["tot_wtime(s)"], overalTableData[0]["tot_rtime(s)"], other_time]
+    ]);
+
+    var materialOptions = {    
+        title: 'Write VS Read Scorpio IO Time',
+        isStacked: 'percent',
+        
+        legend:{
+            position: 'bottom',
+            positionalignment: 'center'
+        },
+        hAxis: {
+            minValue: 0,
+        },
+        vAxis: {
+            textPosition: 'out'
+        },
+        colors: ['#456990','#EF767A','#EEB868'],
+        bars: 'horizontal'
+    };
+    //var materialChart = new google.charts.Bar(document.getElementById('otimes'));
+    var materialChart = new google.visualization.BarChart(document.getElementById('otimes'));
+    materialChart.draw(data, materialOptions);
+}
+
+// horizontal bar chart write vs read size for overall summary
+function overalScorpioBarWRSize() {
+      var data = google.visualization.arrayToDataTable([
+        ['Name', 'tot_wb', 'tot_rb'],
+        [overalTableData[0]["name"], overalTableData[0]["tot_wb(bytes)"], overalTableData[0]["tot_rb(bytes)"]]
+      ]);
+
+      var materialOptions = {    
+        title: 'Total Write Size VS Total Read Size',
+        
+        legend:{
+            position: 'bottom',
+            positionalignment: 'center'
+        },
+        hAxis: {
+          minValue: 0,
+          logScale: true,
+          format: 'short',
+          textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        vAxis: {
+          textPosition: 'out'
+        },
+        colors: ['#456990','#EF767A'],
+        bars: 'horizontal'
+      };
+      //var materialChart = new google.charts.Bar(document.getElementById('obytes'));
+      var materialChart = new google.visualization.BarChart(document.getElementById('obytes'));
+      materialChart.draw(data, materialOptions);
+    }
+
+// horizontal bar chart write vs read throughput for model component
+function modelScorpioBarWRThroughput() {
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Name');
+      data.addColumn('number', 'avg_wtput');
+      data.addColumn('number', 'avg_rtput');
+      
+      for(let i = 0; i<modeltabledata.length; i++){
+        if(modeltabledata[i]["avg_wtput(MB/s)"]!=0 || modeltabledata[i]["avg_rtput(MB/s)"]!=0){
+          data.addRow([modeltabledata[i]["name"],modeltabledata[i]["avg_wtput(MB/s)"],modeltabledata[i]["avg_rtput(MB/s)"]]);
+        }
+    }
+      data.sort({column: 1, desc: true});
+
+      var materialOptions = {
+        title: 'Avg Write Throughput VS Read Throughput',
+        hAxis: {
+          title: 'MB/s',
+          minValue: 0,
+          logScale: true,
+          format: 'short',
+          textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        vAxis: {
+            textPosition: 'out',
+            textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        bars: 'horizontal',
+        legend:{
+            position: 'bottom',
+            positionalignment: 'center'
+        },
+        colors: ['#456990','#EF767A'],
+        height: 500
+      };
+      //var materialChart = new google.charts.Bar(document.getElementById('tput'));
+      var materialChart = new google.visualization.BarChart(document.getElementById('tput'));
+      materialChart.draw(data, materialOptions);
+    }
+
+// horizontal bar chart write vs read size for model component
+function modelScorpioBarWRSize() {
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Name');
+      data.addColumn('number', 'tot_wb');
+      data.addColumn('number', 'tot_rb');
+      
+      for(let i = 0; i<modeltabledata.length; i++){
+          if(modeltabledata[i]["tot_wb(bytes)"]!=0 || modeltabledata[i]["tot_rb(bytes)"]!=0){
+            data.addRow([modeltabledata[i]["name"],modeltabledata[i]["tot_wb(bytes)"],modeltabledata[i]["tot_rb(bytes)"]]);
+            }
+        }
+      data.sort({column: 1, desc: true});
+      var materialOptions = {
+        title: 'Total Write Size VS Read Size',
+        hAxis: {
+          title: 'bytes',
+          minValue: 0,
+          logScale: true,
+          format: 'short',
+          textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        vAxis: {
+            textPosition: 'out',
+            textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        bars: 'horizontal',
+        legend:{
+            position: 'bottom',
+            positionalignment: 'center'
+        },
+        colors: ['#456990','#EF767A'],
+        height: 500
+      };
+      //var materialChart = new google.charts.Bar(document.getElementById('bytes'));
+      var materialChart = new google.visualization.BarChart(document.getElementById('bytes'));
+      materialChart.draw(data, materialOptions);
+    }
+
+// horizontal bar chart write vs read time for model component
+function modelScorpioBarWRTime() {
+    var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Name');
+      data.addColumn('number', 'tot_wtimes');
+      data.addColumn('number', 'tot_rtimes');
+      
+      for(let i = 0; i<modeltabledata.length; i++){
+          if(modeltabledata[i]["tot_wtime(s)"]!=0 || modeltabledata[i]["tot_rtime(s)"]!=0){
+              data.addRow([modeltabledata[i]["name"],modeltabledata[i]["tot_wtime(s)"],modeltabledata[i]["tot_rtime(s)"]]);
+            }
+    }
+      data.sort({column: 1, desc: true});
+      //data.hideColumns([3])
+    var materialOptions = {
+        title: 'Total Write Time VS Read Time',
+        hAxis: {
+          title: 's',
+          minValue: 0,
+          logScale: true,
+          format: 'short',
+          textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        vAxis: {
+            textPosition: 'out',
+            textStyle:{
+                color: 'grey',
+                fontSize: 10
+            }
+        },
+        bars: 'horizontal',
+        legend:{
+            position: 'bottom',
+            positionalignment: 'center'
+        },
+        colors: ['#456990','#EF767A'],
+        height: 500
+      };
+
+    //var materialChart = new google.charts.Bar(document.getElementById('times'));
+    var materialChart = new google.visualization.BarChart(document.getElementById('times'));
+    materialChart.draw(data, materialOptions);
+}
+
+</script>
+{% endblock %}

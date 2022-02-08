@@ -1,5 +1,11 @@
 #! /usr/bin/env python3
-from . __init__ import db
+# @file datastructs.py
+# @brief PACE DB table class.
+# @author Gaurab KC
+# @version 3.0
+# @date 2021-09-13
+
+from pace.__init__ import db
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.mysql import MEDIUMTEXT,INTEGER,DECIMAL
