@@ -232,6 +232,17 @@ class ScorpioStats(db.Model):
         self.name = name
         self.data = data
 
+class BuildTime(db.Model):
+    __tablename__ = 'build_time'
+
+    expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
+            nullable=False, index=True, primary_key=True)
+    data = db.Column(MEDIUMTEXT, nullable=False)
+
+    def __init__(self, expid, data):
+        self.expid = expid
+        self.data = data
+
 
 class MemfileInputs(db.Model):
     __tablename__ = 'memfile_inputs'
