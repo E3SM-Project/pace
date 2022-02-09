@@ -365,7 +365,6 @@ def memoryProfileStat(mexpid):
 
         memory_profile_data = db.engine.execute("select data from memfile_inputs where name = 'memory' and expid="+str(mexpid)).first()
         memory_csv_data = memory_profile_data[0]
-
         reader = csv.DictReader(io.StringIO(memory_csv_data))
         jsonData = json.dumps(list(reader))
         jsonData = json.loads(jsonData)
@@ -384,7 +383,8 @@ def memoryProfileStat(mexpid):
                         VSZ[key.strip()] = [float(node[key].strip())]
                     else:
                         VSZ[key.strip()].append(float(node[key].strip()))
-        
+        if not TOD:
+            return render_template('customMessagepage.html',message = "Memory Data not available for this experiment")
     except Exception as e:
         print('Error:')
         print(e)
