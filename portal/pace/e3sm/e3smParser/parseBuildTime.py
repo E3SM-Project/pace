@@ -16,7 +16,10 @@ def loaddb_buildTimesFile(buildfile):
             f.readline()  # skip first line for header information
             for line in f:
                 value = line.split()
-                data[value[0]]=float(value[1])
+                if value[0] in data:
+                    data[value[0]]+=float(value[1])
+                else:
+                    data[value[0]]=float(value[1])
         f.close()
         return data
     except:
