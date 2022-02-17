@@ -359,7 +359,7 @@ def buildtime(mexpid):
             return render_template('error.html')
         data = db.engine.execute("select data from build_time where expid="+str(mexpid)).first()
         jsonData = json.loads(data[0])
-        if 'data' in jsonData and jsonData['data'] == 'None' or not jsonData:
+        if not jsonData or ('data' in jsonData and jsonData['data'] == 'None'):
             return render_template('customMessagepage.html', message = 'Data not available for this experiment')
         
         tabledata = []
