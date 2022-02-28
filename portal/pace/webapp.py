@@ -14,6 +14,7 @@ from sqlalchemy.orm import sessionmaker
 from . __init__ import db
 import os, shutil, distutils
 import re
+import csv, io
 
 #Model Timing Library:
 from pace.e3sm.e3smParser import parseModelTiming
@@ -371,11 +372,49 @@ def buildtime(mexpid):
             model['name']=node
             model['time']=jsonData[node]
             tabledata.append(model)
+        except Exception as e:
+          print('Error:')
+          print(e)
+          return render_template('error.html')
+        return render_template('buildtime.html', test = jsonData, tabledata = tabledata)
+
+@app.route("/memoryprofile/<int:mexpid>")
+def memoryProfileStat(mexpid):
+    try:
+        if not isinstance(mexpid,int):
+            return render_template('error.html')
+        
+        TOD = []
+        VSZ = {}
+        RSS = {}
+
+        memory_profile_data = db.engine.execute("select data from memfile_inputs where name = 'memory' and expid="+str(mexpid)).first()
+        memory_csv_data = memory_profile_data[0]
+        reader = csv.DictReader(io.StringIO(memory_csv_data))
+        jsonData = json.dumps(list(reader))
+        jsonData = json.loads(jsonData)
+        
+        for node in jsonData:
+            for key in node:
+                if key == '#TOD':
+                    TOD.append(float(node[key]))
+                elif key.startswith(' RSS'):
+                    if key.strip() not in RSS:
+                        RSS[key.strip()] = [float(node[key].strip())]
+                    else:
+                        RSS[key.strip()].append(float(node[key].strip()))
+                elif key.startswith(' VSZ'):
+                    if key.strip() not in VSZ:
+                        VSZ[key.strip()] = [float(node[key].strip())]
+                    else:
+                        VSZ[key.strip()].append(float(node[key].strip()))
+        if not TOD:
+            return render_template('customMessagepage.html',message = "Memory Data not available for this experiment")
     except Exception as e:
         print('Error:')
         print(e)
         return render_template('error.html')
-    return render_template('buildtime.html', test = jsonData, tabledata = tabledata)
+    return render_template('memoryProfilePage.html',TOD = TOD, RSS = RSS, VSZ = VSZ)
 
 @app.route("/exp-details/<int:mexpid>")
 def expDetails(mexpid):
