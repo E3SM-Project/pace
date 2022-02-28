@@ -29,6 +29,7 @@ from pace.e3sm.e3smParser import parseReadMe
 from pace.e3sm.e3smParser import parseMemoryProfile
 from pace.e3sm.e3smParser import parseScorpioStats
 from pace.e3sm.e3smParser import parseCaseDocs
+from pace.e3sm.e3smParser import parseBuildTime
 
 resolved = lambda x: realpath(abspath(x))
 
@@ -101,7 +102,8 @@ def parseData(zipfilename,uploaduser):
                 "gitdescribefile":None,
                 "scorpiofile":None,
                 "memoryfile":None,
-                "casedocs":None
+                "casedocs":None,
+                "buildtimefile":None
             }
             for path, subdirs, files in os.walk(root):
                 for name in files:
@@ -117,6 +119,8 @@ def parseData(zipfilename,uploaduser):
                         model['scorpiofile'] = os.path.join(path, name)
                     elif name.startswith("memory."):
                         model['memoryfile'] = os.path.join(path, name)
+                    elif name.startswith("build_times.txt."):
+                        model['buildtimefile'] = os.path.join(path, name)
                 for name in subdirs:
                     if name.startswith("CaseDocs."):
                         model['casedocs'] = os.path.join(path, name)
@@ -136,6 +140,7 @@ def parseData(zipfilename,uploaduser):
                                             experimentFiles[index]['scorpiofile'],
                                             experimentFiles[index]['memoryfile'],
                                             experimentFiles[index]['casedocs'],
+                                            experimentFiles[index]['buildtimefile'],
                                             db,fpath,uploaduser))
             print ('**************************************************')
             print (' ')
@@ -235,10 +240,26 @@ def insertScorpioStats(spiofile,db,expid):
         db.session.add(spio)
     return True
 
+def insertBuildTimeFile(buildtimefile,db,expid):
+    if buildtimefile:
+        data = parseBuildTime.loaddb_buildTimesFile(buildtimefile)
+        if not data:
+            return False
+    else:
+        data = json.dumps({'data':'None'})
+    buildtime = db.session.query(BuildTime).filter_by(expid=expid).first()
+    if buildtime:
+        print("Insertion is discarded due to dupulication: expid=%d" % (expid))
+        return True
+    else:
+        buildtime = BuildTime(expid=expid, data=json.dumps(data))
+        db.session.add(buildtime)
+    return True
+
 #need here
 # This function provides pathway to files for their respective parser function and finally stores in database
 def insertExperiment(filename,readmefile,timingfile,gitfile,
-                    spiofile,memfile,casedocs,
+                    spiofile,memfile,casedocs,buildtimefile,
                     db,fpath,uploaduser):
     # returns True if successful or if duplicate exp already in database
     (successFlag, duplicateFlag, currExpObj) = insertE3SMTiming(filename,readmefile,gitfile,db,fpath,uploaduser)
@@ -276,6 +297,13 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
     #TODO
     print(('* Parsing: '+ convertPathtofile(casedocs)))
     isSuccess = parseCaseDocs.loaddb_casedocs(casedocs,db,currExpObj.expid)
+    if not isSuccess:
+        return False
+    print('    -Complete')
+
+    #insert build time
+    print(('* Parsing: '+ convertPathtofile(buildtimefile)))
+    isSuccess = insertBuildTimeFile(buildtimefile,db,currExpObj.expid)
     if not isSuccess:
         return False
     print('    -Complete')
