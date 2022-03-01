@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block content %}
+{% block topcontent %}
+
+<link href="https://unpkg.com/tabulator-tables@5.0.7/dist/css/tabulator.min.css" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.0.7/dist/js/tabulator.min.js"></script>
+<style>
+    tr:nth-child(even) {background-color: #f2f2f2;}
+</style>
+{% endblock topcontent %}
+
+<p>
+    <div style="border:4px solid black; margin-top:75px; margin-bottom:100px;">
+        <h3 style="text-align:center">Build Times</h3>
+        <details>
+            <summary style="text-align:center; cursor:pointer">Details</summary>
+            <h6 style="text-align:center">Total build time for each files in seconds</h6>
+        </details>
+        <div id="buildtime-table" style="margin-top:25px"></div>
+    </div>
+</p>
+
+<script>
+    var buildfiletabledata = {{tabledata|tojson}}
+    var buildtimetable = new Tabulator("#buildtime-table",{
+        data:buildfiletabledata,
+        tooltipsHeader:true,
+        layout:"fitDataStretch",
+        height:"315px",
+        initialSort:[
+            {column:"time", dir:"desc"},
+        ],
+        columns:[
+        {title:"Time (s)", field:"time", hozAlign:"right", formatter:"money", formatterParams:{precision:6},sorter:"number"},
+        {title:"File Name", field:"name", hozAlign:"right"}
+        ],
+    });
+</script>
+{% endblock %}
