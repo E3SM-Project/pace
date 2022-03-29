@@ -94,7 +94,7 @@ def uploadExp(uploadfile, uploadUser):
                 fin.close()
             if r.text == 'complete':
                 print bcolors.LIGHTGREY + ('Parsing experiments...') + bcolors.ENDC
-                req = requests.post(parseurl, data={'filename':uploadfile,'user':uploadUser})
+                req = requests.post(parseurl, data={'filename':uploadfile,'user':uploadUser, 'project':'e3sm'})
                 flaglist = (req.text).split("/") # req.text = success/message-timestamp.log
                 if flaglist[0] == 'success':
                     print bcolors.OKGREEN + ('Parse Success') + bcolors.ENDC
