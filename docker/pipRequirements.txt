@@ -7,3 +7,6 @@ minio
 rauth
 f90nml
 xmltodict
+configparser
+gunicorn
+gevent
