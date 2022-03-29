@@ -5,3 +5,5 @@ flask_sqlalchemy
 pymysql
 minio
 rauth
+f90nml
+xmltodict
