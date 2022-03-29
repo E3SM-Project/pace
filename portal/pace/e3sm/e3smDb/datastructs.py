@@ -8,7 +8,7 @@
 from pace.__init__ import db
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.dialects.mysql import MEDIUMTEXT,INTEGER,DECIMAL
+from sqlalchemy.dialects.mysql import LONGTEXT,MEDIUMTEXT,INTEGER,DECIMAL
 from datetime import datetime
 
 class Exp(db.Model):
