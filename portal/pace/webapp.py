@@ -372,11 +372,11 @@ def buildtime(mexpid):
             model['name']=node
             model['time']=jsonData[node]
             tabledata.append(model)
-        except Exception as e:
-          print('Error:')
-          print(e)
-          return render_template('error.html')
-        return render_template('buildtime.html', test = jsonData, tabledata = tabledata)
+    except Exception as e:
+        print('Error:')
+        print(e)
+        return render_template('error.html')
+    return render_template('buildtime.html', test = jsonData, tabledata = tabledata)
 
 @app.route("/memoryprofile/<int:mexpid>")
 def memoryProfileStat(mexpid):
