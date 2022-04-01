@@ -40,24 +40,30 @@ def loaddb_scorpio_stats(spiofile):
     # TODO: select a json file
     try:
         sptar = tarfile.open(spiofile, "r:gz")
-        
-        jsonmember = None
-        jsondata = None
+        data = []
+        Scorpio_files = []
 
         members = safemembers(sptar)
         for member in members:
             if member.isfile() and member.name.endswith("json"):
-                if jsonmember is None or jsonmember.size < member.size:
-                    jsonmember = member
+                Scorpio_files.append(member)
         
-        if jsonmember:
-            jsondata = sptar.extractfile(jsonmember).read()
-        
-        sptar.close()
+        for file in Scorpio_files:
+            
+            model = {
+                'name':None,
+                'data':None
+            }
+            name = None
+            jsondata = None
 
-        if jsondata is None:
-            print("Json data read error: filename=%s" %spiofile)
-        else:
-            return jsondata
+            name = (file.name).split('/')[-1].split('_')[-1].split('.')[0]
+            jsondata = sptar.extractfile(file).read()
+
+            if name and jsondata:
+                model['name'] = name
+                model['data'] = jsondata
+                data.append(model)
+        return data
     except:
         print("Something went wrong with %s" %spiofile)

@@ -229,17 +229,18 @@ def insertScorpioStats(spiofile,db,expid):
     if spiofile:
         data = parseScorpioStats.loaddb_scorpio_stats(spiofile)
         if not data:
-            return False
+            print('Empty file')
+            return True
+        else:
+            for model in data:
+                spio = db.session.query(ScorpioStats).filter_by(expid=expid, name=model['name']).first()
+                if spio:
+                    print("Insertion in scorpio is discarded due to dupulication: expid=%d, name=%s" % (expid, model['name']))
+                else:
+                    spio = ScorpioStats(expid=expid, name=model['name'], data=model['data'])
+                    db.session.add(spio)
     else:
-        data = json.dumps({'data':'None'})
-    name = 'spio_stats'
-    spio = db.session.query(ScorpioStats).filter_by(expid=expid, name=name).first()
-    if spio:
-        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
-        return True
-    else:
-        spio = ScorpioStats(expid=expid, name=name, data=data)
-        db.session.add(spio)
+        print('No file')
     return True
 
 def insertBuildTimeFile(buildtimefile,db,expid):
