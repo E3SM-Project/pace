@@ -244,9 +244,11 @@ def insertBuildTimeFile(buildtimefile,db,expid):
     if buildtimefile:
         data = parseBuildTime.loaddb_buildTimesFile(buildtimefile)
         if not data:
-            return False
+            print("Empty file")
+            return True
     else:
-        data = json.dumps({'data':'None'})
+        print("No file")
+        return True
     buildtime = db.session.query(BuildTime).filter_by(expid=expid).first()
     if buildtime:
         print("Insertion is discarded due to dupulication: expid=%d" % (expid))

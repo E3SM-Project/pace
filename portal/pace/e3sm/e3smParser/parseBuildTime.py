@@ -21,6 +21,9 @@ def loaddb_buildTimesFile(buildfile):
                 else:
                     data[value[0]]=float(value[1])
         f.close()
+        if data == {}:
+            return None
         return data
     except:
         print("Something went wrong with %s" %buildfile)
+        return None
