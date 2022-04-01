@@ -33,6 +33,9 @@
     float: right;
     width:55%;
 }
+tr:nth-child(even) {
+  background-color: #D6EEEE;
+}
 </style>
 {% endblock topcontent %}
 
@@ -42,34 +45,104 @@
     <div style="overflow:scroll ; border:4px solid black;background-color:#EEE">
         <h1 style="text-align: center">Experiment Details</h1>
         <!--Pre's take *everything literally, so everyting inside this pre is unformatted...-->
-        <div class="wrap" style="padding:10px;width:auto;border-radius:5px;font-family:menlo">
-            <div class="fleft">
-                <span style='color:crimson'>Id:</span> {{exp.expid}}<br>
-                <span style='color:crimson'>User:</span> {{exp.user}} <br>
-                <span style='color:crimson'>JobID:</span> {{exp.lid}}<br>
-                <span style='color:crimson'>Machine:</span> {{exp.machine}}<br> 
-                <span style='color:crimson'>Compset:</span> {{exp.compset}}<br> 
-                <span style='color:crimson'>Case:</span> {{exp.case}}<br>
-                <span style='color:crimson'>Res:</span> {{exp.res}}<br> 
-                <span style='color:crimson'>Version:</span> {{exp.version}}<br>
-                <span style='color:crimson'>Date:</span> {{exp.exp_date}}<br>
-                <span style='color:crimson'>Run_time:</span> {{ exp.run_time }} sec<br>
-                <span style='color:crimson'>Init time:</span> {{ exp.init_time }} sec<br>
-                <span style='color:crimson'>Final_time:</span> {{ exp.final_time }} sec<br>
-                <span style='color:crimson'>Total PEs:</span> {{exp.total_pes_active}}<br>
-                <span style='color:crimson'>Model cost:</span> {{exp.model_cost}} pe-hrs/sim_year<br>
-                <span style='color:crimson'>Run length:</span> {{exp.run_length}} days<br>
-                <span style='color:crimson'>Stop_n:</span> {{exp.stop_n}}<br>
-                <span style='color:crimson'>Stop Option:</span> {{ exp.stop_option}}<br>
-                <span style='color:crimson'>MPI tasks/node:</span> {{exp.mpi_tasks_per_node}}<br>
-                
+        <!--<div class="wrap" style="padding:10px;width:auto;border-radius:5px;font-family:menlo">
+            <div class="fleft">-->
+        <div class="container" style="display: flex; padding:10px; width:auto;border-radius:5px;font-family:menlo">
+            <div style="width: 50%">
+                <table>
+                    <tr>
+                        <td><span style='color:crimson'>Id:</span></td>
+                        <td>{{exp.expid}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>User:</span></td>
+                        <td>{{exp.user}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>JobID:</span></td>
+                        <td>{{exp.lid}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Machine:</span></td>
+                        <td>{{exp.machine}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Compset:</span></td>
+                        <td>{{exp.compset}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Case:</span></td>
+                        <td>{{exp.case}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Res:</span></td>
+                        <td>{{exp.res}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Version:</span></td>
+                        <td>{{exp.version}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Date:</span></td>
+                        <td>{{exp.exp_date}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Run_time:</span></td>
+                        <td>{{ exp.run_time }} sec</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Init time:</span></td>
+                        <td>{{ exp.init_time }} sec</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Final_time:</span></td>
+                        <td>{{ exp.final_time }} sec</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Total PEs:</span></td>
+                        <td>{{exp.total_pes_active}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Model cost:</span></td>
+                        <td>{{exp.model_cost}} pe-hrs/sim_year</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Run length:</span></td>
+                        <td>{{exp.run_length}} days</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Stop_n:</span></td>
+                        <td>{{exp.stop_n}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Stop Option:</span></td>
+                        <td>{{ exp.stop_option}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>MPI tasks/node:</span></td>
+                        <td>{{exp.mpi_tasks_per_node}}</td>
+                    </tr>
+                </table>
                 <br>
-                <span style='color:crimson'><b>Model Throughput</b>:</span> {{exp.model_throughput}} SYPD
-                <br>
+                <table>
+                    <tr>
+                        <td><span style='color:crimson'><b>Model Throughput</b>:</span></td>
+                        <td>{{exp.model_throughput}} SYPD</td>
+                    </tr>
+                </table>
                 <br>
                 <span style='color:crimson'>Additional Notes:</span>
+                <br>
+            <br>
+            
+            <textarea style="resize:both" id="note" name="note" class="form-control" readonly>{{note}}</textarea><p style="text-align:center;margin-top:5px"><a href="/note/{{exp.expid}}"><input type="button" style = "text-align:center" value="Add/Edit" class="btn btn-outline-secondary"/><br></p>
+            <!--Static file loc on web server-->
+            <!--<a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>-->
+            <!--From file server-->
+            <a href="https://pacefs.ornl.gov/e3sm/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
             </div>
-            <div class="fright">
+            <!--<div class="fright">-->
+            <div style="flex-grow: 1;">
                 <span style='color:crimson'><b>Graphs:</b></span>
                 <br>
                 <span style='padding-left:5em'> <a href="/summary/{{expid}}/stats">Summary Global statistics</a></span>
@@ -91,14 +164,7 @@
                 <span style='color:crimson'><b>Memory Usage Profile:</b></span><br>
                 <span style="padding-left:5em;"><a href="/memoryprofile/{{expid}}">Memory Usage Profile</a></span>
             </div>
-            <br>
-            <br>
             
-            <textarea style="resize:both" id="note" name="note" class="form-control" readonly>{{note}}</textarea><p style="text-align:center;margin-top:5px"><a href="/note/{{exp.expid}}"><input type="button" style = "text-align:center" value="Add/Edit" class="btn btn-outline-secondary"/><br></p>
-            <!--Static file loc on web server-->
-            <!--<a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>-->
-            <!--From file server-->
-            <a href="https://pacefs.ornl.gov/e3sm/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
        </div>
     </div>
     <div style="overflow:scroll ; border:4px solid black;margin-top:50px;background-color:#EEE;">
