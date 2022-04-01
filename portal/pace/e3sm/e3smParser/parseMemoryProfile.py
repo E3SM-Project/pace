@@ -5,7 +5,7 @@
 # @version 3.0
 # @date 2021-09-13
 
-import gzip, sys
+import gzip
 
 '''
     This function reads the memory file data and returns the cvs data

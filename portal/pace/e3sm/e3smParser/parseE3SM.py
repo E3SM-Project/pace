@@ -204,13 +204,15 @@ def checkDuplicateExp(euser,emachine,ecurr, ecase):
 
 #need here
 def insertMemoryFile(memfile,db,expid):
-    #TODO
+    data = None
     if memfile:
         data = parseMemoryProfile.loaddb_memfile(memfile)
         if not data:
-            return False
+            print("Empty file")
+            return True
     else:
-        data = json.dumps({'data':'None'})
+        print("No file")
+        return True
     name = 'memory'
     mem = db.session.query(MemfileInputs).filter_by(expid=expid, name=name).first()
     if mem:
