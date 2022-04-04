@@ -226,6 +226,8 @@ class ScorpioStats(db.Model):
             nullable=False, index=True, primary_key=True)
     name = db.Column(db.VARCHAR(100), nullable=False, index=True, primary_key=True)
     data = db.Column(MEDIUMTEXT, nullable=False)
+    iopercent = db.Column(DECIMAL(6,2,unsigned=True))
+    iotime = db.Column(DECIMAL(20,3,unsigned=True))
 
     def __init__(self, expid, name, data):
         self.expid = expid
@@ -238,6 +240,8 @@ class BuildTime(db.Model):
     expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
             nullable=False, index=True, primary_key=True)
     data = db.Column(MEDIUMTEXT, nullable=False)
+    total_walltime = db.Column(DECIMAL(20,3,unsigned=True))
+    total_computecost = db.Column(DECIMAL(20,3,unsigned=True))
 
     def __init__(self, expid, data):
         self.expid = expid
