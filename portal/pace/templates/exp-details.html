@@ -187,17 +187,17 @@ tr:nth-child(even) {
             <tr>
                 <td style="border: 1px solid black">
                     {%for name in xmls%}
-                    <a href="/xmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
+                    &ensp; <a href="/xmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
                     {%endfor%}
                 </td>
                 <td style="border: 1px solid black">
                     {%for name in nmls%}
-                    <a href="/nmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
+                    &ensp; <a href="/nmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
                     {%endfor%}
                 </td>
                 <td style="border: 1px solid black">
                     {%for name in rcs%}
-                    <a href="/rcviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
+                    &ensp; <a href="/rcviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
                     {%endfor%}
                 </td>
             </tr>
