@@ -36,6 +36,9 @@
 tr:nth-child(even) {
   background-color: #D6EEEE;
 }
+.hide {
+    display: none
+}
 </style>
 {% endblock topcontent %}
 
@@ -156,13 +159,13 @@ tr:nth-child(even) {
                             {%- endfor %}
                 <br>
                 <span style='color:crimson'>Component Process :</span> <br>
-                <span style="padding-left:5em;"><a href="/atmos/{{exp.expid}}">Atm process distribution</a></span>
-                <br>
+                <div id="atmCompProcessId"><span style="padding-left:5em;"><a href="/atmos/{{exp.expid}}">Atm process distribution</a></span></div>
+                
                 <span style='color:crimson'><b>Scorpio IO Stats:</b></span><br>
-                <span style="padding-left:5em;"><a href="/scorpio/{{expid}}">Scorpio I/O statistics</a></span>
-                <br>
+                <div id="scorpioStatsId"><span style="padding-left:5em;"><a href="/scorpio/{{expid}}">Scorpio I/O statistics</a></span></div>
+                
                 <span style='color:crimson'><b>Memory Usage Profile:</b></span><br>
-                <span style="padding-left:5em;"><a href="/memoryprofile/{{expid}}">Memory Usage Profile</a></span>
+                <div id="memoryProfileId"><span style="padding-left:5em;"><a href="/memoryprofile/{{expid}}">Memory Usage Profile</a></span></div>
             </div>
             
        </div>
@@ -276,6 +279,21 @@ var comptable = new Tabulator("#compTable", {
     {title:fieldDic["throughput"], field:"throughput", hozAlign:"right",formatter:"money", formatterParams:{precision:2}},
     ],
 });
+
+var scorpioStatsId = {{scorpioStatsId|int}}
+var memoryProfileId = {{memoryProfileId|int}}
+
+function show(){
+    if (scorpioStatsId == false){
+        document.getElementById("scorpioStatsId").classList.add("hide")
+    }
+    if (memoryProfileId == false){
+        document.getElementById("memoryProfileId").classList.add("hide")
+    }
+}
+
+show();
+
 </script>
 
 {% endblock %}

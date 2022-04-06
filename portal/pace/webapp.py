@@ -440,6 +440,23 @@ def expDetails(mexpid):
         note = noteexp.note
     except IndexError:
         note=""
+    
+    #check if we have scorpio data
+    scorpioStatsId = False
+    try:
+        scorpioData = db.engine.execute("select data from scorpio_stats where expid="+str(mexpid)).fetchone()
+        scorpioStatsId = True
+    except:
+        scorpioStatsId = False
+
+    #check if we have memory data
+    memoryProfileId = False
+    try:
+        memData = db.engine.execute("select data from memfile_inputs where name = 'memory' and expid="+str(mexpid)).first()
+        memoryProfileId = True
+    except:
+        memoryProfileId = False
+
     runtimes=[]
     for runs in myruntime:
         run = {
@@ -451,7 +468,8 @@ def expDetails(mexpid):
         runtimes.append(run)
     return render_template('exp-details.html', runtimes = runtimes,exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
             ranks = ranks,chartColors = json.dumps(colorDict),note=note, \
-            xmls = myxmls, nmls = mynmls, rcs = myrcs \
+            xmls = myxmls, nmls = mynmls, rcs = myrcs, \
+            scorpioStatsId = scorpioStatsId, memoryProfileId = memoryProfileId \
             )
 
 @app.route("/exp-details-old/<int:mexpid>")
