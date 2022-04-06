@@ -5,7 +5,7 @@
 # @version 3.0
 # @date 2021-09-13
 
-import tarfile, sys
+import tarfile, sys, json
 from os.path import abspath, realpath, dirname, join as joinpath
 resolved = lambda x: realpath(abspath(x))
 
@@ -30,6 +30,25 @@ def safemembers(members):
             print(finfo.name, "is blocked: Symlink to", finfo.linkname, file=sys.stderr)
         else:
             yield finfo
+
+def getMax(data):
+    jsondata = json.loads(data)
+    modelData = jsondata["ScorpioIOSummaryStatistics"]["ModelComponentIOStatistics"]
+
+    max_comp = float('-inf')
+    output = None
+
+    for mdata in modelData:
+
+        if 'tot_time(s)' in mdata and mdata['tot_time(s)']>max_comp:
+            max_comp = mdata['tot_time(s)']
+            output = mdata['name']
+    
+    if output:
+        output = output.split()[-1]
+
+    return output
+
 
 '''
 This function reads the scorpio file and return data in json format
@@ -61,7 +80,8 @@ def loaddb_scorpio_stats(spiofile):
             jsondata = sptar.extractfile(file).read()
 
             if name and jsondata:
-                model['name'] = name
+                max_component = getMax(jsondata)
+                model['name'] = str(max_component)+'-'+str(name)
                 model['data'] = jsondata
                 data.append(model)
         return data
