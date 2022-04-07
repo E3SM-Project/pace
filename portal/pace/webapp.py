@@ -445,17 +445,25 @@ def expDetails(mexpid):
     scorpioStatsId = False
     try:
         scorpioData = db.engine.execute("select data from scorpio_stats where expid="+str(mexpid)).fetchone()
-        scorpioStatsId = True
-    except:
-        scorpioStatsId = False
+        if not scorpioData:
+            scorpioStatsId = False
+        else:
+            scorpioStatsId = True
+    except Exception as e:
+        print(e)
+        return render_template('error.html')
 
     #check if we have memory data
     memoryProfileId = False
     try:
         memData = db.engine.execute("select data from memfile_inputs where name = 'memory' and expid="+str(mexpid)).first()
-        memoryProfileId = True
-    except:
-        memoryProfileId = False
+        if not memData:
+            memoryProfileId = False
+        else:
+            memoryProfileId = True
+    except Exception as e:
+        print(e)
+        return render_template('error.html')
 
     runtimes=[]
     for runs in myruntime:
