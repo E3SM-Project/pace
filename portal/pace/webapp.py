@@ -444,7 +444,7 @@ def expDetails(mexpid):
     #check if we have scorpio data
     scorpioStatsId = False
     try:
-        scorpioData = db.engine.execute("select data from scorpio_stats where expid="+str(mexpid)).fetchone()
+        scorpioData = db.engine.execute("select name from scorpio_stats where expid="+str(mexpid)).fetchone()
         if not scorpioData:
             scorpioStatsId = False
         else:
