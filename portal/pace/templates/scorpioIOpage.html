@@ -7,12 +7,17 @@
 <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.0.7/dist/js/tabulator.min.js"></script>
 <style>
     tr:nth-child(even) {background-color: #f2f2f2;}
+
+    .hide {
+    display: none
+}
 </style>
 {% endblock topcontent %}
 
 <p>
     <div style="overflow: hidden; border:4px solid black">
         <h3 style="text-align:center">Scorpio I/O Performance Statistics</h3>
+        <div id='versionId'><p style="text-align: center;">* This is a old version of scorpio</p></div>
         <br>
         <br>
         <h3 style="text-align:center">Overall I/O Summary Statistics</h3>
@@ -539,5 +544,11 @@ function modelScorpioBarWRTime() {
     materialChart.draw(data, materialOptions);
 }
 
+var oldVersion = {{oldVersion|int}}
+function show(){
+    if (oldVersion == false){
+        document.getElementById("versionId").classList.add("hide")
+    }
+}
 </script>
 {% endblock %}

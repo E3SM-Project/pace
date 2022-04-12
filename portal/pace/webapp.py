@@ -333,8 +333,11 @@ def scorpioIOStat(name,mexpid):
         
         myexp = db.engine.execute("select * from e3smexp where expid= "+ str(mexpid) ).fetchall()[0]
         modelRuntime = myexp.run_time
-
+        oldVersion = False
         overalData = scorpio_json_data["ScorpioIOSummaryStatistics"]["OverallIOStatistics"]
+
+        if "spio_stats_version" not in overalData:
+            oldVersion = True
         
         modelData = scorpio_json_data["ScorpioIOSummaryStatistics"]["ModelComponentIOStatistics"]
 
@@ -354,7 +357,7 @@ def scorpioIOStat(name,mexpid):
         print(e)
         return render_template('error.html')
     return render_template('scorpioIOpage.html', overalData = overalData, modelData = modelData,
-                            readIOData=readIOData,writeIOData=writeIOData, modelRuntime = modelRuntime)
+                            readIOData=readIOData,writeIOData=writeIOData, modelRuntime = modelRuntime, oldVersion = oldVersion)
 
 @app.route("/buildtime/<int:mexpid>")
 def buildtime(mexpid):
