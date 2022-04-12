@@ -161,11 +161,14 @@ tr:nth-child(even) {
                 <span style='color:crimson'>Component Process :</span> <br>
                 <div id="atmCompProcessId"><span style="padding-left:5em;"><a href="/atmos/{{exp.expid}}">Atm process distribution</a></span></div>
                 
-                <span style='color:crimson'><b>Scorpio IO Stats:</b></span><br>
-                <div id="scorpioStatsId"><span style="padding-left:5em;"><a href="/scorpio/{{expid}}">Scorpio I/O statistics</a></span></div>
+                <div id="scorpioStatsId"><span style='color:crimson'><b>Scorpio IO Stats:</b></span><br>
+                <span style="padding-left:5em;"><a href="/scorpio/{{expid}}">Scorpio I/O statistics</a></span></div>
                 
-                <span style='color:crimson'><b>Memory Usage Profile:</b></span><br>
-                <div id="memoryProfileId"><span style="padding-left:5em;"><a href="/memoryprofile/{{expid}}">Memory Usage Profile</a></span></div>
+                <div id="memoryProfileId"><span style='color:crimson'><b>Memory Usage Profile:</b></span><br>
+                <span style="padding-left:5em;"><a href="/memoryprofile/{{expid}}">Memory Usage Profile</a></span></div>
+
+                <div id="buildTimeId"><span style='color:crimson'><b>Build Times:</b></span><br>
+                <span style="padding-left:5em;"><a href="/buildtime/{{expid}}">Build Times</a></span></div>
             </div>
             
        </div>
@@ -282,6 +285,7 @@ var comptable = new Tabulator("#compTable", {
 
 var scorpioStatsId = {{scorpioStatsId|int}}
 var memoryProfileId = {{memoryProfileId|int}}
+var buildTimeId = {{buildTimeId|int}}
 
 function show(){
     if (scorpioStatsId == false){
@@ -289,6 +293,9 @@ function show(){
     }
     if (memoryProfileId == false){
         document.getElementById("memoryProfileId").classList.add("hide")
+    }
+    if (buildTimeId == false){
+        document.getElementById("buildTimeId").classList.add("hide")
     }
 }
 

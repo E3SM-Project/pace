@@ -441,21 +441,26 @@ def expDetails(mexpid):
     except IndexError:
         note=""
     
-    #check if we have scorpio data
+    
     scorpioStatsId = False
+    memoryProfileId = False
+    buildTimeId = False
     try:
+        #check if we have scorpio data
         scorpioData = db.engine.execute("select name from scorpio_stats where expid="+str(mexpid)).fetchone()
         if not scorpioData:
             scorpioStatsId = False
         else:
             scorpioStatsId = True
-    except Exception as e:
-        print(e)
-        return render_template('error.html')
-
-    #check if we have memory data
-    memoryProfileId = False
-    try:
+        
+        # check if we have build time data
+        buildFileData = db.engine.execute("select data from build_time where expid="+str(mexpid)).first()
+        if not buildFileData:
+            buildTimeId = False
+        else:
+            buildTimeId = True
+        
+        #check if we have memory data
         memData = db.engine.execute("select data from memfile_inputs where name = 'memory' and expid="+str(mexpid)).first()
         if not memData:
             memoryProfileId = False
@@ -477,7 +482,7 @@ def expDetails(mexpid):
     return render_template('exp-details.html', runtimes = runtimes,exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
             ranks = ranks,chartColors = json.dumps(colorDict),note=note, \
             xmls = myxmls, nmls = mynmls, rcs = myrcs, \
-            scorpioStatsId = scorpioStatsId, memoryProfileId = memoryProfileId \
+            scorpioStatsId = scorpioStatsId, memoryProfileId = memoryProfileId, buildTimeId = buildTimeId \
             )
 
 @app.route("/exp-details-old/<int:mexpid>")
