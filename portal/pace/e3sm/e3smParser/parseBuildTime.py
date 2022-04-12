@@ -12,6 +12,7 @@ import gzip
 def loaddb_buildTimesFile(buildfile):
     try:
         data = {}
+        total_computecost = 0
         with gzip.open(buildfile, 'rt') as f:
             f.readline()  # skip first line for header information
             for line in f:
@@ -20,10 +21,13 @@ def loaddb_buildTimesFile(buildfile):
                     data[value[0]]+=float(value[1])
                 else:
                     data[value[0]]=float(value[1])
+                total_computecost+=float(value[1])
+        if 'Total_Build' in data:
+            total_computecost-=data['Total_Build']
         f.close()
         if data == {}:
-            return None
-        return data
+            return None, total_computecost
+        return data,total_computecost
     except:
         print("Something went wrong with %s" %buildfile)
-        return None
+        return None, None

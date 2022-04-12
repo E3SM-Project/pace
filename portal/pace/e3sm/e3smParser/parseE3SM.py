@@ -245,7 +245,7 @@ def insertScorpioStats(spiofile,db,expid):
 
 def insertBuildTimeFile(buildtimefile,db,expid):
     if buildtimefile:
-        data = parseBuildTime.loaddb_buildTimesFile(buildtimefile)
+        data, total_computecost = parseBuildTime.loaddb_buildTimesFile(buildtimefile)
         if not data:
             print("Empty file")
             return True
@@ -257,7 +257,7 @@ def insertBuildTimeFile(buildtimefile,db,expid):
         print("Insertion is discarded due to dupulication: expid=%d" % (expid))
         return True
     else:
-        buildtime = BuildTime(expid=expid, data=json.dumps(data))
+        buildtime = BuildTime(expid=expid, data=json.dumps(data), total_computecost=total_computecost)
         db.session.add(buildtime)
     return True
 
