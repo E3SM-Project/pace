@@ -78,7 +78,8 @@ var fieldDic = {
     "tot_rb":"Total Read Size(GB)",
     "tot_wtime":"Total Write Time(s)",
     "tot_rtime":"Total Read Time(s)",
-    "tot_time":"Total Time(s)"
+    "tot_time":"Total IO Time(s)",
+    "tot_run_time":"Total Run Time(s)"
 };
 
 var variableDescriptionData = [
@@ -199,12 +200,14 @@ var modelCompDescriptiontable = new Tabulator("#modelComponentDescription-table"
 //convert bytes to GB
 overalTableData[0]["tot_wb(GB)"] = bytesToGb(overalTableData[0]["tot_wb(bytes)"])
 overalTableData[0]["tot_rb(GB)"] = bytesToGb(overalTableData[0]["tot_rb(bytes)"])
+overalTableData[0]["tot_run_time(s)"] = model_runtime
 // overall data table creation
 var overallIOtable = new Tabulator("#overallIO-table", {
     data:overalTableData,
     tooltipsHeader:true,
-    layout:"fitDataStretch",
+    layout:"fitDataFill",
     columns:[
+    {title:fieldDic["tot_run_time"], field:"tot_run_time(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number"},
     {title:fieldDic["tot_time"], field:"tot_time(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number",headerTooltip:"Total wallclock time spent in seconds. This can be considered as an upper bound on the total time spent inside Scorpio by the slowest process"},
     {title:fieldDic["tot_wtime"], field:"tot_wtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
     {title:fieldDic["tot_rtime"], field:"tot_rtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
@@ -225,7 +228,7 @@ for (i = 0; i<modeltabledata.length; i++){
 var modelIOtable = new Tabulator("#modelIO-table", {
     data:modeltabledata,
     tooltipsHeader:true,
-    layout:"fitDataStretch",
+    layout:"fitDataFill",
     initialSort:[
         {column:"tot_time(s)", dir:"desc"},
     ],
@@ -308,8 +311,8 @@ function bytesToGb(size){
 function overalScorpioStackedTime() {
         var tot_time = overalTableData[0]["tot_time(s)"]
         var data = google.visualization.arrayToDataTable([
-            ['Name', 'scorpio_io_time',{type: 'string', role: 'tooltip'}, 'other', {type: 'string', role: 'tooltip'}],
-            ['Scorpio', tot_time, 'Scorpio IO Time',(model_runtime - tot_time),'Model RunTime']
+            ['Name', 'Scorpio IO Time',{type: 'string', role: 'tooltip'}, 'Other', {type: 'string', role: 'tooltip'}],
+            ['', tot_time, 'Scorpio IO Time',(model_runtime - tot_time),'Other']
             ]);
 
         var materialOptions = {
@@ -338,7 +341,7 @@ function overalScorpioStackedTime() {
 function overalScorpioStackedWRTime() {
     var other_time = overalTableData[0]["tot_time(s)"]-(overalTableData[0]["tot_wtime(s)"]+overalTableData[0]["tot_rtime(s)"])
     var data = google.visualization.arrayToDataTable([
-        ['Name', 'tot_wtimes', 'tot_rtimes', 'other'],
+        ['Name', 'Total Write Time', 'Total Read Time', 'other'],
         [overalTableData[0]["name"], overalTableData[0]["tot_wtime(s)"], overalTableData[0]["tot_rtime(s)"], other_time]
     ]);
 
@@ -367,7 +370,7 @@ function overalScorpioStackedWRTime() {
 // horizontal bar chart write vs read size for overall summary
 function overalScorpioBarWRSize() {
       var data = google.visualization.arrayToDataTable([
-        ['Name', 'tot_wb', 'tot_rb'],
+        ['Name', 'Total Write Size', 'Total Read Size'],
         [overalTableData[0]["name"], overalTableData[0]["tot_wb(bytes)"], overalTableData[0]["tot_rb(bytes)"]]
       ]);
 
@@ -402,8 +405,8 @@ function overalScorpioBarWRSize() {
 function modelScorpioBarWRThroughput() {
       var data = new google.visualization.DataTable();
       data.addColumn('string', 'Name');
-      data.addColumn('number', 'avg_wtput');
-      data.addColumn('number', 'avg_rtput');
+      data.addColumn('number', 'Average Write Throughput');
+      data.addColumn('number', 'Average Read Throughput');
       
       for(let i = 0; i<modeltabledata.length; i++){
         if(modeltabledata[i]["avg_wtput(MB/s)"]!=0 || modeltabledata[i]["avg_rtput(MB/s)"]!=0){
@@ -448,8 +451,8 @@ function modelScorpioBarWRThroughput() {
 function modelScorpioBarWRSize() {
       var data = new google.visualization.DataTable();
       data.addColumn('string', 'Name');
-      data.addColumn('number', 'tot_wb');
-      data.addColumn('number', 'tot_rb');
+      data.addColumn('number', 'Total Write Size');
+      data.addColumn('number', 'Total Read Size');
       
       for(let i = 0; i<modeltabledata.length; i++){
           if(modeltabledata[i]["tot_wb(bytes)"]!=0 || modeltabledata[i]["tot_rb(bytes)"]!=0){
@@ -493,8 +496,8 @@ function modelScorpioBarWRSize() {
 function modelScorpioBarWRTime() {
     var data = new google.visualization.DataTable();
       data.addColumn('string', 'Name');
-      data.addColumn('number', 'tot_wtimes');
-      data.addColumn('number', 'tot_rtimes');
+      data.addColumn('number', 'Total Write Time');
+      data.addColumn('number', 'Total Read Time');
       
       for(let i = 0; i<modeltabledata.length; i++){
           if(modeltabledata[i]["tot_wtime(s)"]!=0 || modeltabledata[i]["tot_rtime(s)"]!=0){

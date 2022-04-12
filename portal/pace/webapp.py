@@ -319,13 +319,16 @@ def flameGraph(expid,rank):
     if bool(re.match('^[0-9,]+$', rank)) and bool(re.match('^[0-9,]+$', expid)):
       return render_template("flameGraph.html",expid=expid,rank=rank.split(','))
 
-@app.route("/scorpio/<int:mexpid>")
-def scorpioIOStat(mexpid):
+@app.route("/scorpio/<int:mexpid>/<name>")
+def scorpioIOStat(name,mexpid):
+
+    
     #get data
     try:
-        if not isinstance(mexpid,int):
+        if not isinstance(mexpid,int) or not bool(re.match('^[a-zA-Z0-9-,]+$', name)):
             return render_template('error.html')
-        scorpio_data = db.engine.execute("select data from scorpio_stats where name = 'spio_stats' and expid="+str(mexpid)).first()
+
+        scorpio_data = db.engine.execute("select data from scorpio_stats where name ='" +str(name) +"' and expid="+str(mexpid)).first()
         scorpio_json_data = json.loads(scorpio_data[0])
         
         myexp = db.engine.execute("select * from e3smexp where expid= "+ str(mexpid) ).fetchall()[0]
