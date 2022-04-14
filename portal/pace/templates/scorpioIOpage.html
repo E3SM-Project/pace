@@ -17,7 +17,7 @@
 <p>
     <div style="overflow: hidden; border:4px solid black">
         <h3 style="text-align:center">Scorpio I/O Performance Statistics</h3>
-        <div id='versionId'><p style="text-align: center;">* This is a old version of scorpio</p></div>
+        <div id='versionId'><p style="text-align: center;">* Note: This data is captured using an older version of Scorpio. In the case of multiple experiments/jobs sharing the same run-directory. this data is not uniquely attributed.</p></div>
         <br>
         <br>
         <h3 style="text-align:center">Overall I/O Summary Statistics</h3>
@@ -220,7 +220,7 @@ var overallIOtable = new Tabulator("#overallIO-table", {
     {title:fieldDic["avg_rtput"], field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
     {title:fieldDic["tot_wb"], field:"tot_wb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
     {title:fieldDic["tot_rb"], field:"tot_rb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
-    {title:fieldDic["name"], field:"name", hozAlign:"right"},
+    {title:fieldDic["name"], field:"name", hozAlign:"left"},
     ],
 });
 
@@ -245,7 +245,7 @@ var modelIOtable = new Tabulator("#modelIO-table", {
     {title:fieldDic["avg_rtput"], field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
     {title:fieldDic["tot_wb"], field:"tot_wb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
     {title:fieldDic["tot_rb"], field:"tot_rb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
-    {title:fieldDic["name"], field:"name", hozAlign:"right"},
+    {title:fieldDic["name"], field:"name", hozAlign:"left"},
     ],
 });
 modelIOtable.setFilter([
@@ -269,7 +269,7 @@ var writeFiletable = new Tabulator("#writefile-table", {
     {title:fieldDic["tot_wtime"], field:"tot_wtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},sorter:"number",headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
     {title:fieldDic["avg_wtput"], field:"avg_wtput(MB/s)", sorter:"number", formatter:"money", formatterParams:{precision:2}, hozAlign:"right",headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
     {title:fieldDic["tot_wb"], field:"tot_wb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
-    {title:fieldDic["name"], field:"name", hozAlign:"right"}
+    {title:fieldDic["name"], field:"name", hozAlign:"left"}
     ],
 });
 
@@ -290,7 +290,7 @@ var readFiletable = new Tabulator("#readfile-table", {
     {title:fieldDic["tot_rtime"], field:"tot_rtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number",headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
     {title:fieldDic["avg_rtput"], field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
     {title:fieldDic["tot_rb"], field:"tot_rb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
-    {title:fieldDic["name"], field:"name", hozAlign:"right"}
+    {title:fieldDic["name"], field:"name", hozAlign:"left"}
     ],
 });
 
