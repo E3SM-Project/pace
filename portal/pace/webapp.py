@@ -980,6 +980,12 @@ def getRuntimeSvg(expid):
             if len(peQuery) > 0:
                 resultElement[key]["root_pe"] = peQuery[0].root_pe
                 resultElement[key]["tasks"] = peQuery[0].tasks -1
+            else:
+                resultElement[key]["root_pe"] = 0
+                resultElement[key]["tasks"] = 0
+        if 'CPL_COMM' in resultElement and 'CPL' in resultElement:
+            resultElement["CPL_COMM"]["root_pe"] = resultElement["CPL"]["root_pe"]
+            resultElement["CPL_COMM"]["tasks"] = resultElement["CPL"]["tasks"]
         if len(list(resultElement.keys())) > 0:
             return Response(pe_layout_timings.render(resultElement).read(),mimetype="image/svg+xml")
         else:
