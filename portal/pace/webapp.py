@@ -895,8 +895,10 @@ def specificSearch(query,whitelist = "total_pes_active,model_throughput,machine,
         result = json.loads(searchCore(query,50,"exp_date","desc",whiteListArray,False))
         retval = json.dumps(result[0])
         return retval
+    except IndexError:
+        return ('ERROR')
     except ValueError as e:
-         return ('ERROR')
+        return ('ERROR')
 
 #@app.route("/searchSummary/")
 #@app.route("/searchSummary/<query>")

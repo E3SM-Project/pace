@@ -226,7 +226,8 @@ class ScorpioStats(db.Model):
             nullable=False, index=True, primary_key=True)
     name = db.Column(db.VARCHAR(100), nullable=False, index=True, primary_key=True)
     data = db.Column(MEDIUMTEXT, nullable=False)
-    
+    iopercent = db.Column(DECIMAL(6,2,unsigned=True))
+    iotime = db.Column(DECIMAL(20,3,unsigned=True))
 
     def __init__(self, expid, name, data):
         self.expid = expid
