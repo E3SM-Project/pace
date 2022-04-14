@@ -162,7 +162,8 @@ tr:nth-child(even) {
                 <div id="atmCompProcessId"><span style="padding-left:5em;"><a href="/atmos/{{exp.expid}}">Atm process distribution</a></span></div>
                 
                 <div id="scorpioStatsId"><span style='color:crimson'><b>Scorpio IO Stats:</b></span><br>
-                <span style="padding-left:5em;"><a href="/scorpio/{{expid}}">Scorpio I/O statistics</a></span></div>
+                <span style="padding-left:5em;"><div id="scorpioStatsTable"></div></span>
+                </div>
                 
                 <div id="memoryProfileId"><span style='color:crimson'><b>Memory Usage Profile:</b></span><br>
                 <span style="padding-left:5em;"><a href="/memoryprofile/{{expid}}">Memory Usage Profile</a></span></div>
@@ -288,6 +289,22 @@ var scorpioStatsId = {{scorpioStatsId|int}}
 var memoryProfileId = {{memoryProfileId|int}}
 var buildTimeId = {{buildTimeId|int}}
 
+function link(cell, formatterParams){
+	  var name = cell.getValue();
+		return "<a href='/scorpio/{{expid}}/"+name+"'>"+name+"</a>";
+}
+
+if (scorpioStatsId != false){
+    var scorpioData = {{scorpioJsonData|tojson}}
+    var table = new Tabulator("#scorpioStatsTable", {
+        data:scorpioData,
+        height:"165px",
+        layout:"fitDataTable",
+        columns:[
+        {title:"Name", field:"name", formatter:link, hozAlign:"left"},
+        ],
+    });
+}
 function show(){
     if (scorpioStatsId == false){
         document.getElementById("scorpioStatsId").classList.add("hide")
@@ -301,7 +318,6 @@ function show(){
 }
 
 show();
-
 </script>
 
 {% endblock %}

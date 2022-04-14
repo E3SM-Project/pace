@@ -453,11 +453,17 @@ def expDetails(mexpid):
     buildTimeId = False
     try:
         #check if we have scorpio data
-        scorpioData = db.engine.execute("select name from scorpio_stats where expid="+str(mexpid)).fetchone()
+        scorpioData = db.engine.execute("select name from scorpio_stats where expid="+str(mexpid)).fetchall()
+        scorpioJsonData = []
         if not scorpioData:
             scorpioStatsId = False
         else:
             scorpioStatsId = True
+            for name in scorpioData:
+                model = {
+                    'name':name[0]
+                }
+                scorpioJsonData.append(model)
         
         # check if we have build time data
         buildFileData = db.engine.execute("select data from build_time where expid="+str(mexpid)).first()
@@ -488,7 +494,7 @@ def expDetails(mexpid):
     return render_template('exp-details.html', runtimes = runtimes,exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
             ranks = ranks,chartColors = json.dumps(colorDict),note=note, \
             xmls = myxmls, nmls = mynmls, rcs = myrcs, \
-            scorpioStatsId = scorpioStatsId, memoryProfileId = memoryProfileId, buildTimeId = buildTimeId \
+            scorpioJsonData = scorpioJsonData ,scorpioStatsId = scorpioStatsId, memoryProfileId = memoryProfileId, buildTimeId = buildTimeId \
             )
 
 @app.route("/exp-details-old/<int:mexpid>")
