@@ -208,15 +208,15 @@ def insertMemoryFile(memfile,db,expid):
     if memfile:
         data = parseMemoryProfile.loaddb_memfile(memfile)
         if not data:
-            print("Empty file")
+            print("Empty memory profile file")
             return True
     else:
-        print("No file")
+        print("No memory profile file")
         return True
     name = 'memory'
     mem = db.session.query(MemfileInputs).filter_by(expid=expid, name=name).first()
     if mem:
-        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+        print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid, name))
         return True
     else:
         mem = MemfileInputs(expid=expid, name=name, data=data)
@@ -229,13 +229,13 @@ def insertScorpioStats(spiofile,db,expid):
     if spiofile:
         data = parseScorpioStats.loaddb_scorpio_stats(spiofile)
         if not data:
-            print('Empty file')
+            print('Empty scorpio io stats file')
             return True
         else:
             for model in data:
                 spio = db.session.query(ScorpioStats).filter_by(expid=expid, name=model['name']).first()
                 if spio:
-                    print("Insertion in scorpio is discarded due to dupulication: expid=%d, name=%s" % (expid, model['name']))
+                    print("Insertion in scorpio is discarded due to duplication: expid=%d, name=%s" % (expid, model['name']))
                 else:
                     spio = ScorpioStats(expid=expid, name=model['name'], data=model['data'])
                     db.session.add(spio)
@@ -254,7 +254,7 @@ def insertBuildTimeFile(buildtimefile,db,expid):
         return True
     buildtime = db.session.query(BuildTime).filter_by(expid=expid).first()
     if buildtime:
-        print("Insertion is discarded due to dupulication: expid=%d" % (expid))
+        print("Insertion is discarded due to duplication: expid=%d" % (expid))
         return True
     else:
         buildtime = BuildTime(expid=expid, data=json.dumps(data), total_computecost=total_computecost, total_walltime = total_walltime)
@@ -292,7 +292,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
 
     #insert scorpio stats
     #TODO create a seperate function to handle logic and db insertion
-    print(('* Parsing scorpio io file : '+ convertPathtofile(spiofile)))
+    print(('* Parsing scorpio io stats file : '+ convertPathtofile(spiofile)))
     isSuccess = insertScorpioStats(spiofile,db,currExpObj.expid)
     if not isSuccess:
         return False

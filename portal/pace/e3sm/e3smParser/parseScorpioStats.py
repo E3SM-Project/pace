@@ -31,6 +31,9 @@ def safemembers(members):
         else:
             yield finfo
 
+'''
+This function returns the IO model component name having maximum tot_time.
+'''
 def getMax(data):
     jsondata = json.loads(data)
     modelData = jsondata["ScorpioIOSummaryStatistics"]["ModelComponentIOStatistics"]
