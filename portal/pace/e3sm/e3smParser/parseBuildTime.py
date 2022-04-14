@@ -31,5 +31,5 @@ def loaddb_buildTimesFile(buildfile):
             return None, total_computecost,total_walltime
         return data,total_computecost, total_walltime
     except:
-        print("Something went wrong with %s" %buildfile)
+        print("Error encountered while parsing build time file : %s" %buildfile)
         return None, None

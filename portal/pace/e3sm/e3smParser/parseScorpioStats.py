@@ -86,4 +86,4 @@ def loaddb_scorpio_stats(spiofile):
                 data.append(model)
         return data
     except:
-        print("Something went wrong with %s" %spiofile)
+        print("Error encountered while parsing scorpio file : %s" %spiofile)

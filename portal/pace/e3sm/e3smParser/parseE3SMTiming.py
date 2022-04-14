@@ -190,7 +190,7 @@ def parseE3SMtiming(filename):
         return (successFlag, duplicateFlag, currExpObj) # skips this experiment
     except Exception as e:
         print(('    ERROR: %s' %e))
-        print(('    ERROR: Something is wrong with %s' %convertPathtofile(filename)))
+        print(('    Error encountered while parsing e3sm_timing file : %s' %convertPathtofile(filename)))
         parseFile.close()
         return (successFlag, duplicateFlag, currExpObj) # skips this experiment
 
@@ -281,7 +281,7 @@ def parseE3SMtiming(filename):
         return (successFlag, duplicateFlag, currExpObj) # skips this experiment
     except Exception as e:
         print(('    ERROR: %s' %e))
-        print(('    ERROR: something is wrong with %s' %convertPathtofile(filename)))
+        print(('    Error encountered while parsing e3sm_timing file : %s' %convertPathtofile(filename)))
         #db.session.rollback()
         parseFile.close()
         return (successFlag, duplicateFlag, currExpObj) # skips this experiment
