@@ -249,6 +249,8 @@ def insertBuildTimeFile(buildtimefile,db,expid):
         if not data:
             print("Empty file")
             return True
+        if total_walltime == 0:
+            total_walltime = None
     else:
         print("No file")
         return True

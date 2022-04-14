@@ -243,7 +243,7 @@ class BuildTime(db.Model):
     total_walltime = db.Column(DECIMAL(20,3,unsigned=True))
     total_computecost = db.Column(DECIMAL(20,3,unsigned=True))
 
-    def __init__(self, expid, data, total_computecost=0, total_walltime=0):
+    def __init__(self, expid, data, total_computecost=None, total_walltime=None):
         self.expid = expid
         self.data = data
         self.total_computecost = total_computecost
