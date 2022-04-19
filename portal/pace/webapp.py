@@ -68,6 +68,20 @@ def aboutPage():
     numexps = db.engine.execute("select count(expid) from e3smexp ").first()[0]
     return render_template("about.html", nexps = numexps)
 
+@app.route("/simgroups")
+def simGroups():
+    results = db.engine.execute("select case_group,count(*) from e3smexp where case_group is not null group by case_group order by count(*) DESC").fetchall()
+    tabledata = []
+    for row in results:
+        myrow={
+            'name':None,
+            'nexps':None
+        }
+        myrow['name']=row[0]
+        myrow['nexps']=row[1]
+        tabledata.append(myrow)
+    return render_template("simgroups.html", tabledata = tabledata)
+
 @app.route("/upload-howto")
 def uploadhowto():
     return render_template("upload-howto.html")
@@ -679,7 +693,7 @@ def searchCore(searchTerms,mlimit = 50,orderBy="exp_date",ascDsc="desc",whiteLis
     #Variable names are split into non-string and string respectively. This is because mysql doesn't like comparing strings with numbers. It should therfore be able to fix exact matches, as there is only a string-to-string comparison
     variableList=[
         ["expid","total_pes_active","run_length","model_throughput","mpi_tasks_per_node","init_time","run_time"],
-        ["user","machine","compset","exp_date","res","e3smexp.case","lid"]
+        ["user","machine","compset","exp_date","res","e3smexp.case","case_group","lid"]
     ]
 
     # Sarat (Feb 3,2021): orderby handling is a security issue. There could be
@@ -950,7 +964,7 @@ def searchPrediction(keyword):
     #The keyword is designed to be a single word without any potential database loopholes:
     keyword = keyword.replace("\\c","").replace(";","").replace(" ","")
     #Grab elements based on these columns:
-    columnNames = ["user","machine","expid","compset","res","e3smexp.case","lid"]
+    columnNames = ["user","machine","expid","compset","res","e3smexp.case","case_group","lid"]
     resultWords = []
     for column in columnNames:
         colName = column
