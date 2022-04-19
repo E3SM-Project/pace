@@ -50,6 +50,9 @@
                 <span style='color:crimson'>Machine:</span> {{exp.machine}}<br> 
                 <span style='color:crimson'>Compset:</span> {{exp.compset}}<br> 
                 <span style='color:crimson'>Case:</span> {{exp.case}}<br>
+                {% if exp.case_group %}
+                <span style='color:crimson'>Case Group:</span> {{exp.case_group}}<br>
+                {% endif %}
                 <span style='color:crimson'>Res:</span> {{exp.res}}<br> 
                 <span style='color:crimson'>Version:</span> {{exp.version}}<br>
                 <span style='color:crimson'>Date:</span> {{exp.exp_date}}<br>
