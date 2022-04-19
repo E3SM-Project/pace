@@ -52,11 +52,21 @@ def getMax(data):
 
     return output
 
+def getIO(data, runTime):
+    iotime = None
+    iopercent = None
+    jsondata = json.loads(data)
+
+    iotime = float(jsondata["ScorpioIOSummaryStatistics"]["OverallIOStatistics"]["tot_time(s)"])
+    iopercent = (iotime/runTime)*float(100.0)
+
+    return iotime, iopercent
+
 
 '''
 This function reads the scorpio file and return data in json format
 '''
-def loaddb_scorpio_stats(spiofile):
+def loaddb_scorpio_stats(spiofile, runTime):
 
     # TODO: handle a direcotry generated from this gz file
     # TODO: select a json file
@@ -74,18 +84,25 @@ def loaddb_scorpio_stats(spiofile):
             
             model = {
                 'name':None,
-                'data':None
+                'data':None,
+                'iopercent':None,
+                'iotime':None
             }
             name = None
             jsondata = None
+            iopercent = None
+            iotime = None
 
             name = (file.name).split('/')[-1].split('_')[-1].split('.')[0]
             jsondata = sptar.extractfile(file).read()
 
             if name and jsondata:
                 max_component = getMax(jsondata)
+                iotime,iopercent = getIO(jsondata, float(runTime))
                 model['name'] = str(max_component)+'-'+str(name)
                 model['data'] = jsondata
+                model['iopercent'] = iopercent
+                model['iotime'] = iotime
                 data.append(model)
         return data
     except:

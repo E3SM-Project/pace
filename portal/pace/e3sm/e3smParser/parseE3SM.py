@@ -224,10 +224,10 @@ def insertMemoryFile(memfile,db,expid):
     return True
 
 #need here
-def insertScorpioStats(spiofile,db,expid):
+def insertScorpioStats(spiofile,db,expid,runTime):
     #TODO
     if spiofile:
-        data = parseScorpioStats.loaddb_scorpio_stats(spiofile)
+        data = parseScorpioStats.loaddb_scorpio_stats(spiofile,runTime)
         if not data:
             print('Empty scorpio io stats file')
             return True
@@ -237,7 +237,7 @@ def insertScorpioStats(spiofile,db,expid):
                 if spio:
                     print("Insertion in scorpio is discarded due to duplication: expid=%d, name=%s" % (expid, model['name']))
                 else:
-                    spio = ScorpioStats(expid=expid, name=model['name'], data=model['data'])
+                    spio = ScorpioStats(expid=expid, name=model['name'], data=model['data'],iopercent=model['iopercent'],iotime=model['iotime'])
                     db.session.add(spio)
     else:
         print('Scorpio IO file not found')
@@ -295,7 +295,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
     #insert scorpio stats
     #TODO create a seperate function to handle logic and db insertion
     print(('* Parsing scorpio io stats file : '+ convertPathtofile(spiofile)))
-    isSuccess = insertScorpioStats(spiofile,db,currExpObj.expid)
+    isSuccess = insertScorpioStats(spiofile,db,currExpObj.expid, currExpObj.run_time)
     if not isSuccess:
         return False
     print('    -Complete')
