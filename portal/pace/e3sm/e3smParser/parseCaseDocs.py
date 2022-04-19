@@ -5,7 +5,7 @@
 # @version 3.0
 # @date 2021-09-13
 
-import os, sys
+import os, sys, json
 from pace.e3sm.e3smDb.datastructs import *
 from pace.e3sm.e3smParser import parseNameList
 from pace.e3sm.e3smParser import parseRC
@@ -36,11 +36,29 @@ exclude_zipfiles = []
 excludes_casedocs = ["env_mach_specific.xml~"]
 excludes_gzfiles = []
 
+
+def getCaseGroup(jsondata):
+    caseDir = jsondata["file"]["group"]
+    try:
+        for model in caseDir:
+            if '@id' in model and model['@id']=='case_desc' and 'entry' in model:
+                for entry in model['entry']:
+                    if '@id' in entry and entry['@id']=='CASE_GROUP':
+                        if '@value' in entry:
+                            return entry['@value']
+                        else:
+                            return None
+    except Exception as e:
+        print('Error while getting case_group')
+        print(e)
+        return None
+
 '''
     This function goes through casedocs folder in e3sm experiment and parses certain files by calling 
     its respective parser.
 '''
-def loaddb_casedocs(casedocpath,db, expid):
+def loaddb_casedocs(casedocpath,db, currExpObj):
+    expid = currExpObj.expid
     for item in os.listdir(casedocpath):
         basename, ext = os.path.splitext(item)
         path = os.path.join(casedocpath, item)
@@ -69,7 +87,10 @@ def loaddb_casedocs(casedocpath,db, expid):
 
                 elif nameseq[0] in xmlfiles:
                     data = parseXML.loaddb_xmlfile(path)
-                    
+                    if nameseq[0] == 'env_case':
+                        case_group = getCaseGroup(json.loads(data))
+                        currExpObj.case_group = case_group
+                        db.session.merge(currExpObj)
                     xml = db.session.query(XMLInputs).filter_by(expid=expid, name=name).first()
 
                     if xml:

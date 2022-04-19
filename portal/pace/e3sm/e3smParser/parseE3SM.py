@@ -303,7 +303,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
     #insert casedocs files (namelist, rc, xml)
     #TODO
     print(('* Parsing casedocs file : '+ convertPathtofile(casedocs)))
-    isSuccess = parseCaseDocs.loaddb_casedocs(casedocs,db,currExpObj.expid)
+    isSuccess = parseCaseDocs.loaddb_casedocs(casedocs,db,currExpObj)
     if not isSuccess:
         return False
     print('    -Complete')
@@ -414,7 +414,8 @@ def insertE3SMTiming(filename,readmefile,gitfile,db,fpath, uploaduser):
                         run_time=timingProfileInfo['run_time'],
                         final_time=timingProfileInfo['final_time'],
                         version = expversion,
-                        upload_by = uploaduser)
+                        upload_by = uploaduser,
+                        case_group = None)
         db.session.add(new_e3sm_experiment)
         # table has to have a same experiment id
         currExpObj = E3SMexp.query.order_by(E3SMexp.expid.desc()).first()
