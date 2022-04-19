@@ -339,7 +339,7 @@ def scorpioIOStat(name,mexpid):
     
     #get data
     try:
-        if not isinstance(mexpid,int) or not bool(re.match('^[a-zA-Z0-9-,]+$', name)):
+        if not isinstance(mexpid,int) or not bool(re.match('^[a-zA-Z0-9-_,]+$', name)):
             return render_template('error.html')
 
         scorpio_data = db.engine.execute("select data from scorpio_stats where name ='" +str(name) +"' and expid="+str(mexpid)).first()
