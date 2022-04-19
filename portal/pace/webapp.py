@@ -68,6 +68,20 @@ def aboutPage():
     numexps = db.engine.execute("select count(expid) from e3smexp ").first()[0]
     return render_template("about.html", nexps = numexps)
 
+@app.route("/simgroups")
+def simGroups():
+    results = db.engine.execute("select case_group,count(*) from e3smexp where case_group is not null group by case_group order by count(*) DESC").fetchall()
+    tabledata = []
+    for row in results:
+        myrow={
+            'name':None,
+            'nexps':None
+        }
+        myrow['name']=row[0]
+        myrow['nexps']=row[1]
+        tabledata.append(myrow)
+    return render_template("simgroups.html", tabledata = tabledata)
+
 @app.route("/upload-howto")
 def uploadhowto():
     return render_template("upload-howto.html")
