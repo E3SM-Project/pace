@@ -77,6 +77,12 @@ tr:nth-child(even) {
                         <td><span style='color:crimson'>Case:</span></td>
                         <td>{{exp.case}}</td>
                     </tr>
+                    {% if exp.case_group %}
+                    <tr>
+                        <td><span style='color:crimson'>Case Group:</span></td>
+                        <td>{{exp.case_group}}</td>
+                    </tr>
+                    {% endif %}
                     <tr>
                         <td><span style='color:crimson'>Res:</span></td>
                         <td>{{exp.res}}</td>
