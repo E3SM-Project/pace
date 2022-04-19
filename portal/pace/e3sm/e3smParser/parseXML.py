@@ -36,5 +36,5 @@ def loaddb_xmlfile(xmlpath):
         print("Warning: %s" % str(err))
     
     except:
-        print("Something went wrong with %s" %xmlpath)
+        print("Error parsing XML file: %s" %xmlpath)
     

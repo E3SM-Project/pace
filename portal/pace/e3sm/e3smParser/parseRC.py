@@ -27,4 +27,4 @@ def loaddb_rcfile(rcpath):
         return jsondata
 
     except:
-        print("Something went wrong with %s" %rcpath)
+        print("Error parsing RC file: %s" %rcpath)
