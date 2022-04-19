@@ -33,6 +33,12 @@
     float: right;
     width:55%;
 }
+tr:nth-child(even) {
+  background-color: #D6EEEE;
+}
+.hide {
+    display: none
+}
 </style>
 {% endblock topcontent %}
 
@@ -41,38 +47,110 @@
 <p>
     <div style="overflow:scroll ; border:4px solid black;background-color:#EEE">
         <h1 style="text-align: center">Experiment Details</h1>
-        <!--Pre's take *everything literally, so everyting inside this pre is unformatted...-->
-        <div class="wrap" style="padding:10px;width:auto;border-radius:5px;font-family:menlo">
-            <div class="fleft">
-                <span style='color:crimson'>Id:</span> {{exp.expid}}<br>
-                <span style='color:crimson'>User:</span> {{exp.user}} <br>
-                <span style='color:crimson'>JobID:</span> {{exp.lid}}<br>
-                <span style='color:crimson'>Machine:</span> {{exp.machine}}<br> 
-                <span style='color:crimson'>Compset:</span> {{exp.compset}}<br> 
-                <span style='color:crimson'>Case:</span> {{exp.case}}<br>
-                {% if exp.case_group %}
-                <span style='color:crimson'>Case Group:</span> {{exp.case_group}}<br>
-                {% endif %}
-                <span style='color:crimson'>Res:</span> {{exp.res}}<br> 
-                <span style='color:crimson'>Version:</span> {{exp.version}}<br>
-                <span style='color:crimson'>Date:</span> {{exp.exp_date}}<br>
-                <span style='color:crimson'>Run_time:</span> {{ exp.run_time }} sec<br>
-                <span style='color:crimson'>Init time:</span> {{ exp.init_time }} sec<br>
-                <span style='color:crimson'>Final_time:</span> {{ exp.final_time }} sec<br>
-                <span style='color:crimson'>Total PEs:</span> {{exp.total_pes_active}}<br>
-                <span style='color:crimson'>Model cost:</span> {{exp.model_cost}} pe-hrs/sim_year<br>
-                <span style='color:crimson'>Run length:</span> {{exp.run_length}} days<br>
-                <span style='color:crimson'>Stop_n:</span> {{exp.stop_n}}<br>
-                <span style='color:crimson'>Stop Option:</span> {{ exp.stop_option}}<br>
-                <span style='color:crimson'>MPI tasks/node:</span> {{exp.mpi_tasks_per_node}}<br>
-                
+        <!--<div class="wrap" style="padding:10px;width:auto;border-radius:5px;font-family:menlo">
+            <div class="fleft">-->
+        <div class="container" style="display: flex; padding:10px; width:auto;border-radius:5px;font-family:menlo">
+            <div style="width: 50%">
+                <table>
+                    <tr>
+                        <td><span style='color:crimson'>Id:</span></td>
+                        <td>{{exp.expid}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>User:</span></td>
+                        <td>{{exp.user}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>JobID:</span></td>
+                        <td>{{exp.lid}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Machine:</span></td>
+                        <td>{{exp.machine}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Compset:</span></td>
+                        <td>{{exp.compset}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Case:</span></td>
+                        <td>{{exp.case}}</td>
+                    </tr>
+                    {% if exp.case_group %}
+                    <tr>
+                        <td><span style='color:crimson'>Case Group:</span></td>
+                        <td>{{exp.case_group}}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td><span style='color:crimson'>Res:</span></td>
+                        <td>{{exp.res}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Version:</span></td>
+                        <td>{{exp.version}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Date:</span></td>
+                        <td>{{exp.exp_date}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Run_time:</span></td>
+                        <td>{{ exp.run_time }} sec</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Init time:</span></td>
+                        <td>{{ exp.init_time }} sec</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Final_time:</span></td>
+                        <td>{{ exp.final_time }} sec</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Total PEs:</span></td>
+                        <td>{{exp.total_pes_active}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Model cost:</span></td>
+                        <td>{{exp.model_cost}} pe-hrs/sim_year</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Run length:</span></td>
+                        <td>{{exp.run_length}} days</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Stop_n:</span></td>
+                        <td>{{exp.stop_n}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>Stop Option:</span></td>
+                        <td>{{ exp.stop_option}}</td>
+                    </tr>
+                    <tr>
+                        <td><span style='color:crimson'>MPI tasks/node:</span></td>
+                        <td>{{exp.mpi_tasks_per_node}}</td>
+                    </tr>
+                </table>
                 <br>
-                <span style='color:crimson'><b>Model Throughput</b>:</span> {{exp.model_throughput}} SYPD
-                <br>
+                <table>
+                    <tr>
+                        <td><span style='color:crimson'><b>Model Throughput</b>:</span></td>
+                        <td>{{exp.model_throughput}} SYPD</td>
+                    </tr>
+                </table>
                 <br>
                 <span style='color:crimson'>Additional Notes:</span>
+                <br>
+            <br>
+            
+            <textarea style="resize:both" id="note" name="note" class="form-control" readonly>{{note}}</textarea><p style="text-align:center;margin-top:5px"><a href="/note/{{exp.expid}}"><input type="button" style = "text-align:center" value="Add/Edit" class="btn btn-outline-secondary"/><br></p>
+            <!--Static file loc on web server-->
+            <!--<a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>-->
+            <!--From file server-->
+            <a href="https://pacefs.ornl.gov/e3sm/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
             </div>
-            <div class="fright">
+            <!--<div class="fright">-->
+            <div style="flex-grow: 1;">
                 <span style='color:crimson'><b>Graphs:</b></span>
                 <br>
                 <span style='padding-left:5em'> <a href="/summary/{{expid}}/stats">Summary Global statistics</a></span>
@@ -86,29 +164,24 @@
                             {%- endfor %}
                 <br>
                 <span style='color:crimson'>Component Process :</span> <br>
-                <span style="padding-left:5em;"><a href="/atmos/{{exp.expid}}">Atm process distribution</a></span>
-                <br>
-                <span style='color:crimson'><b>Scorpio IO Stats:</b></span><br>
-                <span style="padding-left:5em;"><a href="/scorpio/{{expid}}">Scorpio I/O statistics</a></span>
-                <br>
-                <span style='color:crimson'><b>Memory Usage Profile:</b></span><br>
-                <span style="padding-left:5em;"><a href="/memoryprofile/{{expid}}">Memory Usage Profile</a></span>
-                <br>
-                <span style='color:crimson'><b>Build Time Profile:</b></span><br>
-                <span style="padding-left:5em;"><a href="/buildtime/{{expid}}">Build Time Profile</a></span>
+
+                <div id="atmCompProcessId"><span style="padding-left:5em;"><a href="/atmos/{{exp.expid}}">Atm process distribution</a></span></div>
+                
+                <div id="scorpioStatsId"><span style='color:crimson'><b>Scorpio IO Stats:</b></span><br>
+                <span style="padding-left:5em;"><div id="scorpioStatsTable"></div></span>
+                </div>
+                
+                <div id="memoryProfileId"><span style='color:crimson'><b>Memory Usage Profile:</b></span><br>
+                <span style="padding-left:5em;"><a href="/memoryprofile/{{expid}}">Memory Usage Profile</a></span></div>
+
+                <div id="buildTimeId"><span style='color:crimson'><b>Build Times:</b></span><br>
+                <span style="padding-left:5em;"><a href="/buildtime/{{expid}}">Build Times</a></span></div>
             </div>
-            <br>
-            <br>
             
-            <textarea style="resize:both" id="note" name="note" class="form-control" readonly>{{note}}</textarea><p style="text-align:center;margin-top:5px"><a href="/note/{{exp.expid}}"><input type="button" style = "text-align:center" value="Add/Edit" class="btn btn-outline-secondary"/><br></p>
-            <!--Static file loc on web server-->
-            <!--<a href="/static/data/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>-->
-            <!--From file server-->
-            <a href="https://pacefs.ornl.gov/e3sm/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
        </div>
     </div>
     <div style="overflow:scroll ; border:4px solid black;margin-top:50px;background-color:#EEE;">
-        <h3 style="text-align: center;margin-bottom:25px;">Model Componenet</h3>
+        <h3 style="text-align: center;margin-bottom:25px;">Model Component</h3>
         <div class="wrap" style="padding:10px">
             <div class="fleft" id="compTable"></div>
             <div class="fright">
@@ -127,17 +200,17 @@
             <tr>
                 <td style="border: 1px solid black">
                     {%for name in xmls%}
-                    <a href="/xmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
+                    &ensp; <a href="/xmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
                     {%endfor%}
                 </td>
                 <td style="border: 1px solid black">
                     {%for name in nmls%}
-                    <a href="/nmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
+                    &ensp; <a href="/nmlviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
                     {%endfor%}
                 </td>
                 <td style="border: 1px solid black">
                     {%for name in rcs%}
-                    <a href="/rcviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
+                    &ensp; <a href="/rcviewer/{{exp.expid}}/{{name[0]}}">{{name[0]}}</a><br>
                     {%endfor%}
                 </td>
             </tr>
@@ -175,7 +248,10 @@ var compcolor = {
     "LND": "#00ff40",
     "OCN": "#0000FF80",
     "ROF": "#FF0000",
-    "WAV": "#0000B0"
+    "WAV": "#0000B0",
+    "IAC":"#882E72",
+    "ESP":"#F7F056",
+    "CPL_COMM":"#654321"
 }
 var fieldDic = {
     "color":"Color",
@@ -214,6 +290,40 @@ var comptable = new Tabulator("#compTable", {
     {title:fieldDic["throughput"], field:"throughput", hozAlign:"right",formatter:"money", formatterParams:{precision:2}},
     ],
 });
+
+var scorpioStatsId = {{scorpioStatsId|int}}
+var memoryProfileId = {{memoryProfileId|int}}
+var buildTimeId = {{buildTimeId|int}}
+
+function link(cell, formatterParams){
+	  var name = cell.getValue();
+		return "<a href='/scorpio/{{expid}}/"+name+"'>"+name+"</a>";
+}
+
+if (scorpioStatsId != false){
+    var scorpioData = {{scorpioJsonData|tojson}}
+    var table = new Tabulator("#scorpioStatsTable", {
+        data:scorpioData,
+        height:"125px",
+        layout:"fitDataTable",
+        columns:[
+        {title:"Name", field:"name", formatter:link, hozAlign:"left"},
+        ],
+    });
+}
+function show(){
+    if (scorpioStatsId == false){
+        document.getElementById("scorpioStatsId").classList.add("hide")
+    }
+    if (memoryProfileId == false){
+        document.getElementById("memoryProfileId").classList.add("hide")
+    }
+    if (buildTimeId == false){
+        document.getElementById("buildTimeId").classList.add("hide")
+    }
+}
+
+show();
 </script>
 
 {% endblock %}

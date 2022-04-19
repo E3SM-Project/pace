@@ -37,16 +37,16 @@ default_args = {
     #         "model_years" = modeled years per wall day
     'dtype': "seconds",
     ## What components are you intersted in plotting?
-    'comps': ['ICE','LND','ROF','WAV','OCN','ATM','GLC','CPL'],
+    'comps': ['ICE','LND','ROF','WAV','OCN','ATM','GLC','CPL','CPL_COMM','IAC','ESP'],
     ## Do any of these components cause all PE's to stop and wait?
-    'fullstop' : [False,False,False,False,False,False,False,True],
+    'fullstop' : [False,False,False,False,False,False,False,True, True,False,False],
     'figname': "e3sm_timing_runtime",
     ## Do you want the pe-layout to be written on the side of the figure?
     'addlayout': False,
     }
 ## Do you have a block color preference?
 # default_args['color'] = cm.rainbow(np.linspace(0,1,len(default_args['comps'])))
-default_args['color'] = ["#00FFFF","#00ff40","#FF0000","#0000B0","#0000FF80","#66ccff","#FF99CC","#ff9900"]
+default_args['color'] = ["#00FFFF","#00ff40","#FF0000","#0000B0","#0000FF80","#66ccff","#FF99CC","#ff9900","#654321","#882E72","#F7F056"]
 ###                       END Options                                       ###
 ###############################################################################
 ###############################################################################
@@ -86,10 +86,10 @@ def check_defaults(arg):
                 "changing to default data type = seconds"))
         arg['dtype'] = "seconds"
     for ii in arg.get('comps'):
-        if not ii in ('ICE','LND','ROF','WAV','OCN','ATM','GLC','CPL'):
+        if not ii in ('ICE','LND','ROF','WAV','OCN','ATM','GLC','CPL','CPL_COMM','IAC','ESP'):
             print("""%s not a supported component please check my_comps variable
             Consider using default of:\n
-            ['ICE','LND','ROF','WAV','OCN','ATM','GLC','CPL']""")
+            ['ICE','LND','ROF','WAV','OCN','ATM','GLC','CPL','CPL_COMM']""")
             return True
     if not len(arg.get('fullstop')) == len(arg.get('comps')):
         print(("my_comps and full_stop are not equal in length.  Setting to " +\

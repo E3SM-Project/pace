@@ -5,7 +5,7 @@
 # @version 3.0
 # @date 2021-09-13
 
-import tarfile, sys
+import tarfile, sys, json
 from os.path import abspath, realpath, dirname, join as joinpath
 resolved = lambda x: realpath(abspath(x))
 
@@ -32,32 +32,78 @@ def safemembers(members):
             yield finfo
 
 '''
+This function returns the IO model component name having maximum tot_time.
+'''
+def getMax(data):
+    jsondata = json.loads(data)
+    modelData = jsondata["ScorpioIOSummaryStatistics"]["ModelComponentIOStatistics"]
+
+    max_comp = float('-inf')
+    output = None
+
+    for mdata in modelData:
+
+        if 'tot_time(s)' in mdata and mdata['tot_time(s)']>max_comp:
+            max_comp = mdata['tot_time(s)']
+            output = mdata['name']
+    
+    if output:
+        output = output.split()[-1]
+
+    return output
+
+def getIO(data, runTime):
+    iotime = None
+    iopercent = None
+    jsondata = json.loads(data)
+
+    iotime = float(jsondata["ScorpioIOSummaryStatistics"]["OverallIOStatistics"]["tot_time(s)"])
+    iopercent = (iotime/runTime)*float(100.0)
+
+    return iotime, iopercent
+
+
+'''
 This function reads the scorpio file and return data in json format
 '''
-def loaddb_scorpio_stats(spiofile):
+def loaddb_scorpio_stats(spiofile, runTime):
 
     # TODO: handle a direcotry generated from this gz file
     # TODO: select a json file
     try:
         sptar = tarfile.open(spiofile, "r:gz")
-        
-        jsonmember = None
-        jsondata = None
+        data = []
+        Scorpio_files = []
 
         members = safemembers(sptar)
         for member in members:
             if member.isfile() and member.name.endswith("json"):
-                if jsonmember is None or jsonmember.size < member.size:
-                    jsonmember = member
+                Scorpio_files.append(member)
         
-        if jsonmember:
-            jsondata = sptar.extractfile(jsonmember).read()
-        
-        sptar.close()
+        for file in Scorpio_files:
+            
+            model = {
+                'name':None,
+                'data':None,
+                'iopercent':None,
+                'iotime':None
+            }
+            name = None
+            jsondata = None
+            iopercent = None
+            iotime = None
 
-        if jsondata is None:
-            print("Json data read error: filename=%s" %spiofile)
-        else:
-            return jsondata
+            name = (file.name).split('/')[-1].split('_')[-1].split('.')[0]
+            jsondata = sptar.extractfile(file).read()
+
+            if name and jsondata:
+                max_component = getMax(jsondata)
+                iotime,iopercent = getIO(jsondata, float(runTime))
+                model['name'] = str(max_component)+'-'+str(name)
+                model['data'] = jsondata
+                model['iopercent'] = iopercent
+                model['iotime'] = iotime
+                data.append(model)
+        return data
     except:
-        print("Something went wrong with %s" %spiofile)
+        print("Error encountered while parsing scorpio file : %s" %spiofile)

@@ -7,24 +7,23 @@
 <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.0.7/dist/js/tabulator.min.js"></script>
 <style>
     tr:nth-child(even) {background-color: #f2f2f2;}
+
+    .hide {
+    display: none
+}
 </style>
 {% endblock topcontent %}
-<p>
-    <div style="overflow: hidden; border:4px solid black; margin-bottom:75px">
-        <h3 style="text-align:center">Scorpio I/O Performance Statistics</h3>
-        <details>
-            <summary style="text-align:center; cursor:pointer"><u>read more...</u></summary>
-            <div id="variableDescription-table" style="margin-top:25px; margin-bottom: 25px"></div>
-            <div id="modelComponentDescription-table" style="margin-top:25px; margin-bottom: 25px"></div>
-        </details>
-    </div>
-</p>
+
 <p>
     <div style="overflow: hidden; border:4px solid black">
+        <h3 style="text-align:center">Scorpio I/O Performance Statistics</h3>
+        <div id='versionId'><p style="text-align: center;">* Note: This data is captured using an older version of Scorpio. In the case of multiple experiments/jobs sharing the same run-directory. this data is not uniquely attributed.</p></div>
+        <br>
+        <br>
         <h3 style="text-align:center">Overall I/O Summary Statistics</h3>
-        <details>
-            <summary style="text-align:center; cursor:pointer"><u>read more...</u></summary>
-            <h6 style="text-align:center; margin-top:25px">This object contains the overall I/O performance statistics for the application.</h6>
+        <details open>
+            <summary style="text-align:center; cursor:pointer"><u>Collapse</u></summary>
+            <div id="variableDescription-table" style="margin-top:25px; margin-bottom: 25px"></div>
         </details>
         <div id="overallIO-table" style="margin-top:25px; margin-bottom: 25px"></div>
         <div id="otput" style="border:1px solid black; border-radius: 25px"></div>
@@ -36,9 +35,9 @@
 <p>
     <div style="border:4px solid black; margin-top:50px">
         <h3 style="text-align:center">Model Component I/O Statistics</h3>
-        <details>
-            <summary style="text-align:center; cursor:pointer"><u>read more...</u></summary>
-            <h6 style="text-align:center; margin-top:25px">An array of objects, each object containing the I/O performance statistics for a single model component.</h6>
+        <details open>
+            <summary style="text-align:center; cursor:pointer"><u>Collapse</u></summary>
+            <div id="modelComponentDescription-table" style="margin-top:25px; margin-bottom: 25px"></div>
         </details>
         <div id="modelIO-table" style="margin-top:25px"></div>
         <p>
@@ -84,7 +83,8 @@ var fieldDic = {
     "tot_rb":"Total Read Size(GB)",
     "tot_wtime":"Total Write Time(s)",
     "tot_rtime":"Total Read Time(s)",
-    "tot_time":"Total Time(s)"
+    "tot_time":"Total IO Time(s)",
+    "tot_run_time":"Total Run Time(s)"
 };
 
 var variableDescriptionData = [
@@ -192,7 +192,7 @@ var varDescriptiontable = new Tabulator("#variableDescription-table", {
     ],
 });
 
-// Model Componenet description table
+// Model Component description table
 var modelCompDescriptiontable = new Tabulator("#modelComponentDescription-table", {
     data:modelComponentDescriptionData,
     layout:"fitDataFill",
@@ -205,12 +205,14 @@ var modelCompDescriptiontable = new Tabulator("#modelComponentDescription-table"
 //convert bytes to GB
 overalTableData[0]["tot_wb(GB)"] = bytesToGb(overalTableData[0]["tot_wb(bytes)"])
 overalTableData[0]["tot_rb(GB)"] = bytesToGb(overalTableData[0]["tot_rb(bytes)"])
+overalTableData[0]["tot_run_time(s)"] = model_runtime
 // overall data table creation
 var overallIOtable = new Tabulator("#overallIO-table", {
     data:overalTableData,
     tooltipsHeader:true,
-    layout:"fitDataStretch",
+    layout:"fitDataFill",
     columns:[
+    {title:fieldDic["tot_run_time"], field:"tot_run_time(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number"},
     {title:fieldDic["tot_time"], field:"tot_time(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number",headerTooltip:"Total wallclock time spent in seconds. This can be considered as an upper bound on the total time spent inside Scorpio by the slowest process"},
     {title:fieldDic["tot_wtime"], field:"tot_wtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
     {title:fieldDic["tot_rtime"], field:"tot_rtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
@@ -218,7 +220,7 @@ var overallIOtable = new Tabulator("#overallIO-table", {
     {title:fieldDic["avg_rtput"], field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
     {title:fieldDic["tot_wb"], field:"tot_wb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
     {title:fieldDic["tot_rb"], field:"tot_rb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
-    {title:fieldDic["name"], field:"name", hozAlign:"right"},
+    {title:fieldDic["name"], field:"name", hozAlign:"left"},
     ],
 });
 
@@ -231,7 +233,7 @@ for (i = 0; i<modeltabledata.length; i++){
 var modelIOtable = new Tabulator("#modelIO-table", {
     data:modeltabledata,
     tooltipsHeader:true,
-    layout:"fitDataStretch",
+    layout:"fitDataFill",
     initialSort:[
         {column:"tot_time(s)", dir:"desc"},
     ],
@@ -243,7 +245,7 @@ var modelIOtable = new Tabulator("#modelIO-table", {
     {title:fieldDic["avg_rtput"], field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
     {title:fieldDic["tot_wb"], field:"tot_wb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
     {title:fieldDic["tot_rb"], field:"tot_rb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
-    {title:fieldDic["name"], field:"name", hozAlign:"right"},
+    {title:fieldDic["name"], field:"name", hozAlign:"left"},
     ],
 });
 modelIOtable.setFilter([
@@ -267,7 +269,7 @@ var writeFiletable = new Tabulator("#writefile-table", {
     {title:fieldDic["tot_wtime"], field:"tot_wtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},sorter:"number",headerTooltip:"Total wallclock time spent, in seconds, writing data to the file system. This can be considered as an upper bound on the time spent inside Scorpio to write data by the slowest process."},
     {title:fieldDic["avg_wtput"], field:"avg_wtput(MB/s)", sorter:"number", formatter:"money", formatterParams:{precision:2}, hozAlign:"right",headerTooltip:"Average throughput (total bytes written/time taken by slowest process) in MB/s ."},
     {title:fieldDic["tot_wb"], field:"tot_wb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes written out, in bytes, to the file system"},
-    {title:fieldDic["name"], field:"name", hozAlign:"right"}
+    {title:fieldDic["name"], field:"name", hozAlign:"left"}
     ],
 });
 
@@ -288,7 +290,7 @@ var readFiletable = new Tabulator("#readfile-table", {
     {title:fieldDic["tot_rtime"], field:"tot_rtime(s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2}, sorter:"number",headerTooltip:"Total wallclock time spent, in seconds, reading data from the file system. This can be considered as an upper bound on the time spent inside Scorpio to read data by the slowest process."},
     {title:fieldDic["avg_rtput"], field:"avg_rtput(MB/s)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Average throughput (total bytes read/time taken by slowest process) in MB/s"},
     {title:fieldDic["tot_rb"], field:"tot_rb(GB)", hozAlign:"right", formatter:"money", formatterParams:{precision:2},headerTooltip:"Total bytes read in bytes (Total bytes read to all the compute processes)"},
-    {title:fieldDic["name"], field:"name", hozAlign:"right"}
+    {title:fieldDic["name"], field:"name", hozAlign:"left"}
     ],
 });
 
@@ -314,8 +316,8 @@ function bytesToGb(size){
 function overalScorpioStackedTime() {
         var tot_time = overalTableData[0]["tot_time(s)"]
         var data = google.visualization.arrayToDataTable([
-            ['Name', 'scorpio_io_time', 'other'],
-            ['Scorpio', tot_time, (model_runtime - tot_time)]
+            ['Name', 'Scorpio IO Time',{type: 'string', role: 'tooltip'}, 'Other', {type: 'string', role: 'tooltip'}],
+            ['', tot_time, 'Scorpio IO Time',(model_runtime - tot_time),'Other']
             ]);
 
         var materialOptions = {
@@ -344,7 +346,7 @@ function overalScorpioStackedTime() {
 function overalScorpioStackedWRTime() {
     var other_time = overalTableData[0]["tot_time(s)"]-(overalTableData[0]["tot_wtime(s)"]+overalTableData[0]["tot_rtime(s)"])
     var data = google.visualization.arrayToDataTable([
-        ['Name', 'tot_wtimes', 'tot_rtimes', 'other'],
+        ['Name', 'Total Write Time', 'Total Read Time', 'Other'],
         [overalTableData[0]["name"], overalTableData[0]["tot_wtime(s)"], overalTableData[0]["tot_rtime(s)"], other_time]
     ]);
 
@@ -373,7 +375,7 @@ function overalScorpioStackedWRTime() {
 // horizontal bar chart write vs read size for overall summary
 function overalScorpioBarWRSize() {
       var data = google.visualization.arrayToDataTable([
-        ['Name', 'tot_wb', 'tot_rb'],
+        ['Name', 'Total Write Size', 'Total Read Size'],
         [overalTableData[0]["name"], overalTableData[0]["tot_wb(bytes)"], overalTableData[0]["tot_rb(bytes)"]]
       ]);
 
@@ -408,8 +410,8 @@ function overalScorpioBarWRSize() {
 function modelScorpioBarWRThroughput() {
       var data = new google.visualization.DataTable();
       data.addColumn('string', 'Name');
-      data.addColumn('number', 'avg_wtput');
-      data.addColumn('number', 'avg_rtput');
+      data.addColumn('number', 'Average Write Throughput');
+      data.addColumn('number', 'Average Read Throughput');
       
       for(let i = 0; i<modeltabledata.length; i++){
         if(modeltabledata[i]["avg_wtput(MB/s)"]!=0 || modeltabledata[i]["avg_rtput(MB/s)"]!=0){
@@ -454,8 +456,8 @@ function modelScorpioBarWRThroughput() {
 function modelScorpioBarWRSize() {
       var data = new google.visualization.DataTable();
       data.addColumn('string', 'Name');
-      data.addColumn('number', 'tot_wb');
-      data.addColumn('number', 'tot_rb');
+      data.addColumn('number', 'Total Write Size');
+      data.addColumn('number', 'Total Read Size');
       
       for(let i = 0; i<modeltabledata.length; i++){
           if(modeltabledata[i]["tot_wb(bytes)"]!=0 || modeltabledata[i]["tot_rb(bytes)"]!=0){
@@ -499,8 +501,8 @@ function modelScorpioBarWRSize() {
 function modelScorpioBarWRTime() {
     var data = new google.visualization.DataTable();
       data.addColumn('string', 'Name');
-      data.addColumn('number', 'tot_wtimes');
-      data.addColumn('number', 'tot_rtimes');
+      data.addColumn('number', 'Total Write Time');
+      data.addColumn('number', 'Total Read Time');
       
       for(let i = 0; i<modeltabledata.length; i++){
           if(modeltabledata[i]["tot_wtime(s)"]!=0 || modeltabledata[i]["tot_rtime(s)"]!=0){
@@ -542,5 +544,11 @@ function modelScorpioBarWRTime() {
     materialChart.draw(data, materialOptions);
 }
 
+var oldVersion = {{oldVersion|int}}
+function show(){
+    if (oldVersion == false){
+        document.getElementById("versionId").classList.add("hide")
+    }
+}
 </script>
 {% endblock %}

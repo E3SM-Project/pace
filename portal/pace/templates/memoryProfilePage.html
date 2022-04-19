@@ -9,7 +9,11 @@
         <h3 style="text-align:center">Resident Memory Profile, RSS </h3>
         <details>
             <summary style="text-align:center; cursor: pointer;"><u>Details...</u></summary>
+            <p style="text-align:center">
+                &ensp; The RSS metric for each component refers to the Resident Set Size (portion of memory occupied by a process in main memory). Per-task memory snapshots are summed up across all tasks on a node to derive on-node memory highwater and memory usage in megabytes.  
+            </p>
         </details>
+        <p style="text-align: center;">* Please note that the graphs are on top of each other if root-pe is same across components.</p>
         <br>
         <canvas id="lineChartRSSTag"></canvas>
     </div>
@@ -17,10 +21,14 @@
 
 <p>
     <div style="overflow:hidden; border: 4px solid black; margin-bottom:75px">
-        <h3 style="text-align:center">Vistual Memory Profile, VSZ </h3>
+        <h3 style="text-align:center">Virtual Memory Profile, VSZ </h3>
         <details>
             <summary style="text-align:center; cursor: pointer;"><u>Details...</u></summary>
+            <p style="text-align:center">
+                &ensp; The highwater number represents the total memory footprint of a process including data paged out to disk (virtual memory).Per-task memory snapshots are summed up across all tasks on a node to derive on-node memory highwater and memory usage in megabytes.
+            </p>
         </details>
+        <p style="text-align: center;">* Please note that the graphs are on top of each other if root-pe is same across components.</p>
         <br>
         <canvas id="lineChartVSZTag"></canvas>
     </div>

@@ -333,19 +333,25 @@ def flameGraph(expid,rank):
     if bool(re.match('^[0-9,]+$', rank)) and bool(re.match('^[0-9,]+$', expid)):
       return render_template("flameGraph.html",expid=expid,rank=rank.split(','))
 
-@app.route("/scorpio/<int:mexpid>")
-def scorpioIOStat(mexpid):
+@app.route("/scorpio/<int:mexpid>/<name>")
+def scorpioIOStat(name,mexpid):
+
+    
     #get data
     try:
-        if not isinstance(mexpid,int):
+        if not isinstance(mexpid,int) or not bool(re.match('^[a-zA-Z0-9-,]+$', name)):
             return render_template('error.html')
-        scorpio_data = db.engine.execute("select data from scorpio_stats where name = 'spio_stats' and expid="+str(mexpid)).first()
+
+        scorpio_data = db.engine.execute("select data from scorpio_stats where name ='" +str(name) +"' and expid="+str(mexpid)).first()
         scorpio_json_data = json.loads(scorpio_data[0])
         
         myexp = db.engine.execute("select * from e3smexp where expid= "+ str(mexpid) ).fetchall()[0]
         modelRuntime = myexp.run_time
-
+        oldVersion = False
         overalData = scorpio_json_data["ScorpioIOSummaryStatistics"]["OverallIOStatistics"]
+
+        if "spio_stats_version" not in overalData:
+            oldVersion = True
         
         modelData = scorpio_json_data["ScorpioIOSummaryStatistics"]["ModelComponentIOStatistics"]
 
@@ -365,7 +371,7 @@ def scorpioIOStat(mexpid):
         print(e)
         return render_template('error.html')
     return render_template('scorpioIOpage.html', overalData = overalData, modelData = modelData,
-                            readIOData=readIOData,writeIOData=writeIOData, modelRuntime = modelRuntime)
+                            readIOData=readIOData,writeIOData=writeIOData, modelRuntime = modelRuntime, oldVersion = oldVersion)
 
 @app.route("/buildtime/<int:mexpid>")
 def buildtime(mexpid):
@@ -454,6 +460,42 @@ def expDetails(mexpid):
         note = noteexp.note
     except IndexError:
         note=""
+    
+    
+    scorpioStatsId = False
+    memoryProfileId = False
+    buildTimeId = False
+    try:
+        #check if we have scorpio data
+        scorpioData = db.engine.execute("select name from scorpio_stats where expid="+str(mexpid)).fetchall()
+        scorpioJsonData = []
+        if not scorpioData:
+            scorpioStatsId = False
+        else:
+            scorpioStatsId = True
+            for name in scorpioData:
+                model = {
+                    'name':name[0]
+                }
+                scorpioJsonData.append(model)
+        
+        # check if we have build time data
+        buildFileData = db.engine.execute("select data from build_time where expid="+str(mexpid)).first()
+        if not buildFileData:
+            buildTimeId = False
+        else:
+            buildTimeId = True
+        
+        #check if we have memory data
+        memData = db.engine.execute("select data from memfile_inputs where name = 'memory' and expid="+str(mexpid)).first()
+        if not memData:
+            memoryProfileId = False
+        else:
+            memoryProfileId = True
+    except Exception as e:
+        print(e)
+        return render_template('error.html')
+
     runtimes=[]
     for runs in myruntime:
         run = {
@@ -465,7 +507,8 @@ def expDetails(mexpid):
         runtimes.append(run)
     return render_template('exp-details.html', runtimes = runtimes,exp = myexp, pelayout = mypelayout, runtime = myruntime,expid = mexpid, \
             ranks = ranks,chartColors = json.dumps(colorDict),note=note, \
-            xmls = myxmls, nmls = mynmls, rcs = myrcs \
+            xmls = myxmls, nmls = mynmls, rcs = myrcs, \
+            scorpioJsonData = scorpioJsonData ,scorpioStatsId = scorpioStatsId, memoryProfileId = memoryProfileId, buildTimeId = buildTimeId \
             )
 
 @app.route("/exp-details-old/<int:mexpid>")
@@ -959,6 +1002,12 @@ def getRuntimeSvg(expid):
             if len(peQuery) > 0:
                 resultElement[key]["root_pe"] = peQuery[0].root_pe
                 resultElement[key]["tasks"] = peQuery[0].tasks -1
+            else:
+                resultElement[key]["root_pe"] = 0
+                resultElement[key]["tasks"] = 0
+        if 'CPL_COMM' in resultElement and 'CPL' in resultElement:
+            resultElement["CPL_COMM"]["root_pe"] = resultElement["CPL"]["root_pe"]
+            resultElement["CPL_COMM"]["tasks"] = resultElement["CPL"]["tasks"]
         if len(list(resultElement.keys())) > 0:
             return Response(pe_layout_timings.render(resultElement).read(),mimetype="image/svg+xml")
         else:

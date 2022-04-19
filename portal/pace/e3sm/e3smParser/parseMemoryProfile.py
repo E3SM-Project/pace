@@ -5,7 +5,7 @@
 # @version 3.0
 # @date 2021-09-13
 
-import gzip, sys
+import gzip
 
 '''
     This function reads the memory file data and returns the cvs data
@@ -18,4 +18,4 @@ def loaddb_memfile(memfile):
             csv_data = f.read()
         return csv_data
     except:
-        print("Something went wrong with %s" %memfile)
+        print("Error encountered while parsing memory file : %s" %memfile)

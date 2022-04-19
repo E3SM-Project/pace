@@ -61,7 +61,7 @@ def parseReadme(readmefilename):
         return False
     except Exception as e:
         print(('[ERROR]: %s' %e))
-        print(('    ERROR: Something is wrong with %s' %convertPathtofile(readmefilename)))
+        print(('    Error encountered while parsing README.docs : %s' %convertPathtofile(readmefilename)))
         fileIn.close()
         return False
     fileIn.close()

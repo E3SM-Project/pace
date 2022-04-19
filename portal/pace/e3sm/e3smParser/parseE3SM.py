@@ -204,17 +204,19 @@ def checkDuplicateExp(euser,emachine,ecurr, ecase):
 
 #need here
 def insertMemoryFile(memfile,db,expid):
-    #TODO
+    data = None
     if memfile:
         data = parseMemoryProfile.loaddb_memfile(memfile)
         if not data:
-            return False
+            print("Empty memory profile file")
+            return True
     else:
-        data = json.dumps({'data':'None'})
+        print("No memory profile file")
+        return True
     name = 'memory'
     mem = db.session.query(MemfileInputs).filter_by(expid=expid, name=name).first()
     if mem:
-        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+        print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid, name))
         return True
     else:
         mem = MemfileInputs(expid=expid, name=name, data=data)
@@ -222,37 +224,42 @@ def insertMemoryFile(memfile,db,expid):
     return True
 
 #need here
-def insertScorpioStats(spiofile,db,expid):
+def insertScorpioStats(spiofile,db,expid,runTime):
     #TODO
     if spiofile:
-        data = parseScorpioStats.loaddb_scorpio_stats(spiofile)
+        data = parseScorpioStats.loaddb_scorpio_stats(spiofile,runTime)
         if not data:
-            return False
+            print('Empty scorpio io stats file')
+            return True
+        else:
+            for model in data:
+                spio = db.session.query(ScorpioStats).filter_by(expid=expid, name=model['name']).first()
+                if spio:
+                    print("Insertion in scorpio is discarded due to duplication: expid=%d, name=%s" % (expid, model['name']))
+                else:
+                    spio = ScorpioStats(expid=expid, name=model['name'], data=model['data'],iopercent=model['iopercent'],iotime=model['iotime'])
+                    db.session.add(spio)
     else:
-        data = json.dumps({'data':'None'})
-    name = 'spio_stats'
-    spio = db.session.query(ScorpioStats).filter_by(expid=expid, name=name).first()
-    if spio:
-        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
-        return True
-    else:
-        spio = ScorpioStats(expid=expid, name=name, data=data)
-        db.session.add(spio)
+        print('Scorpio IO file not found')
     return True
 
 def insertBuildTimeFile(buildtimefile,db,expid):
     if buildtimefile:
-        data = parseBuildTime.loaddb_buildTimesFile(buildtimefile)
+        data, total_computecost, total_walltime = parseBuildTime.loaddb_buildTimesFile(buildtimefile)
         if not data:
-            return False
+            print("Empty file")
+            return True
+        if total_walltime == 0:
+            total_walltime = None
     else:
-        data = json.dumps({'data':'None'})
+        print("No file")
+        return True
     buildtime = db.session.query(BuildTime).filter_by(expid=expid).first()
     if buildtime:
-        print("Insertion is discarded due to dupulication: expid=%d" % (expid))
+        print("Insertion is discarded due to duplication: expid=%d" % (expid))
         return True
     else:
-        buildtime = BuildTime(expid=expid, data=json.dumps(data))
+        buildtime = BuildTime(expid=expid, data=json.dumps(data), total_computecost=total_computecost, total_walltime = total_walltime)
         db.session.add(buildtime)
     return True
 
@@ -268,7 +275,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
         return True
     if successFlag == False:
         return False
-    print(('* Parsing: '+ convertPathtofile(timingfile)))
+    print(('* Parsing model timing file :'+ convertPathtofile(timingfile)))
 
     # insert modelTiming
     isSuccess = insertTiming(timingfile,currExpObj.expid,db)
@@ -278,7 +285,7 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
 
     #insert memory file
     #TODO create a seperate function to handle logic and db insertion
-    print(('* Parsing: '+ convertPathtofile(memfile)))
+    print(('* Parsing meomory file : '+ convertPathtofile(memfile)))
     isSuccess = insertMemoryFile(memfile,db,currExpObj.expid)
     if not isSuccess:
         return False
@@ -287,22 +294,22 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
 
     #insert scorpio stats
     #TODO create a seperate function to handle logic and db insertion
-    print(('* Parsing: '+ convertPathtofile(spiofile)))
-    isSuccess = insertScorpioStats(spiofile,db,currExpObj.expid)
+    print(('* Parsing scorpio io stats file : '+ convertPathtofile(spiofile)))
+    isSuccess = insertScorpioStats(spiofile,db,currExpObj.expid, currExpObj.run_time)
     if not isSuccess:
         return False
     print('    -Complete')
 
     #insert casedocs files (namelist, rc, xml)
     #TODO
-    print(('* Parsing: '+ convertPathtofile(casedocs)))
-    isSuccess = parseCaseDocs.loaddb_casedocs(casedocs,db,currExpObj.expid)
+    print(('* Parsing casedocs file : '+ convertPathtofile(casedocs)))
+    isSuccess = parseCaseDocs.loaddb_casedocs(casedocs,db,currExpObj)
     if not isSuccess:
         return False
     print('    -Complete')
 
     #insert build time
-    print(('* Parsing: '+ convertPathtofile(buildtimefile)))
+    print(('* Parsing build time file : '+ convertPathtofile(buildtimefile)))
     isSuccess = insertBuildTimeFile(buildtimefile,db,currExpObj.expid)
     if not isSuccess:
         return False
@@ -315,16 +322,6 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
         return False
     print('    -Complete')
     
-    #deprecated version
-    """print('* Parsing E3SM Input files')
-    # Needs expid changes to be committed to database
-    # We need to add .zip to zipFileFullPath 
-    zipFileFullName = zipFileFullPath + ".zip"
-    returnValue = inputFileParser.insertInputs(zipFileFullName, db,currExpObj.expid,  sys.stdout, sys.stderr)
-    if returnValue != 0:
-        print('[ERROR] Problem parsing model inputs')
-        return False
-    print('    -Complete')"""
 
     # try commit if not, rollback
     print('* Storing Experiment Data in Database')
@@ -363,7 +360,7 @@ def insertE3SMTiming(filename,readmefile,gitfile,db,fpath, uploaduser):
     try:
         
         # parse e3sm_timing.* file
-        print(('* Parsing: '+convertPathtofile(filename)))
+        print(('* Parsing e3sm_timing file: '+convertPathtofile(filename)))
         successFlag, timingProfileInfo, componentTable, runTimeTable = parseE3SMTiming.parseE3SMtiming(filename)
         if not successFlag:
             return (successFlag, False, None)
@@ -380,14 +377,14 @@ def insertE3SMTiming(filename,readmefile,gitfile,db,fpath, uploaduser):
         print('     -Complete')
 
         # parse README.docs file
-        print(('* Parsing: '+convertPathtofile(readmefile)))
+        print(('* Parsing README.docs file : '+convertPathtofile(readmefile)))
         readmeparse = parseReadMe.parseReadme(readmefile)
         if readmeparse == False:
             return (successFlag, duplicateFlag, None) #this skips the experiment
         print('    -Complete')
 
         # parse GIT_DESCRIBE file
-        print(('* Parsing: '+convertPathtofile(gitfile)))
+        print(('* Parsing GIT_DESCRIBE file : '+convertPathtofile(gitfile)))
         expversion = parseModelVersion.parseModelVersion(gitfile)
         print('    -Complete')
 
@@ -417,7 +414,8 @@ def insertE3SMTiming(filename,readmefile,gitfile,db,fpath, uploaduser):
                         run_time=timingProfileInfo['run_time'],
                         final_time=timingProfileInfo['final_time'],
                         version = expversion,
-                        upload_by = uploaduser)
+                        upload_by = uploaduser,
+                        case_group = None)
         db.session.add(new_e3sm_experiment)
         # table has to have a same experiment id
         currExpObj = E3SMexp.query.order_by(E3SMexp.expid.desc()).first()
@@ -478,7 +476,7 @@ def insertE3SMTiming(filename,readmefile,gitfile,db,fpath, uploaduser):
         return (successFlag, duplicateFlag, currExpObj) # skips this experiment
     except Exception as e:
         print(('    ERROR: %s' %e))
-        print(('    ERROR: something is wrong with %s' %convertPathtofile(filename)))
+        print(('    Error encountered while parsing e3sm_timing file : %s' %convertPathtofile(filename)))
         db.session.rollback()
         return (successFlag, duplicateFlag, currExpObj) # skips this experiment
 
@@ -580,7 +578,7 @@ def insertTiming(mtFile,expID,db):
         return (False) # skips this experiment
     except Exception as e:
         print(('[ERROR]: %s' % e))
-        print(('    ERROR: Something is wrong with %s' %convertPathtofile(mtFile)))
+        print(('    Error encountered while parsing model timing file %s' %convertPathtofile(mtFile)))
         db.session.rollback()
         sourceFile.close()
         return (False) # skips this experiment
