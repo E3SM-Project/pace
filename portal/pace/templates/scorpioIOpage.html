@@ -345,6 +345,9 @@ function overalScorpioStackedTime() {
 // stacked percentage bar chart scorpio write vs read vs scorpio time
 function overalScorpioStackedWRTime() {
     var other_time = overalTableData[0]["tot_time(s)"]-(overalTableData[0]["tot_wtime(s)"]+overalTableData[0]["tot_rtime(s)"])
+    if (other_time<0){
+        other_time = 0
+    }
     var data = google.visualization.arrayToDataTable([
         ['Name', 'Total Write Time', 'Total Read Time', 'Other'],
         [overalTableData[0]["name"], overalTableData[0]["tot_wtime(s)"], overalTableData[0]["tot_rtime(s)"], other_time]
