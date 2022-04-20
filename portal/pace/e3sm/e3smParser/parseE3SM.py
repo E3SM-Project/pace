@@ -237,7 +237,7 @@ def insertScorpioStats(spiofile,db,expid,runTime):
                 if spio:
                     print("Insertion in scorpio is discarded due to duplication: expid=%d, name=%s" % (expid, model['name']))
                 else:
-                    spio = ScorpioStats(expid=expid, name=model['name'], data=model['data'],iopercent=model['iopercent'],iotime=model['iotime'])
+                    spio = ScorpioStats(expid=expid, name=model['name'], data=model['data'],iopercent=model['iopercent'],iotime=model['iotime'],version = model['version'])
                     db.session.add(spio)
     else:
         print('Scorpio IO file not found')

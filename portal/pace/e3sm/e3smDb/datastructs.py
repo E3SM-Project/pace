@@ -231,13 +231,15 @@ class ScorpioStats(db.Model):
     data = db.Column(MEDIUMTEXT, nullable=False)
     iopercent = db.Column(DECIMAL(6,2,unsigned=True))
     iotime = db.Column(DECIMAL(20,3,unsigned=True))
+    version  = db.Column(db.VARCHAR(10), nullable = True)
 
-    def __init__(self, expid, name, data, iopercent=None, iotime=None):
+    def __init__(self, expid, name, data, iopercent=None, iotime=None, version = None):
         self.expid = expid
         self.name = name
         self.data = data
         self.iopercent = iopercent
         self.iotime = iotime
+        self.version = version
 
 class BuildTime(db.Model):
     __tablename__ = 'build_time'
