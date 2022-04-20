@@ -35,8 +35,7 @@ def safemembers(members):
 This function returns the IO model component name having maximum tot_time.
 '''
 def getMax(data):
-    jsondata = json.loads(data)
-    modelData = jsondata["ScorpioIOSummaryStatistics"]["ModelComponentIOStatistics"]
+    modelData = data["ScorpioIOSummaryStatistics"]["ModelComponentIOStatistics"]
 
     max_comp = float('-inf')
     output = None
@@ -55,13 +54,28 @@ def getMax(data):
 def getIO(data, runTime):
     iotime = None
     iopercent = None
-    jsondata = json.loads(data)
 
-    iotime = float(jsondata["ScorpioIOSummaryStatistics"]["OverallIOStatistics"]["tot_time(s)"])
+    iotime = float(data["ScorpioIOSummaryStatistics"]["OverallIOStatistics"]["tot_time(s)"])
     iopercent = (iotime/runTime)*float(100.0)
 
     return iotime, iopercent
 
+'''
+This function checks for supported scorpio stats file
+'''
+def supportedVersion(data):
+    model = data["ScorpioIOSummaryStatistics"]["OverallIOStatistics"]
+    if "tot_time(s)" in model:
+        return True
+    else:
+        return False
+
+def versionTag(data):
+    model = data["ScorpioIOSummaryStatistics"]["OverallIOStatistics"]
+    if "spio_stats_version" in model:
+        return model["spio_stats_version"]
+    else:
+        return None
 
 '''
 This function reads the scorpio file and return data in json format
@@ -80,30 +94,43 @@ def loaddb_scorpio_stats(spiofile, runTime):
             if member.isfile() and member.name.endswith("json"):
                 Scorpio_files.append(member)
         
+        oldsupported = 0
         for file in Scorpio_files:
             
             model = {
                 'name':None,
                 'data':None,
                 'iopercent':None,
-                'iotime':None
+                'iotime':None,
+                'version':None
             }
             name = None
             jsondata = None
             iopercent = None
             iotime = None
+            version = None
 
             name = (file.name).split('/')[-1].split('_')[-1].split('.')[0]
             jsondata = sptar.extractfile(file).read()
 
             if name and jsondata:
-                max_component = getMax(jsondata)
-                iotime,iopercent = getIO(jsondata, float(runTime))
+                jsondatapython = json.loads(jsondata)
+                if not supportedVersion(jsondatapython):
+                    print('Encountered very old format of Scorpio stats which is not supported.')
+                    continue
+                version = versionTag(jsondatapython)
+                if version==None and oldsupported>=10:
+                    continue
+                if version==None:
+                    oldsupported+=1
+                max_component = getMax(jsondatapython)
+                iotime,iopercent = getIO(jsondatapython, float(runTime))
                 model['name'] = str(max_component)+'-'+str(name)
                 model['data'] = jsondata
                 model['iopercent'] = iopercent
                 model['iotime'] = iotime
+                model['version'] = version
                 data.append(model)
         return data
     except:
-        print("Error encountered while parsing scorpio file : %s" %spiofile)
+       print("Error encountered while parsing scorpio file : %s" %spiofile)
