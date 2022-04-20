@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block topscripts %}
-  <link href="https://unpkg.com/tabulator-tables@4.1.4/dist/css/tabulator.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/5.1.8/css/tabulator.min.css" integrity="sha512-Rgo3xsStibA2lFAL//AiWBd5oQqXp4JsFykPDOtNX8WMXSjq7GGd0NscBkzISgvdSfkSHYWDfnx+Bher+R4mBg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 {% endblock %}
 {% block content %}
 
@@ -12,10 +12,18 @@
 
 {% endblock %}
 {% block bottomscripts %}
-<script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.1.4/dist/js/tabulator.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tabulator/5.1.8/js/tabulator.min.js" integrity="sha512-cIJZFYLfhNre7dM9FFu/HIOgOGTulRtbMxYgtoeCYQHvdSsa/nOqcGOQpzW4EYWFCd0IZsmxEoJFBYcQiqiI5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
-var tableDataNested = {{myjson | safe}};
+var filterTree = function (data, filter) {
+   if (data['_children'] && data['_children'].length > 0) {
+      for (var i in data['_children']) {
+         return data[filter.field] == filter.value || filterTree(data['_children'][i], filter);
+      }
+   }
+   return data[filter.field] == filter.value;
+};
 
+var tableDataNested = {{myjson | safe}};
    //headerVisible:false,
    //resizableRows:true,
    //maxHeight:"100%",
@@ -30,5 +38,7 @@ var table = new Tabulator("#data-table", {
        {title:"Value", field:"value", formatter:"textarea"}
        ],
 });
+
+//table.setFilter(filterTree, {field:'name', type:'=', value:'value'});
 </script>
 {% endblock %}
