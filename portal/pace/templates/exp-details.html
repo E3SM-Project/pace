@@ -39,6 +39,9 @@ tr:nth-child(even) {
 .hide {
     display: none
 }
+.wrap-me{
+    word-break: break-all !important;
+}
 </style>
 {% endblock topcontent %}
 
@@ -50,85 +53,85 @@ tr:nth-child(even) {
         <!--<div class="wrap" style="padding:10px;width:auto;border-radius:5px;font-family:menlo">
             <div class="fleft">-->
         <div class="container" style="display: flex; padding:10px; width:auto;border-radius:5px;font-family:menlo">
-            <div style="width: 50%">
-                <table>
+            <div class="inBlock" style="width: 50%">
+                <table style="table-layout:fixed">
                     <tr>
-                        <td><span style='color:crimson'>Id:</span></td>
-                        <td>{{exp.expid}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>Id:</span></td>
+                        <td class="wrap-me">{{exp.expid}}</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>User:</span></td>
-                        <td>{{exp.user}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>User:</span></td>
+                        <td class="wrap-me">{{exp.user}}</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>JobID:</span></td>
-                        <td>{{exp.lid}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>JobID:</span></td>
+                        <td class="wrap-me">{{exp.lid}}</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>Machine:</span></td>
-                        <td>{{exp.machine}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>Machine:</span></td>
+                        <td class="wrap-me">{{exp.machine}}</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>Compset:</span></td>
-                        <td>{{exp.compset}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>Compset:</span></td>
+                        <td class="wrap-me">{{exp.compset}}</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>Case:</span></td>
-                        <td>{{exp.case}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>Case:</span></td>
+                        <td class="wrap-me">{{exp.case}}</td>
                     </tr>
                     {% if exp.case_group %}
                     <tr>
-                        <td><span style='color:crimson'>Case Group:</span></td>
-                        <td>{{exp.case_group}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>Case Group:</span></td>
+                        <td class="wrap-me">{{exp.case_group}}</td>
                     </tr>
                     {% endif %}
                     <tr>
-                        <td><span style='color:crimson'>Res:</span></td>
-                        <td>{{exp.res}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>Res:</span></td>
+                        <td class="wrap-me">{{exp.res}}</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>Version:</span></td>
-                        <td>{{exp.version}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>Version:</span></td>
+                        <td class="wrap-me">{{exp.version}}</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>Date:</span></td>
-                        <td>{{exp.exp_date}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>Date:</span></td>
+                        <td class="wrap-me">{{exp.exp_date}}</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>Run_time:</span></td>
-                        <td>{{ exp.run_time }} sec</td>
+                        <td class="wrap-me"><span style='color:crimson'>Run_time:</span></td>
+                        <td class="wrap-me">{{ exp.run_time }} sec</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>Init time:</span></td>
-                        <td>{{ exp.init_time }} sec</td>
+                        <td class="wrap-me"><span style='color:crimson'>Init time:</span></td>
+                        <td class="wrap-me">{{ exp.init_time }} sec</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>Final_time:</span></td>
-                        <td>{{ exp.final_time }} sec</td>
+                        <td class="wrap-me"><span style='color:crimson'>Final_time:</span></td>
+                        <td class="wrap-me">{{ exp.final_time }} sec</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>Total PEs:</span></td>
-                        <td>{{exp.total_pes_active}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>Total PEs:</span></td>
+                        <td class="wrap-me">{{exp.total_pes_active}}</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>Model cost:</span></td>
-                        <td>{{exp.model_cost}} pe-hrs/sim_year</td>
+                        <td class="wrap-me"><span style='color:crimson'>Model cost:</span></td>
+                        <td class="wrap-me">{{exp.model_cost}} pe-hrs/sim_year</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>Run length:</span></td>
-                        <td>{{exp.run_length}} days</td>
+                        <td class="wrap-me"><span style='color:crimson'>Run length:</span></td>
+                        <td class="wrap-me">{{exp.run_length}} days</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>Stop_n:</span></td>
-                        <td>{{exp.stop_n}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>Stop_n:</span></td>
+                        <td class="wrap-me">{{exp.stop_n}}</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>Stop Option:</span></td>
-                        <td>{{ exp.stop_option}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>Stop Option:</span></td>
+                        <td class="wrap-me">{{ exp.stop_option}}</td>
                     </tr>
                     <tr>
-                        <td><span style='color:crimson'>MPI tasks/node:</span></td>
-                        <td>{{exp.mpi_tasks_per_node}}</td>
+                        <td class="wrap-me"><span style='color:crimson'>MPI tasks/node:</span></td>
+                        <td class="wrap-me">{{exp.mpi_tasks_per_node}}</td>
                     </tr>
                 </table>
                 <br>
@@ -150,7 +153,7 @@ tr:nth-child(even) {
             <a href="https://pacefs.ornl.gov/e3sm/exp-{{exp.user}}-{{exp.expid}}.zip">Download Raw Data</a>
             </div>
             <!--<div class="fright">-->
-            <div style="flex-grow: 1;">
+            <div class = "inBlock" style="flex-grow: 1;">
                 <span style='color:crimson'><b>Graphs:</b></span>
                 <br>
                 <span style='padding-left:5em'> <a href="/summary/{{expid}}/stats">Summary Global statistics</a></span>
