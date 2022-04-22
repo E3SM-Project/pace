@@ -76,10 +76,11 @@ def loaddb_casedocs(casedocpath,db, currExpObj):
             if nameseq:
                 if nameseq[0] in namelists:
                     data = parseNameList.loaddb_namelist(path)
-
+                    if not data:
+                        continue
                     nml = db.session.query(NamelistInputs).filter_by(expid=expid, name=name).first()
                     if nml:
-                        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+                        print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid, name))
 
                     else:
                         nml = NamelistInputs(expid=expid, name=name, data=data)
@@ -87,6 +88,8 @@ def loaddb_casedocs(casedocpath,db, currExpObj):
 
                 elif nameseq[0] in xmlfiles:
                     data = parseXML.loaddb_xmlfile(path)
+                    if not data:
+                        continue
                     if nameseq[0] == 'env_case':
                         case_group = getCaseGroup(json.loads(data))
                         currExpObj.case_group = case_group
@@ -94,7 +97,7 @@ def loaddb_casedocs(casedocpath,db, currExpObj):
                     xml = db.session.query(XMLInputs).filter_by(expid=expid, name=name).first()
 
                     if xml:
-                        print("Insertion is discarded due to dupulication: expid=%d, xml-name=%s" % (expid, name))
+                        print("Insertion is discarded due to duplication: expid=%d, xml-name=%s" % (expid, name))
 
                     else:
                         xml = XMLInputs(expid=expid, name=name, data=data)
@@ -102,11 +105,12 @@ def loaddb_casedocs(casedocpath,db, currExpObj):
 
                 elif nameseq[0] in rcfiles:
                     data = parseRC.loaddb_rcfile(path)
-                    
+                    if not data:
+                        continue
                     rc = db.session.query(RCInputs).filter_by(expid=expid, name=name).first()
 
                     if rc:
-                        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+                        print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid, name))
 
                     else:
                         rc = RCInputs(expid=expid, name=name, data=data)
