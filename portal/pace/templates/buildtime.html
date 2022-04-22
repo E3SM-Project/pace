@@ -10,8 +10,23 @@
 {% endblock topcontent %}
 
 <p>
-    <div style="border:4px solid black; margin-top:75px; margin-bottom:100px;">
+    <div style="padding-left: 10px border:4px solid black; margin-top:75px; margin-bottom:100px;">
         <h3 style="text-align:center">Build Times</h3>
+        <br>
+        {% if total_walltime %}
+        <b>Wall Time for build</b>: {{total_walltime}} sec.
+        {% endif%}
+        {% if total_computecost %}
+        <br>
+        <b>Total Compute Cost of build</b>: {{total_computecost}} sec.
+        <p style="color:crimson">
+        Note: This is the total cost associated with compilation across components. 
+        <br>
+        Typically, the wall time is lower due to parallel builds.
+        </p>
+        {% endif%}
+
+
         <details>
             <summary style="text-align:center; cursor:pointer">Details</summary>
             <h6 style="text-align:center">Total build time for each files in seconds</h6>
