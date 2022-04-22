@@ -382,6 +382,12 @@ def buildtime(mexpid):
         jsonData = json.loads(data[0])
         if not jsonData or ('data' in jsonData and jsonData['data'] == 'None'):
             return render_template('customMessagepage.html', message = 'Data not available for this experiment')
+        result = db.engine.execute("select total_walltime from build_time where expid="+str(mexpid)).first()
+        if result[0]:
+            itotal_walltime = result[0]
+        result = db.engine.execute("select total_computecost from build_time where expid="+str(mexpid)).first()
+        if result[0]:
+            itotal_computecost = result[0]
         
         tabledata = []
         for node in jsonData:
@@ -396,7 +402,7 @@ def buildtime(mexpid):
         print('Error:')
         print(e)
         return render_template('error.html')
-    return render_template('buildtime.html', test = jsonData, tabledata = tabledata)
+    return render_template('buildtime.html', test = jsonData, tabledata = tabledata, total_walltime = itotal_walltime, total_computecost = itotal_computecost)
 
 @app.route("/memoryprofile/<int:mexpid>")
 def memoryProfileStat(mexpid):
