@@ -17,9 +17,12 @@
 <p>
     <div style="overflow: hidden; border:4px solid black">
         <h3 style="text-align:center">Scorpio I/O Performance Statistics</h3>
-        <div id='versionId'><p style="text-align: center;">* Note: This data is captured using an older version of Scorpio. In the case of multiple experiments/jobs sharing the same run-directory. this data is not uniquely attributed.</p></div>
+        {% if not version %}
+            <p style="text-align: center; color: crimson">* Note: This data is captured using an older version of Scorpio. In the case of multiple experiments/jobs sharing the same run-directory. this data is not uniquely attributed.</p></div>
+        {% endif%}
         <br>
         <br>
+    <div style="overflow: hidden; border:4px solid black">
         <h3 style="text-align:center">Overall I/O Summary Statistics</h3>
         <details open>
             <summary style="text-align:center; cursor:pointer"><u>Collapse</u></summary>
@@ -547,11 +550,5 @@ function modelScorpioBarWRTime() {
     materialChart.draw(data, materialOptions);
 }
 
-var oldVersion = {{oldVersion|int}}
-function show(){
-    if (oldVersion == false){
-        document.getElementById("versionId").classList.add("hide")
-    }
-}
 </script>
 {% endblock %}
