@@ -80,7 +80,7 @@ def loaddb_casedocs(casedocpath,db, currExpObj):
                         continue
                     nml = db.session.query(NamelistInputs).filter_by(expid=expid, name=name).first()
                     if nml:
-                        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+                        print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid, name))
 
                     else:
                         nml = NamelistInputs(expid=expid, name=name, data=data)
@@ -97,7 +97,7 @@ def loaddb_casedocs(casedocpath,db, currExpObj):
                     xml = db.session.query(XMLInputs).filter_by(expid=expid, name=name).first()
 
                     if xml:
-                        print("Insertion is discarded due to dupulication: expid=%d, xml-name=%s" % (expid, name))
+                        print("Insertion is discarded due to duplication: expid=%d, xml-name=%s" % (expid, name))
 
                     else:
                         xml = XMLInputs(expid=expid, name=name, data=data)
@@ -110,7 +110,7 @@ def loaddb_casedocs(casedocpath,db, currExpObj):
                     rc = db.session.query(RCInputs).filter_by(expid=expid, name=name).first()
 
                     if rc:
-                        print("Insertion is discarded due to dupulication: expid=%d, name=%s" % (expid, name))
+                        print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid, name))
 
                     else:
                         rc = RCInputs(expid=expid, name=name, data=data)
