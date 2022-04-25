@@ -1,19 +1,20 @@
 Performance Analytics for Computational Experiments (PACE)
 ================================================================================
 
-PACE is a framework designed to aggregate and summarize performance data collected 
-from scientific applications like E3SM to derive insights and make them accessible 
-through a web portal.
+Understanding computational performance of a complex coupled model like the 
+Energy Exascale Earth System Model (E3SM) poses a singular challenge to domain 
+and computational scientists. Toward that goal, we developed 
+PACE (Performance Analytics for Computational Experiments) , 
+a web-enabled framework to summarize performance data collected from E3SM 
+experiments to derive insights and present them through a web portal.
 
-Quick Start
+The primary goal of PACE is to serve as a central hub of performance data 
+to provide an executive summary of E3SM experiments' performance.
+
+Documentation
 --------------------------------------------------------------------------------
 
+https://pace-docs.readthedocs.io
 
-Prerequisites
---------------------------------------------------------------------------------
-* Python
-* Flask
-* MariaDB
+Understanding computational performance of a complex coupled model like the Energy Exascale Earth System Model (E3SM) poses a singular challenge to domain and computational scientists. Toward that goal, we developed PACE (Performance Analytics for Computational Experiments) , a web-enabled framework to summarize performance data collected from E3SM experiments to derive insights and present them through a web portal.
 
-Build/Deploy
---------------------------------------------------------------------------------
