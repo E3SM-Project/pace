@@ -415,7 +415,9 @@ def insertE3SMTiming(filename,readmefile,gitfile,db,fpath, uploaduser):
                         final_time=timingProfileInfo['final_time'],
                         version = expversion,
                         upload_by = uploaduser,
-                        case_group = None)
+                        case_group = None,
+                        compiler=None,
+                        mpilib=None)
         db.session.add(new_e3sm_experiment)
         # table has to have a same experiment id
         currExpObj = E3SMexp.query.order_by(E3SMexp.expid.desc()).first()

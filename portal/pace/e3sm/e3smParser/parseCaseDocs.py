@@ -53,6 +53,30 @@ def getCaseGroup(jsondata):
         print(e)
         return None
 
+def getEnvBuild(jsondata):
+    output = {
+        'compiler':None,
+        'mpilib':None
+    }
+    buildModel = jsondata["file"]["group"]
+
+    try:
+        for model in buildModel:
+            if '@id' in model and model['@id']=='build_macros' and 'entry' in model:
+                for entry in model['entry']:
+                    if '@id' in entry and entry['@id']=='COMPILER':
+                        if '@value' in entry:
+                            output['compiler'] = entry['@value']
+                    elif '@id' in entry and entry['@id'] == 'MPILIB':
+                        if '@value' in entry:
+                            output['mpilib'] = entry['@value']
+        return output
+    except Exception as e:
+        print('Error while getting build_macros information')
+        print(e)
+        return output
+
+
 '''
     This function goes through casedocs folder in e3sm experiment and parses certain files by calling 
     its respective parser.
@@ -93,6 +117,11 @@ def loaddb_casedocs(casedocpath,db, currExpObj):
                     if nameseq[0] == 'env_case':
                         case_group = getCaseGroup(json.loads(data))
                         currExpObj.case_group = case_group
+                        db.session.merge(currExpObj)
+                    elif nameseq[0] == 'env_build':
+                        envBuildData = getEnvBuild(json.loads(data))
+                        currExpObj.compiler = envBuildData['compiler']
+                        currExpObj.mpilib = envBuildData['mpilib']
                         db.session.merge(currExpObj)
                     xml = db.session.query(XMLInputs).filter_by(expid=expid, name=name).first()
 
