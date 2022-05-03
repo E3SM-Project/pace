@@ -69,11 +69,13 @@ class E3SMexp(db.Model):
     version = db.Column(db.String(100),nullable=False)
     upload_by = db.Column(db.String(25),nullable=False, default='sarat')
     case_group = db.Column(db.String(200),nullable=True, index=True)
+    compiler = db.Column(db.String(20),nullable=True, index=True)
+    mpilib = db.Column(db.String(20),nullable=True, index=True)
 
     def __init__(self, case, lid, machine, caseroot, timeroot, user, exp_date,
                     long_res, res, compset, long_compset, stop_option, stop_n, run_length,
                     total_pes_active, mpi_tasks_per_node, pe_count_for_cost_estimate, model_cost, model_throughput, 
-                    actual_ocn_init_wait_time, init_time, run_time, final_time, version, upload_by, case_group):
+                    actual_ocn_init_wait_time, init_time, run_time, final_time, version, upload_by, case_group, compiler,mpilib):
         self.case = case
         self.lid = lid
         self.machine = machine
@@ -101,6 +103,8 @@ class E3SMexp(db.Model):
         self.version = version
         self.upload_by = upload_by
         self.case_group = case_group
+        self.compiler = compiler
+        self.mpilib = mpilib
 
 class Pelayout(db.Model):
     __tablename__ = 'pelayout'
