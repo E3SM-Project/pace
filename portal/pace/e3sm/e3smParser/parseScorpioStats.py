@@ -5,6 +5,7 @@
 # @version 3.0
 # @date 2021-09-13
 
+from fileinput import filename
 import tarfile, sys, json
 from os.path import abspath, realpath, dirname, join as joinpath
 resolved = lambda x: realpath(abspath(x))
@@ -56,7 +57,7 @@ def getIO(data, runTime):
     iopercent = None
 
     iotime = float(data["ScorpioIOSummaryStatistics"]["OverallIOStatistics"]["tot_time(s)"])
-    iopercent = (iotime/runTime)*float(100.0)
+    iopercent = round((iotime/runTime)*float(100.0),2)
 
     return iotime, iopercent
 
@@ -118,13 +119,13 @@ def loaddb_scorpio_stats(spiofile, runTime):
                 if not supportedVersion(jsondatapython):
                     print('Encountered very old format of Scorpio stats which is not supported.')
                     continue
+                iotime,iopercent = getIO(jsondatapython, float(runTime))
                 version = versionTag(jsondatapython)
-                if version==None and oldsupported>=10:
+                if iopercent>100 or (version==None and oldsupported>=10):
                     continue
                 if version==None:
                     oldsupported+=1
                 max_component = getMax(jsondatapython)
-                iotime,iopercent = getIO(jsondatapython, float(runTime))
                 model['name'] = str(max_component)+'-'+str(name)
                 model['data'] = jsondata
                 model['iopercent'] = iopercent
