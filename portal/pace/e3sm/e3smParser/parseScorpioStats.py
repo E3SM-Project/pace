@@ -5,7 +5,7 @@
 # @version 3.0
 # @date 2021-09-13
 
-from fileinput import filename
+
 import tarfile, sys, json
 from os.path import abspath, realpath, dirname, join as joinpath
 resolved = lambda x: realpath(abspath(x))
