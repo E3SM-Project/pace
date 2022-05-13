@@ -276,3 +276,23 @@ class MemfileInputs(db.Model):
         self.name = name
         self.data = data
 
+class PreviewRun(db.Model):
+    __tablename__ = 'preview_run'
+
+    expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
+            nullable=False, index=True, primary_key=True)
+    mpirun = db.Column(MEDIUMTEXT)
+    nodes = db.Column(INTEGER(unsigned=True))
+    total_tasks = db.Column(INTEGER(unsigned=True))
+    tasks_per_node = db.Column(INTEGER(unsigned=True))
+    thread_count = db.Column(INTEGER(unsigned=True))
+    ngpus_per_node = db.Column(INTEGER(unsigned=True))
+
+    def __init__(self, expid, nodes=None, total_tasks=None, tasks_per_node=None, thread_count=None,ngpus_per_node=None,mpirun=None):
+        self.expid = expid
+        self.mpirun = mpirun
+        self.nodes = nodes
+        self.total_tasks = total_tasks
+        self.tasks_per_node = tasks_per_node
+        self.thread_count = thread_count
+        self.ngpus_per_node = ngpus_per_node
