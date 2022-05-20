@@ -276,3 +276,15 @@ class MemfileInputs(db.Model):
         self.name = name
         self.data = data
 
+class ScriptsFile(db.Model):
+    __tablename__ = 'script_files'
+
+    expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
+            nullable=False, index=True, primary_key=True)
+    replay_sh = db.Column(MEDIUMTEXT)
+    run_e3sm_sh = db.Column(MEDIUMTEXT)
+
+    def __init__(self, expid, replay_sh = None, run_e3sm_sh = None):
+        self.expid = expid
+        self.replay_sh = replay_sh
+        self.run_e3sm_sh = run_e3sm_sh

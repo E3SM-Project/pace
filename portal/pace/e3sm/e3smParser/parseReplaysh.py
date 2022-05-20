@@ -9,4 +9,4 @@ def load_replayshFile(replayshfile):
             data = f.read()
         return data
     except:
-        print("Error encountered while parsing replay.sh file : %s" %replayshfile)    
+        print("Error encountered while parsing replay.sh file : %s" %replayshfile)
