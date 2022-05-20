@@ -45,4 +45,4 @@ def load_previewRunFile(previewfile):
             return None
         return data
     except:
-        print("Error encountered while parsing build time file : %s" %previewfile)
+        print("Error encountered while parsing preview run file : %s" %previewfile)
