@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block content %}
+
+{% block topcontent %}
+{% endblock topcontent %}
+
+<div style="overflow:scroll; border:4px solid black;background-color: #EEE;">
+    <h3 style="text-align:center">Replay.sh</h3>
+    <button id="downloadBtn" class="btn btn-primary" style="float: right; padding-right: 5px;">Download</button>&ensp;
+
+    <br>
+
+    <br>
+
+    <code id="scriptData">
+        {% for line in scriptData.split('\n') %}
+            <p>{{line}}</p>
+        {% endfor %}
+    </code>
+</div>
+<script>
+
+function download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+}
+
+// Start file download.
+document.getElementById("downloadBtn").addEventListener("click", function(){
+    // Generate download of hello.txt file with some content
+    var text = document.getElementById("scriptData").innerText;
+    var filename = "replay.sh.txt";
+    
+    download(filename, text);
+}, false);
+</script>
+
+{% endblock %}

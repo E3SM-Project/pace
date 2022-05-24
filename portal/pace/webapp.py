@@ -406,6 +406,14 @@ def buildtime(mexpid):
         return render_template('error.html')
     return render_template('buildtime.html', test = jsonData, tabledata = tabledata, total_walltime = itotal_walltime, total_computecost = itotal_computecost)
 
+@app.route("/replaysh/<int:mexpid>")
+def replaysh(mexpid):
+    if not isinstance(mexpid,int):
+        return render_template('error.html')
+    
+    scriptData = db.engine.execute("select replay_sh from script_files where expid ="+str(mexpid)).first()
+    return render_template('replaysh.html', scriptData = scriptData[0])
+
 @app.route("/memoryprofile/<int:mexpid>")
 def memoryProfileStat(mexpid):
     try:
