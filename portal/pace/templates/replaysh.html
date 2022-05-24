@@ -6,16 +6,14 @@
 
 <div style="overflow:scroll; border:4px solid black;background-color: #EEE;">
     <h3 style="text-align:center">Replay.sh</h3>
-    <button id="downloadBtn" class="btn btn-primary" style="float: right; padding-right: 5px;">Download</button>&ensp;
+    <button id="downloadBtn" class="btn btn-primary" style="float: right;">Download</button>&ensp;
 
     <br>
 
     <br>
 
-    <code id="scriptData">
-        {% for line in scriptData.split('\n') %}
-            <p>{{line}}</p>
-        {% endfor %}
+    <code id="scriptData" style="margin-left: 5px;">
+        <span style="white-space: pre-wrap;">{{scriptData}}</span>
     </code>
 </div>
 <script>

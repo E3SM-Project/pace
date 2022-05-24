@@ -414,6 +414,14 @@ def replaysh(mexpid):
     scriptData = db.engine.execute("select replay_sh from script_files where expid ="+str(mexpid)).first()
     return render_template('replaysh.html', scriptData = scriptData[0])
 
+@app.route("/e3smrunsh/<int:mexpid>")
+def e3smRunsh(mexpid):
+    if not isinstance(mexpid,int):
+        return render_template('error.html')
+    
+    scriptData = db.engine.execute("select run_e3sm_sh from script_files where expid ="+str(mexpid)).first()
+    return render_template('replaysh.html', scriptData = scriptData[0])
+
 @app.route("/memoryprofile/<int:mexpid>")
 def memoryProfileStat(mexpid):
     try:
