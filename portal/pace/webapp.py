@@ -408,18 +408,28 @@ def buildtime(mexpid):
 
 @app.route("/replaysh/<int:mexpid>")
 def replaysh(mexpid):
-    if not isinstance(mexpid,int):
+    try:
+        if not isinstance(mexpid,int):
+            return render_template('error.html')
+        
+        scriptData = db.engine.execute("select data from script_files where expid ="+str(mexpid)+" and name='replay_sh'").first()
+    except Exception as e:
+        print('Error:')
+        print(e)
         return render_template('error.html')
-    
-    scriptData = db.engine.execute("select data from script_files where expid ="+str(mexpid)+" and name='replay_sh'").first()
     return render_template('replaysh.html', scriptData = scriptData[0])
 
 @app.route("/e3smrunsh/<int:mexpid>")
 def e3smRunsh(mexpid):
-    if not isinstance(mexpid,int):
+    try:
+        if not isinstance(mexpid,int):
+            return render_template('error.html')
+        
+        scriptData = db.engine.execute("select data from script_files where expid ="+str(mexpid)+" and name='run_e3sm_sh'").first()
+    except Exception as e:
+        print('Error:')
+        print(e)
         return render_template('error.html')
-    
-    scriptData = db.engine.execute("select data from script_files where expid ="+str(mexpid)+" and name='run_e3sm_sh'").first()
     return render_template('replaysh.html', scriptData = scriptData[0])
 
 @app.route("/memoryprofile/<int:mexpid>")
