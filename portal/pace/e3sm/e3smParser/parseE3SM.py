@@ -245,12 +245,10 @@ def insertScorpioStats(spiofile,db,expid,runTime):
 
 def insertBuildTimeFile(buildtimefile,db,expid):
     if buildtimefile:
-        data, total_computecost, total_walltime = parseBuildTime.loaddb_buildTimesFile(buildtimefile)
-        if not data:
+        data, total_computecost, total_elapsed_time = parseBuildTime.loaddb_buildTimesFile(buildtimefile)
+        if not data or total_elapsed_time == 0:
             print("Empty file")
             return True
-        if total_walltime == 0:
-            total_walltime = None
     else:
         print("No file")
         return True
@@ -259,7 +257,7 @@ def insertBuildTimeFile(buildtimefile,db,expid):
         print("Insertion is discarded due to duplication: expid=%d" % (expid))
         return True
     else:
-        buildtime = BuildTime(expid=expid, data=json.dumps(data), total_computecost=total_computecost, total_walltime = total_walltime)
+        buildtime = BuildTime(expid=expid, data=json.dumps(data), total_computecost=total_computecost, total_elapsed_time = total_elapsed_time)
         db.session.add(buildtime)
     return True
 
