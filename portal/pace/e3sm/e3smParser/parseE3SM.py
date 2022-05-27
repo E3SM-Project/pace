@@ -330,7 +330,6 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
     isSuccess = insertScripts(replayshfile,rune3smfile,db,currExpObj.expid)
     if not isSuccess:
         return False
-    print('    -Complete')
 
     # store raw data (In server and Minio)
     print('* Storing Experiment in file server')
@@ -375,7 +374,6 @@ def insertScripts(replayshfile,rune3smfile,db,expid):
     
     print(('* Parsing replay sh file : '+ convertPathtofile(replayshfile)))
     replay_sh_data = None
-    run_e3sm_sh_data = None
 
     if replayshfile:
         replay_sh_data = parseReplaysh.load_replayshFile(replayshfile)
@@ -383,8 +381,17 @@ def insertScripts(replayshfile,rune3smfile,db,expid):
             print("Empty replay sh file")
     else:
         print("No replay sh file")
+    
+    scriptmodelReplay = db.session.query(ScriptsFile).filter_by(expid=expid, name = 'replay_sh').first()
+    if scriptmodelReplay:
+        print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid, 'replay_sh'))
+        return True
+    else:
+        scriptmodelReplay = ScriptsFile(expid=expid, name = 'replay_sh', data=replay_sh_data)
+        db.session.add(scriptmodelReplay)
     print('    -Complete')
 
+    run_e3sm_sh_data = None
     print(('* Parsing run_e3sm sh file : '+ convertPathtofile(rune3smfile)))
     if rune3smfile:
         run_e3sm_sh_data = parseRunE3SMsh.load_rune3smshfile(rune3smfile)
@@ -392,16 +399,15 @@ def insertScripts(replayshfile,rune3smfile,db,expid):
             print("Empty run_e3sm.sh file")
     else:
         print("No run_e3sm.sh file")
-    print('    -Complete')
-
-    print(('        - storing scripts file to DB'))
-    scriptmodel = db.session.query(ScriptsFile).filter_by(expid=expid).first()
-    if scriptmodel:
-        print("Insertion is discarded due to duplication: expid=%d" % (expid))
+    
+    scriptmodelRunE3SM = db.session.query(ScriptsFile).filter_by(expid=expid, name='run_e3sm_sh').first()
+    if scriptmodelRunE3SM:
+        print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid,'run_e3sm_sh'))
         return True
     else:
-        scriptmodel = ScriptsFile(expid=expid, replay_sh=replay_sh_data, run_e3sm_sh=run_e3sm_sh_data)
-        db.session.add(scriptmodel)
+        scriptmodelRunE3SM = ScriptsFile(expid=expid, name='run_e3sm_sh', data=run_e3sm_sh_data)
+        db.session.add(scriptmodelRunE3SM)
+    print('    -Complete')
     return True
 
 

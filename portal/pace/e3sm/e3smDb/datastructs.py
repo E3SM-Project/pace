@@ -281,10 +281,10 @@ class ScriptsFile(db.Model):
 
     expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
             nullable=False, index=True, primary_key=True)
-    replay_sh = db.Column(MEDIUMTEXT)
-    run_e3sm_sh = db.Column(MEDIUMTEXT)
+    name = db.Column(db.VARCHAR(100), index=True, primary_key=True)
+    data = db.Column(LONGTEXT)
 
-    def __init__(self, expid, replay_sh = None, run_e3sm_sh = None):
+    def __init__(self, expid, name, data):
         self.expid = expid
-        self.replay_sh = replay_sh
-        self.run_e3sm_sh = run_e3sm_sh
+        self.name = name
+        self.data = data
