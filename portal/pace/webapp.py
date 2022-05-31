@@ -417,7 +417,7 @@ def replaysh(mexpid):
         print('Error:')
         print(e)
         return render_template('error.html')
-    return render_template('replaysh.html', scriptData = scriptData[0])
+    return render_template('scriptPage.html', scriptData = scriptData[0],language = "bash", title = "replay.sh")
 
 @app.route("/e3smrunsh/<int:mexpid>")
 def e3smRunsh(mexpid):
@@ -430,7 +430,7 @@ def e3smRunsh(mexpid):
         print('Error:')
         print(e)
         return render_template('error.html')
-    return render_template('replaysh.html', scriptData = scriptData[0])
+    return render_template('scriptPage.html', scriptData = scriptData[0],language = "bash", title = "run_e3sm.sh")
 
 @app.route("/memoryprofile/<int:mexpid>")
 def memoryProfileStat(mexpid):

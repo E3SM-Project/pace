@@ -9,13 +9,14 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad();</script>
 
-<div style="overflow:scroll; border:4px solid black;">
-    <h3 style="text-align:center">Replay.sh</h3>
     <button id="downloadBtn" class="btn btn-primary" style="float: right;">Download</button>
-    <pre><code id="scriptData" class="bash">
-        <span style="white-space: pre-wrap;">{{scriptData}}</span>
-    </code></pre>
-</div>
+    <br>
+    <h3 style="text-align:center">{{title}}</h3>
+    <pre>
+        <code id="scriptData" class={{language}}>
+            <span style="white-space: pre-wrap;">{{scriptData}}</span>
+        </code>
+    </pre>
 <script>
 
 function download(filename, text) {
@@ -35,7 +36,7 @@ function download(filename, text) {
 document.getElementById("downloadBtn").addEventListener("click", function(){
     // Generate download of hello.txt file with some content
     var text = document.getElementById("scriptData").innerText;
-    var filename = "replay.sh.txt";
+    var filename = String("{{title}}");
     
     download(filename, text);
 }, false);
