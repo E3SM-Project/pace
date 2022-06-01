@@ -413,6 +413,8 @@ def replaysh(mexpid):
             return render_template('error.html')
         
         scriptData = db.engine.execute("select data from script_files where expid ="+str(mexpid)+" and name='replay_sh'").first()
+        if not scriptData:
+            return render_template('customMessagepage.html',message = "replay.sh file not available for this experiment")
     except Exception as e:
         print('Error:')
         print(e)
@@ -426,6 +428,8 @@ def e3smRunsh(mexpid):
             return render_template('error.html')
         
         scriptData = db.engine.execute("select data from script_files where expid ="+str(mexpid)+" and name='run_e3sm_sh'").first()
+        if not scriptData:
+            return render_template('customMessagepage.html',message = "run_e3sm.sh file not available for this experiment")
     except Exception as e:
         print('Error:')
         print(e)
