@@ -374,40 +374,47 @@ def insertScripts(replayshfile,rune3smfile,db,expid):
     
     print(('* Parsing replay sh file : '+ convertPathtofile(replayshfile)))
     replay_sh_data = None
-
+    store = True
     if replayshfile:
         replay_sh_data = parseReplaysh.load_replayshFile(replayshfile)
         if not replay_sh_data:
+            store = False
             print("Empty replay sh file")
     else:
+        store = False
         print("No replay sh file")
     
-    scriptmodelReplay = db.session.query(ScriptsFile).filter_by(expid=expid, name = 'replay_sh').first()
-    if scriptmodelReplay:
-        print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid, 'replay_sh'))
-        return True
-    else:
-        scriptmodelReplay = ScriptsFile(expid=expid, name = 'replay_sh', data=replay_sh_data)
-        db.session.add(scriptmodelReplay)
-    print('    -Complete')
+    if store:
+        scriptmodelReplay = db.session.query(ScriptsFile).filter_by(expid=expid, name = 'replay_sh').first()
+        if scriptmodelReplay:
+            print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid, 'replay_sh'))
+            return True
+        else:
+            scriptmodelReplay = ScriptsFile(expid=expid, name = 'replay_sh', data=replay_sh_data)
+            db.session.add(scriptmodelReplay)
+        print('    -Complete')
 
     run_e3sm_sh_data = None
+    store = True
     print(('* Parsing run_e3sm sh file : '+ convertPathtofile(rune3smfile)))
     if rune3smfile:
         run_e3sm_sh_data = parseRunE3SMsh.load_rune3smshfile(rune3smfile)
         if not run_e3sm_sh_data:
+            store = False
             print("Empty run_e3sm.sh file")
     else:
+        store = False
         print("No run_e3sm.sh file")
     
-    scriptmodelRunE3SM = db.session.query(ScriptsFile).filter_by(expid=expid, name='run_e3sm_sh').first()
-    if scriptmodelRunE3SM:
-        print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid,'run_e3sm_sh'))
-        return True
-    else:
-        scriptmodelRunE3SM = ScriptsFile(expid=expid, name='run_e3sm_sh', data=run_e3sm_sh_data)
-        db.session.add(scriptmodelRunE3SM)
-    print('    -Complete')
+    if store:
+        scriptmodelRunE3SM = db.session.query(ScriptsFile).filter_by(expid=expid, name='run_e3sm_sh').first()
+        if scriptmodelRunE3SM:
+            print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid,'run_e3sm_sh'))
+            return True
+        else:
+            scriptmodelRunE3SM = ScriptsFile(expid=expid, name='run_e3sm_sh', data=run_e3sm_sh_data)
+            db.session.add(scriptmodelRunE3SM)
+        print('    -Complete')
     return True
 
 
