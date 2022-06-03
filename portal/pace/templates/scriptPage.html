@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block content %}
+
+{% block topcontent %}
+{% endblock topcontent %}
+
+<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+    <button id="downloadBtn" class="btn btn-primary" style="float: right;">Download</button>
+    <br>
+    <h3 style="text-align:center">{{title}}</h3>
+    <pre>
+        <code id="scriptData" class={{language}}>{{scriptData}}</code>
+    </pre>
+<script>
+
+function download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+}
+
+// Start file download.
+document.getElementById("downloadBtn").addEventListener("click", function(){
+    // Generate download of hello.txt file with some content
+    var text = document.getElementById("scriptData").innerText;
+    var filename = String("{{title}}");
+    
+    download(filename, text);
+}, false);
+</script>
+
+{% endblock %}

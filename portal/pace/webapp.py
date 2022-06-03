@@ -406,6 +406,36 @@ def buildtime(mexpid):
         return render_template('error.html')
     return render_template('buildtime.html', test = jsonData, tabledata = tabledata, total_walltime = itotal_walltime, total_computecost = itotal_computecost)
 
+@app.route("/replaysh/<int:mexpid>")
+def replaysh(mexpid):
+    try:
+        if not isinstance(mexpid,int):
+            return render_template('error.html')
+        
+        scriptData = db.engine.execute("select data from script_files where expid ="+str(mexpid)+" and name='replay_sh'").first()
+        if not scriptData:
+            return render_template('customMessagepage.html',message = "replay.sh file not available for this experiment")
+    except Exception as e:
+        print('Error:')
+        print(e)
+        return render_template('error.html')
+    return render_template('scriptPage.html', scriptData = scriptData[0],language = "bash", title = "replay.sh")
+
+@app.route("/e3smrunsh/<int:mexpid>")
+def e3smRunsh(mexpid):
+    try:
+        if not isinstance(mexpid,int):
+            return render_template('error.html')
+        
+        scriptData = db.engine.execute("select data from script_files where expid ="+str(mexpid)+" and name='run_e3sm_sh'").first()
+        if not scriptData:
+            return render_template('customMessagepage.html',message = "run_e3sm.sh file not available for this experiment")
+    except Exception as e:
+        print('Error:')
+        print(e)
+        return render_template('error.html')
+    return render_template('scriptPage.html', scriptData = scriptData[0],language = "bash", title = "run_e3sm.sh")
+
 @app.route("/memoryprofile/<int:mexpid>")
 def memoryProfileStat(mexpid):
     try:
