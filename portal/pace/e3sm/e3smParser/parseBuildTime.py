@@ -13,7 +13,7 @@ def loaddb_buildTimesFile(buildfile):
     try:
         data = {}
         total_computecost = 0
-        total_walltime = 0
+        total_elapsed_time = 0
         with gzip.open(buildfile, 'rt') as f:
             f.readline()  # skip first line for header information
             for line in f:
@@ -23,13 +23,13 @@ def loaddb_buildTimesFile(buildfile):
                 else:
                     data[value[0]]=float(value[1])
                 total_computecost+=float(value[1])
-        if 'Total_Build' in data:
-            total_walltime = data['Total_Build']
-            total_computecost-=total_walltime
+        if 'Total_Elapsed_Time' in data:
+            total_elapsed_time = data['Total_Elapsed_Time']
+            total_computecost-=total_elapsed_time
         f.close()
         if data == {}:
-            return None, total_computecost,total_walltime
-        return data,total_computecost, total_walltime
+            return None, total_computecost,total_elapsed_time
+        return data,total_computecost, total_elapsed_time
     except:
         print("Error encountered while parsing build time file : %s" %buildfile)
         return None, None

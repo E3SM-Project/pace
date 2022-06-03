@@ -31,6 +31,8 @@ from pace.e3sm.e3smParser import parseScorpioStats
 from pace.e3sm.e3smParser import parseCaseDocs
 from pace.e3sm.e3smParser import parseBuildTime
 from pace.e3sm.e3smParser import parsePreviewRun
+from pace.e3sm.e3smParser import parseReplaysh
+from pace.e3sm.e3smParser import parseRunE3SMsh
 
 resolved = lambda x: realpath(abspath(x))
 
@@ -106,6 +108,8 @@ def parseData(zipfilename,uploaduser):
                 "casedocs":None,
                 "buildtimefile":None,
                 "previewrunfile":None
+                "replayshfile":None,
+                "run_e3sm_file": None
             }
             for path, subdirs, files in os.walk(root):
                 for name in files:
@@ -125,6 +129,10 @@ def parseData(zipfilename,uploaduser):
                         model['buildtimefile'] = os.path.join(path, name)
                     elif name.startswith("preview_run.log."):
                         model['previewrunfile'] = os.path.join(path, name)
+                    elif name.startswith("replay.sh."):
+                        model['replayshfile'] = os.path.join(path, name)
+                    elif name.startswith("run_e3sm.sh."):
+                        model['run_e3sm_file'] = os.path.join(path, name)
                 for name in subdirs:
                     if name.startswith("CaseDocs."):
                         model['casedocs'] = os.path.join(path, name)
@@ -146,6 +154,8 @@ def parseData(zipfilename,uploaduser):
                                             experimentFiles[index]['casedocs'],
                                             experimentFiles[index]['buildtimefile'],
                                             experimentFiles[index]['previewrunfile'],
+                                            experimentFiles[index]['replayshfile'],
+                                            experimentFiles[index]['run_e3sm_file'],
                                             db,fpath,uploaduser))
             print ('**************************************************')
             print (' ')
@@ -250,12 +260,10 @@ def insertScorpioStats(spiofile,db,expid,runTime):
 
 def insertBuildTimeFile(buildtimefile,db,expid):
     if buildtimefile:
-        data, total_computecost, total_walltime = parseBuildTime.loaddb_buildTimesFile(buildtimefile)
-        if not data:
+        data, total_computecost, total_elapsed_time = parseBuildTime.loaddb_buildTimesFile(buildtimefile)
+        if not data or total_elapsed_time == 0:
             print("Empty file")
             return True
-        if total_walltime == 0:
-            total_walltime = None
     else:
         print("No file")
         return True
@@ -264,7 +272,7 @@ def insertBuildTimeFile(buildtimefile,db,expid):
         print("Insertion is discarded due to duplication: expid=%d" % (expid))
         return True
     else:
-        buildtime = BuildTime(expid=expid, data=json.dumps(data), total_computecost=total_computecost, total_walltime = total_walltime)
+        buildtime = BuildTime(expid=expid, data=json.dumps(data), total_computecost=total_computecost, total_elapsed_time = total_elapsed_time)
         db.session.add(buildtime)
     return True
 
@@ -291,6 +299,7 @@ def insertPreviewRunFile(previewrunfile,db,expid):
 # This function provides pathway to files for their respective parser function and finally stores in database
 def insertExperiment(filename,readmefile,timingfile,gitfile,
                     spiofile,memfile,casedocs,buildtimefile, previewrunfile,
+                    replayshfile, rune3smfile,
                     db,fpath,uploaduser):
     # returns True if successful or if duplicate exp already in database
     (successFlag, duplicateFlag, currExpObj) = insertE3SMTiming(filename,readmefile,gitfile,db,fpath,uploaduser)
@@ -346,6 +355,10 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
     if not isSuccess:
         return False
     print('    -Complete')
+    #insert scripts
+    isSuccess = insertScripts(replayshfile,rune3smfile,db,currExpObj.expid)
+    if not isSuccess:
+        return False
 
     # store raw data (In server and Minio)
     print('* Storing Experiment in file server')
@@ -385,6 +398,54 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
     db.session.close()
     
     return True
+
+def insertScripts(replayshfile,rune3smfile,db,expid):
+    
+    print(('* Parsing replay sh file : '+ convertPathtofile(replayshfile)))
+    replay_sh_data = None
+    store = True
+    if replayshfile:
+        replay_sh_data = parseReplaysh.load_replayshFile(replayshfile)
+        if not replay_sh_data:
+            store = False
+            print("Empty replay sh file")
+    else:
+        store = False
+        print("No replay sh file")
+    
+    if store:
+        scriptmodelReplay = db.session.query(ScriptsFile).filter_by(expid=expid, name = 'replay_sh').first()
+        if scriptmodelReplay:
+            print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid, 'replay_sh'))
+            return True
+        else:
+            scriptmodelReplay = ScriptsFile(expid=expid, name = 'replay_sh', data=replay_sh_data)
+            db.session.add(scriptmodelReplay)
+        print('    -Complete')
+
+    run_e3sm_sh_data = None
+    store = True
+    print(('* Parsing run_e3sm sh file : '+ convertPathtofile(rune3smfile)))
+    if rune3smfile:
+        run_e3sm_sh_data = parseRunE3SMsh.load_rune3smshfile(rune3smfile)
+        if not run_e3sm_sh_data:
+            store = False
+            print("Empty run_e3sm.sh file")
+    else:
+        store = False
+        print("No run_e3sm.sh file")
+    
+    if store:
+        scriptmodelRunE3SM = db.session.query(ScriptsFile).filter_by(expid=expid, name='run_e3sm_sh').first()
+        if scriptmodelRunE3SM:
+            print("Insertion is discarded due to duplication: expid=%d, name=%s" % (expid,'run_e3sm_sh'))
+            return True
+        else:
+            scriptmodelRunE3SM = ScriptsFile(expid=expid, name='run_e3sm_sh', data=run_e3sm_sh_data)
+            db.session.add(scriptmodelRunE3SM)
+        print('    -Complete')
+    return True
+
 
 #need here
 # Parse e3sm files
