@@ -13,8 +13,8 @@
     <div style="border:4px solid black; margin-top:75px; margin-bottom:100px;">
         <h3 style="text-align:center">Build Times</h3>
         <br>
-        {% if total_walltime %}
-        <b>&nbsp;&nbsp;Wall Time for build</b>: {{total_walltime}} sec.
+        {% if total_elapsedtime %}
+        <b>&nbsp;&nbsp;Elapsed Time for build</b>: {{total_elapsedtime}} sec.
         {% endif%}
         {% if total_computecost %}
         <br>
@@ -22,7 +22,7 @@
         <p style="color:crimson">
         &nbsp;&nbsp;Note: This is the total cost associated with compilation across components. 
         <br>
-        &nbsp;&nbsp;Typically, the wall time is lower due to parallel builds.
+        &nbsp;&nbsp;Typically, the elapsed time is lower due to parallel builds.
         </p>
         {% endif%}
 
