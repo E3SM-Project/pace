@@ -107,7 +107,7 @@ def parseData(zipfilename,uploaduser):
                 "memoryfile":None,
                 "casedocs":None,
                 "buildtimefile":None,
-                "previewrunfile":None
+                "previewrunfile":None,
                 "replayshfile":None,
                 "run_e3sm_file": None
             }
