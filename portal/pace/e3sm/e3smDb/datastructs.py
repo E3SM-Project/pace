@@ -253,14 +253,14 @@ class BuildTime(db.Model):
     expid = db.Column(INTEGER(unsigned=True), db.ForeignKey('e3smexp.expid'),
             nullable=False, index=True, primary_key=True)
     data = db.Column(MEDIUMTEXT, nullable=False)
-    total_elapsed_time = db.Column(DECIMAL(20,3,unsigned=True))
+    total_elapsedtime = db.Column(DECIMAL(20,3,unsigned=True))
     total_computecost = db.Column(DECIMAL(20,3,unsigned=True))
 
     def __init__(self, expid, data, total_computecost=None, total_elapsed_time=None):
         self.expid = expid
         self.data = data
         self.total_computecost = total_computecost
-        self.total_walltime = total_elapsed_time
+        self.total_elapsedtime = total_elapsed_time
 
 
 class MemfileInputs(db.Model):
