@@ -30,6 +30,7 @@ from pace.e3sm.e3smParser import parseMemoryProfile
 from pace.e3sm.e3smParser import parseScorpioStats
 from pace.e3sm.e3smParser import parseCaseDocs
 from pace.e3sm.e3smParser import parseBuildTime
+from pace.e3sm.e3smParser import parsePreviewRun
 from pace.e3sm.e3smParser import parseReplaysh
 from pace.e3sm.e3smParser import parseRunE3SMsh
 
@@ -106,6 +107,7 @@ def parseData(zipfilename,uploaduser):
                 "memoryfile":None,
                 "casedocs":None,
                 "buildtimefile":None,
+                "previewrunfile":None
                 "replayshfile":None,
                 "run_e3sm_file": None
             }
@@ -125,6 +127,8 @@ def parseData(zipfilename,uploaduser):
                         model['memoryfile'] = os.path.join(path, name)
                     elif name.startswith("build_times.txt."):
                         model['buildtimefile'] = os.path.join(path, name)
+                    elif name.startswith("preview_run.log."):
+                        model['previewrunfile'] = os.path.join(path, name)
                     elif name.startswith("replay.sh."):
                         model['replayshfile'] = os.path.join(path, name)
                     elif name.startswith("run_e3sm.sh."):
@@ -149,6 +153,7 @@ def parseData(zipfilename,uploaduser):
                                             experimentFiles[index]['memoryfile'],
                                             experimentFiles[index]['casedocs'],
                                             experimentFiles[index]['buildtimefile'],
+                                            experimentFiles[index]['previewrunfile'],
                                             experimentFiles[index]['replayshfile'],
                                             experimentFiles[index]['run_e3sm_file'],
                                             db,fpath,uploaduser))
@@ -271,10 +276,29 @@ def insertBuildTimeFile(buildtimefile,db,expid):
         db.session.add(buildtime)
     return True
 
+# insert preview run log file
+def insertPreviewRunFile(previewrunfile,db,expid):
+    if previewrunfile:
+        data = parsePreviewRun.load_previewRunFile(previewrunfile)
+        if not data:
+            print("Empty file")
+            return True
+    else:
+        print("No file")
+        return True
+    previewrun = db.session.query(PreviewRun).filter_by(expid=expid).first()
+    if previewrun:
+        print("Insertion is discarded due to duplication: expid=%d" % (expid))
+        return True
+    else:
+        previewrun = PreviewRun(expid=expid, nodes=data['nodes'], total_tasks=data['total_tasks'], tasks_per_node = data['tasks_per_node'], thread_count=data['thread_count'], ngpus_per_node=data['ngpus_per_node'],mpirun=data['mpirun'])
+        db.session.add(previewrun)
+    return True
+
 #need here
 # This function provides pathway to files for their respective parser function and finally stores in database
 def insertExperiment(filename,readmefile,timingfile,gitfile,
-                    spiofile,memfile,casedocs,buildtimefile,
+                    spiofile,memfile,casedocs,buildtimefile, previewrunfile,
                     replayshfile, rune3smfile,
                     db,fpath,uploaduser):
     # returns True if successful or if duplicate exp already in database
@@ -324,6 +348,13 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
         return False
     print('    -Complete')
 
+    #insert preview run log info
+    #TODO create a seperate function to handle logic and db insertion
+    print(('* Parsing preview_run file : '+ convertPathtofile(previewrunfile)))
+    isSuccess = insertPreviewRunFile(previewrunfile,db,currExpObj.expid)
+    if not isSuccess:
+        return False
+    print('    -Complete')
     #insert scripts
     isSuccess = insertScripts(replayshfile,rune3smfile,db,currExpObj.expid)
     if not isSuccess:
