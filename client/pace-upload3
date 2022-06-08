@@ -202,7 +202,7 @@ def gitAuthenticate(token):
         user = login.json()['login']
     except KeyError:
         print((bcolors.FAIL+'ERROR: Github authentication failed, Invalid Token.'+bcolors.ENDC))
-        exit()
+        exit(101)
     
     return (user)
 
