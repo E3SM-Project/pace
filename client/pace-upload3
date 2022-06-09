@@ -112,10 +112,10 @@ def uploadExp(uploadfile, uploadUser, project):
             print(" ")
         else:
             print((bcolors.FAIL +('Error: Unable to upload, %s is empty' %uploadfile)+bcolors.ENDC))
-            exit()
+            exit(102)
     else:
         print((bcolors.FAIL+('Error: Unable to upload %s, No such file' %uploadfile)+bcolors.ENDC))
-        exit()
+        exit(103)
 
 # validate E3SM experiment
 def isValidE3SMexp(expfile,tmpfile):
@@ -147,7 +147,7 @@ def isValidE3SMexp(expfile,tmpfile):
 
     else:
         print((bcolors.FAIL +('Error: No Such Directory %s' %expfile)+bcolors.ENDC))
-        exit()
+        exit(104)
 
     # for complete experiments
     if completeexp == True:
@@ -246,7 +246,7 @@ def userAuth():
     if isSuccess == True:
         return (user)
     else:
-        exit()
+        exit(105)
 
 # Downloads pace report from server
 def downloadlog(filename):
@@ -264,7 +264,7 @@ def main():
     result = parseArguments()
     if result.source == None:
         print((bcolors.WARNING + 'USAGE: pace-upload [--help/-h] [--exp-dir/-ed SOURCE] [--perf-archive/-pa SOURCE] [--application/-a {e3sm}]'  + bcolors.ENDC))
-        exit()
+        exit(106)
     expfile = 0
     user = userAuth()
     try:
@@ -283,15 +283,15 @@ def main():
                 os.remove(uploadfile)
                 distutils.dir_util.remove_tree(tmpfile)
             elif (result.application=='fusion' and isValidFusionExp(expfile)==True):
-                exit()
+                exit(107)
             else:
-                exit()
+                exit(108)
         else:
             print((bcolors.FAIL + 'ERROR: %s is empty' %expfile + bcolors.ENDC))
-            exit()
+            exit(109)
     except Exception as e:
         print((bcolors.WARNING + 'Warning: Unexpected exception %s' %e + bcolors.ENDC))
-        exit()
+        exit(110)
 
 if __name__ == "__main__":
     main()
