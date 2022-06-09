@@ -1053,6 +1053,83 @@ def getRuntimeSvg(expid):
     except SQLAlchemyError:
         return render_template('error.html'), 404
 
+
+@app.route("/atmscream/<expids>/")
+def atmosScream(expids):
+    if not bool(re.match('^[0-9,]+$', expids)):
+        return render_template('error.html')
+    atm_timer = [
+        'a:EAMxx::Dynamics::run',
+        'a:EAMxx::Macrophysics::run',
+        'a:EAMxx::Simple Prescribed Aerosols (SPA)::run',
+        'a:EAMxx::Microphysics::run',
+        'a:EAMxx::Radiation::run',
+        'CPL:ATM_RUN',
+        'CPL:RUN_LOOP'
+    ]
+    sampleModel = {
+        'children': [],
+        'multiParent': False,
+        'name': '',
+        'values':{
+            'count': 0,
+            'on': False,
+            'processes': 0,
+            'threads': 0,
+            'wallmax': 0,
+            'wallmax_proc': 0,
+            'wallmax_thrd': 0,
+            'wallmin': 0,
+            'wallmin_proc': 0,
+            'wallmin_thrd': 0,
+            'walltotal': 0
+        }
+    }
+    
+    expidlist = expids.split(',')
+    for id in expidlist:
+        try:
+            expid = int(id)
+        except:
+            return render_template('error.html')
+    try:
+        # single experiment detail page
+        if len(expidlist)==1:
+            resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expidlist[0],)).fetchall()[0].jsonVal
+            data = json.loads(resultNodes)
+            
+            result = {}
+            for model in data[0]:
+                if model['name'] in atm_timer:
+                    result[model['name']] = model
+            
+            for name in atm_timer:
+                if name not in result:
+                    sampleModel['name'] = name
+                    result[name] = sampleModel
+            return render_template("atmosScream.html",expids = expidlist[0], rd = result)
+        # compare atm page
+        else:
+            output = {}
+            for expid in expidlist:
+                resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expid,)).fetchall()[0].jsonVal
+                data = json.loads(resultNodes)
+                result = {}
+                for model in data[0]:
+                    if model['name'] in atm_timer:
+                        result[model['name']] = model
+                    elif model['name'] == "a:bc_aerosols":
+                        result['a:tphysbc_aerosols'] = model 
+                
+                for name in atm_timer:
+                    if name not in result:
+                        sampleModel['name'] = name
+                        result[name] = sampleModel
+                output[expid] = result
+            return render_template('atmosScreamCompare.html', expids = expidlist, rd = output)
+    except:
+        return render_template('error.html')
+
 @app.route("/atmos/<expids>/")
 def atmosChart(expids):
     if not bool(re.match('^[0-9,]+$', expids)):
@@ -1089,6 +1166,13 @@ def atmosChart(expids):
             'walltotal': 0
         }
     }
+    atm_timer_scream = [
+        'a:EAMxx::Dynamics::run',
+        'a:EAMxx::Macrophysics::run',
+        'a:EAMxx::Simple Prescribed Aerosols (SPA)::run',
+        'a:EAMxx::Microphysics::run',
+        'a:EAMxx::Radiation::run'
+    ]
     expidlist = expids.split(',')
     for id in expidlist:
         try:
@@ -1103,6 +1187,8 @@ def atmosChart(expids):
             
             result = {}
             for model in data[0]:
+                if model['name'] in atm_timer_scream:
+                    return redirect(url_for('atmosScream', expids = expids))
                 if model['name'] in atm_timer:
                     result[model['name']] = model
                 elif model['name'] == "a:bc_aerosols":
@@ -1121,6 +1207,8 @@ def atmosChart(expids):
                 data = json.loads(resultNodes)
                 result = {}
                 for model in data[0]:
+                    if model['name'] in atm_timer_scream:
+                        return redirect(url_for('atmosScream', expids = expids))
                     if model['name'] in atm_timer:
                         result[model['name']] = model
                     elif model['name'] == "a:bc_aerosols":
