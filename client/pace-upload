@@ -163,7 +163,8 @@ def isValidE3SMexp(expfile,tmpfile):
         return(True)
     else:
         print bcolors.WARNING + ('NOTE: No completed E3SM experiments found.') + bcolors.ENDC
-        return(False)
+        exit()
+        #return(False)
 
 # validate Fusion experiment
 def isValidFusionExp(expfile):
@@ -294,9 +295,9 @@ def main():
                 os.remove(uploadfile)
                 distutils.dir_util.remove_tree(tmpfile)
             elif (result.application=='fusion' and isValidFusionExp(expfile)==True):
-                exit()
+                exit(107)
             else:
-                exit()
+                exit(108)
         else:
             print(bcolors.FAIL + 'ERROR: %s is empty' %expfile + bcolors.ENDC)
             exit(109)
