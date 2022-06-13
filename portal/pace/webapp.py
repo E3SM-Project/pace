@@ -1053,7 +1053,102 @@ def getRuntimeSvg(expid):
     except SQLAlchemyError:
         return render_template('error.html'), 404
 
+@app.route("/atmtest/<expids>/")
+def atmostest(expids):
+    if not bool(re.match('^[0-9,]+$', expids)):
+        return render_template('error.html')
+    expidlist = expids.split(',')
+    for id in expidlist:
+        try:
+            expid = int(id)
+        except:
+            return render_template('error.html')
+    atm_timer = [
+        'a:EAMxx::Dynamics::run',
+        'a:EAMxx::Macrophysics::run',
+        'a:EAMxx::Simple Prescribed Aerosols (SPA)::run',
+        'a:EAMxx::Microphysics::run',
+        'a:EAMxx::Radiation::run',
+        'CPL:ATM_RUN',
+        'CPL:RUN_LOOP'
+    ]
+    sampleModel = {
+        'children': [],
+        'multiParent': False,
+        'name': '',
+        'values':{
+            'count': 0,
+            'on': False,
+            'processes': 0,
+            'threads': 0,
+            'wallmax': 0,
+            'wallmax_proc': 0,
+            'wallmax_thrd': 0,
+            'wallmin': 0,
+            'wallmin_proc': 0,
+            'wallmin_thrd': 0,
+            'walltotal': 0
+        }
+    }
+    try:
+        # single experiment detail page
+        if len(expidlist)==1:
+            resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expidlist[0],)).fetchall()[0].jsonVal
+            data = json.loads(resultNodes)
+            
+            atm_timer_set = set(atm_timer)
 
+            result = {}
+            for model in data[0]:
+                if model['name'] in atm_timer_set:
+                    result[model['name']] = model
+            for name in atm_timer:
+                if name not in result:
+                    sampleModel['name'] = name
+                    result[name] = sampleModel
+
+            atmTimerLabel = {
+                "a:EAMxx::Dynamics::run": "Dyn",
+                "a:EAMxx::Macrophysics::run": "SHOC",
+                "a:EAMxx::Simple Prescribed Aerosols (SPA)::run": "SPA",
+                "a:EAMxx::Microphysics::run": "P3",
+                "a:EAMxx::Radiation::run": "RRTMGPxx"
+            }
+            atmCompSum = 0
+            jsonData = {}
+            for name in atmTimerLabel:
+                time = result[name]['values']['wallmax']
+                atmCompSum += time
+                model = {
+                    "name":name,
+                    "atm_time": time,
+                    "atm_time_percentage":0,
+                    "label":atmTimerLabel[name]
+                }
+                jsonData[name] = model
+
+            totalATMTime = result["CPL:ATM_RUN"]["values"]["wallmax"]
+            other_time = max(0,totalATMTime-atmCompSum)
+            if other_time == 0:
+                totalATMTime = atmCompSum
+
+            for name in jsonData:
+                percent = round((jsonData[name]['atm_time']/totalATMTime)*100,2)
+                jsonData[name]['atm_time_percentage'] = percent
+
+            #for other time
+            model = {
+                "name": "ATM Other",
+                "atm_time": round(other_time,3),
+                "atm_time_percentage":round((other_time/totalATMTime)*100,2),
+                "label":"ATM Other"
+            }
+            jsonData['ATM Other'] = model
+            return render_template("atmosTestScream.html",expids = expidlist[0], jd = jsonData)
+    except Exception as e:
+        print(e)
+        return render_template('error.html')
+    
 @app.route("/atmscream/<expids>/")
 def atmosScream(expids):
     if not bool(re.match('^[0-9,]+$', expids)):
