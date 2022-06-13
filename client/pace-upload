@@ -294,9 +294,9 @@ def main():
                 os.remove(uploadfile)
                 distutils.dir_util.remove_tree(tmpfile)
             elif (result.application=='fusion' and isValidFusionExp(expfile)==True):
-                exit(107)
+                exit()
             else:
-                exit(108)
+                exit()
         else:
             print(bcolors.FAIL + 'ERROR: %s is empty' %expfile + bcolors.ENDC)
             exit(109)
