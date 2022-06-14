@@ -1109,12 +1109,12 @@ def atmostest(expids):
             whichDataSet = atmWhichDataSet(data,atmScreamTimerLabel)
             #whichDataSet = 'SCREAM'
             if whichDataSet == 'SCREAM':
-                jsonData = atmTestScream(sampleModel,atmScreamTimerLabel,data)
+                jsonData,acutal_other_time = atmTestScream(sampleModel,atmScreamTimerLabel,data)
             else:
-                jsonData = atmDefault(sampleModel,atm_timer_default_label,data)
+                jsonData, acutal_other_time = atmDefault(sampleModel,atm_timer_default_label,data)
             if not jsonData:
                 return render_template("error.html")
-            return render_template("atmosTestScream.html",expids = expid, jd = jsonData)
+            return render_template("atmosTestScream.html",expids = expid, jd = jsonData,acutal_other_time = acutal_other_time)
     except Exception as e:
         print(e)
         return render_template('error.html')
@@ -1146,7 +1146,7 @@ def atmDefault(sampleModel,atm_timer_default_label,data):
             if model['name'] in atm_timer_set:
                 result[model['name']] = model
             elif model['name'] == "a:bc_aerosols":
-                result['a:tphysbc_aerosols'] = model 
+                result['a:tphysbc_aerosols'] = model
         
         for name in atm_timer_set:
             if name not in result:
@@ -1168,11 +1168,11 @@ def atmDefault(sampleModel,atm_timer_default_label,data):
             jsonData[name] = model
 
         totalATMTime = result["CPL:ATM_RUN"]["values"]["wallmax"]
-        other_time = max(0,totalATMTime-atmCompSum)
+        actual_other_time = totalATMTime-atmCompSum
+        other_time = max(0,actual_other_time)
         if other_time == 0:
             totalATMTime = atmCompSum
 
-        print(jsonData)
         #combine and delete
         jsonData['a:tphysbc_aerosols']['atm_time'] += jsonData['a:microp_aero_run']['atm_time']
         del jsonData['a:microp_aero_run']
@@ -1192,7 +1192,7 @@ def atmDefault(sampleModel,atm_timer_default_label,data):
             "label":"ATM Other"
         }
         jsonData['ATM Other'] = model
-        return jsonData
+        return jsonData, actual_other_time
     except:
         return None
 
@@ -1232,6 +1232,7 @@ def atmTestScream(sampleModel,atmTimerLabel,data):
             jsonData[name] = model
 
         totalATMTime = result["CPL:ATM_RUN"]["values"]["wallmax"]
+        actual_other_time = totalATMTime-atmCompSum
         other_time = max(0,totalATMTime-atmCompSum)
         if other_time == 0:
             totalATMTime = atmCompSum
@@ -1248,7 +1249,7 @@ def atmTestScream(sampleModel,atmTimerLabel,data):
             "label":"ATM Other"
         }
         jsonData['ATM Other'] = model
-        return jsonData
+        return jsonData, actual_other_time
     except:
         return None
     
