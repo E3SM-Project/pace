@@ -1063,15 +1063,26 @@ def atmostest(expids):
             expid = int(id)
         except:
             return render_template('error.html')
-    atm_timer = [
-        'a:EAMxx::Dynamics::run',
-        'a:EAMxx::Macrophysics::run',
-        'a:EAMxx::Simple Prescribed Aerosols (SPA)::run',
-        'a:EAMxx::Microphysics::run',
-        'a:EAMxx::Radiation::run',
-        'CPL:ATM_RUN',
-        'CPL:RUN_LOOP'
-    ]
+    atmScreamTimerLabel = {
+        "a:EAMxx::Dynamics::run": "Dyn",
+        "a:EAMxx::Macrophysics::run": "SHOC",
+        "a:EAMxx::Simple Prescribed Aerosols (SPA)::run": "SPA",
+        "a:EAMxx::Microphysics::run": "P3",
+        "a:EAMxx::Radiation::run": "RRTMGPxx"
+    }
+    atm_timer_default_label = {
+        "a:moist_convection": "Convection",
+        "a:macrop_tend":"CLUBB",
+        "a:tphysbc_aerosols":"Aerosol",
+        "a:microp_aero_run":"Aerosol",
+        "a:microp_tend":"Microphys",
+        "a:radiation":"Radiation",
+        "a:phys_run2":"Phys Aft Surface",
+        "a:stepon_run3":"Dynamincs",
+        "a:stepon_run1":"Phys/Dyn Coupling",
+        "a:stepon_run2":"Phys/Dyn Coupling",
+        "a:wshist":"Hist"
+    }
     sampleModel = {
         'children': [],
         'multiParent': False,
@@ -1091,63 +1102,155 @@ def atmostest(expids):
         }
     }
     try:
-        # single experiment detail page
+        
         if len(expidlist)==1:
             resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expidlist[0],)).fetchall()[0].jsonVal
             data = json.loads(resultNodes)
-            
-            atm_timer_set = set(atm_timer)
-
-            result = {}
-            for model in data[0]:
-                if model['name'] in atm_timer_set:
-                    result[model['name']] = model
-            for name in atm_timer:
-                if name not in result:
-                    sampleModel['name'] = name
-                    result[name] = sampleModel
-
-            atmTimerLabel = {
-                "a:EAMxx::Dynamics::run": "Dyn",
-                "a:EAMxx::Macrophysics::run": "SHOC",
-                "a:EAMxx::Simple Prescribed Aerosols (SPA)::run": "SPA",
-                "a:EAMxx::Microphysics::run": "P3",
-                "a:EAMxx::Radiation::run": "RRTMGPxx"
-            }
-            atmCompSum = 0
-            jsonData = {}
-            for name in atmTimerLabel:
-                time = result[name]['values']['wallmax']
-                atmCompSum += time
-                model = {
-                    "name":name,
-                    "atm_time": time,
-                    "atm_time_percentage":0,
-                    "label":atmTimerLabel[name]
-                }
-                jsonData[name] = model
-
-            totalATMTime = result["CPL:ATM_RUN"]["values"]["wallmax"]
-            other_time = max(0,totalATMTime-atmCompSum)
-            if other_time == 0:
-                totalATMTime = atmCompSum
-
-            for name in jsonData:
-                percent = round((jsonData[name]['atm_time']/totalATMTime)*100,2)
-                jsonData[name]['atm_time_percentage'] = percent
-
-            #for other time
-            model = {
-                "name": "ATM Other",
-                "atm_time": round(other_time,3),
-                "atm_time_percentage":round((other_time/totalATMTime)*100,2),
-                "label":"ATM Other"
-            }
-            jsonData['ATM Other'] = model
-            return render_template("atmosTestScream.html",expids = expidlist[0], jd = jsonData)
+            whichDataSet = atmWhichDataSet(data,atmScreamTimerLabel)
+            #whichDataSet = 'SCREAM'
+            if whichDataSet == 'SCREAM':
+                jsonData = atmTestScream(sampleModel,atmScreamTimerLabel,data)
+            else:
+                jsonData = atmDefault(sampleModel,atm_timer_default_label,data)
+            if not jsonData:
+                return render_template("error.html")
+            return render_template("atmosTestScream.html",expids = expid, jd = jsonData)
     except Exception as e:
         print(e)
         return render_template('error.html')
+
+def atmWhichDataSet(data,atmScreamTimerLabel):
+    for model in data[0]:
+        if model['name'] in atmScreamTimerLabel:
+            return 'SCREAM'
+
+def atmDefault(sampleModel,atm_timer_default_label,data):
+    atm_timer_default = [
+        "a:moist_convection",
+        "a:macrop_tend",
+        "a:tphysbc_aerosols",
+        "a:microp_aero_run",
+        "a:microp_tend",
+        "a:radiation",
+        "a:phys_run2",
+        "a:stepon_run3",
+        "a:stepon_run1",
+        "a:stepon_run2",
+        "a:wshist",
+        "CPL:ATM_RUN"
+    ]
+    try:
+        atm_timer_set = set(atm_timer_default)
+        result = {}
+        for model in data[0]:
+            if model['name'] in atm_timer_set:
+                result[model['name']] = model
+            elif model['name'] == "a:bc_aerosols":
+                result['a:tphysbc_aerosols'] = model 
+        
+        for name in atm_timer_set:
+            if name not in result:
+                sampleModel['name'] = name
+                result[name] = sampleModel
+        
+        atmCompSum = 0
+        jsonData = {}
+
+        for name in atm_timer_default_label:
+            time = result[name]['values']['wallmax']
+            atmCompSum += time
+            model = {
+                "name":name,
+                "atm_time": time,
+                "atm_time_percentage":0,
+                "label":atm_timer_default_label[name]
+            }
+            jsonData[name] = model
+
+        totalATMTime = result["CPL:ATM_RUN"]["values"]["wallmax"]
+        other_time = max(0,totalATMTime-atmCompSum)
+        if other_time == 0:
+            totalATMTime = atmCompSum
+
+        print(jsonData)
+        #combine and delete
+        jsonData['a:tphysbc_aerosols']['atm_time'] += jsonData['a:microp_aero_run']['atm_time']
+        del jsonData['a:microp_aero_run']
+
+        jsonData['a:stepon_run1']['atm_time'] += jsonData['a:stepon_run2']['atm_time']
+        del jsonData['a:stepon_run2']
+
+        for name in jsonData:
+            percent = round((jsonData[name]['atm_time']/totalATMTime)*100,2)
+            jsonData[name]['atm_time_percentage'] = percent
+
+        #for other time
+        model = {
+            "name": "ATM Other",
+            "atm_time": round(other_time,3),
+            "atm_time_percentage":round((other_time/totalATMTime)*100,2),
+            "label":"ATM Other"
+        }
+        jsonData['ATM Other'] = model
+        return jsonData
+    except:
+        return None
+
+def atmTestScream(sampleModel,atmTimerLabel,data):
+    atm_timer_scream = [
+        'a:EAMxx::Dynamics::run',
+        'a:EAMxx::Macrophysics::run',
+        'a:EAMxx::Simple Prescribed Aerosols (SPA)::run',
+        'a:EAMxx::Microphysics::run',
+        'a:EAMxx::Radiation::run',
+        'CPL:ATM_RUN',
+        'CPL:RUN_LOOP'
+    ]
+    try:
+        atm_timer_set = set(atm_timer_scream)
+
+        result = {}
+        for model in data[0]:
+            if model['name'] in atm_timer_set:
+                result[model['name']] = model
+        for name in atm_timer_set:
+            if name not in result:
+                sampleModel['name'] = name
+                result[name] = sampleModel
+
+        atmCompSum = 0
+        jsonData = {}
+        for name in atmTimerLabel:
+            time = result[name]['values']['wallmax']
+            atmCompSum += time
+            model = {
+                "name":name,
+                "atm_time": time,
+                "atm_time_percentage":0,
+                "label":atmTimerLabel[name]
+            }
+            jsonData[name] = model
+
+        totalATMTime = result["CPL:ATM_RUN"]["values"]["wallmax"]
+        other_time = max(0,totalATMTime-atmCompSum)
+        if other_time == 0:
+            totalATMTime = atmCompSum
+
+        for name in jsonData:
+            percent = round((jsonData[name]['atm_time']/totalATMTime)*100,2)
+            jsonData[name]['atm_time_percentage'] = percent
+
+        #for other time
+        model = {
+            "name": "ATM Other",
+            "atm_time": round(other_time,3),
+            "atm_time_percentage":round((other_time/totalATMTime)*100,2),
+            "label":"ATM Other"
+        }
+        jsonData['ATM Other'] = model
+        return jsonData
+    except:
+        return None
     
 @app.route("/atmscream/<expids>/")
 def atmosScream(expids):

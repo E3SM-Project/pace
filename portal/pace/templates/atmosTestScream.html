@@ -27,6 +27,17 @@
 <script>
 var jsonData = {{jd|tojson}}
 var expid = String({{expids}})
+var labelColumn = []
+var timeRow = []
+var timePercent = []
+labelColumn.push('Exp ID')
+timeRow.push(expid)
+timePercent.push('percent')
+for (var key in jsonData){
+    labelColumn.push(jsonData[key]['label'])
+    timeRow.push(jsonData[key]['atm_time'])
+    timePercent.push(jsonData[key]['atm_time_percentage'])
+}
 
 //load google charts to create bar charts
 google.charts.load('current', {packages: ['corechart', 'bar']});
@@ -35,22 +46,10 @@ google.charts.setOnLoadCallback(atmStackedTime);
 var colorSeq = ["#882E72","#1965B0","#7BAFDE","#4EB265","#CAE0AB","#F7F056","#F4A736","#E8601C","#DC050C","#72190E"]
 
 function atmStackedTime(){
-
-    var row = []
-    var column = []
-
-    column.push('Exp ID')
-    row.push(expid)
-
-    for (var key in jsonData){
-        column.push(jsonData[key]['label'])
-        row.push(jsonData[key]['atm_time'])
-    }
-    console.log(column)
-    console.log(row)
+    
     var data = google.visualization.arrayToDataTable([
-        column,
-        row
+        labelColumn,
+        timeRow
     ]);
     var materialOptions = {    
         isStacked: 'percent',
@@ -74,5 +73,38 @@ function atmStackedTime(){
     var materialChart = new google.visualization.BarChart(document.getElementById('stacktimes'));
     materialChart.draw(data, materialOptions);
 }
+
+// table creation
+var fieldDic = {
+    "color":"Color",
+    "timer":"Timer",
+    "run_time":"Run Time(s)",
+    "percentage":"Percentage"
+};
+
+var newCompRunTime = [];
+for(i=1;i<labelColumn.length;i++){
+    newCompRunTime.push({
+        "color":colorSeq[i-1],
+        "timer":labelColumn[i],
+        "run_time":timeRow[i],
+        "percentage":timePercent[i]
+    })  
+}
+
+var atmCompTable = new Tabulator("#compTable", {
+    data:newCompRunTime,
+    layout:"fitDataStretch",
+    initialSort:[
+        {column:"run_time", dir:"desc"},
+    ],
+    columns:[
+    {title:fieldDic["color"], field:"color", hozAlign:"right", formatter:"color", width:75},
+    {title:fieldDic["timer"], field:"timer", hozAlign:"right"},
+    {title:fieldDic["run_time"], field:"run_time", hozAlign:"right",sorter:"number",formatter:"money", formatterParams:{precision:3}},
+    {title:fieldDic["percentage"], field:"percentage", hozAlign:"right",formatter:"money", formatterParams:{precision:2}},
+    ],
+});
+
 </script>
 {% endblock %}
