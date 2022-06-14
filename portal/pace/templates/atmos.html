@@ -42,8 +42,8 @@ var other_time = 0;
 var atmCompSum = 0;
 var expid = String({{expids}})
 graphData.push(easyTableList["a:moist_convection"]["values"]["wallmax"]);
-graphData.push(easyTableList["a:macrop_tend"]["values"]["wallmax"] + easyTableList["a:tphysbc_aerosols"]["values"]["wallmax"]);
-graphData.push(easyTableList["a:microp_aero_run"]["values"]["wallmax"]);
+graphData.push(easyTableList["a:macrop_tend"]["values"]["wallmax"]);
+graphData.push(easyTableList["a:microp_aero_run"]["values"]["wallmax"]+ easyTableList["a:tphysbc_aerosols"]["values"]["wallmax"]);
 graphData.push(easyTableList["a:microp_tend"]["values"]["wallmax"]);
 graphData.push(easyTableList["a:radiation"]["values"]["wallmax"]);
 graphData.push(easyTableList["a:phys_run2"]["values"]["wallmax"]);

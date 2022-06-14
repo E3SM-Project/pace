@@ -37,8 +37,8 @@ for (i=0;i<expids.length;i++){
     var totalTime = 0
     var other_time = 0
     graphData.push(easyTableList[expids[i]]["a:moist_convection"]["values"]["wallmax"]);
-    graphData.push(easyTableList[expids[i]]["a:macrop_tend"]["values"]["wallmax"] + easyTableList[expids[i]]["a:tphysbc_aerosols"]["values"]["wallmax"]);
-    graphData.push(easyTableList[expids[i]]["a:microp_aero_run"]["values"]["wallmax"]);
+    graphData.push(easyTableList[expids[i]]["a:macrop_tend"]["values"]["wallmax"]);
+    graphData.push(easyTableList[expids[i]]["a:microp_aero_run"]["values"]["wallmax"]+ easyTableList[expids[i]]["a:tphysbc_aerosols"]["values"]["wallmax"]);
     graphData.push(easyTableList[expids[i]]["a:microp_tend"]["values"]["wallmax"]);
     graphData.push(easyTableList[expids[i]]["a:radiation"]["values"]["wallmax"]);
     graphData.push(easyTableList[expids[i]]["a:phys_run2"]["values"]["wallmax"]);
