@@ -1115,6 +1115,22 @@ def atmostest(expids):
             if not jsonData:
                 return render_template("error.html")
             return render_template("atmosTestScream.html",expids = expid, jd = jsonData,acutal_other_time = acutal_other_time)
+        else:
+            for expid in expidlist:
+                resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expidlist[0],)).fetchall()[0].jsonVal
+                data = json.loads(resultNodes)
+                whichDataSet = set()
+                whichDataSet.add(atmWhichDataSet(data,atmScreamTimerLabel))
+            if 'SCREAM' in whichDataSet:
+                UIData = {}
+                UIModel = {
+                    
+                }
+                for expid in expidlist:
+                    jsonData, acutal_other_time = atmTestScream(sampleModel,atmScreamTimerLabel,data)
+
+            else:
+                pass
     except Exception as e:
         print(e)
         return render_template('error.html')
