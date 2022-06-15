@@ -1243,6 +1243,8 @@ def nmlViewer(mexpid, mname):
     data = db.engine.execute("select data from namelist_inputs where expid=" + str(mexpid) + " and name='" + mname + "';" ).first()
     if data is None:
         return render_template('error.html')
+    if mname.startswith('user_nl'):
+        return render_template("scriptPage.html", scriptData = data[0], title = mname,language = 'fortran')
     tabledata = tabulatorjson.nestedjson2tabulator(data[0])
     return render_template("tabulator.html", myjson = tabledata)
     # return render_template("json.html", myjson = tabledata)
