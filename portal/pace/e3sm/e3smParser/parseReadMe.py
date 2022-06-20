@@ -40,7 +40,8 @@ def parseReadme(readmefilename):
                                 resultElement[argumentStr[0]] = argumentStr[1]
                             else:
                                 argument = cmdArgs[i].strip("-")
-                                resultElement[argument] = cmdArgs[i+1]
+                                if i+1 < len(cmdArgs):
+                                    resultElement[argument] = cmdArgs[i+1]
                         resultElement["date"] = commandLine.split(": ",1)[0].strip(":")
                     break
             # job done after finding elements res, compset
