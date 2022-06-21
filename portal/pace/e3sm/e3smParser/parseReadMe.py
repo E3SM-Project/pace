@@ -70,7 +70,3 @@ def parseReadme(readmefilename):
         return False
     fileIn.close()
     return resultElement
-
-exp = '/Users/4g5/Downloads/sbrus/20220614.WCYCL1850-WW3.ne30pg2_EC30to60E2r2_wQU225EC30to60E2r2.anvil/571140.220616-165247/CaseDocs.571140.220616-165247/README.case.571140.220616-165247'
-readmeparse = parseReadme(exp)
-print(readmeparse)
