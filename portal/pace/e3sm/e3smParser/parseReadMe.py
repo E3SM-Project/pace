@@ -33,7 +33,8 @@ def parseReadme(readmefilename):
                 if ('create_newcase' in element):
                     cmdArgs = commandLine.split(": ",1)[1].strip("./\n").split(" ")
                     resultElement["name"] = cmdArgs[0]
-                    cmdArgs.remove('')
+                    if '' in cmdArgs:
+                        cmdArgs.remove('')
                     for i in range(len(cmdArgs)):
                         if cmdArgs[i][0] == "-":
                             if "=" in cmdArgs[i]:
