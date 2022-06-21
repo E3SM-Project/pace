@@ -32,6 +32,7 @@ def parseReadme(readmefilename):
                 # this line holds profile information
                 if ('create_newcase' in element):
                     cmdArgs = commandLine.split(": ",1)[1].strip("./\n").split(" ")
+                    print(cmdArgs)
                     resultElement["name"] = cmdArgs[0]
                     for i in range(len(cmdArgs)):
                         if cmdArgs[i][0] == "-":
@@ -40,8 +41,10 @@ def parseReadme(readmefilename):
                                 resultElement[argumentStr[0]] = argumentStr[1]
                             else:
                                 argument = cmdArgs[i].strip("-")
-                                if i+1 < len(cmdArgs):
+                                if i+1 < len(cmdArgs) and cmdArgs[i+1][0]!='-':
                                     resultElement[argument] = cmdArgs[i+1]
+                                else:
+                                    resultElement[argument] = None
                         resultElement["date"] = commandLine.split(": ",1)[0].strip(":")
                     break
             # job done after finding elements res, compset
@@ -67,3 +70,7 @@ def parseReadme(readmefilename):
         return False
     fileIn.close()
     return resultElement
+
+exp = '/Users/4g5/Downloads/sbrus/20220614.WCYCL1850-WW3.ne30pg2_EC30to60E2r2_wQU225EC30to60E2r2.anvil/571140.220616-165247/CaseDocs.571140.220616-165247/README.case.571140.220616-165247'
+readmeparse = parseReadme(exp)
+print(readmeparse)
