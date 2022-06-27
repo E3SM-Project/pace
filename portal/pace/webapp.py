@@ -1116,24 +1116,40 @@ def atmostest(expids):
                 return render_template("error.html")
             return render_template("atmosTestScream.html",expids = expid, jd = jsonData,acutal_other_time = acutal_other_time)
         else:
+            UIData = {}
+            allData = []
             for expid in expidlist:
-                resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expidlist[0],)).fetchall()[0].jsonVal
+                resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expid,)).fetchall()[0].jsonVal
                 data = json.loads(resultNodes)
                 whichDataSet = set()
                 whichDataSet.add(atmWhichDataSet(data,atmScreamTimerLabel))
+                allData.append(data)
             if 'SCREAM' in whichDataSet:
-                UIData = {}
-                UIModel = {
-                    
-                }
-                for expid in expidlist:
-                    jsonData, acutal_other_time = atmTestScream(sampleModel,atmScreamTimerLabel,data)
-
+                for jsondata in allData:
+                    data, acutal_other_time = atmTestScream(sampleModel,atmScreamTimerLabel,jsondata)
+                    UIData = timerDataFrontEndCompare(data,UIData)
             else:
-                pass
+                for jsondata in allData:
+                    data, acutal_other_time = atmDefault(sampleModel,atm_timer_default_label,jsondata)
+                    UIData = timerDataFrontEndCompare(data, UIData)
+            return render_template("atmosTestCompare.html",labelData = UIData,expids = expidlist)
     except Exception as e:
         print(e)
         return render_template('error.html')
+
+def timerDataFrontEndCompare(jsonData,UIData):
+    for timer in jsonData:
+        label = jsonData[timer]['label']
+        if label in UIData:
+            UIData[label]['atm_time'].append(jsonData[timer]['atm_time'])
+            UIData[label]['atm_time_percentage'].append(jsonData[timer]['atm_time_percentage'])
+        else:
+            model = {
+                'atm_time': [jsonData[timer]['atm_time']],
+                'atm_time_percentage': [jsonData[timer]['atm_time_percentage']]
+            }
+            UIData[label] = model
+    return UIData
 
 def atmWhichDataSet(data,atmScreamTimerLabel):
     for model in data[0]:

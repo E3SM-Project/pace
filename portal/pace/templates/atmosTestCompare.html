@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{% block topscripts %}
+<link rel="stylesheet" type="text/css" href="/static/css/mtGeneral.css" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+{% block content %}
+
+<p>
+    <div style="overflow:hidden; border: 4px solid black; margin-bottom:75px">
+        <h3 style="text-align:center">ATM Process Distribution Percentage</h3>
+        <details>
+            <summary style="text-align:center; cursor: pointer;"><u>read more...</u></summary>
+        </details>
+        
+        <canvas id="columnChartTagPercentage"></canvas>
+    </div>
+
+    <div style="overflow:hidden; border: 4px solid black; margin-bottom:75px">
+        <h3 style="text-align:center">ATM Process Distribution</h3>
+        <details>
+            <summary style="text-align:center; cursor: pointer;"><u>read more...</u></summary>
+        </details>
+        
+        <canvas id="columnChartTag"></canvas>
+    </div>
+</p>
+
+<script>
+var jsonData = {{labelData|tojson}}
+var expids = {{expids|tojson}}
+
+percentData = []
+var colorSeq = ["#882E72","#1965B0","#7BAFDE","#4EB265","#CAE0AB","#F7F056","#F4A736","#E8601C","#DC050C","#72190E"]
+
+var columnChartPercentage = new Chart(columnChartTagPercentage,{
+    type:"bar",
+    data:{
+        labels:expids
+    },
+    options: {
+        scales: {
+                yAxes:[{
+                    stacked:true,
+                    scaleLabel:{
+                        display:true,
+                        fontSize:18,
+                        labelString:"% Atm Runtime"
+                    }}],
+                xAxes:[{
+                    stacked:true,
+                    scaleLabel:{
+                        display:true,
+                        fontSize:18,
+                        labelString:"Experiment ID"
+                    }}]
+        }
+    }
+});
+var i = 0
+for ( var key in jsonData) {
+    // set chart label first to create javascript array element
+    if(!columnChartPercentage.data.datasets[i])
+        columnChartPercentage.data.datasets[i] = {label:key,data:jsonData[key]['atm_time_percentage'],backgroundColor:colorSeq[i],borderColor:[]};
+    i++    
+}
+    
+columnChartPercentage.update();
+
+var columnChart = new Chart(columnChartTag,{
+    type:"bar",
+    data:{
+        labels:expids
+    },
+    options: {
+        scales: {
+                yAxes:[{
+                    stacked:true,
+                    scaleLabel:{
+                        display:true,
+                        fontSize:18,
+                        labelString:"Atm Runtime Seconds"
+                    }}],
+                xAxes:[{
+                    stacked:true,
+                    scaleLabel:{
+                        display:true,
+                        fontSize:18,
+                        labelString:"Experiment ID"
+                    }}]
+        }
+    }
+});
+var i = 0
+for ( var key in jsonData) {
+    // set chart label first to create javascript array element
+    if(!columnChart.data.datasets[i])
+        columnChart.data.datasets[i] = {label:key,data:jsonData[key]['atm_time'],backgroundColor:colorSeq[i],borderColor:[]};
+    i++    
+}
+    
+columnChart.update();
+</script>
+{% endblock %}
