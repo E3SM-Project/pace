@@ -1053,7 +1053,7 @@ def getRuntimeSvg(expid):
     except SQLAlchemyError:
         return render_template('error.html'), 404
 
-@app.route("/atmtest/<expids>/")
+@app.route("/atmos/<expids>/")
 def atmostest(expids):
     if not bool(re.match('^[0-9,]+$', expids)):
         return render_template('error.html')
@@ -1107,21 +1107,20 @@ def atmostest(expids):
             resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expidlist[0],)).fetchall()[0].jsonVal
             data = json.loads(resultNodes)
             whichDataSet = atmWhichDataSet(data,atmScreamTimerLabel)
-            #whichDataSet = 'SCREAM'
             if whichDataSet == 'SCREAM':
                 jsonData,acutal_other_time = atmTestScream(sampleModel,atmScreamTimerLabel,data)
             else:
                 jsonData, acutal_other_time = atmDefault(sampleModel,atm_timer_default_label,data)
             if not jsonData:
                 return render_template("error.html")
-            return render_template("atmosTestScream.html",expids = expid, jd = jsonData,acutal_other_time = acutal_other_time)
+            return render_template("atmosTestScream.html",expids = expid, jd = jsonData,acutal_other_time = acutal_other_time, model = 'ATM')
         else:
             UIData = {}
             allData = []
+            whichDataSet = set()
             for expid in expidlist:
                 resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expid,)).fetchall()[0].jsonVal
                 data = json.loads(resultNodes)
-                whichDataSet = set()
                 whichDataSet.add(atmWhichDataSet(data,atmScreamTimerLabel))
                 allData.append(data)
             if 'SCREAM' in whichDataSet:
@@ -1132,7 +1131,7 @@ def atmostest(expids):
                 for jsondata in allData:
                     data, acutal_other_time = atmDefault(sampleModel,atm_timer_default_label,jsondata)
                     UIData = timerDataFrontEndCompare(data, UIData)
-            return render_template("atmosTestCompare.html",labelData = UIData,expids = expidlist)
+            return render_template("atmosTestCompare.html",labelData = UIData,expids = expidlist, model = 'ATM')
     except Exception as e:
         print(e)
         return render_template('error.html')
@@ -1155,6 +1154,7 @@ def atmWhichDataSet(data,atmScreamTimerLabel):
     for model in data[0]:
         if model['name'] in atmScreamTimerLabel:
             return 'SCREAM'
+    return 'DEFAULT'
 
 def atmDefault(sampleModel,atm_timer_default_label,data):
     atm_timer_default = [
@@ -1204,6 +1204,10 @@ def atmDefault(sampleModel,atm_timer_default_label,data):
         other_time = max(0,actual_other_time)
         if other_time == 0:
             totalATMTime = atmCompSum
+        
+        # Avoid division by zero
+        if totalATMTime == 0:
+            totalATMTime = 1
 
         #combine and delete
         jsonData['a:tphysbc_aerosols']['atm_time'] += jsonData['a:microp_aero_run']['atm_time']
@@ -1268,6 +1272,9 @@ def atmTestScream(sampleModel,atmTimerLabel,data):
         other_time = max(0,totalATMTime-atmCompSum)
         if other_time == 0:
             totalATMTime = atmCompSum
+        #avoid divison by zero
+        if totalATMTime == 0:
+            totalATMTime = 1
 
         for name in jsonData:
             percent = round((jsonData[name]['atm_time']/totalATMTime)*100,2)
@@ -1285,7 +1292,7 @@ def atmTestScream(sampleModel,atmTimerLabel,data):
     except:
         return None
     
-@app.route("/atmscream/<expids>/")
+'''@app.route("/atmscream/<expids>/")
 def atmosScream(expids):
     if not bool(re.match('^[0-9,]+$', expids)):
         return render_template('error.html')
@@ -1454,7 +1461,7 @@ def atmosChart(expids):
     except:
         return render_template('error.html')
     
-
+'''
 
 @app.route("/xmlviewer/<int:mexpid>/<mname>")
 def xmlViewer(mexpid, mname):
