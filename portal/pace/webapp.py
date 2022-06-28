@@ -1054,7 +1054,7 @@ def getRuntimeSvg(expid):
         return render_template('error.html'), 404
 
 @app.route("/atmos/<expids>/")
-def atmostest(expids):
+def atmos(expids):
     if not bool(re.match('^[0-9,]+$', expids)):
         return render_template('error.html')
     expidlist = expids.split(',')
@@ -1108,7 +1108,7 @@ def atmostest(expids):
             data = json.loads(resultNodes)
             whichDataSet = atmWhichDataSet(data,atmScreamTimerLabel)
             if whichDataSet == 'SCREAM':
-                jsonData,acutal_other_time = atmTestScream(sampleModel,atmScreamTimerLabel,data)
+                jsonData,acutal_other_time = atmScream(sampleModel,atmScreamTimerLabel,data)
             else:
                 jsonData, acutal_other_time = atmDefault(sampleModel,atm_timer_default_label,data)
             if not jsonData:
@@ -1125,7 +1125,7 @@ def atmostest(expids):
                 allData.append(data)
             if 'SCREAM' in whichDataSet:
                 for jsondata in allData:
-                    data, acutal_other_time = atmTestScream(sampleModel,atmScreamTimerLabel,jsondata)
+                    data, acutal_other_time = atmScream(sampleModel,atmScreamTimerLabel,jsondata)
                     UIData = timerDataFrontEndCompare(data,UIData)
             else:
                 for jsondata in allData:
@@ -1232,7 +1232,7 @@ def atmDefault(sampleModel,atm_timer_default_label,data):
     except:
         return None, None
 
-def atmTestScream(sampleModel,atmTimerLabel,data):
+def atmScream(sampleModel,atmTimerLabel,data):
     atm_timer_scream = [
         'a:EAMxx::Dynamics::run',
         'a:EAMxx::Macrophysics::run',
