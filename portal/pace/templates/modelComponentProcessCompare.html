@@ -30,10 +30,13 @@
 <script>
 var jsonData = {{labelData|tojson}}
 var expids = {{expids|tojson}}
+var model = "{{model}}"
 
 percentData = []
 var colorSeq = ["#882E72","#1965B0","#7BAFDE","#4EB265","#CAE0AB","#F7F056","#F4A736","#E8601C","#DC050C","#72190E"]
 
+var xLabelString = "Experiment ID"
+var yLabelString = "% "+model+" Runtime"
 var columnChartPercentage = new Chart(columnChartTagPercentage,{
     type:"bar",
     data:{
@@ -46,14 +49,14 @@ var columnChartPercentage = new Chart(columnChartTagPercentage,{
                     scaleLabel:{
                         display:true,
                         fontSize:18,
-                        labelString:"% Atm Runtime"
+                        labelString:yLabelString
                     }}],
                 xAxes:[{
                     stacked:true,
                     scaleLabel:{
                         display:true,
                         fontSize:18,
-                        labelString:"Experiment ID"
+                        labelString:xLabelString
                     }}]
         }
     }
@@ -62,12 +65,14 @@ var i = 0
 for ( var key in jsonData) {
     // set chart label first to create javascript array element
     if(!columnChartPercentage.data.datasets[i])
-        columnChartPercentage.data.datasets[i] = {label:key,data:jsonData[key]['atm_time_percentage'],backgroundColor:colorSeq[i],borderColor:[]};
+        columnChartPercentage.data.datasets[i] = {label:key,data:jsonData[key]['time_percentage'],backgroundColor:colorSeq[i],borderColor:[]};
     i++    
 }
     
 columnChartPercentage.update();
 
+var xLabelString = "Experiment ID"
+var yLabelString = "% "+model+" Runtime"
 var columnChart = new Chart(columnChartTag,{
     type:"bar",
     data:{
@@ -80,14 +85,14 @@ var columnChart = new Chart(columnChartTag,{
                     scaleLabel:{
                         display:true,
                         fontSize:18,
-                        labelString:"Atm Runtime Seconds"
+                        labelString:yLabelString
                     }}],
                 xAxes:[{
                     stacked:true,
                     scaleLabel:{
                         display:true,
                         fontSize:18,
-                        labelString:"Experiment ID"
+                        labelString:xLabelString
                     }}]
         }
     }
@@ -96,7 +101,7 @@ var i = 0
 for ( var key in jsonData) {
     // set chart label first to create javascript array element
     if(!columnChart.data.datasets[i])
-        columnChart.data.datasets[i] = {label:key,data:jsonData[key]['atm_time'],backgroundColor:colorSeq[i],borderColor:[]};
+        columnChart.data.datasets[i] = {label:key,data:jsonData[key]['time'],backgroundColor:colorSeq[i],borderColor:[]};
     i++    
 }
     
