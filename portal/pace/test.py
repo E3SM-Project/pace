@@ -18347,13 +18347,269 @@ for name in atm_timer:
         sampleModel['name'] = name
         result[name] = sampleModel
 
-atmTimerLabel = {
+result = {
+   "CPL:ATM_RUN":{
+      "children":[
+         
+      ],
+      "multiParent":False,
+      "name":"CPL:ATM_RUN",
+      "values":{
+         "count":0,
+         "on":False,
+         "processes":0,
+         "threads":0,
+         "wallmax":0,
+         "wallmax_proc":0,
+         "wallmax_thrd":0,
+         "wallmin":0,
+         "wallmin_proc":0,
+         "wallmin_thrd":0,
+         "walltotal":0
+      }
+   },
+   "a:macrop_tend":{
+      "children":[
+         
+      ],
+      "multiParent":False,
+      "name":"CPL:ATM_RUN",
+      "values":{
+         "count":0,
+         "on":False,
+         "processes":0,
+         "threads":0,
+         "wallmax":0,
+         "wallmax_proc":0,
+         "wallmax_thrd":0,
+         "wallmin":0,
+         "wallmin_proc":0,
+         "wallmin_thrd":0,
+         "walltotal":0
+      }
+   },
+   "a:microp_aero_run":{
+      "children":[
+         
+      ],
+      "multiParent":False,
+      "name":"CPL:ATM_RUN",
+      "values":{
+         "count":0,
+         "on":False,
+         "processes":0,
+         "threads":0,
+         "wallmax":0,
+         "wallmax_proc":0,
+         "wallmax_thrd":0,
+         "wallmin":0,
+         "wallmin_proc":0,
+         "wallmin_thrd":0,
+         "walltotal":0
+      }
+   },
+   "a:microp_tend":{
+      "children":[
+         
+      ],
+      "multiParent":False,
+      "name":"CPL:ATM_RUN",
+      "values":{
+         "count":0,
+         "on":False,
+         "processes":0,
+         "threads":0,
+         "wallmax":0,
+         "wallmax_proc":0,
+         "wallmax_thrd":0,
+         "wallmin":0,
+         "wallmin_proc":0,
+         "wallmin_thrd":0,
+         "walltotal":0
+      }
+   },
+   "a:moist_convection":{
+      "children":[
+         
+      ],
+      "multiParent":False,
+      "name":"CPL:ATM_RUN",
+      "values":{
+         "count":0,
+         "on":False,
+         "processes":0,
+         "threads":0,
+         "wallmax":0,
+         "wallmax_proc":0,
+         "wallmax_thrd":0,
+         "wallmin":0,
+         "wallmin_proc":0,
+         "wallmin_thrd":0,
+         "walltotal":0
+      }
+   },
+   "a:phys_run2":{
+      "children":[
+         
+      ],
+      "multiParent":False,
+      "name":"CPL:ATM_RUN",
+      "values":{
+         "count":0,
+         "on":False,
+         "processes":0,
+         "threads":0,
+         "wallmax":0,
+         "wallmax_proc":0,
+         "wallmax_thrd":0,
+         "wallmin":0,
+         "wallmin_proc":0,
+         "wallmin_thrd":0,
+         "walltotal":0
+      }
+   },
+   "a:radiation":{
+      "children":[
+         
+      ],
+      "multiParent":False,
+      "name":"CPL:ATM_RUN",
+      "values":{
+         "count":0,
+         "on":False,
+         "processes":0,
+         "threads":0,
+         "wallmax":0,
+         "wallmax_proc":0,
+         "wallmax_thrd":0,
+         "wallmin":0,
+         "wallmin_proc":0,
+         "wallmin_thrd":0,
+         "walltotal":0
+      }
+   },
+   "a:stepon_run1":{
+      "children":[
+         
+      ],
+      "multiParent":False,
+      "name":"CPL:ATM_RUN",
+      "values":{
+         "count":0,
+         "on":False,
+         "processes":0,
+         "threads":0,
+         "wallmax":0,
+         "wallmax_proc":0,
+         "wallmax_thrd":0,
+         "wallmin":0,
+         "wallmin_proc":0,
+         "wallmin_thrd":0,
+         "walltotal":0
+      }
+   },
+   "a:stepon_run2":{
+      "children":[
+         
+      ],
+      "multiParent":False,
+      "name":"CPL:ATM_RUN",
+      "values":{
+         "count":0,
+         "on":False,
+         "processes":0,
+         "threads":0,
+         "wallmax":0,
+         "wallmax_proc":0,
+         "wallmax_thrd":0,
+         "wallmin":0,
+         "wallmin_proc":0,
+         "wallmin_thrd":0,
+         "walltotal":0
+      }
+   },
+   "a:stepon_run3":{
+      "children":[
+         
+      ],
+      "multiParent":False,
+      "name":"CPL:ATM_RUN",
+      "values":{
+         "count":0,
+         "on":False,
+         "processes":0,
+         "threads":0,
+         "wallmax":0,
+         "wallmax_proc":0,
+         "wallmax_thrd":0,
+         "wallmin":0,
+         "wallmin_proc":0,
+         "wallmin_thrd":0,
+         "walltotal":0
+      }
+   },
+   "a:tphysbc_aerosols":{
+      "children":[
+         
+      ],
+      "multiParent":False,
+      "name":"CPL:ATM_RUN",
+      "values":{
+         "count":0,
+         "on":False,
+         "processes":0,
+         "threads":0,
+         "wallmax":0,
+         "wallmax_proc":0,
+         "wallmax_thrd":0,
+         "wallmin":0,
+         "wallmin_proc":0,
+         "wallmin_thrd":0,
+         "walltotal":0
+      }
+   },
+   "a:wshist":{
+      "children":[
+         
+      ],
+      "multiParent":False,
+      "name":"CPL:ATM_RUN",
+      "values":{
+         "count":0,
+         "on":False,
+         "processes":0,
+         "threads":0,
+         "wallmax":0,
+         "wallmax_proc":0,
+         "wallmax_thrd":0,
+         "wallmin":0,
+         "wallmin_proc":0,
+         "wallmin_thrd":0,
+         "walltotal":0
+      }
+   }
+}
+"""atmTimerLabel = {
     "a:EAMxx::Dynamics::run": "Dyn",
     "a:EAMxx::Macrophysics::run": "SHOC",
     "a:EAMxx::Simple Prescribed Aerosols (SPA)::run": "SPA",
     "a:EAMxx::Microphysics::run": "P3",
     "a:EAMxx::Radiation::run": "RRTMGPxx"
-}
+}"""
+
+atmTimerLabel = {
+        "a:moist_convection": "Convection",
+        "a:macrop_tend":"CLUBB",
+        "a:tphysbc_aerosols":"Aerosol",
+        "a:microp_aero_run":"Aerosol",
+        "a:microp_tend":"Microphys",
+        "a:radiation":"Radiation",
+        "a:phys_run2":"Phys Aft Surface",
+        "a:stepon_run3":"Dynamincs",
+        "a:stepon_run1":"Phys/Dyn Coupling",
+        "a:stepon_run2":"Phys/Dyn Coupling",
+        "a:wshist":"Hist"
+    }
 atmCompSum = 0
 jsonData = {}
 for name in atmTimerLabel:
@@ -18371,6 +18627,8 @@ totalATMTime = result["CPL:ATM_RUN"]["values"]["wallmax"]
 other_time = max(0,totalATMTime-atmCompSum)
 if other_time == 0:
     totalATMTime = atmCompSum
+if totalATMTime == 0:
+   totalATMTime = 1
 
 for name in jsonData:
     percent = round((jsonData[name]['atm_time']/totalATMTime)*100,2)
@@ -18385,7 +18643,7 @@ model = {
 }
 jsonData['ATM Other'] = model
 
-#print(jsonData)
+print(jsonData)
 def atmTestScream(sampleModel,atmTimerLabel,data):
     atm_timer_scream = [
         'a:EAMxx::Dynamics::run',
@@ -18536,7 +18794,7 @@ dataId6={
    }
 }
 
-alldata = []
+"""alldata = []
 alldata.append(dataId6)
 alldata.append(dataId8)
 UIData = {}
@@ -18544,6 +18802,6 @@ for data in alldata:
    UIData = timerData(data)
 
 print(UIData)
-
+"""
 
 
