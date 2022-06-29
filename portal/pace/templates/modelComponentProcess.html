@@ -16,7 +16,7 @@
         <details open>
             <summary style="text-align:center; cursor: pointer;"><u>Collapse</u></summary>
             <div id="compTable"></div>
-            <span style="color:crimson" id="note"></span>
+            <span style="color:crimson" id="note">{{note}}</span>
         </details>
         <br>
         <br>
@@ -39,11 +39,6 @@ var expid = String({{expids}})
 var model = "{{model}}"
 
 // Note display if model other timer is less than 0
-var actual_other_time = {{acutal_other_time}}
-if(actual_other_time<0){
-    note = "* Note: CPL:"+model+"_RUN is less than the cummulative "+model+" timers. "+model+" other = " + String(actual_other_time.toFixed(2)) + "s"
-    document.getElementById("note").innerHTML = note;
-}
 var labelColumn = []
 var timeRow = []
 var timePercent = []

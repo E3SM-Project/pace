@@ -1108,12 +1108,15 @@ def atmos(expids):
             data = json.loads(resultNodes)
             whichDataSet = atmWhichDataSet(data,atmScreamTimerLabel)
             if whichDataSet == 'SCREAM':
-                jsonData,acutal_other_time = atmScream(sampleModel,atmScreamTimerLabel,data)
+                jsonData,actual_other_time = atmScream(sampleModel,atmScreamTimerLabel,data)
             else:
-                jsonData, acutal_other_time = atmDefault(sampleModel,atm_timer_default_label,data)
+                jsonData, actual_other_time = atmDefault(sampleModel,atm_timer_default_label,data)
             if not jsonData:
                 return render_template("error.html")
-            return render_template("modelComponentProcess.html",expids = expid, jd = jsonData,acutal_other_time = acutal_other_time, model = 'ATM')
+            note = ""
+            if actual_other_time < 0:
+                note = "* Note: CPL:ATM_RUN is less than the cummulative ATM timers. ATM other = " + str(round(actual_other_time,2)) + "s"
+            return render_template("modelComponentProcess.html",expids = expid, jd = jsonData,note = note, model = 'ATM')
         else:
             UIData = {}
             allData = []
@@ -1125,11 +1128,11 @@ def atmos(expids):
                 allData.append(data)
             if 'SCREAM' in whichDataSet:
                 for jsondata in allData:
-                    data, acutal_other_time = atmScream(sampleModel,atmScreamTimerLabel,jsondata)
+                    data, actual_other_time = atmScream(sampleModel,atmScreamTimerLabel,jsondata)
                     UIData = timerDataFrontEndCompare(data,UIData)
             else:
                 for jsondata in allData:
-                    data, acutal_other_time = atmDefault(sampleModel,atm_timer_default_label,jsondata)
+                    data, actual_other_time = atmDefault(sampleModel,atm_timer_default_label,jsondata)
                     UIData = timerDataFrontEndCompare(data, UIData)
             return render_template("modelComponentProcessCompare.html",labelData = UIData,expids = expidlist, model = 'ATM')
     except Exception as e:
