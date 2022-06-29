@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+from logging import exception
 from flask import Flask,render_template,Response,make_response,send_from_directory,request,redirect,url_for, session
 from collections import OrderedDict
 from pace import app
@@ -1078,7 +1079,7 @@ def atmos(expids):
         "a:microp_tend":"Microphys",
         "a:radiation":"Radiation",
         "a:phys_run2":"Phys Aft Surface",
-        "a:stepon_run3":"Dynamincs",
+        "a:stepon_run3":"Dynamics",
         "a:stepon_run1":"Phys/Dyn Coupling",
         "a:stepon_run2":"Phys/Dyn Coupling",
         "a:wshist":"Hist"
@@ -1108,14 +1109,14 @@ def atmos(expids):
             data = json.loads(resultNodes)
             whichDataSet = atmWhichDataSet(data,atmScreamTimerLabel)
             if whichDataSet == 'SCREAM':
-                jsonData,actual_other_time = atmScream(sampleModel,atmScreamTimerLabel,data)
+                jsonData,actual_other_time,percentError = atmScream(sampleModel,atmScreamTimerLabel,data)
             else:
-                jsonData, actual_other_time = atmDefault(sampleModel,atm_timer_default_label,data)
+                jsonData, actual_other_time, percentError = atmDefault(sampleModel,atm_timer_default_label,data)
             if not jsonData:
                 return render_template("error.html")
             note = ""
             if actual_other_time < 0:
-                note = "* Note: CPL:ATM_RUN is less than the cummulative ATM timers. ATM other = " + str(round(actual_other_time,2)) + "s"
+                note = "* Note: For this experiment, the high-level component timer (e.g., ATM_RUN) is less than the cumulative sum of the selected sub-process timers. So, the cumulative sum is used for the stacked plot. This happens due to variance in MPI_wallmax timers across processors. It is typically harmless provided that it is a small percentage. The absolute difference in timer values is " + str(round(actual_other_time,2)) + " seconds and the percentage error is "+str(percentError)+"%."
             return render_template("modelComponentProcess.html",expids = expid, jd = jsonData,note = note, model = 'ATM')
         else:
             UIData = {}
@@ -1128,11 +1129,11 @@ def atmos(expids):
                 allData.append(data)
             if 'SCREAM' in whichDataSet:
                 for jsondata in allData:
-                    data, actual_other_time = atmScream(sampleModel,atmScreamTimerLabel,jsondata)
+                    data, actual_other_time, percentError = atmScream(sampleModel,atmScreamTimerLabel,jsondata)
                     UIData = timerDataFrontEndCompare(data,UIData)
             else:
                 for jsondata in allData:
-                    data, actual_other_time = atmDefault(sampleModel,atm_timer_default_label,jsondata)
+                    data, actual_other_time, percentError = atmDefault(sampleModel,atm_timer_default_label,jsondata)
                     UIData = timerDataFrontEndCompare(data, UIData)
             return render_template("modelComponentProcessCompare.html",labelData = UIData,expids = expidlist, model = 'ATM')
     except Exception as e:
@@ -1205,7 +1206,13 @@ def atmDefault(sampleModel,atm_timer_default_label,data):
         totalATMTime = result["CPL:ATM_RUN"]["values"]["wallmax"]
         actual_other_time = totalATMTime-atmCompSum
         other_time = max(0,actual_other_time)
+        percentError = 0
+        # Avoid division by zero
+        if totalATMTime == 0:
+            totalATMTime = 1
+
         if other_time == 0:
+            percentError = round((-1)*(actual_other_time/totalATMTime) *100,2)
             totalATMTime = atmCompSum
         
         # Avoid division by zero
@@ -1231,9 +1238,10 @@ def atmDefault(sampleModel,atm_timer_default_label,data):
             "label":"ATM Other"
         }
         jsonData['ATM Other'] = model
-        return jsonData, actual_other_time
-    except:
-        return None, None
+        return jsonData, actual_other_time, percentError
+    except Exception as e:
+        print(e)
+        return None, None, None
 
 def atmScream(sampleModel,atmTimerLabel,data):
     atm_timer_scream = [
@@ -1256,7 +1264,7 @@ def atmScream(sampleModel,atmTimerLabel,data):
             if name not in result:
                 sampleModel['name'] = name
                 result[name] = sampleModel
-
+        
         atmCompSum = 0
         jsonData = {}
         for name in atmTimerLabel:
@@ -1273,8 +1281,16 @@ def atmScream(sampleModel,atmTimerLabel,data):
         totalATMTime = result["CPL:ATM_RUN"]["values"]["wallmax"]
         actual_other_time = totalATMTime-atmCompSum
         other_time = max(0,totalATMTime-atmCompSum)
+        percentError = 0
+        
+        #avoid divison by zero
+        if totalATMTime == 0:
+            totalATMTime = 1
+
         if other_time == 0:
+            percentError = round((-1)*(actual_other_time/totalATMTime) *100,2)
             totalATMTime = atmCompSum
+        
         #avoid divison by zero
         if totalATMTime == 0:
             totalATMTime = 1
@@ -1291,9 +1307,9 @@ def atmScream(sampleModel,atmTimerLabel,data):
             "label":"ATM Other"
         }
         jsonData['ATM Other'] = model
-        return jsonData, actual_other_time
+        return jsonData, actual_other_time, percentError
     except:
-        return None
+        return None, None, None
 
 
 @app.route("/xmlviewer/<int:mexpid>/<mname>")
