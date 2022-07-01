@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+from logging import exception
 from flask import Flask,render_template,Response,make_response,send_from_directory,request,redirect,url_for, session
 from collections import OrderedDict
 from pace import app
@@ -1053,20 +1054,36 @@ def getRuntimeSvg(expid):
     except SQLAlchemyError:
         return render_template('error.html'), 404
 
-
-@app.route("/atmscream/<expids>/")
-def atmosScream(expids):
+@app.route("/atmos/<expids>/")
+def atmos(expids):
     if not bool(re.match('^[0-9,]+$', expids)):
         return render_template('error.html')
-    atm_timer = [
-        'a:EAMxx::Dynamics::run',
-        'a:EAMxx::Macrophysics::run',
-        'a:EAMxx::Simple Prescribed Aerosols (SPA)::run',
-        'a:EAMxx::Microphysics::run',
-        'a:EAMxx::Radiation::run',
-        'CPL:ATM_RUN',
-        'CPL:RUN_LOOP'
-    ]
+    expidlist = expids.split(',')
+    for id in expidlist:
+        try:
+            expid = int(id)
+        except:
+            return render_template('error.html')
+    atmScreamTimerLabel = {
+        "a:EAMxx::Dynamics::run": "Dyn",
+        "a:EAMxx::Macrophysics::run": "SHOC",
+        "a:EAMxx::Simple Prescribed Aerosols (SPA)::run": "SPA",
+        "a:EAMxx::Microphysics::run": "P3",
+        "a:EAMxx::Radiation::run": "RRTMGPxx"
+    }
+    atm_timer_default_label = {
+        "a:moist_convection": "Convection",
+        "a:macrop_tend":"CLUBB",
+        "a:tphysbc_aerosols":"Aerosol",
+        "a:microp_aero_run":"Aerosol",
+        "a:microp_tend":"Microphys",
+        "a:radiation":"Radiation",
+        "a:phys_run2":"Phys Aft Surface",
+        "a:stepon_run3":"Dynamics",
+        "a:stepon_run1":"Phys/Dyn Coupling",
+        "a:stepon_run2":"Phys/Dyn Coupling",
+        "a:wshist":"Hist"
+    }
     sampleModel = {
         'children': [],
         'multiParent': False,
@@ -1085,56 +1102,66 @@ def atmosScream(expids):
             'walltotal': 0
         }
     }
-    
-    expidlist = expids.split(',')
-    for id in expidlist:
-        try:
-            expid = int(id)
-        except:
-            return render_template('error.html')
     try:
-        # single experiment detail page
+        
         if len(expidlist)==1:
             resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expidlist[0],)).fetchall()[0].jsonVal
             data = json.loads(resultNodes)
-            
-            result = {}
-            for model in data[0]:
-                if model['name'] in atm_timer:
-                    result[model['name']] = model
-            
-            for name in atm_timer:
-                if name not in result:
-                    sampleModel['name'] = name
-                    result[name] = sampleModel
-            return render_template("atmosScream.html",expids = expidlist[0], rd = result)
-        # compare atm page
+            whichDataSet = atmWhichDataSet(data,atmScreamTimerLabel)
+            if whichDataSet == 'SCREAM':
+                jsonData,actual_other_time,percentError = atmScream(sampleModel,atmScreamTimerLabel,data)
+            else:
+                jsonData, actual_other_time, percentError = atmDefault(sampleModel,atm_timer_default_label,data)
+            if not jsonData:
+                return render_template("error.html")
+            note = ""
+            if actual_other_time < 0:
+                note = "* Note: For this experiment, the high-level component timer (e.g., ATM_RUN) is less than the cumulative sum of the selected sub-process timers. So, the cumulative sum is used for the stacked plot. This happens due to variance in MPI_wallmax timers across processors. It is typically harmless provided that it is a small percentage. The absolute difference in timer values is " + str(round((-1)*actual_other_time,2)) + " seconds and the percentage error is "+str(percentError)+"%."
+            return render_template("modelComponentProcess.html",expids = expid, jd = jsonData,note = note, model = 'ATM')
         else:
-            output = {}
+            UIData = {}
+            allData = []
+            whichDataSet = set()
             for expid in expidlist:
                 resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expid,)).fetchall()[0].jsonVal
                 data = json.loads(resultNodes)
-                result = {}
-                for model in data[0]:
-                    if model['name'] in atm_timer:
-                        result[model['name']] = model
-                    elif model['name'] == "a:bc_aerosols":
-                        result['a:tphysbc_aerosols'] = model 
-                
-                for name in atm_timer:
-                    if name not in result:
-                        sampleModel['name'] = name
-                        result[name] = sampleModel
-                output[expid] = result
-            return render_template('atmosScreamCompare.html', expids = expidlist, rd = output)
-    except:
+                whichDataSet.add(atmWhichDataSet(data,atmScreamTimerLabel))
+                allData.append(data)
+            if 'SCREAM' in whichDataSet:
+                for jsondata in allData:
+                    data, actual_other_time, percentError = atmScream(sampleModel,atmScreamTimerLabel,jsondata)
+                    UIData = timerDataFrontEndCompare(data,UIData)
+            else:
+                for jsondata in allData:
+                    data, actual_other_time, percentError = atmDefault(sampleModel,atm_timer_default_label,jsondata)
+                    UIData = timerDataFrontEndCompare(data, UIData)
+            return render_template("modelComponentProcessCompare.html",labelData = UIData,expids = expidlist, model = 'ATM')
+    except Exception as e:
+        print(e)
         return render_template('error.html')
 
-@app.route("/atmos/<expids>/")
-def atmosChart(expids):
-    if not bool(re.match('^[0-9,]+$', expids)):
-        return render_template('error.html')
-    atm_timer = [
+def timerDataFrontEndCompare(jsonData,UIData):
+    for timer in jsonData:
+        label = jsonData[timer]['label']
+        if label in UIData:
+            UIData[label]['time'].append(jsonData[timer]['time'])
+            UIData[label]['time_percentage'].append(jsonData[timer]['time_percentage'])
+        else:
+            model = {
+                'time': [jsonData[timer]['time']],
+                'time_percentage': [jsonData[timer]['time_percentage']]
+            }
+            UIData[label] = model
+    return UIData
+
+def atmWhichDataSet(data,atmScreamTimerLabel):
+    for model in data[0]:
+        if model['name'] in atmScreamTimerLabel:
+            return 'SCREAM'
+    return 'DEFAULT'
+
+def atmDefault(sampleModel,atm_timer_default_label,data):
+    atm_timer_default = [
         "a:moist_convection",
         "a:macrop_tend",
         "a:tphysbc_aerosols",
@@ -1148,81 +1175,141 @@ def atmosChart(expids):
         "a:wshist",
         "CPL:ATM_RUN"
     ]
-    sampleModel = {
-        'children': [],
-        'multiParent': False,
-        'name': '',
-        'values':{
-            'count': 0,
-            'on': False,
-            'processes': 0,
-            'threads': 0,
-            'wallmax': 0,
-            'wallmax_proc': 0,
-            'wallmax_thrd': 0,
-            'wallmin': 0,
-            'wallmin_proc': 0,
-            'wallmin_thrd': 0,
-            'walltotal': 0
+    try:
+        atm_timer_set = set(atm_timer_default)
+        result = {}
+        for model in data[0]:
+            if model['name'] in atm_timer_set:
+                result[model['name']] = model
+            elif model['name'] == "a:bc_aerosols":
+                result['a:tphysbc_aerosols'] = model
+        
+        for name in atm_timer_set:
+            if name not in result:
+                sampleModel['name'] = name
+                result[name] = sampleModel
+        
+        atmCompSum = 0
+        jsonData = {}
+
+        for name in atm_timer_default_label:
+            time = result[name]['values']['wallmax']
+            atmCompSum += time
+            model = {
+                "name":name,
+                "time": time,
+                "time_percentage":0,
+                "label":atm_timer_default_label[name]
+            }
+            jsonData[name] = model
+
+        totalATMTime = result["CPL:ATM_RUN"]["values"]["wallmax"]
+        actual_other_time = totalATMTime-atmCompSum
+        other_time = max(0,actual_other_time)
+        percentError = 0
+        # Avoid division by zero
+        if totalATMTime == 0:
+            totalATMTime = 1
+
+        if other_time == 0:
+            percentError = round((-1)*(actual_other_time/totalATMTime) *100,2)
+            totalATMTime = atmCompSum
+        
+        # Avoid division by zero
+        if totalATMTime == 0:
+            totalATMTime = 1
+
+        #combine and delete
+        jsonData['a:tphysbc_aerosols']['time'] += jsonData['a:microp_aero_run']['time']
+        del jsonData['a:microp_aero_run']
+
+        jsonData['a:stepon_run1']['time'] += jsonData['a:stepon_run2']['time']
+        del jsonData['a:stepon_run2']
+
+        for name in jsonData:
+            percent = round((jsonData[name]['time']/totalATMTime)*100,2)
+            jsonData[name]['time_percentage'] = percent
+
+        #for other time
+        model = {
+            "name": "ATM Other",
+            "time": round(other_time,3),
+            "time_percentage":round((other_time/totalATMTime)*100,2),
+            "label":"ATM Other"
         }
-    }
+        jsonData['ATM Other'] = model
+        return jsonData, actual_other_time, percentError
+    except Exception as e:
+        print(e)
+        return None, None, None
+
+def atmScream(sampleModel,atmTimerLabel,data):
     atm_timer_scream = [
         'a:EAMxx::Dynamics::run',
         'a:EAMxx::Macrophysics::run',
         'a:EAMxx::Simple Prescribed Aerosols (SPA)::run',
         'a:EAMxx::Microphysics::run',
-        'a:EAMxx::Radiation::run'
+        'a:EAMxx::Radiation::run',
+        'CPL:ATM_RUN',
+        'CPL:RUN_LOOP'
     ]
-    expidlist = expids.split(',')
-    for id in expidlist:
-        try:
-            expid = int(id)
-        except:
-            return render_template('error.html')
     try:
-        # single experiment detail page
-        if len(expidlist)==1:
-            resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expidlist[0],)).fetchall()[0].jsonVal
-            data = json.loads(resultNodes)
-            
-            result = {}
-            for model in data[0]:
-                if model['name'] in atm_timer_scream:
-                    return redirect(url_for('atmosScream', expids = expids))
-                if model['name'] in atm_timer:
-                    result[model['name']] = model
-                elif model['name'] == "a:bc_aerosols":
-                    result['a:tphysbc_aerosols'] = model   
-            
-            for name in atm_timer:
-                if name not in result:
-                    sampleModel['name'] = name
-                    result[name] = sampleModel
-            return render_template("atmos.html",expids = expidlist[0], rd = result)
-        # compare atm page
-        else:
-            output = {}
-            for expid in expidlist:
-                resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expid,)).fetchall()[0].jsonVal
-                data = json.loads(resultNodes)
-                result = {}
-                for model in data[0]:
-                    if model['name'] in atm_timer_scream:
-                        return redirect(url_for('atmosScream', expids = expids))
-                    if model['name'] in atm_timer:
-                        result[model['name']] = model
-                    elif model['name'] == "a:bc_aerosols":
-                        result['a:tphysbc_aerosols'] = model 
-                
-                for name in atm_timer:
-                    if name not in result:
-                        sampleModel['name'] = name
-                        result[name] = sampleModel
-                output[expid] = result
-            return render_template('atmosCompare.html', expids = expidlist, rd = output)
+        atm_timer_set = set(atm_timer_scream)
+
+        result = {}
+        for model in data[0]:
+            if model['name'] in atm_timer_set:
+                result[model['name']] = model
+        for name in atm_timer_set:
+            if name not in result:
+                sampleModel['name'] = name
+                result[name] = sampleModel
+        
+        atmCompSum = 0
+        jsonData = {}
+        for name in atmTimerLabel:
+            time = result[name]['values']['wallmax']
+            atmCompSum += time
+            model = {
+                "name":name,
+                "time": time,
+                "time_percentage":0,
+                "label":atmTimerLabel[name]
+            }
+            jsonData[name] = model
+
+        totalATMTime = result["CPL:ATM_RUN"]["values"]["wallmax"]
+        actual_other_time = totalATMTime-atmCompSum
+        other_time = max(0,totalATMTime-atmCompSum)
+        percentError = 0
+        
+        #avoid divison by zero
+        if totalATMTime == 0:
+            totalATMTime = 1
+
+        if other_time == 0:
+            percentError = round((-1)*(actual_other_time/totalATMTime) *100,2)
+            totalATMTime = atmCompSum
+        
+        #avoid divison by zero
+        if totalATMTime == 0:
+            totalATMTime = 1
+
+        for name in jsonData:
+            percent = round((jsonData[name]['time']/totalATMTime)*100,2)
+            jsonData[name]['time_percentage'] = percent
+
+        #for other time
+        model = {
+            "name": "ATM Other",
+            "time": round(other_time,3),
+            "time_percentage":round((other_time/totalATMTime)*100,2),
+            "label":"ATM Other"
+        }
+        jsonData['ATM Other'] = model
+        return jsonData, actual_other_time, percentError
     except:
-        return render_template('error.html')
-    
+        return None, None, None
 
 
 @app.route("/xmlviewer/<int:mexpid>/<mname>")
