@@ -10,6 +10,7 @@ from pace.e3sm.e3smDb.datastructs import *
 from pace.e3sm.e3smParser import parseNameList
 from pace.e3sm.e3smParser import parseRC
 from pace.e3sm.e3smParser import parseXML
+from pace.e3sm.e3smParser import parseText
 
 #acceptable file name prefix
 namelists = ("atm_in", "atm_modelio", "cpl_modelio", "drv_flds_in", "drv_in",
@@ -99,7 +100,10 @@ def loaddb_casedocs(casedocpath,db, currExpObj):
             name = ".".join(nameseq)
             if nameseq:
                 if nameseq[0] in namelists:
-                    data = parseNameList.loaddb_namelist(path)
+                    if nameseq[0].startswith('user_nl'):
+                        data = parseText.load_text(path)
+                    else:
+                        data = parseNameList.loaddb_namelist(path)
                     if not data:
                         continue
                     nml = db.session.query(NamelistInputs).filter_by(expid=expid, name=name).first()

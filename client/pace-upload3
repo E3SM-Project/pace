@@ -163,7 +163,8 @@ def isValidE3SMexp(expfile,tmpfile):
         return(True)
     else:
         print((bcolors.WARNING + ('NOTE: No completed E3SM experiments found.') + bcolors.ENDC))
-        return(False)
+        exit()
+        #return(False)
 
 # validate Fusion experiment
 def isValidFusionExp(expfile):

@@ -33,6 +33,8 @@ def parseReadme(readmefilename):
                 if ('create_newcase' in element):
                     cmdArgs = commandLine.split(": ",1)[1].strip("./\n").split(" ")
                     resultElement["name"] = cmdArgs[0]
+                    if '' in cmdArgs:
+                        cmdArgs.remove('')
                     for i in range(len(cmdArgs)):
                         if cmdArgs[i][0] == "-":
                             if "=" in cmdArgs[i]:
@@ -40,7 +42,11 @@ def parseReadme(readmefilename):
                                 resultElement[argumentStr[0]] = argumentStr[1]
                             else:
                                 argument = cmdArgs[i].strip("-")
-                                resultElement[argument] = cmdArgs[i+1]
+                                if i+1 < len(cmdArgs) and cmdArgs[i+1][0]!='-':
+                                    resultElement[argument] = cmdArgs[i+1]
+                                else:
+                                    resultElement[argument] = None
+
                         resultElement["date"] = commandLine.split(": ",1)[0].strip(":")
                     break
             # job done after finding elements res, compset
