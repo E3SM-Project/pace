@@ -287,8 +287,10 @@ class PreviewRun(db.Model):
     tasks_per_node = db.Column(INTEGER(unsigned=True))
     thread_count = db.Column(INTEGER(unsigned=True))
     ngpus_per_node = db.Column(INTEGER(unsigned=True))
+    submit_cmd = db.Column(MEDIUMTEXT)
+    env = db.Column(MEDIUMTEXT)
 
-    def __init__(self, expid, nodes=None, total_tasks=None, tasks_per_node=None, thread_count=None,ngpus_per_node=None,mpirun=None):
+    def __init__(self, expid, nodes=None, total_tasks=None, tasks_per_node=None, thread_count=None,ngpus_per_node=None,mpirun=None, submit_cmd=None,env=None):
         self.expid = expid
         self.mpirun = mpirun
         self.nodes = nodes
@@ -296,6 +298,8 @@ class PreviewRun(db.Model):
         self.tasks_per_node = tasks_per_node
         self.thread_count = thread_count
         self.ngpus_per_node = ngpus_per_node
+        self.submit_cmd = submit_cmd
+        self.env = env
         
 class ScriptsFile(db.Model):
     __tablename__ = 'script_files'

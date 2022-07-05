@@ -67,7 +67,3 @@ def load_previewRunFile(previewfile):
         return data
     except:
         print("Error encountered while parsing preview run file : %s" %previewfile)
-
-exp = '/Users/4g5/Downloads/exp-kezi456-111391/preview_run.log.303313.220628-152730.gz'
-data = load_previewRunFile(exp)
-print(data['env'])
