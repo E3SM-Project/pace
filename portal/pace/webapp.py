@@ -135,7 +135,7 @@ def downloadlog():
     from flask import send_file
     if request.method == 'POST':
         msgfile = request.form['filename']
-        filelink = ('/pace/assets/static/logs/'+str(msgfile))
+        filelink = (PACE_LOG_DIR+str(msgfile))
         try:
             if bool(re.match("^pace-[a-zA-Z0-9\-:]+\.log$", msgfile)):
                 return send_file(filelink,attachment_filename='message.log')

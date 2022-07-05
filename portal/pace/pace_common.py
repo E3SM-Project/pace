@@ -54,9 +54,44 @@ def getDirectories():
     # PACE Report directory PACE_LOG_DIR
     # Raw data directory EXP_DIR
     # upload directory UPLOAD_FOLDER
+    '''
     if os.getenv("PACE_DOCKER_INSTANCE"):
         return "/pace/portal/pace/static/logs/","/pace/portal/pace/static/data/","/pace/portal/upload/"
     return '/pace/assets/static/logs/','/pace/assets/static/data/','/pace/prod/portal/upload'
+    '''
+    environment = getEnvironment()
+    if environment:
+        return environment['pace_log_dir'], environment['exp_dir'], environment['upload_folder']
+    return '/pace/assets/static/logs/','/pace/assets/static/data/','/pace/prod/portal/upload'
+
+'''
+    setup environment path for upload and logs based on environment
+'''
+def getEnvironment():
+    configFile = detectPaceRc()
+    env = {
+        'pace_log_dir':None,
+        'exp_dir':None,
+        'upload_folder':None
+    }
+    filePerms = oct(os.stat(configFile)[ST_MODE])
+    if filePerms not in ['0o100600']:
+        print((bcolors.WARNING + "Config file permissions should be set to read, write for owner only"))
+        print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
+    parser = RawConfigParser()
+    parser.read(configFile)
+    envValue = parser.get('ENVIRONMENT','env')
+
+    if envValue:
+        env = {
+            'pace_log_dir':'/pace/'+envValue+'/assets/static/logs/',
+            'exp_dir':'/pace/'+envValue+'assets/static/data/',
+            'upload_folder':'/pace/'+envValue+'/portal/upload'
+        }
+    else:
+        return None
+    return env
+
 
 # Every file/tool will have a different last modified version in rep
 # Hence parameterizing this to get lastVer (auto-expanded svn keyword Rev) as argument
