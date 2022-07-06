@@ -60,9 +60,8 @@ def getDirectories():
     return '/pace/assets/static/logs/','/pace/assets/static/data/','/pace/prod/portal/upload'
     '''
     environment = getEnvironment()
-    if environment:
-        return environment['pace_log_dir'], environment['exp_dir'], environment['upload_folder']
-    return '/pace/assets/static/logs/','/pace/assets/static/data/','/pace/prod/portal/upload'
+    return environment['pace_log_dir'], environment['exp_dir'], environment['upload_folder']
+    #return '/pace/assets/static/logs/','/pace/assets/static/data/','/pace/prod/portal/upload'
 
 '''
     setup environment path for upload and logs based on environment
@@ -80,16 +79,12 @@ def getEnvironment():
         print(("Please use chmod 600 " + configFile + " to dismiss this warning." + bcolors.ENDC))
     parser = RawConfigParser()
     parser.read(configFile)
-    envValue = parser.get('ENVIRONMENT','env')
 
-    if envValue:
-        env = {
-            'pace_log_dir':'/pace/'+envValue+'/assets/static/logs/',
-            'exp_dir':'/pace/'+envValue+'assets/static/data/',
-            'upload_folder':'/pace/'+envValue+'/portal/upload'
-        }
-    else:
-        return None
+    env = {
+            'pace_log_dir':parser.get('ENVIRONMENT','pace_log_dir'),
+            'exp_dir':parser.get('ENVIRONMENT','exp_dir'),
+            'upload_folder':parser.get('ENVIRONMENT','upload_folder')
+    }
     return env
 
 
