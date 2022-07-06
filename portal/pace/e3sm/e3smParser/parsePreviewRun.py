@@ -18,7 +18,7 @@ def load_previewRunFile(previewfile):
         'tasks_per_node': None,
         'thread_count': None,
         'ngpus_per_node': None,
-        'env':[],
+        'env': None,
         'submit_cmd':None,
         'mpirun': None
     }
