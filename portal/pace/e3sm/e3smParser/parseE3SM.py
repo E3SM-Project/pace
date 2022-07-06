@@ -294,7 +294,7 @@ def insertPreviewRunFile(previewrunfile,db,expid):
         previewrun = PreviewRun(expid=expid, nodes=data['nodes'], total_tasks=data['total_tasks'], 
                                 tasks_per_node = data['tasks_per_node'], thread_count=data['thread_count'], 
                                 ngpus_per_node=data['ngpus_per_node'],mpirun=data['mpirun'],
-                                submit_cmd=data['submit_cmd'], env=data['env'])
+                                submit_cmd=data['submit_cmd'], env=json.dumps(data['env']))
         db.session.add(previewrun)
     return True
 

@@ -27,7 +27,7 @@ def load_previewRunFile(previewfile):
         mpifound = False
         envfound = False
         cmdfound = False
-        envdata = []
+        envdata = {}
         with gzip.open(previewfile, 'rt') as f:
             for line in f:
                 if mpifound and not data['mpirun']:
@@ -36,10 +36,12 @@ def load_previewRunFile(previewfile):
                 if envfound and not data['env']:
                     words = line.split()
                     if 'Setting' in words:
-                        envdata.append(line.strip())
+                        envdataLine = words[-1].split('=')
+                        if len(envdataLine) == 2:
+                            envdata[envdataLine[0]] = envdataLine[1]
                         continue
                     else:
-                        data['env']='\n'.join(envdata)
+                        data['env']=envdata.copy()
                         envfound = False
                 if cmdfound and not data['submit_cmd']:
                     data['submit_cmd']=line.strip()
