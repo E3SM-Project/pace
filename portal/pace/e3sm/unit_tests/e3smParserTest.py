@@ -30,7 +30,9 @@ class testE3SMParse(unittest.TestCase):
         pass
 
     def test_e3sm_memoryProfile(self):
-        pass
+        need_data = '#TOD, VSZ_CPL_N_0, RSS_CPL_N_0, VSZ_ATM_N_0, RSS_ATM_N_0, VSZ_LND_N_0, RSS_LND_N_0, VSZ_ICE_N_0, RSS_ICE_N_0, VSZ_OCN_N_0, RSS_OCN_N_0, VSZ_GLC_N_0, RSS_GLC_N_0, VSZ_ROF_N_0, RSS_ROF_N_0, VSZ_WAV_N_0, RSS_WAV_N_0, VSZ_IAC_N_0, RSS_IAC_N_0\n19890912.00000,   125305.090,    25347.566,   125305.090,    25347.566,   125305.090,    25347.566,   125305.090,    25347.566,   125305.090,    25347.566,   125305.090,    25347.566,   125305.090,    25347.566,   125305.090,    25347.566,   125305.090,    25347.566\n19890914.00000,   131423.867,    27270.953,   131423.867,    27270.953,   131423.867,    27270.953,   131423.867,    27270.953,   131423.867,    27270.953,   131423.867,    27270.953,   131423.867,    27270.953,   131423.867,    27270.953,   131423.867,    27270.953\n'
+        actual_data = parseMemoryProfile.loaddb_memfile('memory.3.86400.log.61012576.220711-001958.gz')
+        self.assertEqual(need_data,actual_data,"Should be"+need_data)
 
     def test_e3sm_modelVersion(self):
         expectedData = 'v2.0.0-beta.3-3091-g3219b44fc'
