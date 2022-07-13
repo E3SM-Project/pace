@@ -91,7 +91,10 @@ class testE3SMParse(unittest.TestCase):
     def test_e3sm_scorpio(self):
         file = 'spio_stats.303313.220628-152730.tar.gz'
         data = parseScorpioStats.loaddb_scorpio_stats(file,360.212)
-        print(data[0]['data'])
+        self.assertEqual(data[0]['name'],'EAM-410856','EAM-410856')
+        self.assertEqual(data[0]['iopercent'],64.17,64.17)
+        self.assertEqual(data[0]['iotime'],231.149313,231.149313)
+        self.assertEqual(data[0]['version'],'1.0.0','1.0.0')
 
     def test_e3sm_text(self):
         pass
