@@ -5,6 +5,7 @@
 # @version 3.0
 # @date 2021-09-13
 
+from numpy import unsignedinteger
 from pace.__init__ import db
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -289,8 +290,9 @@ class PreviewRun(db.Model):
     ngpus_per_node = db.Column(INTEGER(unsigned=True))
     submit_cmd = db.Column(MEDIUMTEXT)
     env = db.Column(MEDIUMTEXT)
+    omp_threads = db.Column(INTEGER(unsigned=True))
 
-    def __init__(self, expid, nodes=None, total_tasks=None, tasks_per_node=None, thread_count=None,ngpus_per_node=None,mpirun=None, submit_cmd=None,env=None):
+    def __init__(self, expid, nodes=None, total_tasks=None, tasks_per_node=None, thread_count=None,ngpus_per_node=None,mpirun=None, submit_cmd=None,env=None, omp_threads=None):
         self.expid = expid
         self.mpirun = mpirun
         self.nodes = nodes
@@ -300,6 +302,7 @@ class PreviewRun(db.Model):
         self.ngpus_per_node = ngpus_per_node
         self.submit_cmd = submit_cmd
         self.env = env
+        self.omp_threads = omp_threads
         
 class ScriptsFile(db.Model):
     __tablename__ = 'script_files'

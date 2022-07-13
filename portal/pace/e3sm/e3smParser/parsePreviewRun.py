@@ -20,7 +20,8 @@ def load_previewRunFile(previewfile):
         'ngpus_per_node': None,
         'env': None,
         'submit_cmd':None,
-        'mpirun': None
+        'mpirun': None,
+        'omp_threads': None
     }
 
     try:
@@ -42,6 +43,8 @@ def load_previewRunFile(previewfile):
                         continue
                     else:
                         data['env']=envdata.copy()
+                        if 'OMP_NUM_THREADS' in envdata:
+                            data['omp_threads'] = envdata['OMP_NUM_THREADS']
                         envfound = False
                 if cmdfound and not data['submit_cmd']:
                     data['submit_cmd']=line.strip()
