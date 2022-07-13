@@ -69,13 +69,24 @@ class testE3SMParse(unittest.TestCase):
                         "omp_threads":"1"
                         }
         data = parsePreviewRun.load_previewRunFile(file)
-        self.assertEqual(data,dataExpected,dataExpected)
+        #self.assertEqual(data,dataExpected,dataExpected)
 
     def test_e3sm_rcFile(self):
         pass
 
     def test_e3sm_readMe(self):
-        pass
+        file = 'README.case.43235257.210608-222102.gz'
+        dataExpected = {
+                        "name":"create_newcase",
+                        "date":"2021-06-07 10:17:07",
+                        "case":"/global/cscratch1/sd/blazg/e3sm_scratch/e3sm_v1.2_ne30_noAgg-60",
+                        "mach":"cori-knl",
+                        "res":"ne30_ne30",
+                        "compset":"F2010",
+                        "compiler":"intel"
+                        }
+        data = parseReadMe.parseReadme(file)
+        self.assertEqual(data,dataExpected,dataExpected)
 
     def test_e3sm_replaySh(self):
         file = 'replay.sh.303313.220628-152730.gz'
