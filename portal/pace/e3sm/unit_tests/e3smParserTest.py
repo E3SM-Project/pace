@@ -5,14 +5,14 @@
 # @version 3.0
 # @date 2021-09-13
 
-import unittest
+import unittest, gzip
 
 # some_file.py
 import sys
 # insert at 1, 0 is the script path (or '' in REPL)
 sys.path.insert(1, '/Users/4g5/Desktop/ornl/pace/portal/pace/e3sm/e3smParser')
 
-import parseBuildTime, parseE3SMTiming, parseMemoryProfile, parseModelVersion, parseNameList, parseRC, parseReadMe, parseScorpioStats, parseXML, parsePreviewRun, parseReplaysh
+import parseRunE3SMsh, parseBuildTime, parseE3SMTiming, parseMemoryProfile, parseModelVersion, parseNameList, parseRC, parseReadMe, parseScorpioStats, parseXML, parsePreviewRun, parseReplaysh
 
 class testE3SMParse(unittest.TestCase):
 
@@ -97,7 +97,11 @@ class testE3SMParse(unittest.TestCase):
         #self.assertEqual(data,dataExpected,dataExpected)
 
     def test_e3sm_runE3SMSh(self):
-        pass
+        file = 'run_e3sm.sh.20220506-193932.556061.220506-194028.gz'
+        with gzip.open(file, 'rt') as f:
+            dataExpected = f.read()
+        data = parseRunE3SMsh.load_rune3smshfile(file)
+        self.assertEqual(data,dataExpected,dataExpected)
 
     def test_e3sm_scorpio(self):
         file = 'spio_stats.303313.220628-152730.tar.gz'
