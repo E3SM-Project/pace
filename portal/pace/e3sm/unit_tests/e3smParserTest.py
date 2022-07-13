@@ -73,7 +73,9 @@ class testE3SMParse(unittest.TestCase):
         pass
 
     def test_e3sm_scorpio(self):
-        pass
+        file = 'spio_stats.303313.220628-152730.tar.gz'
+        data = parseScorpioStats.loaddb_scorpio_stats(file,360.212)
+        print(data[0]['data'])
 
     def test_e3sm_text(self):
         pass
