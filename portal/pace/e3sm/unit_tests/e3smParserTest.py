@@ -51,7 +51,23 @@ class testE3SMParse(unittest.TestCase):
     
     def test_e3sm_previewRun(self):
         file = 'preview_run.log.303313.220628-152730.gz'
-        dataExpected = {'nodes': 10, 'total_tasks': 400, 'tasks_per_node': 40, 'thread_count': 1, 'ngpus_per_node': 0, 'mpirun': 'srun --mpi=pmi2 --ntasks=400 --nodes=10 --kill-on-bad-exit -l --cpu_bind=cores -c 1 -m plane=40 /compyfs/kezi456/E3SM_simulations/v2.master.mam5.PD/build/e3sm.exe   >> e3sm.log.$LID 2>&1'}
+        dataExpected = {
+                        "nodes":10,
+                        "total_tasks":400,
+                        "tasks_per_node":40,
+                        "thread_count":1,
+                        "ngpus_per_node":0,
+                        "env":{
+                            "I_MPI_ADJUST_ALLREDUCE":"1",
+                            "LD_LIBRARY_PATH":"/share/apps/gcc/8.1.0/lib:/share/apps/gcc/8.1.0/lib64:/share/apps/intel/2019u5/compilers_and_libraries_2019.5.281/linux/tbb/lib/intel64_lin/gcc4.7:/share/apps/pnetcdf/1.9.0/intel/19.0.5/intelmpi/2019u4/lib:/share/apps/netcdf/4.6.3/intel/19.0.5/lib:/share/apps/hdf5/1.10.5/serial/lib:/share/apps/intel/2019u4/compilers_and_libraries_2019.4.243/linux/mpi/intel64/libfabric/lib:/share/apps/intel/2019u4/compilers_and_libraries_2019.4.243/linux/mpi/intel64/lib/release:/share/apps/intel/2019u4/compilers_and_libraries_2019.4.243/linux/mpi/intel64/lib:/share/apps/intel/2019u5/compilers_and_libraries_2019.5.281/linux/compiler/lib/intel64_lin:/share/apps/intel/2019u5/comepilers_and_libraries_2019.5.281/linux/mpi/intel64/libfabric/lib:/share/apps/intel/2019u5/compilers_and_libraries_2019.5.281/linux/mpi/intel64/lib/release:/share/apps/intel/2019u5/compilers_and_libraries_2019.5.281/linux/mpi/intel64/lib:/share/apps/intel/2019u5/compilers_and_libraries_2019.5.281/linux/ipp/lib/intel64:/share/apps/intel/2019u5/compilers_and_libraries_2019.5.281/linux/compiler/lib/intel64_lin:/share/apps/intel/2019u5/compilers_and_libraries_2019.5.281/linux/mkl/lib/intel64_lin:/share/apps/intel/2019u5/compilers_and_libraries_2019.5.281/linux/tbb/lib/intel64/gcc4.7:/share/apps/intel/2019u5/compilers_and_libraries_2019.5.281/linux/tbb/lib/intel64/gcc4.7:/share/apps/intel/2019u5/compilers_and_libraries_2019.5.281/linux/daal/lib/intel64_lin:/share/apps/intel/2019u5/compilers_and_libraries_2019.5.281/linux/daal/../tbb/lib/intel64_lin/gcc4.4",
+                            "MKL_PATH":"/share/apps/intel/2019u5/compilers_and_libraries_2019.5.281/linux/mkl",
+                            "NETCDF_HOME":"/share/apps/netcdf/4.6.3/intel/19.0.5/",
+                            "OMP_NUM_THREADS":"1"
+                        },
+                        "submit_cmd":"sbatch --time 00:20:00 -p short --account e3sm .case.run --resubmit",
+                        "mpirun":"srun --mpi=pmi2 --ntasks=400 --nodes=10 --kill-on-bad-exit -l --cpu_bind=cores -c 1 -m plane=40 /compyfs/kezi456/E3SM_simulations/v2.master.mam5.PD/build/e3sm.exe   >> e3sm.log.$LID 2>&1",
+                        "omp_threads":"1"
+                        }
         data = parsePreviewRun.load_previewRunFile(file)
         self.assertEqual(data,dataExpected,dataExpected)
 
