@@ -6,7 +6,7 @@
 # @date 2021-09-13
 
 import unittest, gzip, json
-
+from jsondiff import diff
 # some_file.py
 import sys
 # insert at 1, 0 is the script path (or '' in REPL)
@@ -78,95 +78,9 @@ class testE3SMParse(unittest.TestCase):
 
     def test_e3sm_rcFile(self):
         file = "seq_maps.rc.63117.210714-233452.gz"
-        dataExpected = {
-                        "atm2ice_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_EC30to60E2r2_mono.201005.nc",
-                        "atm2ice_fmaptype":"X",
-                        "atm2ice_smapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_EC30to60E2r2_bilin.201005.nc",
-                        "atm2ice_smaptype":"X",
-                        "atm2ice_vmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_EC30to60E2r2_bilin.201005.nc",
-                        "atm2ice_vmaptype":"X",
-                        "atm2lnd_fmapname":"idmap",
-                        "atm2lnd_fmaptype":"X",
-                        "atm2lnd_smapname":"idmap",
-                        "atm2lnd_smaptype":"X",
-                        "atm2ocn_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_EC30to60E2r2_mono.201005.nc",
-                        "atm2ocn_fmaptype":"X",
-                        "atm2ocn_smapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_EC30to60E2r2_bilin.201005.nc",
-                        "atm2ocn_smaptype":"X",
-                        "atm2ocn_vmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_EC30to60E2r2_bilin.201005.nc",
-                        "atm2ocn_vmaptype":"X",
-                        "atm2rof_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_r05_mono.200220.nc",
-                        "atm2rof_fmaptype":"X",
-                        "atm2rof_smapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_r05_mono.200220.nc",
-                        "atm2rof_smaptype":"X",
-                        "atm2wav_smapname":"idmap",
-                        "atm2wav_smaptype":"X",
-                        "glc2ice_fmapname":"idmap_ignore",
-                        "glc2ice_fmaptype":"X",
-                        "glc2ice_rmapname":"idmap_ignore",
-                        "glc2ice_rmaptype":"X",
-                        "glc2ice_smapname":"idmap_ignore",
-                        "glc2ice_smaptype":"X",
-                        "glc2lnd_fmapname":"idmap",
-                        "glc2lnd_fmaptype":"X",
-                        "glc2lnd_smapname":"idmap",
-                        "glc2lnd_smaptype":"X",
-                        "glc2ocn_fmapname":"idmap_ignore",
-                        "glc2ocn_fmaptype":"X",
-                        "glc2ocn_ice_rmapname":"idmap_ignore",
-                        "glc2ocn_ice_rmaptype":"X",
-                        "glc2ocn_liq_rmapname":"idmap_ignore",
-                        "glc2ocn_liq_rmaptype":"X",
-                        "glc2ocn_smapname":"idmap_ignore",
-                        "glc2ocn_smaptype":"X",
-                        "iac2atm_fmapname":"idmap",
-                        "iac2atm_fmaptype":"X",
-                        "iac2atm_smapname":"idmap",
-                        "iac2atm_smaptype":"X",
-                        "iac2lnd_fmapname":"idmap",
-                        "iac2lnd_fmaptype":"X",
-                        "iac2lnd_smapname":"idmap",
-                        "iac2lnd_smaptype":"X",
-                        "ice2atm_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/EC30to60E2r2/map_EC30to60E2r2_to_ne30pg2_mono.201005.nc",
-                        "ice2atm_fmaptype":"X",
-                        "ice2atm_smapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/EC30to60E2r2/map_EC30to60E2r2_to_ne30pg2_mono.201005.nc",
-                        "ice2atm_smaptype":"X",
-                        "ice2wav_smapname":"idmap",
-                        "ice2wav_smaptype":"X",
-                        "lnd2atm_fmapname":"idmap",
-                        "lnd2atm_fmaptype":"X",
-                        "lnd2atm_smapname":"idmap",
-                        "lnd2atm_smaptype":"X",
-                        "lnd2glc_fmapname":"idmap",
-                        "lnd2glc_fmaptype":"X",
-                        "lnd2glc_smapname":"idmap",
-                        "lnd2glc_smaptype":"X",
-                        "lnd2rof_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_r05_mono.200220.nc",
-                        "lnd2rof_fmaptype":"X",
-                        "ocn2atm_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/EC30to60E2r2/map_EC30to60E2r2_to_ne30pg2_mono.201005.nc",
-                        "ocn2atm_fmaptype":"X",
-                        "ocn2atm_smapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/EC30to60E2r2/map_EC30to60E2r2_to_ne30pg2_mono.201005.nc",
-                        "ocn2atm_smaptype":"X",
-                        "ocn2glc_fmapname":"idmap_ignore",
-                        "ocn2glc_fmaptype":"X",
-                        "ocn2glc_smapname":"idmap_ignore",
-                        "ocn2glc_smaptype":"X",
-                        "ocn2wav_smapname":"idmap",
-                        "ocn2wav_smaptype":"X",
-                        "rof2lnd_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_r05_to_ne30pg2_mono.200220.nc",
-                        "rof2lnd_fmaptype":"X",
-                        "rof2ocn_fmapname":"idmap_ignore",
-                        "rof2ocn_fmaptype":"X",
-                        "rof2ocn_ice_rmapname":"/lcrc/group/e3sm/data/inputdata/cpl/cpl6/map_r05_to_EC30to60E2r2_smoothed.r150e300.201005.nc",
-                        "rof2ocn_ice_rmaptype":"X",
-                        "rof2ocn_liq_rmapname":"/lcrc/group/e3sm/data/inputdata/cpl/cpl6/map_r05_to_EC30to60E2r2_smoothed.r150e300.201005.nc",
-                        "rof2ocn_liq_rmaptype":"X",
-                        "wav2ocn_smapname":"idmap",
-                        "wav2ocn_smaptype":"X"
-                        }
+        dataExpected = json.dumps({"atm2ice_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_EC30to60E2r2_mono.201005.nc","atm2ice_fmaptype":"X","atm2ice_smapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_EC30to60E2r2_bilin.201005.nc","atm2ice_smaptype":"X","atm2ice_vmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_EC30to60E2r2_bilin.201005.nc","atm2ice_vmaptype":"X","atm2lnd_fmapname":"idmap","atm2lnd_fmaptype":"X","atm2lnd_smapname":"idmap","atm2lnd_smaptype":"X","atm2ocn_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_EC30to60E2r2_mono.201005.nc","atm2ocn_fmaptype":"X","atm2ocn_smapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_EC30to60E2r2_bilin.201005.nc","atm2ocn_smaptype":"X","atm2ocn_vmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_EC30to60E2r2_bilin.201005.nc","atm2ocn_vmaptype":"X","atm2rof_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_r05_mono.200220.nc","atm2rof_fmaptype":"X","atm2rof_smapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_r05_mono.200220.nc","atm2rof_smaptype":"X","atm2wav_smapname":"idmap","atm2wav_smaptype":"X","glc2ice_fmapname":"idmap_ignore","glc2ice_fmaptype":"X","glc2ice_rmapname":"idmap_ignore","glc2ice_rmaptype":"X","glc2ice_smapname":"idmap_ignore","glc2ice_smaptype":"X","glc2lnd_fmapname":"idmap","glc2lnd_fmaptype":"X","glc2lnd_smapname":"idmap","glc2lnd_smaptype":"X","glc2ocn_fmapname":"idmap_ignore","glc2ocn_fmaptype":"X","glc2ocn_ice_rmapname":"idmap_ignore","glc2ocn_ice_rmaptype":"X","glc2ocn_liq_rmapname":"idmap_ignore","glc2ocn_liq_rmaptype":"X","glc2ocn_smapname":"idmap_ignore","glc2ocn_smaptype":"X","iac2atm_fmapname":"idmap","iac2atm_fmaptype":"X","iac2atm_smapname":"idmap","iac2atm_smaptype":"X","iac2lnd_fmapname":"idmap","iac2lnd_fmaptype":"X","iac2lnd_smapname":"idmap","iac2lnd_smaptype":"X","ice2atm_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/EC30to60E2r2/map_EC30to60E2r2_to_ne30pg2_mono.201005.nc","ice2atm_fmaptype":"X","ice2atm_smapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/EC30to60E2r2/map_EC30to60E2r2_to_ne30pg2_mono.201005.nc","ice2atm_smaptype":"X","ice2wav_smapname":"idmap","ice2wav_smaptype":"X","lnd2atm_fmapname":"idmap","lnd2atm_fmaptype":"X","lnd2atm_smapname":"idmap","lnd2atm_smaptype":"X","lnd2glc_fmapname":"idmap","lnd2glc_fmaptype":"X","lnd2glc_smapname":"idmap","lnd2glc_smaptype":"X","lnd2rof_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_ne30pg2_to_r05_mono.200220.nc","lnd2rof_fmaptype":"X","ocn2atm_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/EC30to60E2r2/map_EC30to60E2r2_to_ne30pg2_mono.201005.nc","ocn2atm_fmaptype":"X","ocn2atm_smapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/EC30to60E2r2/map_EC30to60E2r2_to_ne30pg2_mono.201005.nc","ocn2atm_smaptype":"X","ocn2glc_fmapname":"idmap_ignore","ocn2glc_fmaptype":"X","ocn2glc_smapname":"idmap_ignore","ocn2glc_smaptype":"X","ocn2wav_smapname":"idmap","ocn2wav_smaptype":"X","rof2lnd_fmapname":"/lcrc/group/e3sm/data/inputdata/cpl/gridmaps/ne30pg2/map_r05_to_ne30pg2_mono.200220.nc","rof2lnd_fmaptype":"X","rof2ocn_fmapname":"idmap_ignore","rof2ocn_fmaptype":"X","rof2ocn_ice_rmapname":"/lcrc/group/e3sm/data/inputdata/cpl/cpl6/map_r05_to_EC30to60E2r2_smoothed.r150e300.201005.nc","rof2ocn_ice_rmaptype":"X","rof2ocn_liq_rmapname":"/lcrc/group/e3sm/data/inputdata/cpl/cpl6/map_r05_to_EC30to60E2r2_smoothed.r150e300.201005.nc","rof2ocn_liq_rmaptype":"X","wav2ocn_smapname":"idmap","wav2ocn_smaptype":"X"}, separators=(',', ':'))
         data = parseRC.loaddb_rcfile(file)
-
-        #self.assertEqual(data,dataExpected,dataExpected)
+        self.assertEqual(data,dataExpected,dataExpected)
 
     def test_e3sm_readMe(self):
         file = 'README.case.43235257.210608-222102.gz'
@@ -235,5 +149,5 @@ if __name__ == "__main__":
     #filename = "spio_stats.63117.210714-233452.tar.gz"
     #print(parseScorpioStats.loaddb_scorpio_stats(filename))
 
-    filename = "env_batch.xml.63117.210714-233452.gz"
-    print(parseXML.loaddb_xmlfile(filename))
+    #filename = "env_batch.xml.63117.210714-233452.gz"
+    #print(parseXML.loaddb_xmlfile(filename))
