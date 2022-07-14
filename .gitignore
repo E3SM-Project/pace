@@ -117,3 +117,7 @@ extra/
 portal/pace/static/samples/*
 
 docker/rc/.pacerc
+
+#unittest only add tar files
+portal/pace/e3sm/unit_tests/atm_modelio.nml.303313.220628-152730
+portal/pace/e3sm/unit_tests/env_batch.xml.63117.210714-233452
