@@ -5,7 +5,7 @@
 # @version 3.0
 # @date 2021-09-13
 
-import unittest, gzip
+import unittest, gzip, json
 
 # some_file.py
 import sys
@@ -47,8 +47,13 @@ class testE3SMParse(unittest.TestCase):
         self.assertEqual(gotData, expectedData, "Should be v2.0.0-beta.3-3091-g3219b44fc")
 
     def test_e3sm_nameList(self):
-        pass
-    
+        file = "atm_modelio.nml.303313.220628-152730.gz"
+        dataExpected = json.dumps({"modelio": {"diri": "/compyfs/kezi456/E3SM_simulations/v2.master.mam5.PD/build/atm", "diro": "/compyfs/kezi456/E3SM_simulations/v2.master.mam5.PD/tests/S_1x5_ndays/run", "logfile": "atm.log.303313.220628-152730"}, "pio_inparm": {"pio_netcdf_format": "64bit_offset", "pio_numiotasks": -99, "pio_rearranger": 1, "pio_root": 0, "pio_stride": 40, "pio_typename": "pnetcdf"}})
+        
+        data = parseNameList.loaddb_namelist(file)
+        self.assertEqual(data,dataExpected,dataExpected)
+
+
     def test_e3sm_previewRun(self):
         file = 'preview_run.log.303313.220628-152730.gz'
         dataExpected = {
@@ -90,11 +95,10 @@ class testE3SMParse(unittest.TestCase):
 
     def test_e3sm_replaySh(self):
         file = 'replay.sh.303313.220628-152730.gz'
+        with gzip.open(file, 'rt') as f:
+            dataExpected = f.read()
         data = parseReplaysh.load_replayshFile(file)
-        #print(data)
-        #dataExpected = '#!/bin/bash\r\n\r\nset -e\r\n\r\n# Created 2022-06-28 14:25:03\r\n\r\nCASEDIR=\"/compyfs/kezi456/E3SM_simulations/v2.master.mam5.PD/tests/S_1x5_ndays/case_scripts\"\r\n\r\n/qfs/people/kezi456/E3SM_code/v2-master/cime/scripts/create_newcase --case v2.master.mam5.PD --output-root /compyfs/kezi456/E3SM_simulations/v2.master.mam5.PD --script-root \"${CASEDIR}\" --handle-preexisting-dirs u --compset F2010 --res ne30pg2_EC30to60E2r2 --machine compy --project e3sm --walltime 00:20:00 --pecount custom-10\r\n\r\ncd \"${CASEDIR}\"\r\n\r\n./xmlchange NTASKS=400\r\n\r\n./xmlchange NTHRDS=1\r\n\r\n./xmlchange MAX_MPITASKS_PER_NODE=40\r\n\r\n./xmlchange MAX_TASKS_PER_NODE=40\r\n\r\n./xmlchange EXEROOT=/compyfs/kezi456/E3SM_simulations/v2.master.mam5.PD/build\r\n\r\n./xmlchange RUNDIR=/compyfs/kezi456/E3SM_simulations/v2.master.mam5.PD/tests/S_1x5_ndays/run\r\n\r\n./xmlchange DOUT_S=FALSE\r\n\r\n./xmlchange DOUT_S_ROOT=/compyfs/kezi456/E3SM_simulations/v2.master.mam5.PD/archive\r\n\r\n./xmlchange --id CAM_CONFIG_OPTS --append --val=-chem linoz_mam5_resus_mom_soag -usr_mech_infile /qfs/people/kezi456/codes/compy.mam5/chem/chem_mech_MAM5_SC_E90.in\r\n\r\n./case.setup --reset\r\n\r\n./case.build\r\n\r\n./case.build\r\n\r\n./case.build --clean-all\r\n\r\n./case.build\r\n\r\n./case.submit\r\n\r\n./case.submit\r\n\r\n./case.submit\r\n\r\n./case.submit'
-        
-        #self.assertEqual(data,dataExpected,dataExpected)
+        self.assertEqual(data,dataExpected,dataExpected)
 
     def test_e3sm_runE3SMSh(self):
         file = 'run_e3sm.sh.20220506-193932.556061.220506-194028.gz'
@@ -110,9 +114,6 @@ class testE3SMParse(unittest.TestCase):
         self.assertEqual(data[0]['iopercent'],64.17,64.17)
         self.assertEqual(data[0]['iotime'],231.149313,231.149313)
         self.assertEqual(data[0]['version'],'1.0.0','1.0.0')
-
-    def test_e3sm_text(self):
-        pass
 
     def test_e3sm_xmlfile(self):
         pass
@@ -130,7 +131,7 @@ if __name__ == "__main__":
     #filename = 'GIT_DESCRIBE.43235257.210608-222102.gz'
     #print(parseModelVersion.parseModelVersion(filename))
 
-    #filename = "atm_in.63117.210714-233452.gz"
+    #filename = "atm_modelio.nml.303313.220628-152730.gz"
     #print(parseNameList.loaddb_namelist(filename))
 
     #filename = "seq_maps.rc.63117.210714-233452.gz"
