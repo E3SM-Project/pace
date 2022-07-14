@@ -6,13 +6,25 @@
 # @date 2021-09-13
 
 import unittest, gzip, json
-from jsondiff import diff
-# some_file.py
+'''
+# use this for local because my PATH was not setup correctly
 import sys
 # insert at 1, 0 is the script path (or '' in REPL)
 sys.path.insert(1, '/Users/4g5/Desktop/ornl/pace/portal/pace/e3sm/e3smParser')
-
 import parseRunE3SMsh, parseBuildTime, parseE3SMTiming, parseMemoryProfile, parseModelVersion, parseNameList, parseRC, parseReadMe, parseScorpioStats, parseXML, parsePreviewRun, parseReplaysh
+'''
+from pace.e3sm.e3smParser import parseE3SMTiming
+from pace.e3sm.e3smParser import parseModelVersion
+from pace.e3sm.e3smParser import parseReadMe
+from pace.e3sm.e3smParser import parseMemoryProfile
+from pace.e3sm.e3smParser import parseScorpioStats
+from pace.e3sm.e3smParser import parseXML
+from pace.e3sm.e3smParser import parseRC
+from pace.e3sm.e3smParser import parseNameList
+from pace.e3sm.e3smParser import parseBuildTime
+from pace.e3sm.e3smParser import parsePreviewRun
+from pace.e3sm.e3smParser import parseReplaysh
+from pace.e3sm.e3smParser import parseRunE3SMsh
 
 class testE3SMParse(unittest.TestCase):
 
@@ -53,7 +65,6 @@ class testE3SMParse(unittest.TestCase):
         data = parseNameList.loaddb_namelist(file)
         self.assertEqual(data,dataExpected,dataExpected)
 
-
     def test_e3sm_previewRun(self):
         file = 'preview_run.log.303313.220628-152730.gz'
         dataExpected = {
@@ -74,7 +85,7 @@ class testE3SMParse(unittest.TestCase):
                         "omp_threads":"1"
                         }
         data = parsePreviewRun.load_previewRunFile(file)
-        #self.assertEqual(data,dataExpected,dataExpected)
+        self.assertEqual(data,dataExpected,dataExpected)
 
     def test_e3sm_rcFile(self):
         file = "seq_maps.rc.63117.210714-233452.gz"
@@ -127,27 +138,3 @@ class testE3SMParse(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-    #filename = "e3sm_timing.e3sm_v1.2_ne30_noAgg-60.43235257.210608-222102.gz"
-    #print(parseE3SMTiming.parseE3SMtiming(filename))
-    
-    #filename = "memory.3.86400.log.63117.210714-233452.gz"
-    #print(parseMemoryProfile.loaddb_memfile(filename))
-
-    #filename = 'GIT_DESCRIBE.43235257.210608-222102.gz'
-    #print(parseModelVersion.parseModelVersion(filename))
-
-    #filename = "atm_modelio.nml.303313.220628-152730.gz"
-    #print(parseNameList.loaddb_namelist(filename))
-
-    #filename = "seq_maps.rc.63117.210714-233452.gz"
-    #print(parseRC.loaddb_rcfile(filename))
-
-    #filename = "README.case.43235257.210608-222102.gz"
-    #print(parseReadMe.parseReadme(filename))
-
-    #filename = "spio_stats.63117.210714-233452.tar.gz"
-    #print(parseScorpioStats.loaddb_scorpio_stats(filename))
-
-    #filename = "env_batch.xml.63117.210714-233452.gz"
-    #print(parseXML.loaddb_xmlfile(filename))
