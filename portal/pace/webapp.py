@@ -1073,14 +1073,14 @@ def atmos(expids):
     }'''
     atmScreamTimerLabel = {
         "a:EAMxx::Dynamics::run": "Dynamics",
-        "a:EAMxx::Macrophysics::run": "CLUBB",
+        "a:EAMxx::Macrophysics::run": "Macrophys",
         "a:EAMxx::Simple Prescribed Aerosols (SPA)::run": "Aerosol",
         "a:EAMxx::Microphysics::run": "Microphys",
         "a:EAMxx::Radiation::run": "Radiation"
     }
     atm_timer_default_label = {
         "a:moist_convection": "Convection",
-        "a:macrop_tend":"CLUBB",
+        "a:macrop_tend":"Macrophys",
         "a:tphysbc_aerosols":"Aerosol",
         "a:microp_aero_run":"Aerosol",
         "a:microp_tend":"Microphys",
@@ -1135,7 +1135,7 @@ def atmos(expids):
                     "time":[],
                     "time_percentage":[]
                 },
-                "CLUBB":{
+                "Macrophys":{
                     "time":[],
                     "time_percentage":[]
                 },
