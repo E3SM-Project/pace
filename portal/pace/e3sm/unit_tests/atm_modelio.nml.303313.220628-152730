@@ -1,0 +1,13 @@
+&modelio
+  diri = "/compyfs/kezi456/E3SM_simulations/v2.master.mam5.PD/build/atm"
+  diro = "/compyfs/kezi456/E3SM_simulations/v2.master.mam5.PD/tests/S_1x5_ndays/run"
+  logfile = "atm.log.303313.220628-152730"
+/
+&pio_inparm
+  pio_netcdf_format = "64bit_offset"
+  pio_numiotasks = -99
+  pio_rearranger = 1
+  pio_root = 0
+  pio_stride = 40
+  pio_typename = "pnetcdf"
+/
