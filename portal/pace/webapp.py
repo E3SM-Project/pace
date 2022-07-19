@@ -1124,7 +1124,7 @@ def atmos(expids):
             note = ""
             if actual_other_time < 0:
                 note = "* Note: For this experiment, the high-level component timer (e.g., ATM_RUN) is less than the cumulative sum of the selected sub-process timers. So, the cumulative sum is used for the stacked plot. This happens due to variance in MPI_wallmax timers across processors. It is typically harmless provided that it is a small percentage. The absolute difference in timer values is " + str(round((-1)*actual_other_time,2)) + " seconds and the percentage error is "+str(percentError)+"%."
-            return render_template("modelComponentProcess.html",expids = expid, jd = jsonData,note = note, model = 'ATM',test=data)
+            return render_template("modelComponentProcess.html",expids = expid, jd = jsonData,note = note, model = 'ATM')
         else:
             UIData = {
                 "ATM Other":{
