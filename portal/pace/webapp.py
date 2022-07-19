@@ -1064,12 +1064,19 @@ def atmos(expids):
             expid = int(id)
         except:
             return render_template('error.html')
-    atmScreamTimerLabel = {
+    '''atmScreamTimerLabel = {
         "a:EAMxx::Dynamics::run": "Dyn",
         "a:EAMxx::Macrophysics::run": "SHOC",
         "a:EAMxx::Simple Prescribed Aerosols (SPA)::run": "SPA",
         "a:EAMxx::Microphysics::run": "P3",
         "a:EAMxx::Radiation::run": "RRTMGPxx"
+    }'''
+    atmScreamTimerLabel = {
+        "a:EAMxx::Dynamics::run": "Dynamics",
+        "a:EAMxx::Macrophysics::run": "CLUBB",
+        "a:EAMxx::Simple Prescribed Aerosols (SPA)::run": "Aerosol",
+        "a:EAMxx::Microphysics::run": "Microphys",
+        "a:EAMxx::Radiation::run": "Radiation"
     }
     atm_timer_default_label = {
         "a:moist_convection": "Convection",
@@ -1120,26 +1127,6 @@ def atmos(expids):
             return render_template("modelComponentProcess.html",expids = expid, jd = jsonData,note = note, model = 'ATM',test=data)
         else:
             UIData = {
-                "Dyn":{
-                    "time":[],
-                    "time_percentage":[]
-                },
-                "SHOC":{
-                    "time":[],
-                    "time_percentage":[]
-                },
-                "SPA":{
-                    "time":[],
-                    "time_percentage":[]
-                },
-                "P3":{
-                    "time":[],
-                    "time_percentage":[]
-                },
-                "RRTMGPxx":{
-                    "time":[],
-                    "time_percentage":[]
-                },
                 "ATM Other":{
                     "time":[],
                     "time_percentage":[]
