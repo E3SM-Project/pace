@@ -1064,16 +1064,23 @@ def atmos(expids):
             expid = int(id)
         except:
             return render_template('error.html')
-    atmScreamTimerLabel = {
+    '''atmScreamTimerLabel = {
         "a:EAMxx::Dynamics::run": "Dyn",
         "a:EAMxx::Macrophysics::run": "SHOC",
         "a:EAMxx::Simple Prescribed Aerosols (SPA)::run": "SPA",
         "a:EAMxx::Microphysics::run": "P3",
         "a:EAMxx::Radiation::run": "RRTMGPxx"
+    }'''
+    atmScreamTimerLabel = {
+        "a:EAMxx::Dynamics::run": "Dynamics",
+        "a:EAMxx::Macrophysics::run": "Macrophys",
+        "a:EAMxx::Simple Prescribed Aerosols (SPA)::run": "Aerosol",
+        "a:EAMxx::Microphysics::run": "Microphys",
+        "a:EAMxx::Radiation::run": "Radiation"
     }
     atm_timer_default_label = {
         "a:moist_convection": "Convection",
-        "a:macrop_tend":"CLUBB",
+        "a:macrop_tend":"Macrophys",
         "a:tphysbc_aerosols":"Aerosol",
         "a:microp_aero_run":"Aerosol",
         "a:microp_tend":"Microphys",
@@ -1119,20 +1126,56 @@ def atmos(expids):
                 note = "* Note: For this experiment, the high-level component timer (e.g., ATM_RUN) is less than the cumulative sum of the selected sub-process timers. So, the cumulative sum is used for the stacked plot. This happens due to variance in MPI_wallmax timers across processors. It is typically harmless provided that it is a small percentage. The absolute difference in timer values is " + str(round((-1)*actual_other_time,2)) + " seconds and the percentage error is "+str(percentError)+"%."
             return render_template("modelComponentProcess.html",expids = expid, jd = jsonData,note = note, model = 'ATM')
         else:
-            UIData = {}
-            allData = []
-            whichDataSet = set()
+            UIData = {
+                "ATM Other":{
+                    "time":[],
+                    "time_percentage":[]
+                },
+                "Convection":{
+                    "time":[],
+                    "time_percentage":[]
+                },
+                "Macrophys":{
+                    "time":[],
+                    "time_percentage":[]
+                },
+                "Aerosol":{
+                    "time":[],
+                    "time_percentage":[]
+                },
+                "Microphys":{
+                    "time":[],
+                    "time_percentage":[]
+                },
+                "Radiation":{
+                    "time":[],
+                    "time_percentage":[]
+                },
+                "Phys Aft Surface":{
+                    "time":[],
+                    "time_percentage":[]
+                },
+                "Dynamics":{
+                    "time":[],
+                    "time_percentage":[]
+                },
+                "Phys/Dyn Coupling":{
+                    "time":[],
+                    "time_percentage":[]
+                },
+                "Hist":{
+                    "time":[],
+                    "time_percentage":[]
+                }
+            }
             for expid in expidlist:
                 resultNodes = db.engine.execute("select jsonVal from model_timing where expid = %s and rank = 'stats'",(expid,)).fetchall()[0].jsonVal
-                data = json.loads(resultNodes)
-                whichDataSet.add(atmWhichDataSet(data,atmScreamTimerLabel))
-                allData.append(data)
-            if 'SCREAM' in whichDataSet:
-                for jsondata in allData:
+                jsondata = json.loads(resultNodes)
+                whichDataSet = atmWhichDataSet(jsondata,atmScreamTimerLabel)
+                if 'SCREAM' == whichDataSet:
                     data, actual_other_time, percentError = atmScream(sampleModel,atmScreamTimerLabel,jsondata)
                     UIData = timerDataFrontEndCompare(data,UIData)
-            else:
-                for jsondata in allData:
+                else:
                     data, actual_other_time, percentError = atmDefault(sampleModel,atm_timer_default_label,jsondata)
                     UIData = timerDataFrontEndCompare(data, UIData)
             return render_template("modelComponentProcessCompare.html",labelData = UIData,expids = expidlist, model = 'ATM')
@@ -1141,17 +1184,14 @@ def atmos(expids):
         return render_template('error.html')
 
 def timerDataFrontEndCompare(jsonData,UIData):
+    for label in UIData:
+        UIData[label]['time'].append(0)
+        UIData[label]['time_percentage'].append(0)
     for timer in jsonData:
         label = jsonData[timer]['label']
         if label in UIData:
-            UIData[label]['time'].append(jsonData[timer]['time'])
-            UIData[label]['time_percentage'].append(jsonData[timer]['time_percentage'])
-        else:
-            model = {
-                'time': [jsonData[timer]['time']],
-                'time_percentage': [jsonData[timer]['time_percentage']]
-            }
-            UIData[label] = model
+            UIData[label]['time'][-1] = jsonData[timer]['time']
+            UIData[label]['time_percentage'][-1] = jsonData[timer]['time_percentage']
     return UIData
 
 def atmWhichDataSet(data,atmScreamTimerLabel):
