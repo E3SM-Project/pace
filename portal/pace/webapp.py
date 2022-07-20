@@ -1089,7 +1089,8 @@ def atmos(expids):
         "a:stepon_run3":"Dynamics",
         "a:stepon_run1":"Phys/Dyn Coupling",
         "a:stepon_run2":"Phys/Dyn Coupling",
-        "a:wshist":"Hist"
+        "a:wshist":"Hist",
+        "a:crm_physics_tend":"MMF"
     }
     sampleModel = {
         'children': [],
@@ -1166,6 +1167,10 @@ def atmos(expids):
                 "Hist":{
                     "time":[],
                     "time_percentage":[]
+                },
+                "MMF":{
+                    "time":[],
+                    "time_percentage":[]
                 }
             }
             for expid in expidlist:
@@ -1213,6 +1218,7 @@ def atmDefault(sampleModel,atm_timer_default_label,data):
         "a:stepon_run1",
         "a:stepon_run2",
         "a:wshist",
+        "a:crm_physics_tend",
         "CPL:ATM_RUN"
     ]
     try:
