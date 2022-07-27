@@ -100,7 +100,8 @@ def getPACEVer(lastVer):
 #Grab the appropriate Pace RC file. It will be different depending on who (or what) is running this script:
 def detectPaceRc():
     configFile = None
-    locations=["prod","dev1","dev2","dev3"]
+    # this is where we grab the .pacerc file
+    locations=["pace4","dev1","dev2","dev3"]
     if os.path.isfile('.pacerc'):
         configFile = '.pacerc'
     elif os.getenv("PACE_DOCKER_INSTANCE"):
