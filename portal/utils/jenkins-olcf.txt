@@ -1,0 +1,13 @@
+To fix stale file handle error:
+Go to https://console-openshift-console.apps.marble.ccs.ornl.gov/
+
+Switch to Admin view (top left)
+
+Pick the jenkins pod that is currently running (click : at the end to see options)
+Delete the pod and Helm will create a new pod
+
+Actual Jenkins
+https://jenkins-cli115.apps.marble.ccs.ornl.gov/
+
+username: admin
+

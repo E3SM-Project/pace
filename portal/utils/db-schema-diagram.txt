@@ -1,0 +1,5 @@
+Get schema:
+mysqldump -u [uname] -p db_name > db_backup.sql
+
+Generate diagram from db schema tool: 
+https://app.sqldbm.com/MySQL/BringDb/
