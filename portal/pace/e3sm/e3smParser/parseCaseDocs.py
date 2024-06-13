@@ -20,7 +20,7 @@ namelists = ("atm_in", "atm_modelio", "cpl_modelio", "drv_flds_in", "drv_in",
              "user_nl_cpl", "user_nl_mosart", "user_nl_mpascice",
              "user_nl_mpaso", "wav_modelio", "iac_modelio", "docn_in",
              "user_nl_docn", "user_nl_cice", "ice_in", "user_nl_elm",
-             "user_nl_eam")
+             "user_nl_eam", "user_nl_mali", "mali_in")
 
 xmlfiles = ("env_archive", "env_batch", "env_build", "env_case",
             "env_mach_pes", "env_mach_specific", "env_run", "env_workflow",
