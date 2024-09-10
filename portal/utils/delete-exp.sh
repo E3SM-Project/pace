@@ -21,6 +21,16 @@ delete from model_timing where expid = $myid;
 delete from exp where expid = $myid;
 delete from pelayout where expid = $myid;
 delete from runtime where expid = $myid;
+delete from build_time where expid = $myid;
+delete from expnotes where expid = $myid;
+delete from makefile_inputs where expid = $myid;
+delete from memfile_inputs where expid = $myid;
+delete from namelist_inputs where expid = $myid;
+delete from preview_run where expid = $myid;
+delete from rc_inputs where expid = $myid;
+delete from scorpio_stats where expid = $myid;
+delete from script_files where expid = $myid;
+delete from xml_inputs where expid = $myid;
 delete from e3smexp where expid = $myid;
 EOF
 )
@@ -35,6 +45,6 @@ then
 	echo "$OURDB_CMDS" | mysql -u sarat -p pace 
 
 	# remember to delete associated files
-	rm /data/pace-exp-files/exp-*-${myid}.zip
-	rm /data/minio/e3sm/exp-*-${myid}.zip
+	rm /pacefs/pace-exp-files/exp-*-${myid}.zip
+	rm /pacefs/minio/e3sm/exp-*-${myid}.zip
 fi
