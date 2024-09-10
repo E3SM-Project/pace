@@ -1392,3 +1392,20 @@ def rcViewer(mexpid, mname):
     # tabledata = tabulatorjson.nestedjson2tabulator(data[0])
     # return render_template("tabulator.html", myjson = tabledata)
     return render_template("json.html", myjson = data[0])
+
+
+@app.route('/downloadexp/<int:mexpid>')
+def downloadexp(mexpid):
+    from flask import send_file
+    result = db.engine.execute("select user from e3smexp where expid='"+str(mexpid)+"\' ;").first()
+    if result is None:
+        return render_template('error.html')
+    user = result[0]
+    return redirect("https://pacefs.ornl.gov/e3sm/exp-" + user + '-' + str(mexpid) + '.zip');
+#    filelink = ('/pacefs/pace-exp-files/exp-' + user + '-' + str(mexpid) + '.zip')
+#    try:
+#        return send_file(filelink,attachment_filename='exp-'+ str(mexpid) + '.zip')
+#    except Exception as e:
+#        return str(e)
+
+
