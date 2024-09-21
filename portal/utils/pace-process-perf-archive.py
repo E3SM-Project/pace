@@ -9,7 +9,6 @@ import subprocess
 import datetime
 import logging,sys
 import argparse
-logger = logging.getLogger(__name__)
 
 # color class
 class bcolors:
@@ -30,7 +29,7 @@ def parseArguments():
     # Argument parser for E3SM experiments
     parser.add_argument('--machine','-m', action='store', required= True, help="Machine where tool is being run")
     parser.add_argument('--perf-archive','-pa', action='store', dest='perf_archive', help="Root directory containing performance archive. Handles multiple performance archive directories under root", type = pathlib.Path)
-    parser.add_argument('--timestamp','-ts', action='store', dest='timestamp', default = None, help="Specify custom timestamp to use", type = datetime.date.fromisoformat)
+    parser.add_argument('--timestamp','-ts', action='store', dest='timestamp', default = None, help="Specify custom timestamp to use") 
     args = parser.parse_args()
     return args
 
@@ -88,29 +87,24 @@ def process_dir_recursive(directory, timestamp, machine):
                 parents = Path(full_path).parents
                 casename = os.path.basename(parents[0])
                 username = os.path.basename(parents[1])
-                logging.debug('User: ' + username + ' Case: ' + casename + ' Job: ' + jobid )
+                logging.debug('User: %s Case: %s Job: %s Status: %s ', username, casename, jobid, jobstatus )
 
                 newdir = './performance_archive_' + timestamp + '/' + jobstatus + '/' + username + '/' + casename
                 logging.debug('Move ' + full_path + ' to ' + newdir);
                 os.makedirs(newdir, exist_ok = True)
                 shutil.move(full_path, newdir)
             else:
-                process_dir_recursive(full_path)
+                process_dir_recursive(full_path, timestamp, machine)
 
 
 if __name__ == '__main__':
     myargs = parseArguments()
-
-    logger.debug("Machine: " + myargs.machine)
 
     if (myargs.timestamp == None):
         mytime = datetime.datetime.now()
         mytimestamp = mytime.strftime('%Y_%m_%d_%H_%M_%S')
     else:
         mytimestamp = str(myargs.timestamp)
-
-    logfilename = 'process-perf-archive-' + mytimestamp + '.log'
-    logging.basicConfig(filename=logfilename, level=logging.DEBUG)
 
     if (myargs.perf_archive != None):
         perf_archive_dir = myargs.perf_archive
@@ -120,12 +114,13 @@ if __name__ == '__main__':
         elif (myargs.machine == 'perlmutter'):
             perf_archive_dir = '/global/cfs/cdirs/e3sm/performance_archive'
         
-    logger.debug("Perf archive dir: " + myargs.perf_archive)
-    logger.debug("Timestamp: " + myargs.timestamp)
+    logger = logging.getLogger(__name__)
+    logfilename = 'process-perf-archive-' + mytimestamp + '.log'
+    logging.basicConfig(filename=logfilename, level=logging.DEBUG)
+    logger.info("Machine: %s" , myargs.machine)
+    logger.info("Performance archive dir: %s" , perf_archive_dir)
+    logger.info("Timestamp: " + mytimestamp )
 
-    exit(2)
     process_dir_recursive(perf_archive_dir, mytimestamp, myargs.machine)
     
-    # process_dir_recursive('/lustre/orion/cli115/proj-shared/performance_archive')
-    # process_dir_recursive('/global/cfs/cdirs/e3sm/performance_archive')
 
