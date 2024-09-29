@@ -52,17 +52,10 @@ def getJobStatus(jobid, machine):
 
     # Don't move files associated with the following job statuses
     # So, set the following skip flag
-    match jobstatus:
-        case 'PENDING':
-             skip=True;
-        case 'RESIZING':
-             skip=True;
-        case 'RUNNING':
-             skip=True;
-        case 'REQUEUED':
-             skip=True;
-        case _:
-             skip=False;
+    if ( jobstatus == 'PENDING' or jobstatus == 'RESIZING' or jobstatus == 'RUNNING' or jobstatus == 'REQUEUED'):
+        skip=True;
+    else:
+        skip=False;
 
     return (jobstatus, skip)
 
