@@ -1,0 +1,2 @@
+0 21 * * * /lustre/orion/cli115/proj-shared/performance_archive/pace_archive.sh
+10 21 * * * /lustre/orion/cli115/world-shared/frontier/performance_archive/pace_archive.sh
