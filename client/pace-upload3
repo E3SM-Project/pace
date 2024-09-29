@@ -38,6 +38,12 @@ parseurl = baseurl+str("fileparse")
 # authenticuser url
 authurl = baseurl+str("userauth")
 
+# number of exps
+numexps = 0
+
+# Slack webhook to post notification
+slackurl = None
+
 # color class
 class bcolors:
     HEADER = '\033[95m'
@@ -50,6 +56,39 @@ class bcolors:
     UNDERLINE = '\033[4m'
     DARKGREY = '\033[90m'
     LIGHTGREY = '\033[37m'
+
+def slack_notify(slackurl, numexps):
+    machine = socket.getfqdn()
+
+    mymsg = '''\
+    {
+            "blocks": [
+                    {
+                            "type": "section",
+                            "text": {
+                                    "type": "mrkdwn",
+                                    "text": "Machine: %s"
+                            }
+                    },
+                    {
+                            "type": "divider"
+                    },
+                    {
+                            "type": "section",
+                            "text": {
+                                    "type": "mrkdwn",
+                                    "text": "Num. of Exps Uploaded to PACE: %s"
+                            },
+                    },
+                    {
+                            "type": "divider"
+                    }
+            ]
+    }\
+    ''' % (machine, numexps)
+
+    # pace-monitor in E3SM
+    requests.post(slackurl, data = mymsg)
 
 # argumented parser
 def parseArguments():
@@ -98,6 +137,8 @@ def uploadExp(uploadfile, uploadUser, project):
                 flaglist = (req.text).split("/") # req.text = success/message-timestamp.log
                 if flaglist[0] == 'success':
                     print((bcolors.OKGREEN + ('Parse Success') + bcolors.ENDC))
+                    if slackurl:
+                        slack_notify(slackurl, numexps)
                 else:
                     print((bcolors.FAIL + ('ERROR: Check %s' %flaglist[1]) + bcolors.ENDC))
                 print(" ")
@@ -150,6 +191,7 @@ def isValidE3SMexp(expfile,tmpfile):
         exit(104)
 
     # for complete experiments
+    global numexps
     if completeexp == True:
         i=0
         # make sure temporary folder does not exists and copy them into temporary folder
@@ -159,6 +201,7 @@ def isValidE3SMexp(expfile,tmpfile):
             distutils.dir_util.copy_tree(f,tmpfile+'/exp'+str(i))
             i=i+1
         print((bcolors.OKGREEN + ('Validation Success. Found ') + str(i) + " exps to upload." + bcolors.ENDC))
+        numexps = i
         print(" ")
         return(True)
     else:
@@ -174,7 +217,8 @@ def isValidFusionExp(expfile):
 def getGitToken():
     configFile = os.path.join(expanduser("~"),'.pacecc')
     if os.path.isfile(configFile):
-        user,token = readconfigfile(configFile)
+        user,token,slackurl = readconfigfile(configFile)
+        # print (user,token, slackurl)
     else:
         user,token = createtoken()
         createconfigfile(user,token,configFile)
@@ -225,7 +269,13 @@ def readconfigfile(configFile):
     parser.read(configFile)
     myUser = parser.get('GITHUB','username')
     myToken = parser.get('GITHUB','token')
-    return (myUser,myToken)
+    global slackurl
+    try:
+        slackurl = parser.get('SLACK','webhook')
+    except Exception as e:
+        slackurl = None
+
+    return (myUser,myToken,slackurl)
 
 # create new config file
 def createconfigfile(user,token,configFile):
