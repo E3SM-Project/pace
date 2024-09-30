@@ -24,7 +24,7 @@ namelists = ("atm_in", "atm_modelio", "cpl_modelio", "drv_flds_in", "drv_in",
 
 xmlfiles = ("env_archive", "env_batch", "env_build", "env_case",
             "env_mach_pes", "env_mach_specific", "env_run", "env_workflow",
-            )
+            "namelist_scream",)
 
 rcfiles = ("seq_maps",)
 
