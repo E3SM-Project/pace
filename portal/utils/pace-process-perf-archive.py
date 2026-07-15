@@ -65,29 +65,32 @@ def process_dir_recursive(directory, timestamp, machine):
         full_path = os.path.join(directory, entry)
         if os.path.isdir(full_path):
             # User job directories are of the format 
-            if re.findall('^\d+\.\d+\-\d+$', entry):
-                # print(full_path)
-                # print(os.path.dirname(full_path))
-                jobid = re.split('\.', entry)[0]
+            try:
+                if re.findall(r'^\d+\.\d+-\d+$', entry):
+                    # print(full_path)
+                    # print(os.path.dirname(full_path))
+                    jobid = re.split(r'\.', entry)[0]
 
-                (jobstatus,skip) = getJobStatus(jobid,machine)
-               
-                # Don't move files associated with the following job statuses
-                if skip == True:
-                     continue;
+                    (jobstatus,skip) = getJobStatus(jobid,machine)
+                   
+                    # Don't move files associated with the following job statuses
+                    if skip == True:
+                         continue;
 
-                # get corresponding user dir
-                parents = Path(full_path).parents
-                casename = os.path.basename(parents[0])
-                username = os.path.basename(parents[1])
-                logging.debug('User: %s Case: %s Job: %s Status: %s ', username, casename, jobid, jobstatus )
+                    # get corresponding user dir
+                    parents = Path(full_path).parents
+                    casename = os.path.basename(parents[0])
+                    username = os.path.basename(parents[1])
+                    logging.debug('User: %s Case: %s Job: %s Status: %s ', username, casename, jobid, jobstatus )
 
-                newdir = './performance_archive_' + timestamp + '/' + jobstatus + '/' + username + '/' + casename
-                logging.debug('Move ' + full_path + ' to ' + newdir);
-                os.makedirs(newdir, exist_ok = True)
-                shutil.move(full_path, newdir)
-            else:
-                process_dir_recursive(full_path, timestamp, machine)
+                    newdir = './performance_archive_' + timestamp + '/' + jobstatus + '/' + username + '/' + casename
+                    logging.debug('Move ' + full_path + ' to ' + newdir);
+                    os.makedirs(newdir, exist_ok = True)
+                    shutil.move(full_path, newdir)
+                else:
+                    process_dir_recursive(full_path, timestamp, machine)
+            except Exception as e:
+                logger.info(f"Exception occured with {full_path}: {e}")
 
 
 if __name__ == '__main__':

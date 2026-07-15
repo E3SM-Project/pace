@@ -366,7 +366,8 @@ def insertExperiment(filename,readmefile,timingfile,gitfile,
 
     # store raw data (In server and Minio)
     print('* Storing Experiment in file server')
-    (isSuccess,zipFileFullPath) = zipFolder(currExpObj.lid,currExpObj.user,currExpObj.expid,fpath)
+    expdir = os.path.dirname(casedocs) if casedocs else None
+    (isSuccess,zipFileFullPath) = zipFolder(currExpObj.lid,currExpObj.user,currExpObj.expid,fpath,expdir)
     if isSuccess == False:
         return False
     print('    -Complete')
@@ -593,10 +594,10 @@ def removeFolder(removeroot,filename):
 
 #need here
 # aggregate files and store in file server
-def zipFolder(exptag,exptaguser,exptagid,fpath):
+def zipFolder(exptag,exptaguser,exptagid,fpath,expdir=None):
     try:
         expname=0
-        root=fpath
+        root = expdir if expdir else fpath
         for path, subdirs, files in os.walk(root):
             for name in subdirs:
                 if name.startswith('CaseDocs.'+str(exptag)):
