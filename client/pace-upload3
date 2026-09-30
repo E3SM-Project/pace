@@ -11,9 +11,8 @@ import argparse
 import requests
 import sys
 import json
-import os, shutil, distutils
+import os, shutil
 from os.path import expanduser
-from distutils import dir_util
 import zipfile, tarfile
 import getpass
 import stat
@@ -196,9 +195,9 @@ def isValidE3SMexp(expfile,tmpfile):
         i=0
         # make sure temporary folder does not exists and copy them into temporary folder
         if (os.path.exists(tmpfile)):
-            distutils.dir_util.remove_tree(tmpfile)
+            shutil.rmtree(tmpfile)
         for f in explist:
-            distutils.dir_util.copy_tree(f,tmpfile+'/exp'+str(i))
+            shutil.copytree(f, tmpfile + '/exp' + str(i))
             i=i+1
         print((bcolors.OKGREEN + ('Validation Success. Found ') + str(i) + " exps to upload." + bcolors.ENDC))
         numexps = i
@@ -332,7 +331,7 @@ def main():
                 uploadExp(uploadfile,user,'e3sm')
                 # remove temporary aggregated file
                 os.remove(uploadfile)
-                distutils.dir_util.remove_tree(tmpfile)
+                shutil.rmtree(tmpfile)
             elif (result.application=='fusion' and isValidFusionExp(expfile)==True):
                 exit(107)
             else:
